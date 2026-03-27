@@ -121,14 +121,27 @@ function normalizeDayLog(log) {
     return { entries: [], exercises: [] };
   }
 
-  const entries = Array.isArray(log.entries) ? log.entries : [];
-  const exercises = Array.isArray(log.exercises) ? log.exercises : [];
-
-  return { entries, exercises };
+  return {
+    entries: Array.isArray(log.entries) ? log.entries : [],
+    exercises: Array.isArray(log.exercises) ? log.exercises : []
+  };
 }
 
 function round1(value) {
   return Math.round(Number(value || 0) * 10) / 10;
+}
+
+function normalizeFood(food) {
+  return {
+    id: food.id || `food-${Date.now()}`,
+    source: food.source || "local",
+    name: food.name || "Unknown food",
+    brand: food.brand || "",
+    caloriesPer100g: Number(food.caloriesPer100g || 0),
+    proteinPer100g: Number(food.proteinPer100g || 0),
+    carbsPer100g: Number(food.carbsPer100g || 0),
+    fatPer100g: Number(food.fatPer100g || 0)
+  };
 }
 
 export default function App() {
@@ -155,9 +168,8 @@ export default function App() {
   const [foodGrams, setFoodGrams] = useState("100");
   const [mealType, setMealType] = useState("Πρωινό");
 
-  const [remoteFoods, setRemoteFoods] = useState([]);
-  const [remoteLoading, setRemoteLoading] = useState(false);
-  const [remoteError, setRemoteError] = useState("");
+  const [apiFoods, setApiFoods] = useState([]);
+  const [apiLoading, setApiLoading] = useState(false);
 
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
@@ -171,6 +183,7 @@ export default function App() {
       return acc;
     }, {})
   );
+
   const [customExerciseName, setCustomExerciseName] = useState("");
   const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
   const [customExerciseRate, setCustomExerciseRate] = useState("");
@@ -186,6 +199,37 @@ export default function App() {
   useEffect(() => localStorage.setItem("ft_selectedDate", selectedDate), [selectedDate]);
   useEffect(() => localStorage.setItem("ft_foods", JSON.stringify(foods)), [foods]);
   useEffect(() => localStorage.setItem("ft_dailyLogs", JSON.stringify(dailyLogs)), [dailyLogs]);
+
+  useEffect(() => {
+    if (!query || query.trim().length < 2) {
+      setApiFoods([]);
+      setApiLoading(false);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setApiLoading(true);
+        const res = await fetch(
+          `/.netlify/functions/food-search?q=${encodeURIComponent(query)}`
+        );
+        const data = await res.json();
+
+        if (Array.isArray(data.foods)) {
+          setApiFoods(data.foods.map(normalizeFood));
+        } else {
+          setApiFoods([]);
+        }
+      } catch (err) {
+        console.error("API error", err);
+        setApiFoods([]);
+      } finally {
+        setApiLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
 
   const currentDayLog = normalizeDayLog(dailyLogs[selectedDate]);
   const entries = currentDayLog.entries;
@@ -237,65 +281,39 @@ export default function App() {
     return Math.max(tdee - dailyDeficit, 1200);
   }, [tdee, goalType, dailyDeficit]);
 
-  const localFoods = useMemo(() => {
-    if (!query.trim()) return foods.slice(0, 8);
-    return foods.filter((food) =>
+  const filteredFoods = useMemo(() => {
+    const localFoods = foods.filter((food) =>
       food.name.toLowerCase().includes(query.toLowerCase())
     );
-  }, [foods, query]);
 
-  useEffect(() => {
-    const term = query.trim();
+    const combined = [...localFoods, ...apiFoods];
+    const seen = new Set();
 
-    if (term.length < 2) {
-      setRemoteFoods([]);
-      setRemoteError("");
-      setRemoteLoading(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setRemoteLoading(true);
-      setRemoteError("");
-
-      try {
-        const res = await fetch(
-          `/.netlify/functions/food-search?q=${encodeURIComponent(term)}`
-        );
-
-        if (!res.ok) {
-          throw new Error("Αποτυχία αναζήτησης");
-        }
-
-        const data = await res.json();
-        setRemoteFoods(Array.isArray(data.foods) ? data.foods : []);
-      } catch (error) {
-        setRemoteFoods([]);
-        setRemoteError("Δεν έγινε αναζήτηση στη βάση.");
-      } finally {
-        setRemoteLoading(false);
-      }
-    }, 450);
-
-    return () => clearTimeout(timer);
-  }, [query]);
+    return combined.filter((food) => {
+      const key = `${food.source}-${food.id}-${food.name}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [foods, query, apiFoods]);
 
   function createFoodEntry(food, gramsValue, meal) {
+    const normalized = normalizeFood(food);
     const grams = Math.max(Number(gramsValue) || 100, 1);
     const factor = grams / 100;
 
     return {
       id: Date.now() + Math.random(),
-      foodId: food.id || null,
-      source: food.source || "local",
-      name: food.name,
-      brand: food.brand || "",
+      foodId: normalized.id,
+      source: normalized.source,
+      name: normalized.name,
+      brand: normalized.brand,
       mealType: meal,
       grams,
-      calories: Math.round((food.caloriesPer100g || 0) * factor),
-      protein: round1((food.proteinPer100g || 0) * factor),
-      carbs: round1((food.carbsPer100g || 0) * factor),
-      fat: round1((food.fatPer100g || 0) * factor)
+      calories: Math.round(normalized.caloriesPer100g * factor),
+      protein: round1(normalized.proteinPer100g * factor),
+      carbs: round1(normalized.carbsPer100g * factor),
+      fat: round1(normalized.fatPer100g * factor)
     };
   }
 
@@ -309,7 +327,7 @@ export default function App() {
 
     setFoodGrams("100");
     setQuery("");
-    setRemoteFoods([]);
+    setApiFoods([]);
   }
 
   function deleteEntry(id) {
@@ -732,7 +750,13 @@ export default function App() {
           <div style={sectionTop}>
             <h2 style={{ ...h2, marginBottom: 0 }}>Αναζήτηση φαγητού</h2>
             {query ? (
-              <button style={ghostBtn} onClick={() => setQuery("")}>
+              <button
+                style={ghostBtn}
+                onClick={() => {
+                  setQuery("");
+                  setApiFoods([]);
+                }}
+              >
                 Καθαρισμός
               </button>
             ) : null}
@@ -771,40 +795,15 @@ export default function App() {
             </div>
           </div>
 
-          <div style={resultsBlock}>
-            <div style={resultsTitle}>Τοπικά φαγητά</div>
-            {localFoods.length === 0 ? (
-              <div style={emptyState}>Δεν βρέθηκε τοπικό αποτέλεσμα.</div>
-            ) : (
-              localFoods.map((food) => (
-                <div key={food.id} style={foodRow}>
-                  <div style={{ flex: 1 }}>
-                    <div style={foodName}>{food.name}</div>
-                    <div style={muted}>
-                      {food.caloriesPer100g} kcal / 100g · P {food.proteinPer100g || 0} · C {food.carbsPer100g || 0} · F {food.fatPer100g || 0}
-                    </div>
-                  </div>
+          {apiLoading ? (
+            <div style={helperText}>Αναζήτηση στη βάση...</div>
+          ) : null}
 
-                  <button style={darkBtn} onClick={() => addFood(food)}>
-                    Προσθήκη
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div style={resultsBlock}>
-            <div style={resultsTitle}>Από βάση δεδομένων</div>
-
-            {remoteLoading ? <div style={emptyState}>Αναζήτηση...</div> : null}
-            {remoteError ? <div style={errorText}>{remoteError}</div> : null}
-
-            {!remoteLoading && !remoteError && remoteFoods.length === 0 && query.trim().length >= 2 ? (
-              <div style={emptyState}>Δεν βρέθηκαν αποτελέσματα στη βάση.</div>
-            ) : null}
-
-            {remoteFoods.map((food) => (
-              <div key={food.id} style={foodRow}>
+          {filteredFoods.length === 0 ? (
+            <div style={emptyState}>Δεν βρέθηκε φαγητό.</div>
+          ) : (
+            filteredFoods.map((food) => (
+              <div key={`${food.source}-${food.id}`} style={foodRow}>
                 <div style={{ flex: 1 }}>
                   <div style={foodName}>
                     {food.name}
@@ -819,8 +818,8 @@ export default function App() {
                   Προσθήκη
                 </button>
               </div>
-            ))}
-          </div>
+            ))
+          )}
         </div>
 
         <div style={card}>
@@ -1294,12 +1293,6 @@ const emptyState = {
   padding: "8px 0"
 };
 
-const errorText = {
-  color: "#b91c1c",
-  fontSize: 14,
-  padding: "8px 0"
-};
-
 const sectionTop = {
   display: "flex",
   justifyContent: "space-between",
@@ -1397,15 +1390,4 @@ const exercisePresetControls = {
   gridTemplateColumns: "1fr auto",
   gap: 8,
   alignItems: "center"
-};
-
-const resultsBlock = {
-  marginTop: 16
-};
-
-const resultsTitle = {
-  fontSize: 15,
-  fontWeight: 700,
-  color: "#111827",
-  marginBottom: 8
 };
