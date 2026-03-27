@@ -18,7 +18,7 @@ export default async (req, context) => {
 
     const usdaUrl = "https://api.nal.usda.gov/fdc/v1/foods/search";
 
-    const response = await fetch(usdaUrl, {
+    const response = await fetch(`${usdaUrl}?api_key=${encodeURIComponent(apiKey)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -26,7 +26,6 @@ export default async (req, context) => {
       body: JSON.stringify({
         query,
         pageSize: 12,
-        api_key: apiKey,
         dataType: ["Foundation", "SR Legacy", "Branded"]
       })
     });
