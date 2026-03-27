@@ -14,23 +14,31 @@ body {
 }
 
 .container {
-  max-width: 500px;
+  max-width: 520px;
   margin: 0 auto;
+}
+
+.card {
   background: white;
   border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
-  margin-top: 0;
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
   font-size: 30px;
 }
 
 h2 {
-  margin-top: 24px;
+  margin-top: 0;
   font-size: 22px;
+}
+
+.subtitle {
+  margin-bottom: 18px;
+  color: #555;
 }
 
 input {
@@ -39,13 +47,14 @@ input {
   font-size: 16px;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .food-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid #eeeeee;
 }
@@ -56,22 +65,42 @@ input {
   border: none;
   border-radius: 10px;
   padding: 8px 14px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.full-btn {
+  width: 100%;
+  padding: 14px;
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 12px;
   font-size: 16px;
   cursor: pointer;
+  margin-top: 8px;
+}
+
+.danger-btn {
+  background: #b91c1c;
 }
 
 .entry {
   padding: 10px 0;
   border-bottom: 1px solid #eeeeee;
-  font-size: 16px;
 }
 
 .total-box {
-  margin-top: 18px;
+  margin-bottom: 14px;
   padding: 14px;
   background: #f9fafb;
   border-radius: 12px;
   font-weight: bold;
+}
+
+.empty-text {
+  color: #666;
+  padding: 8px 0 14px 0;
 }
 
 @media (max-width: 600px) {
@@ -79,7 +108,7 @@ input {
     padding: 12px;
   }
 
-  .container {
+  .card {
     padding: 16px;
     border-radius: 14px;
   }
