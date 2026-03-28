@@ -1,119 +1,318 @@
-body {
-  margin: 0;
+:root {
   font-family: Arial, sans-serif;
-  background: #f3f4f6;
+  color: #111827;
+  background: #f6f8fb;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.app {
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
   min-height: 100vh;
-  padding: 20px;
 }
 
-.container {
-  max-width: 520px;
+.app-container {
+  max-width: 760px;
   margin: 0 auto;
+  padding: 12px;
 }
 
-.card {
-  background: white;
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+.app-header {
+  margin-bottom: 14px;
 }
 
-h1 {
-  margin: 0 0 8px 0;
+.app-header h1 {
+  margin: 0 0 6px;
   font-size: 30px;
 }
 
-h2 {
+.app-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.card h2 {
   margin-top: 0;
-  font-size: 22px;
 }
 
-.subtitle {
-  margin-bottom: 18px;
-  color: #555;
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
 }
 
-input {
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.stack-10 > * + * {
+  margin-top: 10px;
+}
+
+.input {
   width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border: 1px solid #d1d5db;
+  padding: 13px;
   border-radius: 12px;
-  margin-bottom: 12px;
+  border: 1px solid #d1d5db;
+  background: white;
 }
 
-.food-row {
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-dark {
+  background: #111827;
+  color: white;
+}
+
+.btn-light {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-danger {
+  background: #b91c1c;
+  color: white;
+}
+
+.btn-edit {
+  background: #0f766e;
+  color: white;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+
+.badge-local {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.food-list-item,
+.exercise-list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #edf2f7;
 }
 
-.add-btn {
-  background: #111827;
+.soft-box {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
   color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 18px;
-  cursor: pointer;
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
 }
 
-.full-btn {
+.hero-subtle {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+}
+
+.hero-big {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hero-stat {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.progress-outer {
+  margin-top: 10px;
   width: 100%;
-  padding: 14px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-inner {
+  height: 100%;
+  background: #22c55e;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 4px;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #e5e7eb;
+  z-index: 100;
+}
+
+.bottom-nav button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 14px;
+  padding: 8px 4px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bottom-nav button.active {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.bottom-nav .nav-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.fab-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  border: none;
   background: #111827;
   color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  font-size: 34px;
   cursor: pointer;
-  margin-top: 8px;
+  z-index: 110;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
 }
 
-.danger-btn {
-  background: #b91c1c;
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
 }
 
-.entry {
-  padding: 10px 0;
-  border-bottom: 1px solid #eeeeee;
+.modal-sheet {
+  width: 100%;
+  max-width: 760px;
+  background: white;
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.24);
 }
 
-.total-box {
-  margin-bottom: 14px;
+.modal-sheet h3 {
+  margin-top: 0;
+}
+
+.history-row {
+  width: 100%;
+  text-align: left;
+  background: white;
+  border-radius: 14px;
   padding: 14px;
-  background: #f9fafb;
-  border-radius: 12px;
-  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
 }
 
-.empty-text {
-  color: #666;
-  padding: 8px 0 14px 0;
+.food-choice {
+  width: 100%;
+  text-align: left;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
 }
 
-@media (max-width: 600px) {
-  .app {
-    padding: 12px;
-  }
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
 
-  .card {
-    padding: 16px;
-    border-radius: 14px;
-  }
+.action-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
-  h1 {
+@media (max-width: 560px) {
+  .hero-big {
     font-size: 26px;
   }
 }

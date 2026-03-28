@@ -1,181 +1,111 @@
 import { useEffect, useMemo, useState } from "react";
+import BottomNav from "./components/BottomNav";
+import FabButton from "./components/FabButton";
+import QuickActionsModal from "./components/QuickActionsModal";
+import EditEntryModal from "./components/EditEntryModal";
+import SummaryTab from "./components/tabs/SummaryTab";
+import FoodTab from "./components/tabs/FoodTab";
+import ExerciseTab from "./components/tabs/ExerciseTab";
+import DayTab from "./components/tabs/DayTab";
+import ProfileTab from "./components/tabs/ProfileTab";
+import { DEFAULT_FOODS, EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
+import {
+  getTodayKey,
+  normalizeDayLog,
+  normalizeFood,
+  createFoodEntry,
+  round1,
+  shiftDate,
+  calculateBmr,
+  entryBasePer100g
+} from "./utils/helpers";
+import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
-const DEFAULT_FOODS = [
-  {
-    id: "local-tost",
-    source: "local",
-    name: "Τοστ",
-    caloriesPer100g: 250,
-    proteinPer100g: 10,
-    carbsPer100g: 30,
-    fatPer100g: 10
-  },
-  {
-    id: "local-avga",
-    source: "local",
-    name: "Αυγά",
-    caloriesPer100g: 140,
-    proteinPer100g: 12,
-    carbsPer100g: 1,
-    fatPer100g: 10
-  },
-  {
-    id: "local-kotopoulo",
-    source: "local",
-    name: "Κοτόπουλο",
-    caloriesPer100g: 300,
-    proteinPer100g: 40,
-    carbsPer100g: 0,
-    fatPer100g: 15
-  },
-  {
-    id: "local-banana",
-    source: "local",
-    name: "Μπανάνα",
-    caloriesPer100g: 100,
-    proteinPer100g: 1,
-    carbsPer100g: 25,
-    fatPer100g: 0
-  },
-  {
-    id: "local-ryzi",
-    source: "local",
-    name: "Ρύζι",
-    caloriesPer100g: 200,
-    proteinPer100g: 4,
-    carbsPer100g: 44,
-    fatPer100g: 1
-  },
-  {
-    id: "local-giaourti",
-    source: "local",
-    name: "Γιαούρτι",
-    caloriesPer100g: 150,
-    proteinPer100g: 15,
-    carbsPer100g: 8,
-    fatPer100g: 6
-  }
-];
+function calculateDailyDeficitLocal({ goalType, targetWeightLoss, weeks }) {
+  if (goalType !== "lose") return 0;
 
-const EXERCISE_LIBRARY = [
-  { name: "Περπάτημα", caloriesPerMinute: 4 },
-  { name: "Γρήγορο περπάτημα", caloriesPerMinute: 5.5 },
-  { name: "Τρέξιμο", caloriesPerMinute: 11 },
-  { name: "Βάρη", caloriesPerMinute: 4.5 },
-  { name: "Ποδήλατο", caloriesPerMinute: 7 },
-  { name: "Κολύμπι", caloriesPerMinute: 8.5 }
-];
+  const kg = Number(targetWeightLoss) || 0;
+  const weeksValue = Number(weeks) || 0;
 
-const MEALS = ["Πρωινό", "Μεσημεριανό", "Βραδινό", "Σνακ"];
+  if (kg <= 0 || weeksValue <= 0) return 300;
 
-function getStoredValue(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value !== null ? value : fallback;
-  } catch {
-    return fallback;
+  const totalCaloriesToLose = kg * 7700;
+  const days = weeksValue * 7;
+  const deficit = totalCaloriesToLose / days;
+
+  return Math.max(150, Math.min(Math.round(deficit), 1000));
+}
+
+function calculateTargetCaloriesLocal({ tdee, goalType, dailyDeficit }) {
+  const safeTdee = Number(tdee) || 0;
+
+  switch (goalType) {
+    case "maintain":
+      return Math.round(safeTdee);
+
+    case "lose":
+      return Math.max(1200, Math.round(safeTdee - dailyDeficit));
+
+    case "gain":
+      return Math.round(safeTdee + 300);
+
+    case "fitness":
+      return Math.round(safeTdee);
+
+    default:
+      return Math.round(safeTdee);
   }
 }
 
-function getStoredJSON(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
+function calculateProteinTargetLocal({ goalType, weight }) {
+  const weightKg = Number(weight) || 0;
+  if (!weightKg) return 0;
+
+  switch (goalType) {
+    case "lose":
+      return Math.round(weightKg * 1.8);
+
+    case "gain":
+      return Math.round(weightKg * 2.0);
+
+    case "fitness":
+      return Math.round(weightKg * 1.6);
+
+    case "maintain":
+    default:
+      return Math.round(weightKg * 1.4);
   }
-}
-
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString("el-GR");
-}
-
-function getTodayKey() {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function shiftDate(dateStr, days) {
-  const date = new Date(`${dateStr}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function formatDisplayDate(dateStr) {
-  const date = new Date(`${dateStr}T12:00:00`);
-  return date.toLocaleDateString("el-GR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short"
-  });
-}
-
-function normalizeDayLog(log) {
-  if (!log) {
-    return { entries: [], exercises: [] };
-  }
-
-  return {
-    entries: Array.isArray(log.entries) ? log.entries : [],
-    exercises: Array.isArray(log.exercises) ? log.exercises : []
-  };
-}
-
-function round1(value) {
-  return Math.round(Number(value || 0) * 10) / 10;
-}
-
-function normalizeFood(food) {
-  return {
-    id: food.id || `food-${Date.now()}`,
-    source: food.source || "local",
-    name: food.name || "Unknown food",
-    brand: food.brand || "",
-    caloriesPer100g: Number(food.caloriesPer100g || 0),
-    proteinPer100g: Number(food.proteinPer100g || 0),
-    carbsPer100g: Number(food.carbsPer100g || 0),
-    fatPer100g: Number(food.fatPer100g || 0)
-  };
 }
 
 export default function App() {
-  const [age, setAge] = useState(() => getStoredValue("ft_age", ""));
-  const [gender, setGender] = useState(() => getStoredValue("ft_gender", "male"));
-  const [height, setHeight] = useState(() => getStoredValue("ft_height", ""));
-  const [weight, setWeight] = useState(() => getStoredValue("ft_weight", ""));
-  const [activity, setActivity] = useState(() => getStoredValue("ft_activity", "1.4"));
-
-  const [goalType, setGoalType] = useState(() => getStoredValue("ft_goalType", "maintain"));
-  const [targetWeightLoss, setTargetWeightLoss] = useState(() =>
-    getStoredValue("ft_targetWeightLoss", "")
-  );
-  const [weeks, setWeeks] = useState(() => getStoredValue("ft_weeks", ""));
-
+  const [activeTab, setActiveTab] = useState(() => loadValue("ft_activeTab", "summary"));
   const [selectedDate, setSelectedDate] = useState(() =>
-    getStoredValue("ft_selectedDate", getTodayKey())
+    loadValue("ft_selectedDate", getTodayKey())
   );
 
-  const [foods, setFoods] = useState(() => getStoredJSON("ft_foods", DEFAULT_FOODS));
-  const [dailyLogs, setDailyLogs] = useState(() => getStoredJSON("ft_dailyLogs", {}));
+  const [age, setAge] = useState(() => loadValue("ft_age", ""));
+  const [gender, setGender] = useState(() => loadValue("ft_gender", "male"));
+  const [height, setHeight] = useState(() => loadValue("ft_height", ""));
+  const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
+  const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
+  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "maintain"));
+  const [targetWeightLoss, setTargetWeightLoss] = useState(() =>
+    loadValue("ft_targetWeightLoss", "")
+  );
+  const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [query, setQuery] = useState("");
-  const [foodGrams, setFoodGrams] = useState("100");
-  const [mealType, setMealType] = useState("Πρωινό");
+  const [foods, setFoods] = useState(() => loadJSON("ft_foods", DEFAULT_FOODS));
+  const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
+  const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
+  const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
+    loadJSON("ft_favoriteFoodKeys", [])
+  );
 
-  const [apiFoods, setApiFoods] = useState([]);
-  const [apiLoading, setApiLoading] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
-  const [newName, setNewName] = useState("");
-  const [newCalories, setNewCalories] = useState("");
-  const [newProtein, setNewProtein] = useState("");
-  const [newCarbs, setNewCarbs] = useState("");
-  const [newFat, setNewFat] = useState("");
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editEntryGrams, setEditEntryGrams] = useState("100");
+  const [editEntryMeal, setEditEntryMeal] = useState("Πρωινό");
 
   const [exerciseMinutes, setExerciseMinutes] = useState(() =>
     EXERCISE_LIBRARY.reduce((acc, item) => {
@@ -188,48 +118,20 @@ export default function App() {
   const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
   const [customExerciseRate, setCustomExerciseRate] = useState("");
 
-  useEffect(() => localStorage.setItem("ft_age", age), [age]);
-  useEffect(() => localStorage.setItem("ft_gender", gender), [gender]);
-  useEffect(() => localStorage.setItem("ft_height", height), [height]);
-  useEffect(() => localStorage.setItem("ft_weight", weight), [weight]);
-  useEffect(() => localStorage.setItem("ft_activity", activity), [activity]);
-  useEffect(() => localStorage.setItem("ft_goalType", goalType), [goalType]);
-  useEffect(() => localStorage.setItem("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
-  useEffect(() => localStorage.setItem("ft_weeks", weeks), [weeks]);
-  useEffect(() => localStorage.setItem("ft_selectedDate", selectedDate), [selectedDate]);
-  useEffect(() => localStorage.setItem("ft_foods", JSON.stringify(foods)), [foods]);
-  useEffect(() => localStorage.setItem("ft_dailyLogs", JSON.stringify(dailyLogs)), [dailyLogs]);
-
-  useEffect(() => {
-    if (!query || query.trim().length < 2) {
-      setApiFoods([]);
-      setApiLoading(false);
-      return;
-    }
-
-    const timeout = setTimeout(async () => {
-      try {
-        setApiLoading(true);
-        const res = await fetch(
-          `/.netlify/functions/food-search?q=${encodeURIComponent(query)}`
-        );
-        const data = await res.json();
-
-        if (Array.isArray(data.foods)) {
-          setApiFoods(data.foods.map(normalizeFood));
-        } else {
-          setApiFoods([]);
-        }
-      } catch (err) {
-        console.error("API error", err);
-        setApiFoods([]);
-      } finally {
-        setApiLoading(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timeout);
-  }, [query]);
+  useEffect(() => saveValue("ft_activeTab", activeTab), [activeTab]);
+  useEffect(() => saveValue("ft_selectedDate", selectedDate), [selectedDate]);
+  useEffect(() => saveValue("ft_age", age), [age]);
+  useEffect(() => saveValue("ft_gender", gender), [gender]);
+  useEffect(() => saveValue("ft_height", height), [height]);
+  useEffect(() => saveValue("ft_weight", weight), [weight]);
+  useEffect(() => saveValue("ft_activity", activity), [activity]);
+  useEffect(() => saveValue("ft_goalType", goalType), [goalType]);
+  useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
+  useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
+  useEffect(() => saveJSON("ft_foods", foods), [foods]);
+  useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
+  useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
+  useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
 
   const currentDayLog = normalizeDayLog(dailyLogs[selectedDate]);
   const entries = currentDayLog.entries;
@@ -239,7 +141,6 @@ export default function App() {
     setDailyLogs((prev) => {
       const current = normalizeDayLog(prev[selectedDate]);
       const nextDay = normalizeDayLog(updater(current));
-
       return {
         ...prev,
         [selectedDate]: nextDay
@@ -247,94 +148,53 @@ export default function App() {
     });
   }
 
-  const bmr = useMemo(() => {
-    const a = Number(age);
-    const h = Number(height);
-    const w = Number(weight);
-
-    if (!a || !h || !w) return 0;
-
-    if (gender === "male") {
-      return Math.round(10 * w + 6.25 * h - 5 * a + 5);
-    }
-
-    return Math.round(10 * w + 6.25 * h - 5 * a - 161);
-  }, [age, height, weight, gender]);
-
-  const tdee = useMemo(() => {
-    return Math.round(bmr * Number(activity || 1.4));
-  }, [bmr, activity]);
-
-  const dailyDeficit = useMemo(() => {
-    const kg = Number(targetWeightLoss);
-    const wks = Number(weeks);
-
-    if (goalType !== "lose") return 0;
-    if (!kg || !wks || wks <= 0) return 0;
-
-    return Math.round((kg * 7700) / (wks * 7));
-  }, [goalType, targetWeightLoss, weeks]);
-
-  const targetCalories = useMemo(() => {
-    if (!tdee) return 0;
-    if (goalType === "maintain") return tdee;
-    return Math.max(tdee - dailyDeficit, 1200);
-  }, [tdee, goalType, dailyDeficit]);
-
-  const filteredFoods = useMemo(() => {
-    const localFoods = foods.filter((food) =>
-      food.name.toLowerCase().includes(query.toLowerCase())
-    );
-
-    const combined = [...localFoods, ...apiFoods];
-    const seen = new Set();
-
-    return combined.filter((food) => {
-      const key = `${food.source}-${food.id}-${food.name}`.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }, [foods, query, apiFoods]);
-
-  function createFoodEntry(food, gramsValue, meal) {
-    const normalized = normalizeFood(food);
-    const grams = Math.max(Number(gramsValue) || 100, 1);
-    const factor = grams / 100;
-
-    return {
-      id: Date.now() + Math.random(),
-      foodId: normalized.id,
-      source: normalized.source,
-      name: normalized.name,
-      brand: normalized.brand,
-      mealType: meal,
-      grams,
-      calories: Math.round(normalized.caloriesPer100g * factor),
-      protein: round1(normalized.proteinPer100g * factor),
-      carbs: round1(normalized.carbsPer100g * factor),
-      fat: round1(normalized.fatPer100g * factor)
-    };
-  }
-
-  function addFood(food) {
-    const entry = createFoodEntry(food, foodGrams, mealType);
-
-    updateCurrentDay((current) => ({
-      ...current,
-      entries: [entry, ...current.entries]
-    }));
-
-    setFoodGrams("100");
-    setQuery("");
-    setApiFoods([]);
-  }
-
   function deleteEntry(id) {
     updateCurrentDay((current) => ({
       ...current,
       entries: current.entries.filter((item) => item.id !== id)
     }));
+  }
+
+  function openEditEntry(entry) {
+    setEditingEntry(entry);
+    setEditEntryGrams(String(entry.grams || 100));
+    setEditEntryMeal(entry.mealType || "Πρωινό");
+  }
+
+  function closeEditEntry() {
+    setEditingEntry(null);
+    setEditEntryGrams("100");
+    setEditEntryMeal("Πρωινό");
+  }
+
+  function saveEditedEntry() {
+    if (!editingEntry) return;
+
+    const grams = Math.max(Number(editEntryGrams) || 100, 1);
+    const meal = editEntryMeal || "Πρωινό";
+    const base = entryBasePer100g(editingEntry);
+    const factor = grams / 100;
+
+    const updated = {
+      ...editingEntry,
+      grams,
+      mealType: meal,
+      calories: Math.round(base.caloriesPer100g * factor),
+      protein: round1(base.proteinPer100g * factor),
+      carbs: round1(base.carbsPer100g * factor),
+      fat: round1(base.fatPer100g * factor),
+      baseCaloriesPer100g: base.caloriesPer100g,
+      baseProteinPer100g: base.proteinPer100g,
+      baseCarbsPer100g: base.carbsPer100g,
+      baseFatPer100g: base.fatPer100g
+    };
+
+    updateCurrentDay((current) => ({
+      ...current,
+      entries: current.entries.map((item) => (item.id === editingEntry.id ? updated : item))
+    }));
+
+    closeEditEntry();
   }
 
   function addExerciseByMinutes(exercise, minutesValue) {
@@ -397,47 +257,112 @@ export default function App() {
     }));
   }
 
-  function addCustomFood() {
-    if (!newName.trim() || !newCalories) return;
-
-    const food = {
-      id: `local-${Date.now()}`,
-      source: "local",
-      name: newName.trim(),
-      brand: "",
-      caloriesPer100g: Number(newCalories) || 0,
-      proteinPer100g: Number(newProtein) || 0,
-      carbsPer100g: Number(newCarbs) || 0,
-      fatPer100g: Number(newFat) || 0
-    };
-
-    setFoods((prev) => [food, ...prev]);
-
-    setNewName("");
-    setNewCalories("");
-    setNewProtein("");
-    setNewCarbs("");
-    setNewFat("");
+  function addCustomFood(newFood) {
+    setFoods((prev) => [normalizeFood(newFood), ...prev]);
   }
 
+  function saveRecentFood(food, gramsValue, meal) {
+    const normalized = normalizeFood(food);
+
+    setRecentFoods((prev) => {
+      const filtered = prev.filter(
+        (item) =>
+          !(
+            item.food.name.toLowerCase() === normalized.name.toLowerCase() &&
+            (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
+          )
+      );
+
+      return [
+        {
+          key: `${normalized.name}-${normalized.brand || ""}`.toLowerCase(),
+          food: normalized,
+          grams: Math.max(Number(gramsValue) || 100, 1),
+          mealType: meal || "Πρωινό",
+          lastUsedAt: Date.now()
+        },
+        ...filtered
+      ].slice(0, 12);
+    });
+  }
+
+  function quickAddRecent(item) {
+    const entry = createFoodEntry(item.food, item.grams, item.mealType);
+
+    updateCurrentDay((current) => ({
+      ...current,
+      entries: [entry, ...current.entries]
+    }));
+
+    saveRecentFood(item.food, item.grams, item.mealType);
+  }
+
+  function quickAddFavorite(food) {
+    const entry = createFoodEntry(food, 100, "Σνακ");
+
+    updateCurrentDay((current) => ({
+      ...current,
+      entries: [entry, ...current.entries]
+    }));
+
+    saveRecentFood(food, 100, "Σνακ");
+  }
+
+  function toggleFavorite(food) {
+    const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
+
+    setFavoriteFoodKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
+    );
+  }
+
+  function isFavorite(food) {
+    const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
+    return favoriteFoodKeys.includes(key);
+  }
+
+  const bmr = useMemo(() => calculateBmr({ age, height, weight, gender }), [
+    age,
+    height,
+    weight,
+    gender
+  ]);
+
+  const tdee = useMemo(() => Math.round(bmr * Number(activity || 1.4)), [bmr, activity]);
+
+  const dailyDeficit = useMemo(
+    () => calculateDailyDeficitLocal({ goalType, targetWeightLoss, weeks }),
+    [goalType, targetWeightLoss, weeks]
+  );
+
+  const targetCalories = useMemo(
+    () => calculateTargetCaloriesLocal({ tdee, goalType, dailyDeficit }),
+    [tdee, goalType, dailyDeficit]
+  );
+
+  const proteinTarget = useMemo(
+    () => calculateProteinTargetLocal({ goalType, weight }),
+    [goalType, weight]
+  );
+
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
-  const totalProtein = entries.reduce((sum, item) => sum + Number(item.protein || 0), 0);
-  const totalCarbs = entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0);
-  const totalFat = entries.reduce((sum, item) => sum + Number(item.fat || 0), 0);
+  const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
+  const totalCarbs = round1(entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0));
+  const totalFat = round1(entries.reduce((sum, item) => sum + Number(item.fat || 0), 0));
   const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
 
   const remainingCalories = targetCalories - totalCalories + exerciseValue;
-
-  const progress = targetCalories
-    ? Math.min((totalCalories / targetCalories) * 100, 100)
-    : 0;
+  const progress = targetCalories ? Math.min((totalCalories / targetCalories) * 100, 100) : 0;
 
   const groupedEntries = useMemo(() => {
     return MEALS.reduce((acc, meal) => {
       const items = entries.filter((item) => item.mealType === meal);
       acc[meal] = {
         items,
-        total: items.reduce((sum, item) => sum + Number(item.calories || 0), 0)
+        totalCalories: items.reduce((sum, item) => sum + Number(item.calories || 0), 0),
+        totalProtein: round1(items.reduce((sum, item) => sum + Number(item.protein || 0), 0)),
+        totalCarbs: round1(items.reduce((sum, item) => sum + Number(item.carbs || 0), 0)),
+        totalFat: round1(items.reduce((sum, item) => sum + Number(item.fat || 0), 0))
       };
       return acc;
     }, {});
@@ -462,932 +387,136 @@ export default function App() {
 
   const isToday = selectedDate === getTodayKey();
 
+  const favoriteFoods = useMemo(() => {
+    return foods.filter((food) => isFavorite(food)).slice(0, 8);
+  }, [foods, favoriteFoodKeys]);
+
+  const summaryProps = {
+    selectedDate,
+    setSelectedDate,
+    isToday,
+    targetCalories,
+    totalCalories,
+    exerciseValue,
+    remainingCalories,
+    progress,
+    goalType,
+    proteinTarget,
+    totalProtein,
+    last7Days
+  };
+
+  const foodProps = {
+    foods,
+    setFoods,
+    recentFoods,
+    favoriteFoods,
+    isFavorite,
+    toggleFavorite,
+    addCustomFood,
+    saveRecentFood,
+    updateCurrentDay,
+    quickAddRecent,
+    quickAddFavorite
+  };
+
+  const exerciseProps = {
+    exercises,
+    exerciseValue,
+    exerciseMinutes,
+    setExerciseMinutes,
+    customExerciseName,
+    setCustomExerciseName,
+    customExerciseMinutes,
+    setCustomExerciseMinutes,
+    customExerciseRate,
+    setCustomExerciseRate,
+    addExerciseByMinutes,
+    addCustomExercise,
+    deleteExercise
+  };
+
+  const dayProps = {
+    entries,
+    groupedEntries,
+    clearAll,
+    deleteEntry,
+    openEditEntry
+  };
+
+  const profileProps = {
+    age,
+    setAge,
+    gender,
+    setGender,
+    height,
+    setHeight,
+    weight,
+    setWeight,
+    activity,
+    setActivity,
+    goalType,
+    setGoalType,
+    targetWeightLoss,
+    setTargetWeightLoss,
+    weeks,
+    setWeeks,
+    bmr,
+    tdee,
+    targetCalories,
+    dailyDeficit,
+    proteinTarget
+  };
+
   return (
-    <div style={page}>
-      <div style={container}>
-        <div style={{ marginBottom: 18 }}>
-          <h1 style={title}>FuelTrack</h1>
-          <p style={subtitle}>Θερμίδες, άσκηση, φαγητό, γραμμάρια και αναζήτηση βάσης</p>
+    <div className="app-shell">
+      <div className="app-container">
+        <div className="app-header">
+          <h1>FuelTrack</h1>
+          <p>Απλό, καθαρό working version</p>
         </div>
 
-        <div style={heroCard}>
-          <div style={dateToolbar}>
-            <button style={navBtn} onClick={() => setSelectedDate((prev) => shiftDate(prev, -1))}>
-              ←
-            </button>
+        {activeTab === "summary" && <SummaryTab {...summaryProps} />}
+        {activeTab === "food" && <FoodTab {...foodProps} />}
+        {activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
+        {activeTab === "day" && <DayTab {...dayProps} />}
+        {activeTab === "profile" && <ProfileTab {...profileProps} />}
 
-            <div style={{ flex: 1 }}>
-              <div style={heroLabel}>Επιλεγμένη ημέρα</div>
-              <div style={heroDate}>{formatDisplayDate(selectedDate)}</div>
-              <div style={heroDateSmall}>{selectedDate}</div>
-            </div>
-
-            <button style={navBtn} onClick={() => setSelectedDate((prev) => shiftDate(prev, 1))}>
-              →
-            </button>
-          </div>
-
-          <div style={heroActions}>
-            <button
-              style={isToday ? todayBtnActive : todayBtn}
-              onClick={() => setSelectedDate(getTodayKey())}
-            >
-              Σήμερα
-            </button>
-
-            <input
-              style={dateInput}
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
-
-          <div style={heroTop}>
-            <div>
-              <div style={heroLabel}>Υπόλοιπο ημέρας</div>
-              <div
-                style={{
-                  ...heroValue,
-                  color: remainingCalories >= 0 ? "#86efac" : "#fca5a5"
-                }}
-              >
-                {formatNumber(remainingCalories)} kcal
-              </div>
-            </div>
-
-            <div style={heroPill}>
-              {goalType === "lose" ? "Cut" : "Maintain"}
-            </div>
-          </div>
-
-          <div style={dashboardGrid}>
-            <div style={statBoxDark}>
-              <div style={statLabelDark}>Στόχος</div>
-              <div style={statValueDark}>{formatNumber(targetCalories)}</div>
-            </div>
-            <div style={statBoxDark}>
-              <div style={statLabelDark}>Έφαγες</div>
-              <div style={statValueDark}>{formatNumber(totalCalories)}</div>
-            </div>
-            <div style={statBoxDark}>
-              <div style={statLabelDark}>Άσκηση</div>
-              <div style={statValueDark}>+{formatNumber(exerciseValue)}</div>
-            </div>
-            <div style={statBoxDark}>
-              <div style={statLabelDark}>Entries</div>
-              <div style={statValueDark}>{entries.length}</div>
-            </div>
-          </div>
-
-          <div style={sectionLabelDark}>Πρόοδος θερμίδων</div>
-          <div style={progressOuterDark}>
-            <div style={{ ...progressInnerDark, width: `${progress}%` }} />
-          </div>
-          <div style={progressTextDark}>
-            {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
-          </div>
-        </div>
-
-        <div style={card}>
-          <h2 style={h2}>Profile</h2>
-
-          <div style={grid2}>
-            <input
-              style={input}
-              placeholder="Ηλικία"
-              inputMode="numeric"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-            />
-            <select style={input} value={gender} onChange={(e) => setGender(e.target.value)}>
-              <option value="male">Άνδρας</option>
-              <option value="female">Γυναίκα</option>
-            </select>
-          </div>
-
-          <div style={grid2}>
-            <input
-              style={input}
-              placeholder="Ύψος (cm)"
-              inputMode="numeric"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-            />
-            <input
-              style={input}
-              placeholder="Βάρος (kg)"
-              inputMode="decimal"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
-          </div>
-
-          <div style={smallLabel}>Activity level</div>
-          <select style={input} value={activity} onChange={(e) => setActivity(e.target.value)}>
-            <option value="1.2">Καθιστική</option>
-            <option value="1.4">Light</option>
-            <option value="1.6">Moderate</option>
-            <option value="1.8">High</option>
-          </select>
-
-          <div style={smallLabel}>Στόχος</div>
-          <select style={input} value={goalType} onChange={(e) => setGoalType(e.target.value)}>
-            <option value="maintain">Συντήρηση</option>
-            <option value="lose">Απώλεια βάρους</option>
-          </select>
-
-          {goalType === "lose" && (
-            <div style={grid2}>
-              <input
-                style={input}
-                placeholder="Κιλά να χάσω"
-                inputMode="decimal"
-                value={targetWeightLoss}
-                onChange={(e) => setTargetWeightLoss(e.target.value)}
-              />
-              <input
-                style={input}
-                placeholder="Σε πόσες εβδομάδες"
-                inputMode="numeric"
-                value={weeks}
-                onChange={(e) => setWeeks(e.target.value)}
-              />
-            </div>
-          )}
-
-          <div style={infoBox}>
-            <div>BMR: <strong>{formatNumber(bmr)} kcal</strong></div>
-            <div>Maintenance: <strong>{formatNumber(tdee)} kcal</strong></div>
-            <div>Target: <strong>{formatNumber(targetCalories)} kcal</strong></div>
-            {goalType === "lose" && dailyDeficit > 0 && (
-              <div>Ημερήσιο deficit: <strong>{formatNumber(dailyDeficit)} kcal</strong></div>
-            )}
-          </div>
-        </div>
-
-        <div style={card}>
-          <h2 style={h2}>Άσκηση με λεπτά</h2>
-          <div style={helperText}>
-            Δίνεις λεπτά και το app υπολογίζει μόνο του τις θερμίδες.
-          </div>
-
-          <div style={exerciseGrid}>
-            {EXERCISE_LIBRARY.map((exercise) => (
-              <div key={exercise.name} style={exercisePresetCard}>
-                <div style={exercisePresetName}>{exercise.name}</div>
-                <div style={exercisePresetCalories}>
-                  {exercise.caloriesPerMinute} kcal / λεπτό
-                </div>
-
-                <div style={exercisePresetControls}>
-                  <input
-                    style={{ ...input, marginBottom: 0 }}
-                    type="number"
-                    min="1"
-                    placeholder="Λεπτά"
-                    value={exerciseMinutes[exercise.name] || ""}
-                    onChange={(e) =>
-                      setExerciseMinutes((prev) => ({
-                        ...prev,
-                        [exercise.name]: e.target.value
-                      }))
-                    }
-                  />
-                  <button
-                    style={darkBtn}
-                    onClick={() =>
-                      addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])
-                    }
-                  >
-                    Προσθήκη
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ marginTop: 16 }}>
-            <div style={smallLabel}>Χειροκίνητη άσκηση με αναλογία</div>
-            <input
-              style={input}
-              placeholder="Όνομα άσκησης"
-              value={customExerciseName}
-              onChange={(e) => setCustomExerciseName(e.target.value)}
-            />
-            <div style={grid2}>
-              <input
-                style={input}
-                placeholder="Λεπτά"
-                inputMode="numeric"
-                value={customExerciseMinutes}
-                onChange={(e) => setCustomExerciseMinutes(e.target.value)}
-              />
-              <input
-                style={input}
-                placeholder="kcal / λεπτό"
-                inputMode="decimal"
-                value={customExerciseRate}
-                onChange={(e) => setCustomExerciseRate(e.target.value)}
-              />
-            </div>
-            <button style={fullBtn} onClick={addCustomExercise}>
-              Προσθήκη custom άσκησης
-            </button>
-          </div>
-
-          <div style={{ marginTop: 18 }}>
-            <div style={sectionTop}>
-              <h3 style={{ margin: 0, fontSize: 18, color: "#111827" }}>Ασκήσεις ημέρας</h3>
-              <div style={mealBadge}>+{formatNumber(exerciseValue)} kcal</div>
-            </div>
-
-            {exercises.length === 0 ? (
-              <div style={emptyState}>Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
-            ) : (
-              exercises.map((item) => (
-                <div key={item.id} style={foodRow}>
-                  <div style={{ flex: 1 }}>
-                    <div style={foodName}>{item.name}</div>
-                    <div style={muted}>
-                      {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +{formatNumber(item.calories)} kcal
-                    </div>
-                  </div>
-
-                  <button style={deleteBtn} onClick={() => deleteExercise(item.id)}>
-                    Χ
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div style={card}>
-          <h2 style={h2}>Macros ημέρας</h2>
-
-          <div style={dashboardGrid}>
-            <div style={statBox}>
-              <div style={statLabel}>Protein</div>
-              <div style={statValue}>{formatNumber(totalProtein)}g</div>
-            </div>
-            <div style={statBox}>
-              <div style={statLabel}>Carbs</div>
-              <div style={statValue}>{formatNumber(totalCarbs)}g</div>
-            </div>
-            <div style={statBox}>
-              <div style={statLabel}>Fat</div>
-              <div style={statValue}>{formatNumber(totalFat)}g</div>
-            </div>
-            <div style={statBox}>
-              <div style={statLabel}>Calories</div>
-              <div style={statValue}>{formatNumber(totalCalories)}</div>
-            </div>
-          </div>
-        </div>
-
-        <div style={card}>
-          <div style={sectionTop}>
-            <h2 style={{ ...h2, marginBottom: 0 }}>Αναζήτηση φαγητού</h2>
-            {query ? (
-              <button
-                style={ghostBtn}
-                onClick={() => {
-                  setQuery("");
-                  setApiFoods([]);
-                }}
-              >
-                Καθαρισμός
-              </button>
-            ) : null}
-          </div>
-
-          <input
-            style={input}
-            placeholder="Γράψε φαγητό"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-
-          <div style={grid2}>
-            <div>
-              <div style={smallLabel}>Γραμμάρια</div>
-              <input
-                style={input}
-                type="number"
-                min="1"
-                value={foodGrams}
-                onChange={(e) => setFoodGrams(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <div style={smallLabel}>Γεύμα</div>
-              <select
-                style={input}
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-              >
-                {MEALS.map((meal) => (
-                  <option key={meal}>{meal}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {apiLoading ? (
-            <div style={helperText}>Αναζήτηση στη βάση...</div>
-          ) : null}
-
-          {filteredFoods.length === 0 ? (
-            <div style={emptyState}>Δεν βρέθηκε φαγητό.</div>
-          ) : (
-            filteredFoods.map((food) => (
-              <div key={`${food.source}-${food.id}`} style={foodRow}>
-                <div style={{ flex: 1 }}>
-                  <div style={foodName}>
-                    {food.name}
-                    {food.brand ? ` · ${food.brand}` : ""}
-                  </div>
-                  <div style={muted}>
-                    {food.caloriesPer100g} kcal / 100g · P {food.proteinPer100g || 0} · C {food.carbsPer100g || 0} · F {food.fatPer100g || 0}
-                  </div>
-                </div>
-
-                <button style={darkBtn} onClick={() => addFood(food)}>
-                  Προσθήκη
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div style={card}>
-          <h2 style={h2}>Νέο φαγητό</h2>
-
-          <div style={helperText}>
-            Βάλε macros ανά 100g.
-          </div>
-
-          <input
-            style={input}
-            placeholder="Όνομα"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-          />
-
-          <input
-            style={input}
-            placeholder="Θερμίδες / 100g"
-            type="number"
-            value={newCalories}
-            onChange={(e) => setNewCalories(e.target.value)}
-          />
-
-          <div style={grid3}>
-            <input
-              style={input}
-              placeholder="Protein / 100g"
-              type="number"
-              value={newProtein}
-              onChange={(e) => setNewProtein(e.target.value)}
-            />
-            <input
-              style={input}
-              placeholder="Carbs / 100g"
-              type="number"
-              value={newCarbs}
-              onChange={(e) => setNewCarbs(e.target.value)}
-            />
-            <input
-              style={input}
-              placeholder="Fat / 100g"
-              type="number"
-              value={newFat}
-              onChange={(e) => setNewFat(e.target.value)}
-            />
-          </div>
-
-          <button style={fullBtn} onClick={addCustomFood}>
-            Προσθήκη φαγητού
-          </button>
-        </div>
-
-        <div style={card}>
-          <div style={sectionTop}>
-            <h2 style={{ ...h2, marginBottom: 0 }}>Ημέρα</h2>
-            <button style={clearBtn} onClick={clearAll}>
-              Καθαρισμός ημέρας
-            </button>
-          </div>
-
-          {entries.length === 0 ? (
-            <div style={emptyState}>Δεν έχεις προσθέσει κάτι ακόμα για αυτή την ημέρα.</div>
-          ) : (
-            MEALS.map((meal) => (
-              <div key={meal} style={{ marginBottom: 18 }}>
-                <div style={mealHeader}>
-                  <h3 style={mealTitle}>{meal}</h3>
-                  <div style={mealBadge}>
-                    {formatNumber(groupedEntries[meal].total)} kcal
-                  </div>
-                </div>
-
-                {groupedEntries[meal].items.length === 0 ? (
-                  <div style={muted}>—</div>
-                ) : (
-                  groupedEntries[meal].items.map((item) => (
-                    <div key={item.id} style={foodRow}>
-                      <div style={{ flex: 1 }}>
-                        <div style={foodName}>
-                          {item.name}
-                          {item.brand ? ` · ${item.brand}` : ""}
-                        </div>
-                        <div style={muted}>
-                          {item.grams}g · {item.calories} kcal · P {item.protein} · C {item.carbs} · F {item.fat}
-                        </div>
-                      </div>
-
-                      <button style={deleteBtn} onClick={() => deleteEntry(item.id)}>
-                        Χ
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            ))
-          )}
-        </div>
-
-        <div style={card}>
-          <h2 style={h2}>Τελευταίες 7 ημέρες</h2>
-
-          {last7Days.map((day) => (
-            <button
-              key={day.date}
-              style={{
-                ...historyRow,
-                border: day.date === selectedDate ? "2px solid #111827" : "1px solid #e5e7eb"
-              }}
-              onClick={() => setSelectedDate(day.date)}
-            >
-              <div>
-                <div style={historyDate}>{formatDisplayDate(day.date)}</div>
-                <div style={muted}>{day.date}</div>
-              </div>
-
-              <div style={historyStats}>
-                <div style={historyItem}>🍽 {formatNumber(day.eaten)}</div>
-                <div style={historyItem}>🏃 +{formatNumber(day.exercise)}</div>
-                <div
-                  style={{
-                    ...historyItem,
-                    color: day.remaining >= 0 ? "#166534" : "#b91c1c",
-                    fontWeight: 700
-                  }}
-                >
-                  Υπόλ. {formatNumber(day.remaining)}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+        <div style={{ height: 110 }} />
       </div>
+
+      <FabButton onClick={() => setShowQuickActions(true)} />
+      <BottomNav tabs={APP_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+      {showQuickActions && (
+        <QuickActionsModal
+          onClose={() => setShowQuickActions(false)}
+          onOpenFood={() => {
+            setActiveTab("food");
+            setShowQuickActions(false);
+          }}
+          onOpenExercise={() => {
+            setActiveTab("exercise");
+            setShowQuickActions(false);
+          }}
+          onOpenDay={() => {
+            setActiveTab("day");
+            setShowQuickActions(false);
+          }}
+        />
+      )}
+
+      {editingEntry && (
+        <EditEntryModal
+          entry={editingEntry}
+          grams={editEntryGrams}
+          setGrams={setEditEntryGrams}
+          meal={editEntryMeal}
+          setMeal={setEditEntryMeal}
+          onClose={closeEditEntry}
+          onSave={saveEditedEntry}
+        />
+      )}
     </div>
   );
 }
-
-const page = {
-  minHeight: "100vh",
-  background: "linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)",
-  padding: 16,
-  fontFamily: "Arial, sans-serif"
-};
-
-const container = {
-  maxWidth: 720,
-  margin: "0 auto"
-};
-
-const title = {
-  marginTop: 0,
-  marginBottom: 8,
-  fontSize: 30,
-  color: "#111827"
-};
-
-const subtitle = {
-  marginTop: 0,
-  color: "#6b7280",
-  marginBottom: 0,
-  fontSize: 15
-};
-
-const heroCard = {
-  background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)",
-  borderRadius: 22,
-  padding: 18,
-  marginBottom: 16,
-  boxShadow: "0 10px 30px rgba(0,0,0,0.16)"
-};
-
-const dateToolbar = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  marginBottom: 12
-};
-
-const navBtn = {
-  width: 42,
-  height: 42,
-  borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.14)",
-  background: "rgba(255,255,255,0.08)",
-  color: "white",
-  fontSize: 18,
-  cursor: "pointer"
-};
-
-const heroActions = {
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  flexWrap: "wrap",
-  marginBottom: 16
-};
-
-const todayBtn = {
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.14)",
-  background: "rgba(255,255,255,0.08)",
-  color: "white",
-  cursor: "pointer",
-  fontWeight: 600
-};
-
-const todayBtnActive = {
-  ...todayBtn,
-  background: "white",
-  color: "#111827"
-};
-
-const dateInput = {
-  padding: "10px 12px",
-  borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.14)",
-  background: "rgba(255,255,255,0.08)",
-  color: "white",
-  fontSize: 14
-};
-
-const heroTop = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 12,
-  marginBottom: 16
-};
-
-const heroLabel = {
-  fontSize: 14,
-  color: "rgba(255,255,255,0.7)",
-  marginBottom: 6
-};
-
-const heroDate = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: "white"
-};
-
-const heroDateSmall = {
-  fontSize: 13,
-  color: "rgba(255,255,255,0.6)"
-};
-
-const heroValue = {
-  fontSize: 30,
-  fontWeight: "bold",
-  lineHeight: 1.1
-};
-
-const heroPill = {
-  background: "rgba(255,255,255,0.12)",
-  color: "white",
-  border: "1px solid rgba(255,255,255,0.14)",
-  borderRadius: 999,
-  padding: "8px 12px",
-  fontSize: 13,
-  whiteSpace: "nowrap"
-};
-
-const card = {
-  background: "white",
-  borderRadius: 20,
-  padding: 18,
-  marginBottom: 16,
-  boxShadow: "0 8px 24px rgba(15,23,42,0.06)"
-};
-
-const h2 = {
-  marginTop: 0,
-  fontSize: 22,
-  color: "#111827"
-};
-
-const input = {
-  width: "100%",
-  padding: 13,
-  borderRadius: 12,
-  border: "1px solid #d1d5db",
-  boxSizing: "border-box",
-  marginBottom: 10,
-  fontSize: 16,
-  background: "white"
-};
-
-const grid2 = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10
-};
-
-const grid3 = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
-  gap: 10
-};
-
-const dashboardGrid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10,
-  marginBottom: 12
-};
-
-const statBox = {
-  background: "#f8fafc",
-  padding: 14,
-  borderRadius: 14,
-  border: "1px solid #eef2f7"
-};
-
-const statBoxDark = {
-  background: "rgba(255,255,255,0.08)",
-  padding: 14,
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,0.08)"
-};
-
-const statLabel = {
-  fontSize: 13,
-  color: "#6b7280",
-  marginBottom: 6
-};
-
-const statLabelDark = {
-  fontSize: 13,
-  color: "rgba(255,255,255,0.7)",
-  marginBottom: 6
-};
-
-const statValue = {
-  fontSize: 22,
-  fontWeight: "bold",
-  color: "#111827"
-};
-
-const statValueDark = {
-  fontSize: 22,
-  fontWeight: "bold",
-  color: "white"
-};
-
-const progressOuterDark = {
-  width: "100%",
-  height: 12,
-  background: "rgba(255,255,255,0.15)",
-  borderRadius: 999,
-  overflow: "hidden"
-};
-
-const progressInnerDark = {
-  height: "100%",
-  background: "#22c55e",
-  borderRadius: 999
-};
-
-const progressTextDark = {
-  marginTop: 8,
-  fontSize: 13,
-  color: "rgba(255,255,255,0.75)"
-};
-
-const infoBox = {
-  background: "#f8fafc",
-  padding: 14,
-  borderRadius: 14,
-  marginTop: 8,
-  lineHeight: 1.8,
-  border: "1px solid #eef2f7"
-};
-
-const foodRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 12,
-  padding: "12px 0",
-  borderBottom: "1px solid #edf2f7"
-};
-
-const foodName = {
-  fontWeight: 600,
-  color: "#111827"
-};
-
-const darkBtn = {
-  background: "#111827",
-  color: "white",
-  border: "none",
-  borderRadius: 10,
-  padding: "10px 12px",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-  fontWeight: 600
-};
-
-const deleteBtn = {
-  background: "#b91c1c",
-  color: "white",
-  border: "none",
-  borderRadius: 10,
-  padding: "9px 11px",
-  cursor: "pointer",
-  fontWeight: 700
-};
-
-const fullBtn = {
-  width: "100%",
-  padding: 13,
-  background: "#111827",
-  color: "white",
-  border: "none",
-  borderRadius: 12,
-  cursor: "pointer",
-  fontSize: 15,
-  fontWeight: 700
-};
-
-const clearBtn = {
-  padding: "10px 12px",
-  background: "#7f1d1d",
-  color: "white",
-  border: "none",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600
-};
-
-const ghostBtn = {
-  padding: "9px 12px",
-  background: "#f3f4f6",
-  color: "#111827",
-  border: "1px solid #e5e7eb",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600
-};
-
-const muted = {
-  color: "#6b7280",
-  fontSize: 13
-};
-
-const smallLabel = {
-  fontSize: 14,
-  marginBottom: 6,
-  color: "#374151"
-};
-
-const sectionLabelDark = {
-  fontSize: 14,
-  marginBottom: 8,
-  color: "rgba(255,255,255,0.85)",
-  fontWeight: 600
-};
-
-const helperText = {
-  color: "#6b7280",
-  fontSize: 14,
-  marginBottom: 12
-};
-
-const emptyState = {
-  color: "#6b7280",
-  fontSize: 14,
-  padding: "8px 0"
-};
-
-const sectionTop = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 12,
-  marginBottom: 12,
-  flexWrap: "wrap"
-};
-
-const mealHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 12,
-  marginBottom: 8
-};
-
-const mealTitle = {
-  margin: 0,
-  fontSize: 18,
-  color: "#111827"
-};
-
-const mealBadge = {
-  fontSize: 14,
-  fontWeight: 700,
-  color: "#374151",
-  background: "#f3f4f6",
-  padding: "6px 10px",
-  borderRadius: 999
-};
-
-const historyRow = {
-  width: "100%",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 12,
-  textAlign: "left",
-  background: "white",
-  borderRadius: 14,
-  padding: 14,
-  marginBottom: 10,
-  cursor: "pointer"
-};
-
-const historyDate = {
-  fontSize: 16,
-  fontWeight: 700,
-  color: "#111827",
-  marginBottom: 4
-};
-
-const historyStats = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-  alignItems: "flex-end"
-};
-
-const historyItem = {
-  fontSize: 13,
-  color: "#374151"
-};
-
-const exerciseGrid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10
-};
-
-const exercisePresetCard = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 14,
-  padding: 14,
-  background: "#f8fafc"
-};
-
-const exercisePresetName = {
-  fontWeight: 700,
-  color: "#111827",
-  marginBottom: 4,
-  fontSize: 14
-};
-
-const exercisePresetCalories = {
-  color: "#166534",
-  fontSize: 13,
-  fontWeight: 600,
-  marginBottom: 10
-};
-
-const exercisePresetControls = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  gap: 8,
-  alignItems: "center"
-};
