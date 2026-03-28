@@ -3,6 +3,7 @@ import BottomNav from "./components/BottomNav";
 import FabButton from "./components/FabButton";
 import QuickActionsModal from "./components/QuickActionsModal";
 import EditEntryModal from "./components/EditEntryModal";
+import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
@@ -34,7 +35,7 @@ export default function App() {
   const [height, setHeight] = useState(() => loadValue("ft_height", ""));
   const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
   const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
-  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "maintain"));
+  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "lose"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() =>
     loadValue("ft_targetWeightLoss", "")
   );
@@ -64,6 +65,10 @@ export default function App() {
   const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
   const [customExerciseRate, setCustomExerciseRate] = useState("");
 
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(() =>
+    loadValue("ft_hasSeenWelcome", "false") === "true"
+  );
+
   const profileComplete = useMemo(() => {
     return (
       String(age).trim() !== "" &&
@@ -76,13 +81,14 @@ export default function App() {
   }, [age, gender, height, weight, activity, goalType]);
 
   const [activeTab, setActiveTab] = useState(() => {
-    const savedTab = loadValue("ft_activeTab", "summary");
     const savedAge = loadValue("ft_age", "");
     const savedGender = loadValue("ft_gender", "male");
     const savedHeight = loadValue("ft_height", "");
     const savedWeight = loadValue("ft_weight", "");
     const savedActivity = loadValue("ft_activity", "1.4");
-    const savedGoalType = loadValue("ft_goalType", "maintain");
+    const savedGoalType = loadValue("ft_goalType", "lose");
+    const savedHasSeenWelcome = loadValue("ft_hasSeenWelcome", "false") === "true";
+    const savedTab = loadValue("ft_activeTab", "summary");
 
     const savedProfileComplete =
       String(savedAge).trim() !== "" &&
@@ -92,13 +98,12 @@ export default function App() {
       String(savedActivity).trim() !== "" &&
       String(savedGoalType).trim() !== "";
 
-    return savedProfileComplete ? savedTab : "profile";
+    if (!savedHasSeenWelcome) return "welcome";
+    if (!savedProfileComplete) return "profile";
+    return savedTab;
   });
 
-  useEffect(() => {
-    saveValue("ft_selectedDate", selectedDate);
-  }, [selectedDate]);
-
+  useEffect(() => saveValue("ft_selectedDate", selectedDate), [selectedDate]);
   useEffect(() => saveValue("ft_age", age), [age]);
   useEffect(() => saveValue("ft_gender", gender), [gender]);
   useEffect(() => saveValue("ft_height", height), [height]);
@@ -111,16 +116,23 @@ export default function App() {
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+  useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
   useEffect(() => {
-    if (!profileComplete && activeTab !== "profile") {
+    if (!hasSeenWelcome && activeTab !== "welcome") {
+      setActiveTab("welcome");
+      return;
+    }
+
+    if (hasSeenWelcome && !profileComplete && activeTab !== "profile") {
       setActiveTab("profile");
       return;
     }
 
-    const tabToSave = profileComplete ? activeTab : "profile";
-    saveValue("ft_activeTab", tabToSave);
-  }, [activeTab, profileComplete]);
+    if (hasSeenWelcome && profileComplete) {
+      saveValue("ft_activeTab", activeTab);
+    }
+  }, [activeTab, hasSeenWelcome, profileComplete]);
 
   const currentDayLog = normalizeDayLog(dailyLogs[selectedDate]);
   const entries = currentDayLog.entries;
@@ -310,6 +322,11 @@ export default function App() {
     return favoriteFoodKeys.includes(key);
   }
 
+  function startOnboarding() {
+    setHasSeenWelcome(true);
+    setActiveTab("profile");
+  }
+
   function goToSummaryAfterProfile() {
     if (!profileComplete) return;
     setActiveTab("summary");
@@ -464,50 +481,47 @@ export default function App() {
     onContinue: goToSummaryAfterProfile
   };
 
+  const showWelcome = !hasSeenWelcome;
+  const showProfile = hasSeenWelcome && !profileComplete;
+  const appReady = hasSeenWelcome && profileComplete;
+
   return (
     <div className="app-shell">
       <div className="app-container">
         <div className="app-header">
           <h1>FuelTrack</h1>
           <p>
-            {!profileComplete
+            {showWelcome
+              ? "Welcome"
+              : showProfile
               ? "Ξεκίνα συμπληρώνοντας το προφίλ σου"
               : "Απλό, καθαρό working version"}
           </p>
         </div>
 
-        {!profileComplete && activeTab !== "profile" && (
-          <div className="card">
-            <div className="muted">
-              Συμπλήρωσε πρώτα το προφίλ σου για να υπολογιστούν σωστά οι στόχοι σου.
-            </div>
-          </div>
-        )}
+        {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
+        {showProfile && <ProfileTab {...profileProps} />}
 
-        {activeTab === "summary" && <SummaryTab {...summaryProps} />}
-        {activeTab === "food" && <FoodTab {...foodProps} />}
-        {activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
-        {activeTab === "day" && <DayTab {...dayProps} />}
-        {activeTab === "profile" && <ProfileTab {...profileProps} />}
+        {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
+        {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
+        {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
+        {appReady && activeTab === "day" && <DayTab {...dayProps} />}
+        {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
 
         <div style={{ height: 110 }} />
       </div>
 
-      {profileComplete && <FabButton onClick={() => setShowQuickActions(true)} />}
+      {appReady && <FabButton onClick={() => setShowQuickActions(true)} />}
 
-      <BottomNav
-        tabs={APP_TABS}
-        activeTab={activeTab}
-        onChange={(tab) => {
-          if (!profileComplete && tab !== "profile") {
-            setActiveTab("profile");
-            return;
-          }
-          setActiveTab(tab);
-        }}
-      />
+      {appReady && (
+        <BottomNav
+          tabs={APP_TABS}
+          activeTab={activeTab}
+          onChange={(tab) => setActiveTab(tab)}
+        />
+      )}
 
-      {showQuickActions && profileComplete && (
+      {showQuickActions && appReady && (
         <QuickActionsModal
           onClose={() => setShowQuickActions(false)}
           onOpenFood={() => {
