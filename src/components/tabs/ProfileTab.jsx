@@ -33,10 +33,10 @@ export default function ProfileTab({
 
       {!profileComplete && (
         <div className="soft-box" style={{ marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Ξεκίνα από εδώ</div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Συμπλήρωσε πρώτα το προφίλ σου</div>
           <div className="muted">
-            Συμπλήρωσε πρώτα το προφίλ σου για να υπολογιστούν σωστά οι θερμίδες και οι στόχοι
-            σου.
+            Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά στόχο θερμίδων και
+            πρωτεΐνης.
           </div>
         </div>
       )}
@@ -90,8 +90,8 @@ export default function ProfileTab({
             Στόχος
           </div>
           <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
-            <option value="maintain">Maintain</option>
             <option value="lose">Lose weight</option>
+            <option value="maintain">Maintain</option>
             <option value="gain">Muscle gain</option>
           </select>
         </div>
@@ -145,11 +145,11 @@ export default function ProfileTab({
       </div>
 
       <div className="muted" style={{ marginTop: 12 }}>
-        {goalType === "maintain" &&
-          "Στόχος: να διατηρείς περίπου το βάρος σου, με ημερήσιο στόχο κοντά στο TDEE σου."}
-
         {goalType === "lose" &&
           "Στόχος: να τρως κάτω από το TDEE σου με ελεγχόμενο ημερήσιο έλλειμμα θερμίδων."}
+
+        {goalType === "maintain" &&
+          "Στόχος: να διατηρείς περίπου το βάρος σου, με ημερήσιο στόχο κοντά στο TDEE σου."}
 
         {goalType === "gain" &&
           "Στόχος: να υποστηρίζεις μυϊκή ανάπτυξη με περίπου 300 kcal πάνω από το TDEE σου και αυξημένη πρωτεΐνη."}
