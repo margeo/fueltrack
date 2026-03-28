@@ -17,68 +17,14 @@ import {
   round1,
   shiftDate,
   calculateBmr,
-  entryBasePer100g
+  entryBasePer100g,
+  calculateDailyDeficit,
+  calculateTargetCalories,
+  calculateProteinTarget
 } from "./utils/helpers";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
-function calculateDailyDeficitLocal({ goalType, targetWeightLoss, weeks }) {
-  if (goalType !== "lose") return 0;
-
-  const kg = Number(targetWeightLoss) || 0;
-  const weeksValue = Number(weeks) || 0;
-
-  if (kg <= 0 || weeksValue <= 0) return 300;
-
-  const totalCaloriesToLose = kg * 7700;
-  const days = weeksValue * 7;
-  const deficit = totalCaloriesToLose / days;
-
-  return Math.max(150, Math.min(Math.round(deficit), 1000));
-}
-
-function calculateTargetCaloriesLocal({ tdee, goalType, dailyDeficit }) {
-  const safeTdee = Number(tdee) || 0;
-
-  switch (goalType) {
-    case "maintain":
-      return Math.round(safeTdee);
-
-    case "lose":
-      return Math.max(1200, Math.round(safeTdee - dailyDeficit));
-
-    case "gain":
-      return Math.round(safeTdee + 300);
-
-    case "fitness":
-      return Math.round(safeTdee);
-
-    default:
-      return Math.round(safeTdee);
-  }
-}
-
-function calculateProteinTargetLocal({ goalType, weight }) {
-  const weightKg = Number(weight) || 0;
-  if (!weightKg) return 0;
-
-  switch (goalType) {
-    case "lose":
-      return Math.round(weightKg * 1.8);
-
-    case "gain":
-      return Math.round(weightKg * 2.0);
-
-    case "fitness":
-      return Math.round(weightKg * 1.6);
-
-    case "maintain":
-    default:
-      return Math.round(weightKg * 1.4);
-  }
-}
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState(() => loadValue("ft_activeTab", "summary"));
   const [selectedDate, setSelectedDate] = useState(() =>
     loadValue("ft_selectedDate", getTodayKey())
   );
@@ -118,8 +64,41 @@ export default function App() {
   const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
   const [customExerciseRate, setCustomExerciseRate] = useState("");
 
-  useEffect(() => saveValue("ft_activeTab", activeTab), [activeTab]);
-  useEffect(() => saveValue("ft_selectedDate", selectedDate), [selectedDate]);
+  const profileComplete = useMemo(() => {
+    return (
+      String(age).trim() !== "" &&
+      String(gender).trim() !== "" &&
+      String(height).trim() !== "" &&
+      String(weight).trim() !== "" &&
+      String(activity).trim() !== "" &&
+      String(goalType).trim() !== ""
+    );
+  }, [age, gender, height, weight, activity, goalType]);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = loadValue("ft_activeTab", "summary");
+    const savedAge = loadValue("ft_age", "");
+    const savedGender = loadValue("ft_gender", "male");
+    const savedHeight = loadValue("ft_height", "");
+    const savedWeight = loadValue("ft_weight", "");
+    const savedActivity = loadValue("ft_activity", "1.4");
+    const savedGoalType = loadValue("ft_goalType", "maintain");
+
+    const savedProfileComplete =
+      String(savedAge).trim() !== "" &&
+      String(savedGender).trim() !== "" &&
+      String(savedHeight).trim() !== "" &&
+      String(savedWeight).trim() !== "" &&
+      String(savedActivity).trim() !== "" &&
+      String(savedGoalType).trim() !== "";
+
+    return savedProfileComplete ? savedTab : "profile";
+  });
+
+  useEffect(() => {
+    saveValue("ft_selectedDate", selectedDate);
+  }, [selectedDate]);
+
   useEffect(() => saveValue("ft_age", age), [age]);
   useEffect(() => saveValue("ft_gender", gender), [gender]);
   useEffect(() => saveValue("ft_height", height), [height]);
@@ -132,6 +111,16 @@ export default function App() {
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+
+  useEffect(() => {
+    if (!profileComplete && activeTab !== "profile") {
+      setActiveTab("profile");
+      return;
+    }
+
+    const tabToSave = profileComplete ? activeTab : "profile";
+    saveValue("ft_activeTab", tabToSave);
+  }, [activeTab, profileComplete]);
 
   const currentDayLog = normalizeDayLog(dailyLogs[selectedDate]);
   const entries = currentDayLog.entries;
@@ -321,6 +310,11 @@ export default function App() {
     return favoriteFoodKeys.includes(key);
   }
 
+  function goToSummaryAfterProfile() {
+    if (!profileComplete) return;
+    setActiveTab("summary");
+  }
+
   const bmr = useMemo(() => calculateBmr({ age, height, weight, gender }), [
     age,
     height,
@@ -331,17 +325,17 @@ export default function App() {
   const tdee = useMemo(() => Math.round(bmr * Number(activity || 1.4)), [bmr, activity]);
 
   const dailyDeficit = useMemo(
-    () => calculateDailyDeficitLocal({ goalType, targetWeightLoss, weeks }),
+    () => calculateDailyDeficit({ goalType, targetWeightLoss, weeks }),
     [goalType, targetWeightLoss, weeks]
   );
 
   const targetCalories = useMemo(
-    () => calculateTargetCaloriesLocal({ tdee, goalType, dailyDeficit }),
+    () => calculateTargetCalories({ tdee, goalType, dailyDeficit }),
     [tdee, goalType, dailyDeficit]
   );
 
   const proteinTarget = useMemo(
-    () => calculateProteinTargetLocal({ goalType, weight }),
+    () => calculateProteinTarget({ goalType, weight }),
     [goalType, weight]
   );
 
@@ -465,7 +459,9 @@ export default function App() {
     tdee,
     targetCalories,
     dailyDeficit,
-    proteinTarget
+    proteinTarget,
+    profileComplete,
+    onContinue: goToSummaryAfterProfile
   };
 
   return (
@@ -473,8 +469,20 @@ export default function App() {
       <div className="app-container">
         <div className="app-header">
           <h1>FuelTrack</h1>
-          <p>Απλό, καθαρό working version</p>
+          <p>
+            {!profileComplete
+              ? "Ξεκίνα συμπληρώνοντας το προφίλ σου"
+              : "Απλό, καθαρό working version"}
+          </p>
         </div>
+
+        {!profileComplete && activeTab !== "profile" && (
+          <div className="card">
+            <div className="muted">
+              Συμπλήρωσε πρώτα το προφίλ σου για να υπολογιστούν σωστά οι στόχοι σου.
+            </div>
+          </div>
+        )}
 
         {activeTab === "summary" && <SummaryTab {...summaryProps} />}
         {activeTab === "food" && <FoodTab {...foodProps} />}
@@ -485,10 +493,21 @@ export default function App() {
         <div style={{ height: 110 }} />
       </div>
 
-      <FabButton onClick={() => setShowQuickActions(true)} />
-      <BottomNav tabs={APP_TABS} activeTab={activeTab} onChange={setActiveTab} />
+      {profileComplete && <FabButton onClick={() => setShowQuickActions(true)} />}
 
-      {showQuickActions && (
+      <BottomNav
+        tabs={APP_TABS}
+        activeTab={activeTab}
+        onChange={(tab) => {
+          if (!profileComplete && tab !== "profile") {
+            setActiveTab("profile");
+            return;
+          }
+          setActiveTab(tab);
+        }}
+      />
+
+      {showQuickActions && profileComplete && (
         <QuickActionsModal
           onClose={() => setShowQuickActions(false)}
           onOpenFood={() => {
