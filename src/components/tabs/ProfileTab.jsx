@@ -21,13 +21,25 @@ export default function ProfileTab({
   tdee,
   targetCalories,
   dailyDeficit,
-  proteinTarget
+  proteinTarget,
+  profileComplete,
+  onContinue
 }) {
   const showGoalFields = goalType === "lose" || goalType === "gain";
 
   return (
     <div className="card">
       <h2>Profile</h2>
+
+      {!profileComplete && (
+        <div className="soft-box" style={{ marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Ξεκίνα από εδώ</div>
+          <div className="muted">
+            Συμπλήρωσε πρώτα το προφίλ σου για να υπολογιστούν σωστά οι θερμίδες και οι στόχοι
+            σου.
+          </div>
+        </div>
+      )}
 
       <div className="grid-2">
         <input
@@ -141,6 +153,20 @@ export default function ProfileTab({
 
         {goalType === "gain" &&
           "Στόχος: να υποστηρίζεις μυϊκή ανάπτυξη με περίπου 300 kcal πάνω από το TDEE σου και αυξημένη πρωτεΐνη."}
+      </div>
+
+      <div className="action-row" style={{ marginTop: 16 }}>
+        <button
+          className="btn btn-dark"
+          onClick={onContinue}
+          disabled={!profileComplete}
+          style={{
+            opacity: profileComplete ? 1 : 0.5,
+            cursor: profileComplete ? "pointer" : "not-allowed"
+          }}
+        >
+          Αποθήκευση & συνέχεια
+        </button>
       </div>
     </div>
   );
