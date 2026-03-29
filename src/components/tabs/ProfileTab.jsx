@@ -19,7 +19,6 @@ export default function ProfileTab({
   setTargetWeightLoss,
   weeks,
   setWeeks,
-  bmr,
   tdee,
   targetCalories,
   dailyDeficit,
@@ -42,12 +41,6 @@ export default function ProfileTab({
     if (mode === "fasting") return "Fasting 16:8";
     if (mode === "high_protein") return "High Protein";
     return "Balanced";
-  }
-
-  function getGenderLabel() {
-    if (gender === "male") return "Άνδρας";
-    if (gender === "female") return "Γυναίκα";
-    return "-";
   }
 
   function getActivityLabel() {
@@ -79,182 +72,156 @@ export default function ProfileTab({
 
         <div className="grid-2">
           <div className="soft-box">
-            <div className="muted">Ηλικία</div>
-            <div style={{ fontWeight: 700 }}>{age || "-"}</div>
-          </div>
-
-          <div className="soft-box">
-            <div className="muted">Φύλο</div>
-            <div style={{ fontWeight: 700 }}>{getGenderLabel()}</div>
-          </div>
-
-          <div className="soft-box">
-            <div className="muted">Ύψος</div>
-            <div style={{ fontWeight: 700 }}>
-              {height ? `${height} cm` : "-"}
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Ηλικία
             </div>
+            <input
+              className="input"
+              placeholder="Ηλικία"
+              inputMode="numeric"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
           </div>
 
           <div className="soft-box">
-            <div className="muted">Βάρος</div>
-            <div style={{ fontWeight: 700 }}>
-              {weight ? `${weight} kg` : "-"}
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Φύλο
             </div>
+            <select
+              className="input"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <option value="male">Άνδρας</option>
+              <option value="female">Γυναίκα</option>
+            </select>
+          </div>
+
+          <div className="soft-box">
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Ύψος
+            </div>
+            <input
+              className="input"
+              placeholder="Ύψος (cm)"
+              inputMode="numeric"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+            />
+          </div>
+
+          <div className="soft-box">
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Βάρος
+            </div>
+            <input
+              className="input"
+              placeholder="Βάρος (kg)"
+              inputMode="decimal"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+            />
           </div>
         </div>
       </div>
 
-      <div className="grid-2">
-        <input
-          className="input"
-          placeholder="Ηλικία"
-          inputMode="numeric"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-        />
+      <div className="soft-box" style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 700, marginBottom: 10 }}>Ρυθμίσεις στόχου</div>
 
-        <select
-          className="input"
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
-        >
-          <option value="male">Άνδρας</option>
-          <option value="female">Γυναίκα</option>
-        </select>
-      </div>
-
-      <div className="grid-2">
-        <input
-          className="input"
-          placeholder="Ύψος (cm)"
-          inputMode="numeric"
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
-        />
-
-        <input
-          className="input"
-          placeholder="Βάρος (kg)"
-          inputMode="decimal"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-        />
-      </div>
-
-      <div className="stack-10">
-        <div>
-          <div className="muted" style={{ marginBottom: 6 }}>
-            Επίπεδο δραστηριότητας
+        <div className="stack-10">
+          <div>
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Επίπεδο δραστηριότητας
+            </div>
+            <select
+              className="input"
+              value={activity}
+              onChange={(e) => setActivity(e.target.value)}
+            >
+              <option value="1.2">Καθιστική</option>
+              <option value="1.4">Light</option>
+              <option value="1.6">Moderate</option>
+              <option value="1.8">High</option>
+            </select>
           </div>
-          <select
-            className="input"
-            value={activity}
-            onChange={(e) => setActivity(e.target.value)}
-          >
-            <option value="1.2">Καθιστική</option>
-            <option value="1.4">Light</option>
-            <option value="1.6">Moderate</option>
-            <option value="1.8">High</option>
-          </select>
-        </div>
 
-        <div>
-          <div className="muted" style={{ marginBottom: 6 }}>
-            Στόχος
+          <div>
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Στόχος
+            </div>
+            <select
+              className="input"
+              value={goalType}
+              onChange={(e) => setGoalType(e.target.value)}
+            >
+              <option value="lose">Lose weight</option>
+              <option value="maintain">Maintain</option>
+              <option value="gain">Muscle gain</option>
+              <option value="fitness">Fitness</option>
+            </select>
           </div>
-          <select
-            className="input"
-            value={goalType}
-            onChange={(e) => setGoalType(e.target.value)}
-          >
-            <option value="lose">Lose weight</option>
-            <option value="maintain">Maintain</option>
-            <option value="gain">Muscle gain</option>
-            <option value="fitness">Fitness</option>
-          </select>
-        </div>
 
-        <div>
-          <div className="muted" style={{ marginBottom: 6 }}>
-            Τρόπος διατροφής
+          <div>
+            <div className="muted" style={{ marginBottom: 6 }}>
+              Τρόπος διατροφής
+            </div>
+            <select
+              className="input"
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+            >
+              <option value="balanced">Balanced</option>
+              <option value="low_carb">Low Carb</option>
+              <option value="keto">Keto</option>
+              <option value="fasting">Fasting 16:8</option>
+              <option value="high_protein">High Protein</option>
+            </select>
           </div>
-          <select
-            className="input"
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-          >
-            <option value="balanced">Balanced</option>
-            <option value="low_carb">Low Carb</option>
-            <option value="keto">Keto</option>
-            <option value="fasting">Fasting 16:8</option>
-            <option value="high_protein">High Protein</option>
-          </select>
         </div>
       </div>
 
       {showGoalFields && (
-        <>
-          <div className="soft-box" style={{ marginTop: 14, marginBottom: 14 }}>
-            <div style={{ fontWeight: 700, marginBottom: 10 }}>
-              Στοιχεία στόχου
-            </div>
-
-            <div className="grid-2">
-              <div className="soft-box">
-                <div className="muted">
-                  {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-                </div>
-                <div style={{ fontWeight: 700 }}>
-                  {targetWeightLoss ? `${targetWeightLoss} kg` : "-"}
-                </div>
-              </div>
-
-              <div className="soft-box">
-                <div className="muted">Διάρκεια</div>
-                <div style={{ fontWeight: 700 }}>
-                  {weeks ? `${weeks} εβδομάδες` : "-"}
-                </div>
-              </div>
-            </div>
+        <div className="soft-box" style={{ marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, marginBottom: 10 }}>
+            Στοιχεία στόχου
           </div>
 
           <div className="grid-2">
-            <input
-              className="input"
-              placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-              inputMode="decimal"
-              value={targetWeightLoss}
-              onChange={(e) => setTargetWeightLoss(e.target.value)}
-            />
+            <div className="soft-box">
+              <div className="muted" style={{ marginBottom: 6 }}>
+                {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
+              </div>
+              <input
+                className="input"
+                placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
+                inputMode="decimal"
+                value={targetWeightLoss}
+                onChange={(e) => setTargetWeightLoss(e.target.value)}
+              />
+            </div>
 
-            <input
-              className="input"
-              placeholder="Σε πόσες εβδομάδες"
-              inputMode="numeric"
-              value={weeks}
-              onChange={(e) => setWeeks(e.target.value)}
-            />
+            <div className="soft-box">
+              <div className="muted" style={{ marginBottom: 6 }}>
+                Διάρκεια
+              </div>
+              <input
+                className="input"
+                placeholder="Σε πόσες εβδομάδες"
+                inputMode="numeric"
+                value={weeks}
+                onChange={(e) => setWeeks(e.target.value)}
+              />
+            </div>
           </div>
-        </>
+        </div>
       )}
 
       <div className="soft-box" style={{ marginTop: 14 }}>
         <div style={{ fontWeight: 700, marginBottom: 10 }}>Υπολογισμοί</div>
 
         <div style={{ marginBottom: 8 }}>
-          BMR: <strong>{formatNumber(bmr)} kcal</strong>
-        </div>
-        <div className="muted" style={{ marginBottom: 10 }}>
-          BMR = θερμίδες που καίει περίπου το σώμα σου σε πλήρη ξεκούραση,
-          χωρίς άσκηση ή καθημερινή δραστηριότητα.
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
           Maintenance / TDEE: <strong>{formatNumber(tdee)} kcal</strong>
-        </div>
-        <div className="muted" style={{ marginBottom: 10 }}>
-          Maintenance / TDEE = περίπου οι θερμίδες που χρειάζεσαι για να
-          διατηρείς το βάρος σου, με βάση το σώμα σου και τη δραστηριότητά σου.
         </div>
 
         <div style={{ marginBottom: 8 }}>
@@ -279,7 +246,7 @@ export default function ProfileTab({
       </div>
 
       <div className="soft-box" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Σύνοψη προφίλ</div>
+        <div style={{ fontWeight: 700, marginBottom: 10 }}>Σύνοψη</div>
 
         <div className="stack-10">
           <div>
