@@ -449,7 +449,8 @@ export default function App() {
     totalProtein,
     last7Days,
     mode,
-    macroTargets
+    macroTargets,
+    foods
   };
 
   const foodProps = {
@@ -504,7 +505,6 @@ export default function App() {
     setTargetWeightLoss,
     weeks,
     setWeeks,
-    bmr,
     tdee,
     targetCalories,
     dailyDeficit,
