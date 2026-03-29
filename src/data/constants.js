@@ -70,17 +70,11 @@ export const EXERCISE_LIBRARY = [
   { name: "Κολύμπι", caloriesPerMinute: 8.5 }
 ];
 
-export const MEALS = [
-  "Πρωινό",
-  "Μεσημεριανό",
-  "Βραδινό",
-  "Σνακ"
-];
+export const MEALS = ["Πρωινό", "Μεσημεριανό", "Βραδινό", "Σνακ"];
 
 export const APP_TABS = [
   { key: "summary", icon: "🏠", label: "Summary" },
   { key: "food", icon: "🍔", label: "Food" },
   { key: "exercise", icon: "🏃", label: "Exercise" },
-  { key: "day", icon: "📊", label: "Day" },
   { key: "profile", icon: "👤", label: "Profile" }
 ];

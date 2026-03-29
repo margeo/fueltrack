@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "./components/BottomNav";
-import FabButton from "./components/FabButton";
-import QuickActionsModal from "./components/QuickActionsModal";
 import EditEntryModal from "./components/EditEntryModal";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
-import DayTab from "./components/tabs/DayTab";
 import ProfileTab from "./components/tabs/ProfileTab";
 import { DEFAULT_FOODS, EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
 import {
@@ -26,9 +23,7 @@ import {
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
 export default function App() {
-  const [selectedDate, setSelectedDate] = useState(() =>
-    loadValue("ft_selectedDate", getTodayKey())
-  );
+  const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
   const [age, setAge] = useState(() => loadValue("ft_age", ""));
   const [gender, setGender] = useState(() => loadValue("ft_gender", "male"));
@@ -47,8 +42,6 @@ export default function App() {
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
     loadJSON("ft_favoriteFoodKeys", [])
   );
-
-  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [editEntryGrams, setEditEntryGrams] = useState("100");
@@ -100,10 +93,14 @@ export default function App() {
 
     if (!savedHasSeenWelcome) return "welcome";
     if (!savedProfileComplete) return "profile";
+    if (!["summary", "food", "exercise", "profile"].includes(savedTab)) return "summary";
     return savedTab;
   });
 
-  useEffect(() => saveValue("ft_selectedDate", selectedDate), [selectedDate]);
+  useEffect(() => {
+    setSelectedDate(getTodayKey());
+  }, []);
+
   useEffect(() => saveValue("ft_age", age), [age]);
   useEffect(() => saveValue("ft_gender", gender), [gender]);
   useEffect(() => saveValue("ft_height", height), [height]);
@@ -251,13 +248,6 @@ export default function App() {
     }));
   }
 
-  function clearAll() {
-    updateCurrentDay(() => ({
-      entries: [],
-      exercises: []
-    }));
-  }
-
   function addCustomFood(newFood) {
     setFoods((prev) => [normalizeFood(newFood), ...prev]);
   }
@@ -358,8 +348,6 @@ export default function App() {
 
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
   const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
-  const totalCarbs = round1(entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0));
-  const totalFat = round1(entries.reduce((sum, item) => sum + Number(item.fat || 0), 0));
   const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
 
   const remainingCalories = targetCalories - totalCalories + exerciseValue;
@@ -419,7 +407,6 @@ export default function App() {
 
   const foodProps = {
     foods,
-    setFoods,
     recentFoods,
     favoriteFoods,
     isFavorite,
@@ -428,7 +415,11 @@ export default function App() {
     saveRecentFood,
     updateCurrentDay,
     quickAddRecent,
-    quickAddFavorite
+    quickAddFavorite,
+    entries,
+    groupedEntries,
+    deleteEntry,
+    openEditEntry
   };
 
   const exerciseProps = {
@@ -445,14 +436,6 @@ export default function App() {
     addExerciseByMinutes,
     addCustomExercise,
     deleteExercise
-  };
-
-  const dayProps = {
-    entries,
-    groupedEntries,
-    clearAll,
-    deleteEntry,
-    openEditEntry
   };
 
   const profileProps = {
@@ -505,37 +488,16 @@ export default function App() {
         {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
         {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
         {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
-        {appReady && activeTab === "day" && <DayTab {...dayProps} />}
         {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
 
         <div style={{ height: 110 }} />
       </div>
-
-      {appReady && <FabButton onClick={() => setShowQuickActions(true)} />}
 
       {appReady && (
         <BottomNav
           tabs={APP_TABS}
           activeTab={activeTab}
           onChange={(tab) => setActiveTab(tab)}
-        />
-      )}
-
-      {showQuickActions && appReady && (
-        <QuickActionsModal
-          onClose={() => setShowQuickActions(false)}
-          onOpenFood={() => {
-            setActiveTab("food");
-            setShowQuickActions(false);
-          }}
-          onOpenExercise={() => {
-            setActiveTab("exercise");
-            setShowQuickActions(false);
-          }}
-          onOpenDay={() => {
-            setActiveTab("day");
-            setShowQuickActions(false);
-          }}
         />
       )}
 
