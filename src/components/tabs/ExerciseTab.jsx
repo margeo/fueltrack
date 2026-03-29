@@ -19,9 +19,40 @@ export default function ExerciseTab({
   return (
     <>
       <div className="card">
-        <h2>Άσκηση με λεπτά</h2>
+        <div className="row wrap" style={{ marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Άσκηση ημέρας</h2>
+          <div className="soft-box" style={{ padding: "8px 12px" }}>
+            +{formatNumber(exerciseValue)} kcal
+          </div>
+        </div>
+
+        {exercises.length === 0 ? (
+          <div className="muted">Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
+        ) : (
+          <div className="stack-10">
+            {exercises.map((item) => (
+              <div key={item.id} className="exercise-list-item">
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700 }}>{item.name}</div>
+                  <div className="muted">
+                    {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +
+                    {formatNumber(item.calories)} kcal
+                  </div>
+                </div>
+
+                <button className="btn btn-danger" onClick={() => deleteExercise(item.id)}>
+                  Χ
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h2>Προσθήκη άσκησης με λεπτά</h2>
         <div className="muted" style={{ marginBottom: 12 }}>
-          Δίνεις λεπτά και το app υπολογίζει μόνο του τις θερμίδες.
+          Βάζεις λεπτά και το app υπολογίζει αυτόματα τις θερμίδες.
         </div>
 
         <div className="grid-2">
@@ -90,35 +121,6 @@ export default function ExerciseTab({
             Προσθήκη custom άσκησης
           </button>
         </div>
-      </div>
-
-      <div className="card">
-        <div className="row wrap" style={{ marginBottom: 12 }}>
-          <h2 style={{ margin: 0 }}>Ασκήσεις ημέρας</h2>
-          <div className="soft-box" style={{ padding: "8px 12px" }}>
-            +{formatNumber(exerciseValue)} kcal
-          </div>
-        </div>
-
-        {exercises.length === 0 ? (
-          <div className="muted">Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
-        ) : (
-          exercises.map((item) => (
-            <div key={item.id} className="exercise-list-item">
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700 }}>{item.name}</div>
-                <div className="muted">
-                  {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +
-                  {formatNumber(item.calories)} kcal
-                </div>
-              </div>
-
-              <button className="btn btn-danger" onClick={() => deleteExercise(item.id)}>
-                Χ
-              </button>
-            </div>
-          ))
-        )}
       </div>
     </>
   );
