@@ -19,34 +19,45 @@ export default function ExerciseTab({
   return (
     <>
       <div className="card">
-        <div className="row wrap" style={{ marginBottom: 12 }}>
-          <h2 style={{ margin: 0 }}>Άσκηση ημέρας</h2>
-          <div className="soft-box" style={{ padding: "8px 12px" }}>
-            +{formatNumber(exerciseValue)} kcal
-          </div>
-        </div>
+        <h2>Άσκηση ημέρας</h2>
 
-        {exercises.length === 0 ? (
-          <div className="muted">Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
-        ) : (
-          <div className="stack-10">
-            {exercises.map((item) => (
-              <div key={item.id} className="exercise-list-item">
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{item.name}</div>
-                  <div className="muted">
-                    {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +
-                    {formatNumber(item.calories)} kcal
+        <div className="soft-box" style={{ marginTop: 10 }}>
+          <div className="row wrap" style={{ marginBottom: 10 }}>
+            <div style={{ fontWeight: 700 }}>Σύνοψη ημέρας</div>
+            <div className="muted">+{formatNumber(exerciseValue)} kcal</div>
+          </div>
+
+          {exercises.length === 0 ? (
+            <div className="muted">Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
+          ) : (
+            <div className="stack-10">
+              {exercises.map((item) => (
+                <div
+                  key={item.id}
+                  className="soft-box"
+                  style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
+                >
+                  <div className="row wrap" style={{ gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700 }}>{item.name}</div>
+                      <div className="muted" style={{ marginTop: 6 }}>
+                        {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +
+                        {formatNumber(item.calories)} kcal
+                      </div>
+                    </div>
+
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => deleteExercise(item.id)}
+                    >
+                      Χ
+                    </button>
                   </div>
                 </div>
-
-                <button className="btn btn-danger" onClick={() => deleteExercise(item.id)}>
-                  Χ
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="card">
@@ -77,6 +88,7 @@ export default function ExerciseTab({
                     }))
                   }
                 />
+
                 <button
                   className="btn btn-dark"
                   onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
@@ -108,6 +120,7 @@ export default function ExerciseTab({
               value={customExerciseMinutes}
               onChange={(e) => setCustomExerciseMinutes(e.target.value)}
             />
+
             <input
               className="input"
               placeholder="kcal / λεπτό"
