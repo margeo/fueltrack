@@ -35,10 +35,8 @@ function scoreFood(query, item) {
 
   if (hasMacros) score += 8;
 
-  if (item.source === "local") score += 6;
   if (item.source === "usda") score += 5;
-  if (item.source === "edamam") score += 4;
-  if (item.source === "off") score += 2;
+  if (item.source === "off") score += 3;
 
   return score;
 }
@@ -97,11 +95,11 @@ function normalizeUsdaFoods(query, foodsArray) {
 
 function normalizeOffFoods(query, productsArray) {
   return productsArray
-    .map((product) => {
+    .map((product, index) => {
       const nutriments = product?.nutriments || {};
 
       const item = {
-        id: `off-${product.code || product.id || Math.random().toString(36).slice(2)}`,
+        id: `off-${product.code || product.id || index}`,
         source: "off",
         sourceLabel: "Open Food",
         name:
@@ -111,41 +109,15 @@ function normalizeOffFoods(query, productsArray) {
           "Unknown food",
         brand: product.brands || "Open Food Facts",
         caloriesPer100g: numberOrZero(
-          nutriments["energy-kcal_100g"] ?? nutriments["energy-kcal"]
+          nutriments["energy-kcal_100g"] ??
+            nutriments["energy-kcal"] ??
+            nutriments["energy_100g-kcal"]
         ),
         proteinPer100g: numberOrZero(nutriments.proteins_100g),
         carbsPer100g: numberOrZero(nutriments.carbohydrates_100g),
         fatPer100g: numberOrZero(nutriments.fat_100g),
         servingLabel: "100g",
         verified: Boolean(product.code)
-      };
-
-      return {
-        ...item,
-        searchScore: scoreFood(query, item)
-      };
-    })
-    .filter((item) => item.name && item.name !== "Unknown food");
-}
-
-function normalizeEdamamFoods(query, hintsArray) {
-  return hintsArray
-    .map((hint, index) => {
-      const food = hint?.food || {};
-      const nutrients = food.nutrients || {};
-
-      const item = {
-        id: `edamam-${food.foodId || index}`,
-        source: "edamam",
-        sourceLabel: "Edamam",
-        name: food.label || "Unknown food",
-        brand: food.brand || food.categoryLabel || food.category || "Edamam",
-        caloriesPer100g: numberOrZero(nutrients.ENERC_KCAL),
-        proteinPer100g: numberOrZero(nutrients.PROCNT),
-        carbsPer100g: numberOrZero(nutrients.CHOCDF),
-        fatPer100g: numberOrZero(nutrients.FAT),
-        servingLabel: "100g",
-        verified: Boolean(food.foodId)
       };
 
       return {
@@ -190,26 +162,6 @@ async function searchOpenFoodFacts(query) {
   return normalizeOffFoods(query, products);
 }
 
-async function searchEdamam(query, appId, appKey) {
-  if (!appId || !appKey) return [];
-
-  const url =
-    `https://api.edamam.com/api/food-database/v2/parser` +
-    `?ingr=${encodeURIComponent(query)}` +
-    `&app_id=${encodeURIComponent(appId)}` +
-    `&app_key=${encodeURIComponent(appKey)}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Edamam request failed with status ${response.status}`);
-  }
-
-  const data = await response.json();
-  const hints = Array.isArray(data?.hints) ? data.hints : [];
-  return normalizeEdamamFoods(query, hints);
-}
-
 export async function handler(event) {
   try {
     const query = event.queryStringParameters?.q?.trim() || "";
@@ -227,10 +179,8 @@ export async function handler(event) {
     }
 
     const USDA_API_KEY = process.env.USDA_API_KEY;
-    const EDAMAM_APP_ID = process.env.EDAMAM_APP_ID;
-    const EDAMAM_APP_KEY = process.env.EDAMAM_APP_KEY;
 
-    const [usdaResults, offResults, edamamResults] = await Promise.all([
+    const [usdaResults, offResults] = await Promise.all([
       searchUsda(query, USDA_API_KEY).catch((error) => {
         console.error("USDA error:", error.message);
         return [];
@@ -238,14 +188,10 @@ export async function handler(event) {
       searchOpenFoodFacts(query).catch((error) => {
         console.error("Open Food Facts error:", error.message);
         return [];
-      }),
-      searchEdamam(query, EDAMAM_APP_ID, EDAMAM_APP_KEY).catch((error) => {
-        console.error("Edamam error:", error.message);
-        return [];
       })
     ]);
 
-    const merged = [...usdaResults, ...offResults, ...edamamResults];
+    const merged = [...usdaResults, ...offResults];
 
     const finalResults = dedupeFoods(merged)
       .sort((a, b) => numberOrZero(b.searchScore) - numberOrZero(a.searchScore))
