@@ -1,4 +1,5 @@
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
+import SuggestionsBox from "../SuggestionsBox";
 
 export default function SummaryTab({
   selectedDate,
@@ -12,18 +13,23 @@ export default function SummaryTab({
   goalType,
   last7Days,
   proteinTarget,
-  totalProtein
+  totalProtein,
+  mode,
+  macroTargets,
+  foods
 }) {
   function getModeLabel() {
-    if (goalType === "lose") return "Lose weight";
-    if (goalType === "gain") return "Muscle gain";
-    return "Maintain";
+    if (mode === "low_carb") return "Low Carb";
+    if (mode === "keto") return "Keto";
+    if (mode === "fasting") return "Fasting";
+    if (mode === "high_protein") return "High Protein";
+    return "Balanced";
   }
 
   function getRemainingColor() {
-    if (remainingCalories > 100) return "#86efac"; // πράσινο (έχεις χώρο)
-    if (remainingCalories < -150) return "#fca5a5"; // κόκκινο (έχεις ξεφύγει)
-    return "#fde68a"; // ουδέτερο
+    if (remainingCalories > 100) return "#86efac";
+    if (remainingCalories < -150) return "#fca5a5";
+    return "#fde68a";
   }
 
   return (
@@ -31,11 +37,10 @@ export default function SummaryTab({
       <div className="hero-card">
         <div className="row wrap">
           <div>
-            <div className="hero-subtle">Επιλεγμένη ημέρα</div>
+            <div className="hero-subtle">Ημέρα</div>
             <div style={{ fontSize: 20, fontWeight: 700 }}>
               {formatDisplayDate(selectedDate)}
             </div>
-            <div className="hero-subtle">{selectedDate}</div>
           </div>
 
           <div className="row">
@@ -48,7 +53,6 @@ export default function SummaryTab({
 
             <input
               className="input"
-              style={{ width: 160, marginBottom: 0 }}
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -57,9 +61,13 @@ export default function SummaryTab({
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <div className="hero-subtle">Υπόλοιπο ημέρας</div>
+          <div className="hero-subtle">Υπόλοιπο</div>
           <div className="hero-big" style={{ color: getRemainingColor() }}>
             {formatNumber(remainingCalories)} kcal
+          </div>
+
+          <div className="hero-subtle">
+            Υπόλοιπο = Στόχος - Φαγητό + Άσκηση
           </div>
         </div>
 
@@ -70,7 +78,7 @@ export default function SummaryTab({
           </div>
 
           <div className="hero-stat">
-            <div className="hero-subtle">Έφαγες</div>
+            <div className="hero-subtle">Φαγητό</div>
             <div>{formatNumber(totalCalories)}</div>
           </div>
 
@@ -85,68 +93,50 @@ export default function SummaryTab({
           </div>
         </div>
 
-        {/* 🔥 Protein tracking */}
         <div className="hero-grid" style={{ marginTop: 12 }}>
           <div className="hero-stat">
-            <div className="hero-subtle">Protein στόχος</div>
-            <div>{formatNumber(proteinTarget || 0)}g</div>
+            <div className="hero-subtle">Protein</div>
+            <div>{formatNumber(totalProtein)} / {formatNumber(proteinTarget)} g</div>
           </div>
 
           <div className="hero-stat">
-            <div className="hero-subtle">Protein intake</div>
-            <div>{formatNumber(totalProtein || 0)}g</div>
+            <div className="hero-subtle">Carbs</div>
+            <div>{macroTargets.carbsGrams} g</div>
+          </div>
+
+          <div className="hero-stat">
+            <div className="hero-subtle">Fat</div>
+            <div>{macroTargets.fatGrams} g</div>
           </div>
         </div>
 
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
-
-        <div className="hero-subtle" style={{ marginTop: 8 }}>
-          {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
-        </div>
       </div>
 
+      <SuggestionsBox
+        foods={foods}
+        mode={mode}
+        remainingCalories={remainingCalories}
+        remainingProtein={proteinTarget - totalProtein}
+        onSelectFood={(food) => console.log(food)}
+      />
+
       <div className="card">
-        <h2>Τελευταίες 7 ημέρες</h2>
+        <h2>7 ημέρες</h2>
 
         {last7Days.map((day) => (
           <button
             key={day.date}
             className="history-row"
             onClick={() => setSelectedDate(day.date)}
-            style={{
-              border:
-                day.date === selectedDate
-                  ? "2px solid #111827"
-                  : "1px solid #e5e7eb"
-            }}
           >
             <div className="row">
+              <div>{formatDisplayDate(day.date)}</div>
+
               <div>
-                <div style={{ fontWeight: 700 }}>
-                  {formatDisplayDate(day.date)}
-                </div>
-                <div className="muted">{day.date}</div>
-              </div>
-
-              <div style={{ textAlign: "right" }}>
-                <div className="muted">
-                  🍽 {formatNumber(day.eaten)}
-                </div>
-
-                <div className="muted">
-                  🏃 +{formatNumber(day.exercise)}
-                </div>
-
-                <div
-                  style={{
-                    color: day.remaining >= 0 ? "#166534" : "#b91c1c",
-                    fontWeight: 700
-                  }}
-                >
-                  Υπόλ. {formatNumber(day.remaining)}
-                </div>
+                {formatNumber(day.eaten)} kcal | Υπόλ. {formatNumber(day.remaining)}
               </div>
             </div>
           </button>
