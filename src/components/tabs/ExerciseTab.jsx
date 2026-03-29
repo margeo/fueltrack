@@ -41,17 +41,24 @@ export default function ExerciseTab({
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700 }}>{item.name}</div>
                       <div className="muted" style={{ marginTop: 6 }}>
-                        {item.minutes} λεπτά · {item.caloriesPerMinute} kcal/λεπτό · +
+                        {item.minutes} λεπτά · {formatNumber(item.caloriesPerMinute)} kcal/λεπτό · +
                         {formatNumber(item.calories)} kcal
                       </div>
                     </div>
 
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => deleteExercise(item.id)}
-                    >
-                      Χ
-                    </button>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button className="btn btn-light" type="button">
+                        Edit
+                      </button>
+
+                      <button
+                        className="btn btn-light"
+                        onClick={() => deleteExercise(item.id)}
+                        type="button"
+                      >
+                        X
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -66,36 +73,47 @@ export default function ExerciseTab({
           Βάζεις λεπτά και το app υπολογίζει αυτόματα τις θερμίδες.
         </div>
 
-        <div className="grid-2">
+        <div className="stack-10">
           {EXERCISE_LIBRARY.map((exercise) => (
-            <div key={exercise.name} className="soft-box">
-              <div style={{ fontWeight: 700 }}>{exercise.name}</div>
-              <div className="muted" style={{ marginBottom: 10 }}>
-                {exercise.caloriesPerMinute} kcal / λεπτό
+            <div
+              key={exercise.name}
+              className="soft-box"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap"
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontWeight: 700 }}>{exercise.name}</div>
+                <div className="muted" style={{ marginTop: 4 }}>
+                  {formatNumber(exercise.caloriesPerMinute)} kcal / λεπτό
+                </div>
               </div>
 
-              <div className="stack-10">
-                <input
-                  className="input"
-                  type="number"
-                  min="1"
-                  placeholder="Λεπτά"
-                  value={exerciseMinutes[exercise.name] || ""}
-                  onChange={(e) =>
-                    setExerciseMinutes((prev) => ({
-                      ...prev,
-                      [exercise.name]: e.target.value
-                    }))
-                  }
-                />
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder="Λεπτά"
+                value={exerciseMinutes[exercise.name] || ""}
+                onChange={(e) =>
+                  setExerciseMinutes((prev) => ({
+                    ...prev,
+                    [exercise.name]: e.target.value
+                  }))
+                }
+                style={{ width: 110, marginBottom: 0 }}
+              />
 
-                <button
-                  className="btn btn-dark"
-                  onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
-                >
-                  Προσθήκη
-                </button>
-              </div>
+              <button
+                className="btn btn-dark"
+                onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
+                type="button"
+              >
+                Προσθήκη
+              </button>
             </div>
           ))}
         </div>
@@ -130,7 +148,7 @@ export default function ExerciseTab({
             />
           </div>
 
-          <button className="btn btn-dark" onClick={addCustomExercise}>
+          <button className="btn btn-dark" onClick={addCustomExercise} type="button">
             Προσθήκη custom άσκησης
           </button>
         </div>
