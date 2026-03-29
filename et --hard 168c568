@@ -1,0 +1,13 @@
+[33mf984d40[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Update FuelTrack tabs layout and styling
+[33m168c568[m add goal-first summary with mode-aware suggestions
+[33m325e3bf[m clean profile UI and remove extra header text
+[33mcf7b8be[m fix summary tab remove missing suggestions import
+[33mdc5c3c4[m update tabs + profile + modes
+[33me294b67[m Remove day tab and FAB, add daily food section, reset to today on app open
+[33m741f77b[m Add welcome onboarding and default lose goal
+[33mb2f8c74[m Add profile-first onboarding flow
+[33m4e2a197[m update fueltrack
+[33m865d93d[m update full app with usda search
+[33m2794cd7[m move usda key to query string
+[33mf1718cb[m add netlify functions + config
+[33m6d19b3d[m first version
