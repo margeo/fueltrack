@@ -14,12 +14,16 @@ import {
   createFoodEntry,
   round1,
   shiftDate,
-  calculateBmr,
-  entryBasePer100g,
+  entryBasePer100g
+} from "./utils/helpers";
+import {
+  calculateBMR,
+  calculateTDEE,
   calculateDailyDeficit,
   calculateTargetCalories,
-  calculateProteinTarget
-} from "./utils/helpers";
+  calculateProteinTarget,
+  calculateMacroTargets
+} from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
 export default function App() {
@@ -31,6 +35,7 @@ export default function App() {
   const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
   const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
   const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "lose"));
+  const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() =>
     loadValue("ft_targetWeightLoss", "")
   );
@@ -69,9 +74,10 @@ export default function App() {
       String(height).trim() !== "" &&
       String(weight).trim() !== "" &&
       String(activity).trim() !== "" &&
-      String(goalType).trim() !== ""
+      String(goalType).trim() !== "" &&
+      String(mode).trim() !== ""
     );
-  }, [age, gender, height, weight, activity, goalType]);
+  }, [age, gender, height, weight, activity, goalType, mode]);
 
   const [activeTab, setActiveTab] = useState(() => {
     const savedAge = loadValue("ft_age", "");
@@ -80,6 +86,7 @@ export default function App() {
     const savedWeight = loadValue("ft_weight", "");
     const savedActivity = loadValue("ft_activity", "1.4");
     const savedGoalType = loadValue("ft_goalType", "lose");
+    const savedMode = loadValue("ft_mode", "balanced");
     const savedHasSeenWelcome = loadValue("ft_hasSeenWelcome", "false") === "true";
     const savedTab = loadValue("ft_activeTab", "summary");
 
@@ -89,7 +96,8 @@ export default function App() {
       String(savedHeight).trim() !== "" &&
       String(savedWeight).trim() !== "" &&
       String(savedActivity).trim() !== "" &&
-      String(savedGoalType).trim() !== "";
+      String(savedGoalType).trim() !== "" &&
+      String(savedMode).trim() !== "";
 
     if (!savedHasSeenWelcome) return "welcome";
     if (!savedProfileComplete) return "profile";
@@ -107,6 +115,7 @@ export default function App() {
   useEffect(() => saveValue("ft_weight", weight), [weight]);
   useEffect(() => saveValue("ft_activity", activity), [activity]);
   useEffect(() => saveValue("ft_goalType", goalType), [goalType]);
+  useEffect(() => saveValue("ft_mode", mode), [mode]);
   useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
   useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
   useEffect(() => saveJSON("ft_foods", foods), [foods]);
@@ -322,28 +331,64 @@ export default function App() {
     setActiveTab("summary");
   }
 
-  const bmr = useMemo(() => calculateBmr({ age, height, weight, gender }), [
-    age,
-    height,
-    weight,
-    gender
-  ]);
+  const bmr = useMemo(
+    () =>
+      calculateBMR({
+        age,
+        gender,
+        height,
+        weight
+      }),
+    [age, gender, height, weight]
+  );
 
-  const tdee = useMemo(() => Math.round(bmr * Number(activity || 1.4)), [bmr, activity]);
+  const tdee = useMemo(
+    () =>
+      calculateTDEE({
+        bmr,
+        activity
+      }),
+    [bmr, activity]
+  );
 
   const dailyDeficit = useMemo(
-    () => calculateDailyDeficit({ goalType, targetWeightLoss, weeks }),
-    [goalType, targetWeightLoss, weeks]
+    () =>
+      calculateDailyDeficit({
+        kilos: targetWeightLoss,
+        weeks
+      }),
+    [targetWeightLoss, weeks]
   );
 
   const targetCalories = useMemo(
-    () => calculateTargetCalories({ tdee, goalType, dailyDeficit }),
-    [tdee, goalType, dailyDeficit]
+    () =>
+      calculateTargetCalories({
+        goalType,
+        tdee,
+        targetWeightChange: targetWeightLoss,
+        weeks
+      }),
+    [goalType, tdee, targetWeightLoss, weeks]
   );
 
   const proteinTarget = useMemo(
-    () => calculateProteinTarget({ goalType, weight }),
-    [goalType, weight]
+    () =>
+      calculateProteinTarget({
+        weight,
+        goalType,
+        modeKey: mode
+      }),
+    [weight, goalType, mode]
+  );
+
+  const macroTargets = useMemo(
+    () =>
+      calculateMacroTargets({
+        targetCalories,
+        proteinTarget,
+        modeKey: mode
+      }),
+    [targetCalories, proteinTarget, mode]
   );
 
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
@@ -402,7 +447,9 @@ export default function App() {
     goalType,
     proteinTarget,
     totalProtein,
-    last7Days
+    last7Days,
+    mode,
+    macroTargets
   };
 
   const foodProps = {
@@ -451,6 +498,8 @@ export default function App() {
     setActivity,
     goalType,
     setGoalType,
+    mode,
+    setMode,
     targetWeightLoss,
     setTargetWeightLoss,
     weeks,
@@ -473,13 +522,8 @@ export default function App() {
       <div className="app-container">
         <div className="app-header">
           <h1>FuelTrack</h1>
-          <p>
-            {showWelcome
-              ? "Welcome"
-              : showProfile
-              ? "Ξεκίνα συμπληρώνοντας το προφίλ σου"
-              : "Απλό, καθαρό working version"}
-          </p>
+          {showWelcome && <p>Welcome</p>}
+          {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
         </div>
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
