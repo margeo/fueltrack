@@ -19,7 +19,6 @@ export default function FoodTab({
   deleteEntry,
   openEditEntry
 }) {
-  const [sourceTab, setSourceTab] = useState("local");
   const [query, setQuery] = useState("");
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodGrams, setFoodGrams] = useState("100");
@@ -31,15 +30,15 @@ export default function FoodTab({
   const [newCarbs, setNewCarbs] = useState("");
   const [newFat, setNewFat] = useState("");
 
-  const { results: databaseResults, loading: databaseLoading } = useFoodSearch(
-    sourceTab === "database" ? query : ""
-  );
+  const { results: databaseResults, loading: databaseLoading } = useFoodSearch(query);
 
   const filteredFoods = useMemo(() => {
     if (!query.trim()) return foods;
 
+    const q = query.toLowerCase().trim();
+
     return foods.filter((food) =>
-      `${food.name} ${food.brand || ""}`.toLowerCase().includes(query.toLowerCase())
+      `${food.name} ${food.brand || ""}`.toLowerCase().includes(q)
     );
   }, [foods, query]);
 
@@ -47,19 +46,51 @@ export default function FoodTab({
     return (Array.isArray(databaseResults) ? databaseResults : []).map((food) =>
       normalizeFood({
         id: food.id,
-        source: "database",
+        source: food.source || "database",
+        sourceLabel: food.sourceLabel || "Database",
         name: food.name,
         brand: food.brand || "USDA",
-        caloriesPer100g: Number(food.calories) || 0,
-        proteinPer100g: Number(food.protein) || 0,
-        carbsPer100g: Number(food.carbs) || 0,
-        fatPer100g: Number(food.fat) || 0
+        caloriesPer100g:
+          Number(food.caloriesPer100g ?? food.calories) || 0,
+        proteinPer100g:
+          Number(food.proteinPer100g ?? food.protein) || 0,
+        carbsPer100g:
+          Number(food.carbsPer100g ?? food.carbs) || 0,
+        fatPer100g:
+          Number(food.fatPer100g ?? food.fat) || 0
       })
     );
   }, [databaseResults]);
 
-  const visibleFoods = sourceTab === "local" ? filteredFoods : normalizedDatabaseResults;
+  const visibleFoods = useMemo(() => {
+    const localFoods = filteredFoods.map((food) =>
+      normalizeFood({
+        ...food,
+        source: food.source || "local",
+        sourceLabel: food.sourceLabel || "Local"
+      })
+    );
+
+    const merged = [...localFoods, ...normalizedDatabaseResults];
+    const seen = new Set();
+
+    return merged.filter((food) => {
+      const key = `${String(food.name || "").trim().toLowerCase()}|${String(
+        food.brand || ""
+      )
+        .trim()
+        .toLowerCase()}`;
+
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [filteredFoods, normalizedDatabaseResults]);
+
+  const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const preview = selectedFood ? createFoodEntry(selectedFood, foodGrams, mealType) : null;
+  const showAutocomplete = query.trim().length >= 2;
+  const showFullResultsList = query.trim().length === 0 || visibleFoods.length > 0;
 
   function resetSelection() {
     setSelectedFood(null);
@@ -70,11 +101,6 @@ export default function FoodTab({
   function clearSearchAndSelection() {
     setQuery("");
     resetSelection();
-  }
-
-  function switchTab(nextTab) {
-    setSourceTab(nextTab);
-    clearSearchAndSelection();
   }
 
   function addSelectedFood() {
@@ -98,6 +124,7 @@ export default function FoodTab({
       normalizeFood({
         id: `local-${Date.now()}`,
         source: "local",
+        sourceLabel: "Local",
         name: newName.trim(),
         caloriesPer100g: Number(newCalories) || 0,
         proteinPer100g: Number(newProtein) || 0,
@@ -111,6 +138,15 @@ export default function FoodTab({
     setNewProtein("");
     setNewCarbs("");
     setNewFat("");
+  }
+
+  function getSourceBadge(food) {
+    if (food.sourceLabel) return food.sourceLabel;
+    if (food.source === "local") return "Local";
+    if (food.source === "usda") return "USDA";
+    if (food.source === "off") return "Open Food";
+    if (food.source === "database") return "Database";
+    return "";
   }
 
   return (
@@ -193,74 +229,146 @@ export default function FoodTab({
       <div className="card">
         <h2>Αναζήτηση φαγητού</h2>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <button
-            className={sourceTab === "local" ? "btn btn-dark" : "btn btn-light"}
-            onClick={() => switchTab("local")}
-            type="button"
-          >
-            Local
-          </button>
+        <div style={{ position: "relative" }}>
+          <input
+            className="input"
+            placeholder="Γράψε φαγητό"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedFood(null);
+            }}
+          />
 
-          <button
-            className={sourceTab === "database" ? "btn btn-dark" : "btn btn-light"}
-            onClick={() => switchTab("database")}
-            type="button"
-          >
-            Database
-          </button>
+          {showAutocomplete && (
+            <div
+              className="soft-box"
+              style={{
+                marginTop: -4,
+                marginBottom: 12,
+                padding: 8,
+                border: "1px solid rgba(255,255,255,0.08)"
+              }}
+            >
+              {databaseLoading && (
+                <div className="muted" style={{ padding: "6px 4px" }}>
+                  Αναζήτηση...
+                </div>
+              )}
+
+              {!databaseLoading && topSearchResults.length === 0 && (
+                <div className="muted" style={{ padding: "6px 4px" }}>
+                  Δεν βρέθηκαν αποτελέσματα.
+                </div>
+              )}
+
+              {!databaseLoading &&
+                topSearchResults.map((food) => (
+                  <button
+                    key={`auto-${food.id}`}
+                    className="food-choice"
+                    onClick={() => setSelectedFood(food)}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "10px 8px",
+                      borderRadius: 10
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      <div style={{ fontWeight: 700 }}>
+                        {food.name}
+                        {food.brand ? ` · ${food.brand}` : ""}
+                      </div>
+
+                      {getSourceBadge(food) ? (
+                        <span className="tag">{getSourceBadge(food)}</span>
+                      ) : null}
+                    </div>
+
+                    <div className="muted" style={{ marginTop: 4 }}>
+                      {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
+                      {formatNumber(food.proteinPer100g || 0)} · C{" "}
+                      {formatNumber(food.carbsPer100g || 0)} · F{" "}
+                      {formatNumber(food.fatPer100g || 0)}
+                    </div>
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
 
-        <input
-          className="input"
-          placeholder="Γράψε φαγητό"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setSelectedFood(null);
-          }}
-        />
+        {showFullResultsList && (
+          <div className="stack-10" style={{ marginTop: 12 }}>
+            {visibleFoods.map((food) => (
+              <div key={food.id} className="food-list-item">
+                <button
+                  className="food-choice"
+                  onClick={() => setSelectedFood(food)}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <div style={{ fontWeight: 700 }}>
+                      {food.name}
+                      {food.brand ? ` · ${food.brand}` : ""}
+                    </div>
 
-        {sourceTab === "database" && databaseLoading && (
-          <div className="muted" style={{ marginTop: 10 }}>
-            Αναζήτηση στη βάση...
+                    {getSourceBadge(food) ? (
+                      <span className="tag">{getSourceBadge(food)}</span>
+                    ) : null}
+                  </div>
+
+                  <div className="muted">
+                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
+                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
+                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
+                    {formatNumber(food.fatPer100g || 0)}
+                  </div>
+                </button>
+
+                <button
+                  className="btn btn-light"
+                  onClick={() => toggleFavorite(food)}
+                >
+                  {isFavorite(food) ? "★" : "☆"}
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
-        <div className="stack-10" style={{ marginTop: 12 }}>
-          {visibleFoods.map((food) => (
-            <div key={food.id} className="food-list-item">
-              <button
-                className="food-choice"
-                onClick={() => setSelectedFood(food)}
-              >
-                <div style={{ fontWeight: 700 }}>
-                  {food.name}
-                  {food.brand ? ` · ${food.brand}` : ""}
-                </div>
-                <div className="muted">
-                  {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                  {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                  {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                  {formatNumber(food.fatPer100g || 0)}
-                </div>
-              </button>
-
-              <button
-                className="btn btn-light"
-                onClick={() => toggleFavorite(food)}
-              >
-                {isFavorite(food) ? "★" : "☆"}
-              </button>
-            </div>
-          ))}
-        </div>
-
         {selectedFood && (
           <div className="soft-box" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>
-              {selectedFood.name}
-              {selectedFood.brand ? ` · ${selectedFood.brand}` : ""}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+                marginBottom: 8
+              }}
+            >
+              <div style={{ fontWeight: 700 }}>
+                {selectedFood.name}
+                {selectedFood.brand ? ` · ${selectedFood.brand}` : ""}
+              </div>
+
+              {getSourceBadge(selectedFood) ? (
+                <span className="tag">{getSourceBadge(selectedFood)}</span>
+              ) : null}
             </div>
 
             <div className="stack-10">
@@ -399,7 +507,20 @@ export default function FoodTab({
             {favoriteFoods.map((food) => (
               <div key={food.id} className="food-list-item">
                 <div className="food-choice" style={{ cursor: "default" }}>
-                  <div style={{ fontWeight: 700 }}>{food.name}</div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <div style={{ fontWeight: 700 }}>{food.name}</div>
+                    {getSourceBadge(food) ? (
+                      <span className="tag">{getSourceBadge(food)}</span>
+                    ) : null}
+                  </div>
+
                   <div className="muted">
                     {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                     {formatNumber(food.proteinPer100g || 0)}
