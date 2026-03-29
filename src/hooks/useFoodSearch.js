@@ -5,9 +5,9 @@ export default function useFoodSearch(query) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const cleanQuery = query?.trim() || "";
+    const q = query.trim();
 
-    if (cleanQuery.length < 2) {
+    if (q.length < 2) {
       setResults([]);
       setLoading(false);
       return;
@@ -20,17 +20,23 @@ export default function useFoodSearch(query) {
 
       try {
         const res = await fetch(
-          `/.netlify/functions/food-search?q=${encodeURIComponent(cleanQuery)}`
+          `/.netlify/functions/food-search?q=${encodeURIComponent(q)}`
         );
 
         if (!res.ok) {
-          throw new Error(`Function request failed: ${res.status}`);
+          throw new Error(`Search failed: ${res.status}`);
         }
 
         const data = await res.json();
 
+        const arr = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : [];
+
         if (!cancelled) {
-          setResults(Array.isArray(data) ? data : []);
+          setResults(arr);
         }
       } catch (err) {
         console.error("Food search error:", err);
@@ -43,7 +49,7 @@ export default function useFoodSearch(query) {
           setLoading(false);
         }
       }
-    }, 400);
+    }, 300);
 
     return () => {
       cancelled = true;
