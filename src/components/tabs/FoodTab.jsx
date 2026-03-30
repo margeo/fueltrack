@@ -50,14 +50,10 @@ export default function FoodTab({
         sourceLabel: food.sourceLabel || "Database",
         name: food.name,
         brand: food.brand || "USDA",
-        caloriesPer100g:
-          Number(food.caloriesPer100g ?? food.calories) || 0,
-        proteinPer100g:
-          Number(food.proteinPer100g ?? food.protein) || 0,
-        carbsPer100g:
-          Number(food.carbsPer100g ?? food.carbs) || 0,
-        fatPer100g:
-          Number(food.fatPer100g ?? food.fat) || 0
+        caloriesPer100g: Number(food.caloriesPer100g ?? food.calories) || 0,
+        proteinPer100g: Number(food.proteinPer100g ?? food.protein) || 0,
+        carbsPer100g: Number(food.carbsPer100g ?? food.carbs) || 0,
+        fatPer100g: Number(food.fatPer100g ?? food.fat) || 0
       })
     );
   }, [databaseResults]);
@@ -155,7 +151,9 @@ export default function FoodTab({
         <h2>Φαγητό ημέρας</h2>
 
         {entries.length === 0 ? (
-          <div className="muted">Δεν έχεις βάλει φαγητό.</div>
+          <div className="soft-box">
+            <div className="muted">Δεν έχεις βάλει φαγητό.</div>
+          </div>
         ) : (
           <div className="stack-10">
             {MEALS.map((meal) => {
@@ -163,33 +161,23 @@ export default function FoodTab({
               if (!group || group.items.length === 0) return null;
 
               return (
-                <div key={meal} className="soft-box">
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 10,
-                      marginBottom: 10,
-                      flexWrap: "wrap"
-                    }}
-                  >
+                <div key={meal} className="soft-box food-meal-group">
+                  <div className="food-meal-head">
                     <div style={{ fontWeight: 700 }}>{meal}</div>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      {formatNumber(group.totalCalories)} kcal
-                    </div>
+                    <div className="muted">{formatNumber(group.totalCalories)} kcal</div>
                   </div>
 
-                  <div className="stack-10">
+                  <div className="food-day-list">
                     {group.items.map((item) => (
-                      <div key={item.id} className="food-list-item">
+                      <div key={item.id} className="food-entry-card">
                         <button
-                          className="food-choice"
+                          className="food-entry-main"
                           onClick={() => openEditEntry(item)}
-                          style={{ textAlign: "left" }}
+                          type="button"
                         >
-                          <div style={{ fontWeight: 700 }}>{item.name}</div>
-                          <div className="muted" style={{ marginTop: 4 }}>
+                          <div className="food-entry-title">{item.name}</div>
+
+                          <div className="muted food-entry-meta">
                             {item.grams}g · {formatNumber(item.calories || 0)} kcal
                             {item.protein !== undefined
                               ? ` · P ${formatNumber(item.protein || 0)}`
@@ -203,19 +191,23 @@ export default function FoodTab({
                           </div>
                         </button>
 
-                        <button
-                          className="btn btn-light"
-                          onClick={() => openEditEntry(item)}
-                        >
-                          Edit
-                        </button>
+                        <div className="food-entry-actions">
+                          <button
+                            className="btn btn-light"
+                            onClick={() => openEditEntry(item)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
 
-                        <button
-                          className="btn btn-light"
-                          onClick={() => deleteEntry(item.id)}
-                        >
-                          X
-                        </button>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => deleteEntry(item.id)}
+                            type="button"
+                          >
+                            X
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -229,7 +221,7 @@ export default function FoodTab({
       <div className="card">
         <h2>Αναζήτηση φαγητού</h2>
 
-        <div style={{ position: "relative" }}>
+        <div className="food-search-wrap">
           <input
             className="input"
             placeholder="Γράψε φαγητό"
@@ -241,23 +233,13 @@ export default function FoodTab({
           />
 
           {showAutocomplete && (
-            <div
-              className="soft-box"
-              style={{
-                marginTop: -4,
-                marginBottom: 12,
-                padding: 8,
-                border: "1px solid rgba(255,255,255,0.08)"
-              }}
-            >
+            <div className="food-autocomplete-panel">
               {databaseLoading && (
-                <div className="muted" style={{ padding: "6px 4px" }}>
-                  Αναζήτηση...
-                </div>
+                <div className="muted food-autocomplete-state">Αναζήτηση...</div>
               )}
 
               {!databaseLoading && topSearchResults.length === 0 && (
-                <div className="muted" style={{ padding: "6px 4px" }}>
+                <div className="muted food-autocomplete-state">
                   Δεν βρέθηκαν αποτελέσματα.
                 </div>
               )}
@@ -266,24 +248,12 @@ export default function FoodTab({
                 topSearchResults.map((food) => (
                   <button
                     key={`auto-${food.id}`}
-                    className="food-choice"
+                    className="food-autocomplete-item"
                     onClick={() => setSelectedFood(food)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "10px 8px",
-                      borderRadius: 10
-                    }}
+                    type="button"
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        flexWrap: "wrap"
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>
+                    <div className="food-result-top">
+                      <div className="food-result-name">
                         {food.name}
                         {food.brand ? ` · ${food.brand}` : ""}
                       </div>
@@ -293,7 +263,7 @@ export default function FoodTab({
                       ) : null}
                     </div>
 
-                    <div className="muted" style={{ marginTop: 4 }}>
+                    <div className="muted food-result-meta">
                       {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                       {formatNumber(food.proteinPer100g || 0)} · C{" "}
                       {formatNumber(food.carbsPer100g || 0)} · F{" "}
@@ -305,63 +275,10 @@ export default function FoodTab({
           )}
         </div>
 
-        {showFullResultsList && (
-          <div className="stack-10" style={{ marginTop: 12 }}>
-            {visibleFoods.map((food) => (
-              <div key={food.id} className="food-list-item">
-                <button
-                  className="food-choice"
-                  onClick={() => setSelectedFood(food)}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>
-                      {food.name}
-                      {food.brand ? ` · ${food.brand}` : ""}
-                    </div>
-
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
-                  </div>
-
-                  <div className="muted">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                    {formatNumber(food.fatPer100g || 0)}
-                  </div>
-                </button>
-
-                <button
-                  className="btn btn-light"
-                  onClick={() => toggleFavorite(food)}
-                >
-                  {isFavorite(food) ? "★" : "☆"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {selectedFood && (
-          <div className="soft-box" style={{ marginTop: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-                marginBottom: 8
-              }}
-            >
-              <div style={{ fontWeight: 700 }}>
+          <div className="soft-box food-selected-box">
+            <div className="food-selected-head">
+              <div className="food-selected-title">
                 {selectedFood.name}
                 {selectedFood.brand ? ` · ${selectedFood.brand}` : ""}
               </div>
@@ -371,44 +288,102 @@ export default function FoodTab({
               ) : null}
             </div>
 
-            <div className="stack-10">
-              <input
-                className="input"
-                value={foodGrams}
-                onChange={(e) => setFoodGrams(e.target.value)}
-                placeholder="Γραμμάρια"
-                inputMode="numeric"
-              />
+            <div className="food-selected-controls">
+              <label className="food-inline-field">
+                <span className="muted">Γραμμάρια</span>
+                <input
+                  className="input"
+                  value={foodGrams}
+                  onChange={(e) => setFoodGrams(e.target.value)}
+                  placeholder="Γραμμάρια"
+                  inputMode="numeric"
+                />
+              </label>
 
-              <select
-                className="input"
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-              >
-                {MEALS.map((meal) => (
-                  <option key={meal} value={meal}>
-                    {meal}
-                  </option>
-                ))}
-              </select>
+              <label className="food-inline-field">
+                <span className="muted">Γεύμα</span>
+                <select
+                  className="input"
+                  value={mealType}
+                  onChange={(e) => setMealType(e.target.value)}
+                >
+                  {MEALS.map((meal) => (
+                    <option key={meal} value={meal}>
+                      {meal}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-              {preview && (
+            {preview && (
+              <div className="soft-box food-preview-box">
                 <div className="muted">
                   Preview: {formatNumber(preview.calories || 0)} kcal · P{" "}
                   {formatNumber(preview.protein || 0)} · C{" "}
                   {formatNumber(preview.carbs || 0)} · F{" "}
                   {formatNumber(preview.fat || 0)}
                 </div>
-              )}
+              </div>
+            )}
 
-              <button className="btn btn-dark" onClick={addSelectedFood}>
+            <div className="action-row">
+              <button className="btn btn-dark" onClick={addSelectedFood} type="button">
                 Προσθήκη
+              </button>
+
+              <button
+                className="btn btn-light"
+                onClick={clearSearchAndSelection}
+                type="button"
+              >
+                Καθαρισμός
               </button>
             </div>
           </div>
         )}
 
-        <div className="soft-box" style={{ marginTop: 12 }}>
+        {showFullResultsList && (
+          <div className="food-results-list">
+            {visibleFoods.map((food) => (
+              <div key={food.id} className="food-result-card">
+                <button
+                  className="food-result-main"
+                  onClick={() => setSelectedFood(food)}
+                  type="button"
+                >
+                  <div className="food-result-top">
+                    <div className="food-result-name">
+                      {food.name}
+                      {food.brand ? ` · ${food.brand}` : ""}
+                    </div>
+
+                    {getSourceBadge(food) ? (
+                      <span className="tag">{getSourceBadge(food)}</span>
+                    ) : null}
+                  </div>
+
+                  <div className="muted food-result-meta">
+                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
+                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
+                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
+                    {formatNumber(food.fatPer100g || 0)}
+                  </div>
+                </button>
+
+                <button
+                  className="btn btn-light food-fav-btn"
+                  onClick={() => toggleFavorite(food)}
+                  type="button"
+                >
+                  {isFavorite(food) ? "★" : "☆"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="soft-box food-custom-box">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Custom φαγητό</div>
 
           <div className="stack-10">
@@ -419,39 +394,41 @@ export default function FoodTab({
               onChange={(e) => setNewName(e.target.value)}
             />
 
-            <input
-              className="input"
-              placeholder="kcal / 100g"
-              inputMode="numeric"
-              value={newCalories}
-              onChange={(e) => setNewCalories(e.target.value)}
-            />
+            <div className="grid-2">
+              <input
+                className="input"
+                placeholder="kcal / 100g"
+                inputMode="numeric"
+                value={newCalories}
+                onChange={(e) => setNewCalories(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Protein / 100g"
-              inputMode="decimal"
-              value={newProtein}
-              onChange={(e) => setNewProtein(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Protein / 100g"
+                inputMode="decimal"
+                value={newProtein}
+                onChange={(e) => setNewProtein(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Carbs / 100g"
-              inputMode="decimal"
-              value={newCarbs}
-              onChange={(e) => setNewCarbs(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Carbs / 100g"
+                inputMode="decimal"
+                value={newCarbs}
+                onChange={(e) => setNewCarbs(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Fat / 100g"
-              inputMode="decimal"
-              value={newFat}
-              onChange={(e) => setNewFat(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Fat / 100g"
+                inputMode="decimal"
+                value={newFat}
+                onChange={(e) => setNewFat(e.target.value)}
+              />
+            </div>
 
-            <button className="btn btn-dark" onClick={handleAddCustomFood}>
+            <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">
               Αποθήκευση food
             </button>
           </div>
@@ -462,36 +439,41 @@ export default function FoodTab({
         <div className="card">
           <h2>Πρόσφατα</h2>
 
-          <div className="stack-10">
+          <div className="food-compact-list">
             {recentFoods.slice(0, 6).map((item) => {
               const recentPreview = createFoodEntry(item.food, item.grams, item.mealType);
 
               return (
-                <div key={item.key} className="food-list-item">
-                  <div className="food-choice" style={{ cursor: "default" }}>
-                    <div style={{ fontWeight: 700 }}>{item.food.name}</div>
-                    <div className="muted">
-                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)} kcal
+                <div key={item.key} className="food-compact-card">
+                  <div className="food-compact-main">
+                    <div className="food-compact-title">{item.food.name}</div>
+                    <div className="muted food-compact-meta">
+                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)}{" "}
+                      kcal
                     </div>
                   </div>
 
-                  <button
-                    className="btn btn-light"
-                    onClick={() => {
-                      setSelectedFood(item.food);
-                      setFoodGrams(String(item.grams || 100));
-                      setMealType(item.mealType || "Πρωινό");
-                    }}
-                  >
-                    Edit
-                  </button>
+                  <div className="food-compact-actions">
+                    <button
+                      className="btn btn-light"
+                      onClick={() => {
+                        setSelectedFood(item.food);
+                        setFoodGrams(String(item.grams || 100));
+                        setMealType(item.mealType || "Πρωινό");
+                      }}
+                      type="button"
+                    >
+                      Edit
+                    </button>
 
-                  <button
-                    className="btn btn-dark"
-                    onClick={() => quickAddRecent(item)}
-                  >
-                    +
-                  </button>
+                    <button
+                      className="btn btn-dark"
+                      onClick={() => quickAddRecent(item)}
+                      type="button"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -503,43 +485,38 @@ export default function FoodTab({
         <div className="card">
           <h2>Αγαπημένα</h2>
 
-          <div className="stack-10">
+          <div className="food-compact-list">
             {favoriteFoods.map((food) => (
-              <div key={food.id} className="food-list-item">
-                <div className="food-choice" style={{ cursor: "default" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>{food.name}</div>
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
+              <div key={food.id} className="food-compact-card">
+                <div className="food-compact-main">
+                  <div className="food-result-top">
+                    <div className="food-compact-title">{food.name}</div>
+                    {getSourceBadge(food) ? <span className="tag">{getSourceBadge(food)}</span> : null}
                   </div>
 
-                  <div className="muted">
+                  <div className="muted food-compact-meta">
                     {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                     {formatNumber(food.proteinPer100g || 0)}
                   </div>
                 </div>
 
-                <button
-                  className="btn btn-light"
-                  onClick={() => setSelectedFood(food)}
-                >
-                  Άνοιγμα
-                </button>
+                <div className="food-compact-actions">
+                  <button
+                    className="btn btn-light"
+                    onClick={() => setSelectedFood(food)}
+                    type="button"
+                  >
+                    Άνοιγμα
+                  </button>
 
-                <button
-                  className="btn btn-dark"
-                  onClick={() => quickAddFavorite(food)}
-                >
-                  +100g
-                </button>
+                  <button
+                    className="btn btn-dark"
+                    onClick={() => quickAddFavorite(food)}
+                    type="button"
+                  >
+                    +100g
+                  </button>
+                </div>
               </div>
             ))}
           </div>
