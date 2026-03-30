@@ -137,16 +137,6 @@ select {
   flex-wrap: wrap;
 }
 
-.food-list-item,
-.exercise-list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #edf2f7;
-}
-
 .soft-box {
   background: #f8fafc;
   border: 1px solid #eef2f7;
@@ -289,16 +279,6 @@ select {
   border: 1px solid #e5e7eb;
 }
 
-.food-choice {
-  width: 100%;
-  text-align: left;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-}
-
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -311,325 +291,18 @@ select {
   align-items: center;
 }
 
-@media (max-width: 560px) {
-  .hero-big {
-    font-size: 26px;
-  }
-}
-:root {
-  font-family: Arial, sans-serif;
-  color: #111827;
-  background: #f6f8fb;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-}
-
-button,
-input,
-select {
-  font: inherit;
-}
-
-.app-shell {
-  min-height: 100vh;
-}
-
-.app-container {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 12px;
-}
-
-.app-header {
-  margin-bottom: 14px;
-}
-
-.app-header h1 {
-  margin: 0 0 6px;
-  font-size: 30px;
-}
-
-.app-header p {
-  margin: 0;
-  color: #6b7280;
-}
-
-.card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-
-.stack-10 > * + * {
-  margin-top: 10px;
-}
-
-.input {
-  width: 100%;
-  padding: 13px;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background: white;
-}
-
-.btn {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.btn-dark {
-  background: #111827;
-  color: white;
-}
-
-.btn-light {
-  background: #f3f4f6;
-  color: #111827;
-  border: 1px solid #e5e7eb;
-}
-
-.btn-danger {
-  background: #b91c1c;
-  color: white;
-}
-
-.btn-edit {
-  background: #0f766e;
-  color: white;
-}
-
-.muted {
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.badge {
-  display: inline-block;
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
   font-size: 12px;
   font-weight: 700;
-  border-radius: 999px;
-  padding: 5px 8px;
 }
 
-.badge-local {
-  color: #166534;
-  background: #dcfce7;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.wrap {
-  flex-wrap: wrap;
-}
-
-.food-list-item,
-.exercise-list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #edf2f7;
-}
-
-.soft-box {
-  background: #f8fafc;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  padding: 14px;
-}
-
-.hero-card {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  color: white;
-  border-radius: 22px;
-  padding: 18px;
-  margin-bottom: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
-}
-
-.hero-subtle {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
-}
-
-.hero-big {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.hero-stat {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 14px;
-}
-
-.progress-outer {
-  margin-top: 10px;
-  width: 100%;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progress-inner {
-  height: 100%;
-  background: #22c55e;
-}
-
-.bottom-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  gap: 4px;
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid #e5e7eb;
-  z-index: 100;
-}
-
-.bottom-nav button {
-  flex: 1;
-  border: none;
-  background: transparent;
-  border-radius: 14px;
-  padding: 8px 4px;
-  cursor: pointer;
-  color: #6b7280;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.bottom-nav button.active {
-  color: #111827;
-  background: #f3f4f6;
-}
-
-.bottom-nav .nav-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.fab-btn {
-  position: fixed;
-  right: 18px;
-  bottom: 86px;
-  width: 60px;
-  height: 60px;
-  border-radius: 999px;
-  border: none;
-  background: #111827;
-  color: white;
-  font-size: 34px;
-  cursor: pointer;
-  z-index: 110;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 12px;
-}
-
-.modal-sheet {
-  width: 100%;
-  max-width: 760px;
-  background: white;
-  border-radius: 22px;
-  padding: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.24);
-}
-
-.modal-sheet h3 {
-  margin-top: 0;
-}
-
-.history-row {
-  width: 100%;
-  text-align: left;
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-}
-
-.food-choice {
-  width: 100%;
-  text-align: left;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-}
-
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-}
-
-.action-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* Exercise tab improvements */
+/* Exercise tab */
 
 .exercise-summary-box {
   margin-top: 10px;
@@ -745,14 +418,356 @@ select {
   margin: 0;
 }
 
-.tag {
-  display: inline-flex;
+/* Food tab */
+
+.food-meal-group {
+  padding: 12px;
+}
+
+.food-meal-head {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-size: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.food-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.food-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.food-entry-main {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.food-entry-title {
+  font-weight: 700;
+}
+
+.food-entry-meta {
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.food-entry-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.food-search-wrap {
+  position: relative;
+}
+
+.food-autocomplete-panel {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 8px;
+}
+
+.food-autocomplete-state {
+  padding: 8px 6px;
+}
+
+.food-autocomplete-item {
+  width: 100%;
+  border: none;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.food-autocomplete-item + .food-autocomplete-item {
+  margin-top: 8px;
+}
+
+.food-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.food-result-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  padding: 8px;
+}
+
+.food-result-main {
+  flex: 1;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.food-result-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.food-result-name {
+  font-weight: 700;
+}
+
+.food-result-meta {
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.food-fav-btn {
+  min-width: 48px;
+  padding-inline: 12px;
+}
+
+.food-selected-box {
+  margin-top: 12px;
+}
+
+.food-selected-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.food-selected-title {
+  font-weight: 700;
+}
+
+.food-selected-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.food-inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.food-preview-box {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: #ffffff;
+}
+
+.food-custom-box {
+  margin-top: 12px;
+}
+
+.food-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.food-compact-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.food-compact-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.food-compact-title {
+  font-weight: 700;
+}
+
+.food-compact-meta {
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.food-compact-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Summary tab */
+
+.summary-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.summary-date-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.summary-date-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.summary-date-input {
+  width: 160px;
+  margin-bottom: 0;
+}
+
+.summary-remaining-block {
+  margin-top: 18px;
+}
+
+.summary-remaining-positive {
+  color: #86efac;
+}
+
+.summary-remaining-negative {
+  color: #fca5a5;
+}
+
+.summary-remaining-neutral {
+  color: #fde68a;
+}
+
+.summary-remaining-formula {
+  margin-top: 8px;
+}
+
+.summary-hero-grid {
+  margin-top: 16px;
+}
+
+.summary-hero-grid-2,
+.summary-hero-grid-3 {
+  margin-top: 12px;
+}
+
+.summary-progress-text {
+  margin-top: 8px;
+}
+
+.summary-section-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summary-mode-hint {
+  margin-bottom: 10px;
+}
+
+.summary-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-suggestion-card {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.summary-suggestion-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.summary-suggestion-title {
+  font-weight: 700;
+}
+
+.summary-suggestion-meta {
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.summary-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-history-row {
+  margin-bottom: 0;
+}
+
+.summary-history-row-active {
+  border: 2px solid #111827;
+}
+
+.summary-history-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.summary-history-title {
+  font-weight: 700;
+}
+
+.summary-history-stats {
+  text-align: right;
+}
+
+.summary-history-remaining-positive {
+  color: #166534;
+  font-weight: 700;
+}
+
+.summary-history-remaining-negative {
+  color: #b91c1c;
   font-weight: 700;
 }
 
@@ -815,5 +830,66 @@ select {
 
   .exercise-add-btn {
     flex: 1;
+  }
+
+  .food-entry-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .food-entry-actions {
+    width: 100%;
+  }
+
+  .food-entry-actions .btn {
+    flex: 1;
+  }
+
+  .food-selected-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .food-result-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .food-fav-btn {
+    width: 100%;
+  }
+
+  .food-compact-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .food-compact-actions {
+    width: 100%;
+  }
+
+  .food-compact-actions .btn {
+    flex: 1;
+  }
+
+  .summary-date-controls {
+    width: 100%;
+  }
+
+  .summary-date-controls .btn {
+    flex: 1;
+  }
+
+  .summary-date-input {
+    width: 100%;
+  }
+
+  .summary-history-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .summary-history-stats {
+    width: 100%;
+    text-align: left;
   }
 }

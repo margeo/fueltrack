@@ -20,7 +20,6 @@ export default function SummaryTab({
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
-    if (goalType === "fitness") return "Fitness";
     return "Maintain";
   }
 
@@ -32,10 +31,10 @@ export default function SummaryTab({
     return "Balanced";
   }
 
-  function getRemainingColor() {
-    if (remainingCalories > 100) return "#86efac";
-    if (remainingCalories < -150) return "#fca5a5";
-    return "#fde68a";
+  function getRemainingClassName() {
+    if (remainingCalories > 100) return "summary-remaining-positive";
+    if (remainingCalories < -150) return "summary-remaining-negative";
+    return "summary-remaining-neutral";
   }
 
   function getModeHint() {
@@ -144,26 +143,24 @@ export default function SummaryTab({
   return (
     <>
       <div className="hero-card">
-        <div className="row wrap">
+        <div className="summary-date-row">
           <div>
             <div className="hero-subtle">Επιλεγμένη ημέρα</div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>
-              {formatDisplayDate(selectedDate)}
-            </div>
+            <div className="summary-date-title">{formatDisplayDate(selectedDate)}</div>
             <div className="hero-subtle">{selectedDate}</div>
           </div>
 
-          <div className="row">
+          <div className="summary-date-controls">
             <button
               className="btn btn-light"
               onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
+              type="button"
             >
               {isToday ? "Σήμερα ✓" : "Σήμερα"}
             </button>
 
             <input
-              className="input"
-              style={{ width: 160, marginBottom: 0 }}
+              className="input summary-date-input"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -171,18 +168,18 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div className="summary-remaining-block">
           <div className="hero-subtle">Υπόλοιπο ημέρας</div>
-          <div className="hero-big" style={{ color: getRemainingColor() }}>
+          <div className={`hero-big ${getRemainingClassName()}`}>
             {formatNumber(remainingCalories)} kcal
           </div>
 
-          <div className="hero-subtle" style={{ marginTop: 8 }}>
+          <div className="hero-subtle summary-remaining-formula">
             Υπόλοιπο = Στόχος - Φαγητό + Άσκηση
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 16 }}>
+        <div className="hero-grid summary-hero-grid">
           <div className="hero-stat">
             <div className="hero-subtle">Στόχος</div>
             <div>{formatNumber(targetCalories)} kcal</div>
@@ -204,7 +201,7 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 12 }}>
+        <div className="hero-grid summary-hero-grid-2">
           <div className="hero-stat">
             <div className="hero-subtle">Στόχος</div>
             <div>{getGoalLabel()}</div>
@@ -216,7 +213,7 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 12 }}>
+        <div className="hero-grid summary-hero-grid-3">
           <div className="hero-stat">
             <div className="hero-subtle">Πρωτεΐνη</div>
             <div>
@@ -239,7 +236,7 @@ export default function SummaryTab({
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="hero-subtle" style={{ marginTop: 8 }}>
+        <div className="hero-subtle summary-progress-text">
           {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal από το φαγητό
         </div>
       </div>
@@ -248,13 +245,11 @@ export default function SummaryTab({
         <h2>Κατεύθυνση ημέρας</h2>
 
         <div className="soft-box">
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>
+          <div className="summary-section-title">
             Σήμερα δουλεύεις με {getModeLabel()}
           </div>
 
-          <div className="muted" style={{ marginBottom: 10 }}>
-            {getModeHint()}
-          </div>
+          <div className="muted summary-mode-hint">{getModeHint()}</div>
 
           <div className="stack-10">
             <div>
@@ -280,11 +275,11 @@ export default function SummaryTab({
             </div>
           </div>
         ) : (
-          <div className="stack-10">
+          <div className="summary-suggestions-list">
             {suggestions.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} className="soft-box">
-                <div className="row wrap" style={{ marginBottom: 6 }}>
-                  <div style={{ fontWeight: 700 }}>
+              <div key={`${food.source || "local"}-${food.id}`} className="summary-suggestion-card">
+                <div className="summary-suggestion-top">
+                  <div className="summary-suggestion-title">
                     {food.name}
                     {food.brand ? ` · ${food.brand}` : ""}
                   </div>
@@ -293,7 +288,7 @@ export default function SummaryTab({
                   </div>
                 </div>
 
-                <div className="muted" style={{ marginBottom: 8 }}>
+                <div className="muted summary-suggestion-meta">
                   Πρωτεΐνη {formatNumber(food.proteinPer100g || 0)}g · Υδατ.{" "}
                   {formatNumber(food.carbsPer100g || 0)}g · Λίπος{" "}
                   {formatNumber(food.fatPer100g || 0)}g
@@ -309,47 +304,45 @@ export default function SummaryTab({
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
 
-        {last7Days.map((day) => (
-          <button
-            key={day.date}
-            className="history-row"
-            onClick={() => setSelectedDate(day.date)}
-            style={{
-              border:
-                day.date === selectedDate
-                  ? "2px solid #111827"
-                  : "1px solid #e5e7eb"
-            }}
-          >
-            <div className="row">
-              <div>
-                <div style={{ fontWeight: 700 }}>
-                  {formatDisplayDate(day.date)}
-                </div>
-                <div className="muted">{day.date}</div>
-              </div>
-
-              <div style={{ textAlign: "right" }}>
-                <div className="muted">
-                  Φαγητό: {formatNumber(day.eaten)} kcal
+        <div className="summary-history-list">
+          {last7Days.map((day) => (
+            <button
+              key={day.date}
+              className={`history-row summary-history-row ${
+                day.date === selectedDate ? "summary-history-row-active" : ""
+              }`}
+              onClick={() => setSelectedDate(day.date)}
+              type="button"
+            >
+              <div className="summary-history-main">
+                <div>
+                  <div className="summary-history-title">{formatDisplayDate(day.date)}</div>
+                  <div className="muted">{day.date}</div>
                 </div>
 
-                <div className="muted">
-                  Άσκηση: +{formatNumber(day.exercise)} kcal
-                </div>
+                <div className="summary-history-stats">
+                  <div className="muted">
+                    Φαγητό: {formatNumber(day.eaten)} kcal
+                  </div>
 
-                <div
-                  style={{
-                    color: day.remaining >= 0 ? "#166534" : "#b91c1c",
-                    fontWeight: 700
-                  }}
-                >
-                  Υπόλοιπο: {formatNumber(day.remaining)} kcal
+                  <div className="muted">
+                    Άσκηση: +{formatNumber(day.exercise)} kcal
+                  </div>
+
+                  <div
+                    className={
+                      day.remaining >= 0
+                        ? "summary-history-remaining-positive"
+                        : "summary-history-remaining-negative"
+                    }
+                  >
+                    Υπόλοιπο: {formatNumber(day.remaining)} kcal
+                  </div>
                 </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
     </>
   );
