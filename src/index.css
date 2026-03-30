@@ -515,7 +515,7 @@ select {
 .food-result-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #f8fafc;
   border: 1px solid #eef2f7;
   border-radius: 14px;
@@ -550,9 +550,27 @@ select {
   line-height: 1.45;
 }
 
-.food-fav-btn {
-  min-width: 48px;
-  padding-inline: 12px;
+.food-fav-icon-btn {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.food-fav-icon-btn.is-active {
+  color: #d97706;
+  border-color: #fcd34d;
+  background: #fffbeb;
 }
 
 .food-selected-box {
@@ -850,12 +868,14 @@ select {
   }
 
   .food-result-card {
-    flex-direction: column;
     align-items: stretch;
   }
 
-  .food-fav-btn {
-    width: 100%;
+  .food-fav-icon-btn {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    align-self: center;
   }
 
   .food-compact-card {
