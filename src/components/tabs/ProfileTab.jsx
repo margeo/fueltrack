@@ -50,15 +50,18 @@ export default function ProfileTab({
     return "-";
   }
 
+  const appliedDeficit =
+    goalType === "lose"
+      ? Math.min(Math.max(Number(dailyDeficit || 0), 150), 900)
+      : 0;
+
   return (
     <div className="card">
       <h2>Προφίλ & στόχος</h2>
 
       {!profileComplete && (
-        <div className="soft-box" style={{ marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>
-            Συμπλήρωσε πρώτα το προφίλ σου
-          </div>
+        <div className="soft-box profile-intro-box">
+          <div className="profile-section-title">Συμπλήρωσε πρώτα το προφίλ σου</div>
           <div className="muted">
             Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά
             τον ημερήσιο στόχο θερμίδων και πρωτεΐνης.
@@ -66,14 +69,12 @@ export default function ProfileTab({
         </div>
       )}
 
-      <div className="soft-box" style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Βασικά στοιχεία</div>
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Βασικά στοιχεία</div>
 
-        <div className="grid-2">
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Ηλικία
-            </div>
+        <div className="grid-2 profile-grid-compact">
+          <label className="profile-field">
+            <div className="profile-label">Ηλικία</div>
             <input
               className="input"
               placeholder="Ηλικία"
@@ -81,12 +82,10 @@ export default function ProfileTab({
               value={age}
               onChange={(e) => setAge(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Φύλο
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Φύλο</div>
             <select
               className="input"
               value={gender}
@@ -95,12 +94,10 @@ export default function ProfileTab({
               <option value="male">Άνδρας</option>
               <option value="female">Γυναίκα</option>
             </select>
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Ύψος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Ύψος (cm)</div>
             <input
               className="input"
               placeholder="Ύψος (cm)"
@@ -108,12 +105,10 @@ export default function ProfileTab({
               value={height}
               onChange={(e) => setHeight(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Βάρος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Βάρος (kg)</div>
             <input
               className="input"
               placeholder="Βάρος (kg)"
@@ -121,18 +116,16 @@ export default function ProfileTab({
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
-          </div>
+          </label>
         </div>
       </div>
 
-      <div className="soft-box" style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Ρυθμίσεις στόχου</div>
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Ρυθμίσεις στόχου</div>
 
         <div className="stack-10">
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Επίπεδο δραστηριότητας
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Επίπεδο δραστηριότητας</div>
             <select
               className="input"
               value={activity}
@@ -143,12 +136,10 @@ export default function ProfileTab({
               <option value="1.6">Moderate</option>
               <option value="1.8">High</option>
             </select>
-          </div>
+          </label>
 
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Στόχος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Στόχος</div>
             <select
               className="input"
               value={goalType}
@@ -158,12 +149,10 @@ export default function ProfileTab({
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
             </select>
-          </div>
+          </label>
 
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Τρόπος διατροφής
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Τρόπος διατροφής</div>
             <select
               className="input"
               value={mode}
@@ -175,19 +164,17 @@ export default function ProfileTab({
               <option value="fasting">Fasting 16:8</option>
               <option value="high_protein">High Protein</option>
             </select>
-          </div>
+          </label>
         </div>
       </div>
 
       {showGoalFields && (
-        <div className="soft-box" style={{ marginBottom: 14 }}>
-          <div style={{ fontWeight: 700, marginBottom: 10 }}>
-            Στοιχεία στόχου
-          </div>
+        <div className="soft-box profile-section-box">
+          <div className="profile-section-title">Στοιχεία στόχου</div>
 
-          <div className="grid-2">
-            <div className="soft-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
+          <div className="grid-2 profile-grid-compact">
+            <label className="profile-field">
+              <div className="profile-label">
                 {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
               </div>
               <input
@@ -197,12 +184,10 @@ export default function ProfileTab({
                 value={targetWeightLoss}
                 onChange={(e) => setTargetWeightLoss(e.target.value)}
               />
-            </div>
+            </label>
 
-            <div className="soft-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                Διάρκεια
-              </div>
+            <label className="profile-field">
+              <div className="profile-label">Εβδομάδες</div>
               <input
                 className="input"
                 placeholder="Σε πόσες εβδομάδες"
@@ -210,41 +195,46 @@ export default function ProfileTab({
                 value={weeks}
                 onChange={(e) => setWeeks(e.target.value)}
               />
-            </div>
+            </label>
           </div>
         </div>
       )}
 
-      <div className="soft-box" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Υπολογισμοί</div>
+      <div className="soft-box profile-section-box profile-highlight-box">
+        <div className="profile-section-title">Υπολογισμοί</div>
 
-        <div style={{ marginBottom: 8 }}>
-          Maintenance / TDEE: <strong>{formatNumber(tdee)} kcal</strong>
+        <div className="profile-stat-row">
+          <span>Maintenance / TDEE</span>
+          <strong>{formatNumber(tdee)} kcal</strong>
         </div>
 
-        <div style={{ marginBottom: 8 }}>
-          Ημερήσιος στόχος: <strong>{formatNumber(targetCalories)} kcal</strong>
+        <div className="profile-stat-row">
+          <span>Ημερήσιος στόχος</span>
+          <strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
 
-        {goalType === "lose" && dailyDeficit > 0 && (
-          <div style={{ marginBottom: 8 }}>
-            Ημερήσιο έλλειμμα: <strong>{formatNumber(dailyDeficit)} kcal</strong>
+        {goalType === "lose" && appliedDeficit > 0 && (
+          <div className="profile-stat-row">
+            <span>Ημερήσιο έλλειμμα</span>
+            <strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
 
         {goalType === "gain" && (
-          <div style={{ marginBottom: 8 }}>
-            Ημερήσιο πλεόνασμα: <strong>300 kcal</strong>
+          <div className="profile-stat-row">
+            <span>Ημερήσιο πλεόνασμα</span>
+            <strong>300 kcal</strong>
           </div>
         )}
 
-        <div>
-          Στόχος πρωτεΐνης: <strong>{formatNumber(proteinTarget || 0)} g</strong>
+        <div className="profile-stat-row profile-stat-row-last">
+          <span>Στόχος πρωτεΐνης</span>
+          <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
 
-      <div className="soft-box" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Σύνοψη</div>
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Σύνοψη</div>
 
         <div className="stack-10">
           <div>

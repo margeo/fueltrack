@@ -789,6 +789,52 @@ select {
   font-weight: 700;
 }
 
+/* Profile tab */
+
+.profile-intro-box {
+  margin-bottom: 12px;
+}
+
+.profile-section-box {
+  margin-bottom: 14px;
+}
+
+.profile-section-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.profile-grid-compact {
+  gap: 8px;
+}
+
+.profile-field {
+  display: block;
+}
+
+.profile-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.profile-highlight-box {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.profile-stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.profile-stat-row-last {
+  margin-bottom: 0;
+}
+
 @media (max-width: 560px) {
   .app-container {
     padding: 10px;
@@ -911,5 +957,19 @@ select {
   .summary-history-stats {
     width: 100%;
     text-align: left;
+  }
+
+  .profile-section-title {
+    font-size: 14px;
+  }
+
+  .profile-stat-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .input {
+    padding: 11px;
   }
 }
