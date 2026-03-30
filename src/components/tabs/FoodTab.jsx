@@ -137,8 +137,8 @@ export default function FoodTab({
   }
 
   function getSourceBadge(food) {
-    if (food.sourceLabel) return food.sourceLabel;
-    if (food.source === "local") return "Local";
+    if (food.source === "local") return "";
+    if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
     if (food.source === "usda") return "USDA";
     if (food.source === "off") return "Open Food";
     if (food.source === "database") return "Database";
@@ -372,9 +372,11 @@ export default function FoodTab({
                 </button>
 
                 <button
-                  className="btn btn-light food-fav-btn"
+                  className={`food-fav-icon-btn ${isFavorite(food) ? "is-active" : ""}`}
                   onClick={() => toggleFavorite(food)}
                   type="button"
+                  aria-label={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
                 >
                   {isFavorite(food) ? "★" : "☆"}
                 </button>
