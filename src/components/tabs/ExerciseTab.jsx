@@ -81,39 +81,51 @@ export default function ExerciseTab({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap"
+                gap: 10
               }}
             >
-              <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ flex: 1, minWidth: 120 }}>
                 <div style={{ fontWeight: 700 }}>{exercise.name}</div>
                 <div className="muted" style={{ marginTop: 4 }}>
                   {formatNumber(exercise.caloriesPerMinute)} kcal / λεπτό
                 </div>
               </div>
 
-              <input
-                className="input"
-                type="number"
-                min="1"
-                placeholder="Λεπτά"
-                value={exerciseMinutes[exercise.name] || ""}
-                onChange={(e) =>
-                  setExerciseMinutes((prev) => ({
-                    ...prev,
-                    [exercise.name]: e.target.value
-                  }))
-                }
-                style={{ width: 110, marginBottom: 0 }}
-              />
-
-              <button
-                className="btn btn-dark"
-                onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
-                type="button"
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  flexShrink: 0
+                }}
               >
-                Προσθήκη
-              </button>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  placeholder="Λεπτά"
+                  value={exerciseMinutes[exercise.name] || ""}
+                  onChange={(e) =>
+                    setExerciseMinutes((prev) => ({
+                      ...prev,
+                      [exercise.name]: e.target.value
+                    }))
+                  }
+                  style={{ width: 78, marginBottom: 0 }}
+                />
+
+                <button
+                  className="btn btn-dark"
+                  onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
+                  type="button"
+                  style={{
+                    whiteSpace: "nowrap",
+                    paddingInline: 12
+                  }}
+                >
+                  Προσθήκη
+                </button>
+              </div>
             </div>
           ))}
         </div>

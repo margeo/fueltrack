@@ -42,8 +42,6 @@ export function calculateTargetCalories({
 
   if (goalType === "maintain") return base;
 
-  if (goalType === "fitness") return Math.round(base - 150);
-
   if (goalType === "gain") return Math.round(base + 300);
 
   if (goalType === "lose") {
@@ -88,10 +86,12 @@ export function calculateMacroTargets({
   }
 
   const proteinCalories = proteinTarget * 4;
-  const remaining = calories - proteinCalories;
+  const remaining = Math.max(calories - proteinCalories, 0);
 
-  const carbsCalories = remaining * (mode.carbsPercent / (mode.carbsPercent + mode.fatPercent));
-  const fatCalories = remaining * (mode.fatPercent / (mode.carbsPercent + mode.fatPercent));
+  const carbsCalories =
+    remaining * (mode.carbsPercent / (mode.carbsPercent + mode.fatPercent));
+  const fatCalories =
+    remaining * (mode.fatPercent / (mode.carbsPercent + mode.fatPercent));
 
   return {
     carbsGrams: Math.round(carbsCalories / 4),
