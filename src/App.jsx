@@ -34,7 +34,10 @@ export default function App() {
   const [height, setHeight] = useState(() => loadValue("ft_height", ""));
   const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
   const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
-  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "lose"));
+  const [goalType, setGoalType] = useState(() => {
+    const saved = loadValue("ft_goalType", "lose");
+    return saved === "fitness" ? "maintain" : saved;
+  });
   const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() =>
     loadValue("ft_targetWeightLoss", "")
@@ -85,7 +88,8 @@ export default function App() {
     const savedHeight = loadValue("ft_height", "");
     const savedWeight = loadValue("ft_weight", "");
     const savedActivity = loadValue("ft_activity", "1.4");
-    const savedGoalType = loadValue("ft_goalType", "lose");
+    const rawSavedGoalType = loadValue("ft_goalType", "lose");
+    const savedGoalType = rawSavedGoalType === "fitness" ? "maintain" : rawSavedGoalType;
     const savedMode = loadValue("ft_mode", "balanced");
     const savedHasSeenWelcome = loadValue("ft_hasSeenWelcome", "false") === "true";
     const savedTab = loadValue("ft_activeTab", "summary");
@@ -109,12 +113,18 @@ export default function App() {
     setSelectedDate(getTodayKey());
   }, []);
 
+  useEffect(() => {
+    if (goalType === "fitness") {
+      setGoalType("maintain");
+    }
+  }, [goalType]);
+
   useEffect(() => saveValue("ft_age", age), [age]);
   useEffect(() => saveValue("ft_gender", gender), [gender]);
   useEffect(() => saveValue("ft_height", height), [height]);
   useEffect(() => saveValue("ft_weight", weight), [weight]);
   useEffect(() => saveValue("ft_activity", activity), [activity]);
-  useEffect(() => saveValue("ft_goalType", goalType), [goalType]);
+  useEffect(() => saveValue("ft_goalType", goalType === "fitness" ? "maintain" : goalType), [goalType]);
   useEffect(() => saveValue("ft_mode", mode), [mode]);
   useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
   useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
