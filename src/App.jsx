@@ -27,6 +27,22 @@ import {
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
+function mergeBundledFoodsWithStoredFoods(storedFoods, bundledFoods) {
+  const normalizedBundled = Array.isArray(bundledFoods)
+    ? bundledFoods.map((food) => normalizeFood(food))
+    : [];
+
+  const normalizedStored = Array.isArray(storedFoods)
+    ? storedFoods.map((food) => normalizeFood(food))
+    : [];
+
+  const bundledIds = new Set(normalizedBundled.map((food) => food.id));
+
+  const customStoredFoods = normalizedStored.filter((food) => !bundledIds.has(food.id));
+
+  return [...customStoredFoods, ...normalizedBundled];
+}
+
 export default function App() {
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
@@ -45,7 +61,10 @@ export default function App() {
   );
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [foods, setFoods] = useState(() => loadJSON("ft_foods", foodsData));
+  const [foods, setFoods] = useState(() => {
+    const storedFoods = loadJSON("ft_foods", []);
+    return mergeBundledFoodsWithStoredFoods(storedFoods, foodsData);
+  });
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
@@ -112,6 +131,10 @@ export default function App() {
 
   useEffect(() => {
     setSelectedDate(getTodayKey());
+  }, []);
+
+  useEffect(() => {
+    setFoods((prev) => mergeBundledFoodsWithStoredFoods(prev, foodsData));
   }, []);
 
   useEffect(() => {

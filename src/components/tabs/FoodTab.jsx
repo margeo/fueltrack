@@ -1,40 +1,72 @@
 import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
-import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
+import {
+  createFoodEntry,
+  formatNumber,
+  getFoodAliases,
+  getFoodIdentityKey,
+  getFoodSearchTexts,
+  normalizeFood,
+  normalizeSearchText,
+  transliterateGreekToLatin
+} from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 
-function normalizeSearchText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .trim();
+function buildQueryVariants(query) {
+  const normalized = normalizeSearchText(query);
+  const latinized = normalizeSearchText(transliterateGreekToLatin(query));
+
+  return Array.from(new Set([normalized, latinized].filter(Boolean)));
 }
 
 function getFoodSearchScore(food, query) {
-  const q = normalizeSearchText(query);
-  if (!q) return 0;
+  const queryVariants = buildQueryVariants(query);
+  if (queryVariants.length === 0) return 0;
 
   const name = normalizeSearchText(food.name);
   const brand = normalizeSearchText(food.brand);
+  const aliases = getFoodAliases(food).map((item) => normalizeSearchText(item));
+  const allTexts = getFoodSearchTexts(food);
   const combined = `${name} ${brand}`.trim();
 
   let score = 0;
 
-  if (name === q) score += 120;
-  if (combined === q) score += 110;
-  if (name.startsWith(q)) score += 80;
-  if (brand.startsWith(q)) score += 35;
-  if (name.includes(q)) score += 45;
-  if (combined.includes(q)) score += 20;
+  queryVariants.forEach((q) => {
+    if (!q) return;
 
-  if (food.source === "local") score += 25;
-  if (food.source === "usda") score += 10;
+    if (name === q) score += 180;
+    if (aliases.includes(q)) score += 165;
+    if (combined === q) score += 150;
+
+    if (name.startsWith(q)) score += 110;
+    if (aliases.some((item) => item.startsWith(q))) score += 95;
+    if (brand.startsWith(q)) score += 45;
+
+    if (name.includes(q)) score += 65;
+    if (aliases.some((item) => item.includes(q))) score += 55;
+    if (combined.includes(q)) score += 28;
+
+    if (allTexts.some((item) => item.split(" ").some((word) => word.startsWith(q)))) {
+      score += 40;
+    }
+  });
+
+  if (food.source === "local") score += 30;
+  if (food.source === "usda") score += 12;
   if (food.source === "off") score += 8;
 
   const protein = Number(food.proteinPer100g || 0);
   const calories = Number(food.caloriesPer100g || 0);
+  const brandLength = String(food.brand || "").trim().length;
+  const nameLength = String(food.name || "").trim().length;
 
-  if (protein > 0) score += Math.min(protein, 30) * 0.1;
+  if (protein > 0) score += Math.min(protein, 35) * 0.12;
   if (calories > 0 && calories < 700) score += 2;
+
+  if (food.source !== "local" && brandLength > 20) score -= 4;
+  if (food.source !== "local" && nameLength > 55) score -= 6;
+
+  if (!Number.isFinite(calories) || calories <= 0) score -= 15;
 
   return score;
 }
@@ -68,15 +100,27 @@ export default function FoodTab({
 
   const { results: databaseResults, loading: databaseLoading } = useFoodSearch(query);
 
-  const filteredFoods = useMemo(() => {
-    if (!query.trim()) return foods;
-
-    const q = query.toLowerCase().trim();
-
-    return foods.filter((food) =>
-      `${food.name} ${food.brand || ""}`.toLowerCase().includes(q)
+  const normalizedLocalFoods = useMemo(() => {
+    return foods.map((food) =>
+      normalizeFood({
+        ...food,
+        source: food.source || "local",
+        sourceLabel: food.sourceLabel || "Local"
+      })
     );
-  }, [foods, query]);
+  }, [foods]);
+
+  const filteredFoods = useMemo(() => {
+    const queryVariants = buildQueryVariants(query);
+
+    if (queryVariants.length === 0) return normalizedLocalFoods;
+
+    return normalizedLocalFoods.filter((food) => {
+      const searchableTexts = getFoodSearchTexts(food);
+
+      return queryVariants.some((q) => searchableTexts.some((text) => text.includes(q)));
+    });
+  }, [normalizedLocalFoods, query]);
 
   const normalizedDatabaseResults = useMemo(() => {
     return (Array.isArray(databaseResults) ? databaseResults : []).map((food) =>
@@ -86,6 +130,7 @@ export default function FoodTab({
         sourceLabel: food.sourceLabel || "Database",
         name: food.name,
         brand: food.brand || "",
+        aliases: Array.isArray(food.aliases) ? food.aliases : [],
         caloriesPer100g: Number(food.caloriesPer100g ?? food.calories) || 0,
         proteinPer100g: Number(food.proteinPer100g ?? food.protein) || 0,
         carbsPer100g: Number(food.carbsPer100g ?? food.carbs) || 0,
@@ -95,34 +140,38 @@ export default function FoodTab({
   }, [databaseResults]);
 
   const visibleFoods = useMemo(() => {
-    const localFoods = filteredFoods.map((food) =>
-      normalizeFood({
-        ...food,
-        source: food.source || "local",
-        sourceLabel: food.sourceLabel || "Local"
-      })
-    );
+    const merged = [...filteredFoods, ...normalizedDatabaseResults];
+    const byKey = new Map();
 
-    const merged = [...localFoods, ...normalizedDatabaseResults];
-    const seen = new Set();
+    merged.forEach((food) => {
+      const key = getFoodIdentityKey(food);
+      const existing = byKey.get(key);
 
-    const deduped = merged.filter((food) => {
-      const key = `${String(food.name || "").trim().toLowerCase()}|${String(
-        food.brand || ""
-      )
-        .trim()
-        .toLowerCase()}`;
+      if (!existing) {
+        byKey.set(key, food);
+        return;
+      }
 
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
+      const existingScore = getFoodSearchScore(existing, query);
+      const nextScore = getFoodSearchScore(food, query);
+
+      if (nextScore > existingScore) {
+        byKey.set(key, food);
+      }
     });
 
+    const deduped = Array.from(byKey.values());
+
     if (!query.trim()) {
-      return deduped;
+      return deduped.sort((a, b) => {
+        const sourceA = a.source === "local" ? 1 : 0;
+        const sourceB = b.source === "local" ? 1 : 0;
+        if (sourceA !== sourceB) return sourceB - sourceA;
+        return String(a.name || "").localeCompare(String(b.name || ""), "el");
+      });
     }
 
-    return [...deduped].sort((a, b) => {
+    return deduped.sort((a, b) => {
       const aScore = getFoodSearchScore(a, query);
       const bScore = getFoodSearchScore(b, query);
       return bScore - aScore;
@@ -168,6 +217,7 @@ export default function FoodTab({
         source: "local",
         sourceLabel: "Local",
         name: newName.trim(),
+        aliases: [newName.trim()],
         caloriesPer100g: Number(newCalories) || 0,
         proteinPer100g: Number(newProtein) || 0,
         carbsPer100g: Number(newCarbs) || 0,
@@ -228,12 +278,8 @@ export default function FoodTab({
                             {item.protein !== undefined
                               ? ` · P ${formatNumber(item.protein || 0)}`
                               : ""}
-                            {item.carbs !== undefined
-                              ? ` · C ${formatNumber(item.carbs || 0)}`
-                              : ""}
-                            {item.fat !== undefined
-                              ? ` · F ${formatNumber(item.fat || 0)}`
-                              : ""}
+                            {item.carbs !== undefined ? ` · C ${formatNumber(item.carbs || 0)}` : ""}
+                            {item.fat !== undefined ? ` · F ${formatNumber(item.fat || 0)}` : ""}
                           </div>
                         </button>
 
@@ -285,9 +331,7 @@ export default function FoodTab({
               )}
 
               {!databaseLoading && topSearchResults.length === 0 && (
-                <div className="muted food-autocomplete-state">
-                  Δεν βρέθηκαν αποτελέσματα.
-                </div>
+                <div className="muted food-autocomplete-state">Δεν βρέθηκαν αποτελέσματα.</div>
               )}
 
               {!databaseLoading &&
@@ -304,9 +348,7 @@ export default function FoodTab({
                         {food.brand ? ` · ${food.brand}` : ""}
                       </div>
 
-                      {getSourceBadge(food) ? (
-                        <span className="tag">{getSourceBadge(food)}</span>
-                      ) : null}
+                      {getSourceBadge(food) ? <span className="tag">{getSourceBadge(food)}</span> : null}
                     </div>
 
                     <div className="muted food-result-meta">
@@ -366,8 +408,7 @@ export default function FoodTab({
               <div className="soft-box food-preview-box">
                 <div className="muted">
                   Preview: {formatNumber(preview.calories || 0)} kcal · P{" "}
-                  {formatNumber(preview.protein || 0)} · C{" "}
-                  {formatNumber(preview.carbs || 0)} · F{" "}
+                  {formatNumber(preview.protein || 0)} · C {formatNumber(preview.carbs || 0)} · F{" "}
                   {formatNumber(preview.fat || 0)}
                 </div>
               </div>
@@ -378,11 +419,7 @@ export default function FoodTab({
                 Προσθήκη
               </button>
 
-              <button
-                className="btn btn-light"
-                onClick={clearSearchAndSelection}
-                type="button"
-              >
+              <button className="btn btn-light" onClick={clearSearchAndSelection} type="button">
                 Καθαρισμός
               </button>
             </div>
@@ -404,16 +441,13 @@ export default function FoodTab({
                       {food.brand ? ` · ${food.brand}` : ""}
                     </div>
 
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
+                    {getSourceBadge(food) ? <span className="tag">{getSourceBadge(food)}</span> : null}
                   </div>
 
                   <div className="muted food-result-meta">
                     {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                     {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                    {formatNumber(food.fatPer100g || 0)}
+                    {formatNumber(food.carbsPer100g || 0)} · F {formatNumber(food.fatPer100g || 0)}
                   </div>
                 </button>
 
@@ -496,8 +530,7 @@ export default function FoodTab({
                   <div className="food-compact-main">
                     <div className="food-compact-title">{item.food.name}</div>
                     <div className="muted food-compact-meta">
-                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)}{" "}
-                      kcal
+                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)} kcal
                     </div>
                   </div>
 
@@ -514,11 +547,7 @@ export default function FoodTab({
                       Edit
                     </button>
 
-                    <button
-                      className="btn btn-dark"
-                      onClick={() => quickAddRecent(item)}
-                      type="button"
-                    >
+                    <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button">
                       +
                     </button>
                   </div>
@@ -543,25 +572,16 @@ export default function FoodTab({
                   </div>
 
                   <div className="muted food-compact-meta">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                    {formatNumber(food.proteinPer100g || 0)}
+                    {formatNumber(food.caloriesPer100g || 0)} kcal · P {formatNumber(food.proteinPer100g || 0)}
                   </div>
                 </div>
 
                 <div className="food-compact-actions">
-                  <button
-                    className="btn btn-light"
-                    onClick={() => setSelectedFood(food)}
-                    type="button"
-                  >
+                  <button className="btn btn-light" onClick={() => setSelectedFood(food)} type="button">
                     Άνοιγμα
                   </button>
 
-                  <button
-                    className="btn btn-dark"
-                    onClick={() => quickAddFavorite(food)}
-                    type="button"
-                  >
+                  <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button">
                     +100g
                   </button>
                 </div>
