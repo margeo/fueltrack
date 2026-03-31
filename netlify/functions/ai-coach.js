@@ -4,10 +4,14 @@ export async function handler(event) {
     const { weekData, profile } = body;
 
     if (!weekData || !profile) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing data" })
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing data" }) };
+    }
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+
+    // Temporary debug
+    if (!apiKey) {
+      return { statusCode: 500, body: JSON.stringify({ error: "API key missing" }) };
     }
 
     const prompt = `Είσαι ένας fitness και nutrition coach. Αναλύεις τα δεδομένα του χρήστη και δίνεις σύντομες, πρακτικές συμβουλές στα Ελληνικά.
@@ -30,7 +34,7 @@ ${profile.lastWeight ? `Τελευταίο βάρος: ${profile.lastWeight} kg`
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
@@ -41,7 +45,8 @@ ${profile.lastWeight ? `Τελευταίο βάρος: ${profile.lastWeight} kg`
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      const errText = await response.text();
+      throw new Error(`API error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
