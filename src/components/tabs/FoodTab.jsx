@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
 import {
+  buildSearchVariants,
   createFoodEntry,
   formatNumber,
   getFoodAliases,
@@ -8,46 +9,49 @@ import {
   getFoodSearchTexts,
   normalizeFood,
   normalizeSearchText,
-  transliterateGreekToLatin
+  toCompactSearchText
 } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 
-function buildQueryVariants(query) {
-  const normalized = normalizeSearchText(query);
-  const latinized = normalizeSearchText(transliterateGreekToLatin(query));
-
-  return Array.from(new Set([normalized, latinized].filter(Boolean)));
-}
-
 function getFoodSearchScore(food, query) {
-  const queryVariants = buildQueryVariants(query);
+  const queryVariants = buildSearchVariants(query);
   if (queryVariants.length === 0) return 0;
 
   const name = normalizeSearchText(food.name);
   const brand = normalizeSearchText(food.brand);
-  const aliases = getFoodAliases(food).map((item) => normalizeSearchText(item));
+  const nameCompact = toCompactSearchText(food.name);
+  const brandCompact = toCompactSearchText(food.brand);
+  const aliases = getFoodAliases(food);
+  const aliasVariants = aliases.flatMap((item) => buildSearchVariants(item));
   const allTexts = getFoodSearchTexts(food);
   const combined = `${name} ${brand}`.trim();
+  const combinedCompact = toCompactSearchText(combined);
 
   let score = 0;
 
   queryVariants.forEach((q) => {
     if (!q) return;
 
-    if (name === q) score += 180;
-    if (aliases.includes(q)) score += 165;
-    if (combined === q) score += 150;
+    if (name === q) score += 220;
+    if (nameCompact === q) score += 210;
+    if (aliasVariants.includes(q)) score += 205;
+    if (combined === q) score += 190;
+    if (combinedCompact === q) score += 185;
 
-    if (name.startsWith(q)) score += 110;
-    if (aliases.some((item) => item.startsWith(q))) score += 95;
-    if (brand.startsWith(q)) score += 45;
+    if (name.startsWith(q)) score += 125;
+    if (nameCompact.startsWith(q)) score += 120;
+    if (aliasVariants.some((item) => item.startsWith(q))) score += 115;
+    if (brand.startsWith(q)) score += 50;
+    if (brandCompact.startsWith(q)) score += 45;
 
-    if (name.includes(q)) score += 65;
-    if (aliases.some((item) => item.includes(q))) score += 55;
-    if (combined.includes(q)) score += 28;
+    if (name.includes(q)) score += 80;
+    if (nameCompact.includes(q)) score += 78;
+    if (aliasVariants.some((item) => item.includes(q))) score += 75;
+    if (combined.includes(q)) score += 35;
+    if (combinedCompact.includes(q)) score += 33;
 
     if (allTexts.some((item) => item.split(" ").some((word) => word.startsWith(q)))) {
-      score += 40;
+      score += 45;
     }
   });
 
@@ -111,14 +115,19 @@ export default function FoodTab({
   }, [foods]);
 
   const filteredFoods = useMemo(() => {
-    const queryVariants = buildQueryVariants(query);
+    const queryVariants = buildSearchVariants(query);
 
     if (queryVariants.length === 0) return normalizedLocalFoods;
 
     return normalizedLocalFoods.filter((food) => {
       const searchableTexts = getFoodSearchTexts(food);
 
-      return queryVariants.some((q) => searchableTexts.some((text) => text.includes(q)));
+      return queryVariants.some((q) =>
+        searchableTexts.some((text) => {
+          if (!text || !q) return false;
+          return text.includes(q) || q.includes(text);
+        })
+      );
     });
   }, [normalizedLocalFoods, query]);
 
