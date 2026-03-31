@@ -4,59 +4,285 @@
     "source": "local",
     "name": "Τοστ",
     "brand": "",
+    "aliases": ["τοστ", "toast", "tost", "ψωμί του τοστ", "toast sandwich"],
     "caloriesPer100g": 250,
     "proteinPer100g": 10,
     "carbsPer100g": 30,
     "fatPer100g": 10
   },
   {
+    "id": "local-psomi-tost",
+    "source": "local",
+    "name": "Ψωμί τοστ",
+    "brand": "",
+    "aliases": ["ψωμί τοστ", "ψωμι τοστ", "toast bread", "bread", "psomi tost"],
+    "caloriesPer100g": 265,
+    "proteinPer100g": 9,
+    "carbsPer100g": 49,
+    "fatPer100g": 4
+  },
+  {
     "id": "local-avga",
     "source": "local",
     "name": "Αυγά",
     "brand": "",
+    "aliases": ["αυγά", "αυγα", "αυγό", "αυγο", "egg", "eggs", "avga", "avgo"],
     "caloriesPer100g": 140,
     "proteinPer100g": 12,
     "carbsPer100g": 1,
     "fatPer100g": 10
   },
   {
+    "id": "local-aspradia-avggon",
+    "source": "local",
+    "name": "Ασπράδια αυγών",
+    "brand": "",
+    "aliases": [
+      "ασπράδια αυγών",
+      "ασπραδια αυγων",
+      "ασπράδια",
+      "egg whites",
+      "egg white",
+      "aspradia"
+    ],
+    "caloriesPer100g": 52,
+    "proteinPer100g": 11,
+    "carbsPer100g": 1,
+    "fatPer100g": 0.2
+  },
+  {
     "id": "local-kotopoulo",
     "source": "local",
     "name": "Κοτόπουλο",
     "brand": "",
-    "caloriesPer100g": 300,
-    "proteinPer100g": 40,
+    "aliases": ["κοτόπουλο", "κοτοπουλο", "chicken", "kotopoulo"],
+    "caloriesPer100g": 239,
+    "proteinPer100g": 27,
+    "carbsPer100g": 0,
+    "fatPer100g": 14
+  },
+  {
+    "id": "local-kotopoulo-stithos",
+    "source": "local",
+    "name": "Κοτόπουλο στήθος",
+    "brand": "",
+    "aliases": [
+      "κοτόπουλο στήθος",
+      "κοτοπουλο στηθος",
+      "στήθος κοτόπουλο",
+      "στήθος",
+      "chicken breast",
+      "kotopoulo stithos"
+    ],
+    "caloriesPer100g": 165,
+    "proteinPer100g": 31,
+    "carbsPer100g": 0,
+    "fatPer100g": 3.6
+  },
+  {
+    "id": "local-galopoula",
+    "source": "local",
+    "name": "Γαλοπούλα",
+    "brand": "",
+    "aliases": ["γαλοπούλα", "γαλοπουλα", "turkey", "galopoula"],
+    "caloriesPer100g": 135,
+    "proteinPer100g": 29,
+    "carbsPer100g": 0,
+    "fatPer100g": 1.5
+  },
+  {
+    "id": "local-mosxari",
+    "source": "local",
+    "name": "Μοσχάρι",
+    "brand": "",
+    "aliases": ["μοσχάρι", "μοσχαρι", "beef", "mosxari"],
+    "caloriesPer100g": 250,
+    "proteinPer100g": 26,
     "carbsPer100g": 0,
     "fatPer100g": 15
+  },
+  {
+    "id": "local-tonos",
+    "source": "local",
+    "name": "Τόνος",
+    "brand": "",
+    "aliases": ["τόνος", "τονος", "tuna", "tonos"],
+    "caloriesPer100g": 132,
+    "proteinPer100g": 29,
+    "carbsPer100g": 0,
+    "fatPer100g": 1
+  },
+  {
+    "id": "local-solomos",
+    "source": "local",
+    "name": "Σολομός",
+    "brand": "",
+    "aliases": ["σολομός", "σολομος", "salmon", "solomos"],
+    "caloriesPer100g": 208,
+    "proteinPer100g": 20,
+    "carbsPer100g": 0,
+    "fatPer100g": 13
   },
   {
     "id": "local-banana",
     "source": "local",
     "name": "Μπανάνα",
     "brand": "",
-    "caloriesPer100g": 100,
-    "proteinPer100g": 1,
-    "carbsPer100g": 25,
-    "fatPer100g": 0
+    "aliases": ["μπανάνα", "μπανανα", "banana", "bananas", "mpanana"],
+    "caloriesPer100g": 89,
+    "proteinPer100g": 1.1,
+    "carbsPer100g": 23,
+    "fatPer100g": 0.3
+  },
+  {
+    "id": "local-milo",
+    "source": "local",
+    "name": "Μήλο",
+    "brand": "",
+    "aliases": ["μήλο", "μηλο", "apple", "milo"],
+    "caloriesPer100g": 52,
+    "proteinPer100g": 0.3,
+    "carbsPer100g": 14,
+    "fatPer100g": 0.2
+  },
+  {
+    "id": "local-avokanto",
+    "source": "local",
+    "name": "Αβοκάντο",
+    "brand": "",
+    "aliases": ["αβοκάντο", "αβοκαντο", "avocado", "avokanto"],
+    "caloriesPer100g": 160,
+    "proteinPer100g": 2,
+    "carbsPer100g": 9,
+    "fatPer100g": 15
   },
   {
     "id": "local-ryzi",
     "source": "local",
     "name": "Ρύζι",
     "brand": "",
-    "caloriesPer100g": 200,
-    "proteinPer100g": 4,
-    "carbsPer100g": 44,
-    "fatPer100g": 1
+    "aliases": ["ρύζι", "ρυζι", "rice", "ryzi"],
+    "caloriesPer100g": 130,
+    "proteinPer100g": 2.7,
+    "carbsPer100g": 28,
+    "fatPer100g": 0.3
+  },
+  {
+    "id": "local-ryzi-vrasto",
+    "source": "local",
+    "name": "Ρύζι βραστό",
+    "brand": "",
+    "aliases": ["ρύζι βραστό", "ρυζι βραστο", "boiled rice", "cooked rice", "ryzi vrasto"],
+    "caloriesPer100g": 130,
+    "proteinPer100g": 2.7,
+    "carbsPer100g": 28,
+    "fatPer100g": 0.3
+  },
+  {
+    "id": "local-patata-vrasti",
+    "source": "local",
+    "name": "Πατάτα βραστή",
+    "brand": "",
+    "aliases": [
+      "πατάτα βραστή",
+      "πατατα βραστη",
+      "boiled potato",
+      "potato",
+      "patata vrasti"
+    ],
+    "caloriesPer100g": 87,
+    "proteinPer100g": 1.9,
+    "carbsPer100g": 20,
+    "fatPer100g": 0.1
+  },
+  {
+    "id": "local-bromi",
+    "source": "local",
+    "name": "Βρώμη",
+    "brand": "",
+    "aliases": ["βρώμη", "βρωμη", "oats", "oatmeal", "bromi"],
+    "caloriesPer100g": 389,
+    "proteinPer100g": 17,
+    "carbsPer100g": 66,
+    "fatPer100g": 7
   },
   {
     "id": "local-giaourti",
     "source": "local",
     "name": "Γιαούρτι",
     "brand": "",
-    "caloriesPer100g": 150,
-    "proteinPer100g": 15,
-    "carbsPer100g": 8,
-    "fatPer100g": 6
+    "aliases": ["γιαούρτι", "γιαουρτι", "yogurt", "yoghurt", "giaourti"],
+    "caloriesPer100g": 97,
+    "proteinPer100g": 9,
+    "carbsPer100g": 4,
+    "fatPer100g": 5
+  },
+  {
+    "id": "local-straggisto-giaourti",
+    "source": "local",
+    "name": "Γιαούρτι στραγγιστό",
+    "brand": "",
+    "aliases": [
+      "γιαούρτι στραγγιστό",
+      "γιαουρτι στραγγιστο",
+      "στραγγιστό γιαούρτι",
+      "greek yogurt",
+      "strained yogurt",
+      "straggisto giaourti"
+    ],
+    "caloriesPer100g": 120,
+    "proteinPer100g": 10,
+    "carbsPer100g": 4,
+    "fatPer100g": 7
+  },
+  {
+    "id": "local-cottage",
+    "source": "local",
+    "name": "Cottage cheese",
+    "brand": "",
+    "aliases": ["cottage", "cottage cheese", "κοτατζ", "τυρί cottage"],
+    "caloriesPer100g": 98,
+    "proteinPer100g": 11,
+    "carbsPer100g": 3.4,
+    "fatPer100g": 4.3
+  },
+  {
+    "id": "local-feta",
+    "source": "local",
+    "name": "Φέτα",
+    "brand": "",
+    "aliases": ["φέτα", "φετα", "feta", "φέτα τυρί", "feta cheese"],
+    "caloriesPer100g": 264,
+    "proteinPer100g": 14,
+    "carbsPer100g": 4,
+    "fatPer100g": 21
+  },
+  {
+    "id": "local-kaseri",
+    "source": "local",
+    "name": "Κασέρι",
+    "brand": "",
+    "aliases": ["κασέρι", "κασερι", "kaseri", "cheese"],
+    "caloriesPer100g": 356,
+    "proteinPer100g": 25,
+    "carbsPer100g": 2,
+    "fatPer100g": 27
+  },
+  {
+    "id": "local-galopoula-allantiko",
+    "source": "local",
+    "name": "Γαλοπούλα αλλαντικό",
+    "brand": "",
+    "aliases": [
+      "γαλοπούλα αλλαντικό",
+      "γαλοπουλα αλλαντικο",
+      "turkey slices",
+      "turkey ham",
+      "deli turkey"
+    ],
+    "caloriesPer100g": 104,
+    "proteinPer100g": 17,
+    "carbsPer100g": 3,
+    "fatPer100g": 2
   }
 ]

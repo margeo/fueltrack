@@ -43,12 +43,89 @@ export function normalizeDayLog(log) {
   };
 }
 
+export function stripDiacritics(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+export function transliterateGreekToLatin(value) {
+  const map = {
+    α: "a",
+    β: "v",
+    γ: "g",
+    δ: "d",
+    ε: "e",
+    ζ: "z",
+    η: "i",
+    θ: "th",
+    ι: "i",
+    κ: "k",
+    λ: "l",
+    μ: "m",
+    ν: "n",
+    ξ: "x",
+    ο: "o",
+    π: "p",
+    ρ: "r",
+    σ: "s",
+    ς: "s",
+    τ: "t",
+    υ: "y",
+    φ: "f",
+    χ: "x",
+    ψ: "ps",
+    ω: "o"
+  };
+
+  return stripDiacritics(String(value || "").toLowerCase())
+    .split("")
+    .map((char) => map[char] || char)
+    .join("");
+}
+
+export function normalizeSearchText(value) {
+  return stripDiacritics(String(value || "").toLowerCase())
+    .replace(/[\/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function getFoodAliases(food) {
+  return Array.isArray(food?.aliases)
+    ? food.aliases.filter(Boolean).map((item) => String(item).trim()).filter(Boolean)
+    : [];
+}
+
+export function getFoodSearchTexts(food) {
+  const name = String(food?.name || "");
+  const brand = String(food?.brand || "");
+  const aliases = getFoodAliases(food);
+
+  const rawValues = [name, brand, ...aliases].filter(Boolean);
+
+  const normalized = rawValues.map((item) => normalizeSearchText(item)).filter(Boolean);
+  const latinized = rawValues
+    .map((item) => normalizeSearchText(transliterateGreekToLatin(item)))
+    .filter(Boolean);
+
+  return Array.from(new Set([...normalized, ...latinized]));
+}
+
+export function getFoodIdentityKey(food) {
+  const normalizedName = normalizeSearchText(food?.name || "");
+  const normalizedBrand = normalizeSearchText(food?.brand || "");
+  return `${normalizedName}|${normalizedBrand}`;
+}
+
 export function normalizeFood(food) {
   return {
     id: food.id || `food-${Date.now()}`,
     source: food.source || "local",
+    sourceLabel: food.sourceLabel || "",
     name: food.name || "Unknown food",
     brand: food.brand || "",
+    aliases: getFoodAliases(food),
     caloriesPer100g: Number(food.caloriesPer100g || 0),
     proteinPer100g: Number(food.proteinPer100g || 0),
     carbsPer100g: Number(food.carbsPer100g || 0),
