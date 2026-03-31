@@ -6,7 +6,8 @@ import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
 import ProfileTab from "./components/tabs/ProfileTab";
-import { DEFAULT_FOODS, EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
+import foodsData from "./data/foods.json";
+import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
 import {
   getTodayKey,
   normalizeDayLog,
@@ -44,7 +45,7 @@ export default function App() {
   );
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [foods, setFoods] = useState(() => loadJSON("ft_foods", DEFAULT_FOODS));
+  const [foods, setFoods] = useState(() => loadJSON("ft_foods", foodsData));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
