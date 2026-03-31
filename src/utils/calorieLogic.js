@@ -30,6 +30,12 @@ export function calculateDailyDeficit({ kilos, weeks }) {
   return Math.round(total / days);
 }
 
+export function calculateAppliedDailyDeficit(rawDeficit) {
+  const deficit = Number(rawDeficit || 0);
+  if (!deficit) return 0;
+  return Math.min(Math.max(deficit, 150), 1000);
+}
+
 export function calculateTargetCalories({
   goalType,
   tdee,
@@ -45,14 +51,14 @@ export function calculateTargetCalories({
   if (goalType === "gain") return Math.round(base + 300);
 
   if (goalType === "lose") {
-    const deficit = calculateDailyDeficit({
+    const rawDeficit = calculateDailyDeficit({
       kilos: targetWeightChange,
       weeks
     });
 
-    const safe = Math.min(Math.max(deficit, 150), 900);
+    const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
 
-    return Math.max(Math.round(base - safe), 1200);
+    return Math.max(Math.round(base - appliedDeficit), 1200);
   }
 
   return base;

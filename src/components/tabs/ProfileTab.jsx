@@ -1,3 +1,4 @@
+import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 
 export default function ProfileTab({
@@ -50,10 +51,19 @@ export default function ProfileTab({
     return "-";
   }
 
-  const appliedDeficit =
-    goalType === "lose"
-      ? Math.min(Math.max(Number(dailyDeficit || 0), 150), 900)
+  const rawDeficit = Number(dailyDeficit || 0);
+  const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
+
+  const kilosNum = Number(targetWeightLoss || 0);
+  const weeksNum = Number(weeks || 0);
+  const kilosPerWeek =
+    goalType === "lose" && kilosNum > 0 && weeksNum > 0
+      ? kilosNum / weeksNum
       : 0;
+
+  const isCapped = goalType === "lose" && rawDeficit > 1000;
+  const isAggressiveGoal = goalType === "lose" && kilosPerWeek > 1;
+  const isVeryUnrealisticGoal = goalType === "lose" && kilosPerWeek > 1.5;
 
   return (
     <div className="card">
@@ -213,9 +223,16 @@ export default function ProfileTab({
           <strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
 
+        {goalType === "lose" && rawDeficit > 0 && (
+          <div className="profile-stat-row">
+            <span>Υπολογισμένο έλλειμμα</span>
+            <strong>{formatNumber(rawDeficit)} kcal</strong>
+          </div>
+        )}
+
         {goalType === "lose" && appliedDeficit > 0 && (
           <div className="profile-stat-row">
-            <span>Ημερήσιο έλλειμμα</span>
+            <span>Εφαρμοσμένο έλλειμμα</span>
             <strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
@@ -232,6 +249,39 @@ export default function ProfileTab({
           <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
+
+      {isCapped && (
+        <div className="soft-box profile-warning-box">
+          <div className="profile-warning-title">Περιορισμός ελλείμματος</div>
+          <div className="muted">
+            Ο στόχος που έβαλες απαιτεί πολύ μεγάλο ημερήσιο έλλειμμα.
+            Για γενική χρήση, το app περιορίζει το εφαρμοσμένο έλλειμμα
+            στις <strong>1000 kcal/ημέρα</strong>.
+          </div>
+        </div>
+      )}
+
+      {isAggressiveGoal && (
+        <div className="soft-box profile-warning-box">
+          <div className="profile-warning-title">Πολύ επιθετικός στόχος</div>
+          <div className="muted">
+            Ο ρυθμός που έχεις βάλει είναι περίπου{" "}
+            <strong>{formatNumber(kilosPerWeek)} κιλά/εβδομάδα</strong>.
+            Αυτό θεωρείται αρκετά επιθετικό για γενική καθοδήγηση.
+          </div>
+        </div>
+      )}
+
+      {isVeryUnrealisticGoal && (
+        <div className="soft-box profile-danger-box">
+          <div className="profile-warning-title">Μη ρεαλιστικός στόχος</div>
+          <div className="muted">
+            Ο στόχος αυτός δεν φαίνεται ρεαλιστικός με ασφαλές ημερήσιο
+            θερμιδικό έλλειμμα. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο
+            στόχο κιλών.
+          </div>
+        </div>
+      )}
 
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Σύνοψη</div>
