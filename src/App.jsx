@@ -5,7 +5,6 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
-import WeightTab from "./components/tabs/WeightTab";
 import ProfileTab from "./components/tabs/ProfileTab";
 import foodsData from "./data/foods.json";
 import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
@@ -108,7 +107,7 @@ export default function App() {
 
     if (!savedHasSeenWelcome) return "welcome";
     if (!savedProfileComplete) return "profile";
-    if (!["summary", "food", "exercise", "weight", "profile"].includes(savedTab)) return "summary";
+    if (!["summary", "food", "exercise", "profile"].includes(savedTab)) return "summary";
     return savedTab;
   });
 
@@ -143,12 +142,10 @@ export default function App() {
       setActiveTab("welcome");
       return;
     }
-
     if (hasSeenWelcome && !profileComplete && activeTab !== "profile") {
       setActiveTab("profile");
       return;
     }
-
     if (hasSeenWelcome && profileComplete) {
       saveValue("ft_activeTab", activeTab);
     }
@@ -162,10 +159,7 @@ export default function App() {
     setDailyLogs((prev) => {
       const current = normalizeDayLog(prev[selectedDate]);
       const nextDay = normalizeDayLog(updater(current));
-      return {
-        ...prev,
-        [selectedDate]: nextDay
-      };
+      return { ...prev, [selectedDate]: nextDay };
     });
   }
 
@@ -190,7 +184,6 @@ export default function App() {
 
   function saveEditedEntry() {
     if (!editingEntry) return;
-
     const grams = Math.max(Number(editEntryGrams) || 100, 1);
     const meal = editEntryMeal || "Πρωινό";
     const base = entryBasePer100g(editingEntry);
@@ -220,7 +213,6 @@ export default function App() {
 
   function addExerciseByMinutes(exercise, minutesValue) {
     const minutes = Math.max(Number(minutesValue) || 0, 1);
-
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${exercise.name} ${minutes} λεπτά`,
@@ -228,24 +220,17 @@ export default function App() {
       caloriesPerMinute: exercise.caloriesPerMinute,
       calories: Math.round(exercise.caloriesPerMinute * minutes)
     };
-
     updateCurrentDay((current) => ({
       ...current,
       exercises: [newExercise, ...current.exercises]
     }));
-
-    setExerciseMinutes((prev) => ({
-      ...prev,
-      [exercise.name]: ""
-    }));
+    setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: "" }));
   }
 
   function addCustomExercise() {
     const minutes = Math.max(Number(customExerciseMinutes) || 0, 1);
     const rate = Math.max(Number(customExerciseRate) || 0, 0.1);
-
     if (!customExerciseName.trim()) return;
-
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${customExerciseName.trim()} ${minutes} λεπτά`,
@@ -253,12 +238,10 @@ export default function App() {
       caloriesPerMinute: rate,
       calories: Math.round(rate * minutes)
     };
-
     updateCurrentDay((current) => ({
       ...current,
       exercises: [newExercise, ...current.exercises]
     }));
-
     setCustomExerciseName("");
     setCustomExerciseMinutes("");
     setCustomExerciseRate("");
@@ -277,7 +260,6 @@ export default function App() {
 
   function saveRecentFood(food, gramsValue, meal) {
     const normalized = normalizeFood(food);
-
     setRecentFoods((prev) => {
       const filtered = prev.filter(
         (item) =>
@@ -286,7 +268,6 @@ export default function App() {
             (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
           )
       );
-
       return [
         {
           key: `${normalized.name}-${normalized.brand || ""}`.toLowerCase(),
@@ -302,29 +283,24 @@ export default function App() {
 
   function quickAddRecent(item) {
     const entry = createFoodEntry(item.food, item.grams, item.mealType);
-
     updateCurrentDay((current) => ({
       ...current,
       entries: [entry, ...current.entries]
     }));
-
     saveRecentFood(item.food, item.grams, item.mealType);
   }
 
   function quickAddFavorite(food) {
     const entry = createFoodEntry(food, 100, "Σνακ");
-
     updateCurrentDay((current) => ({
       ...current,
       entries: [entry, ...current.entries]
     }));
-
     saveRecentFood(food, 100, "Σνακ");
   }
 
   function toggleFavorite(food) {
     const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
-
     setFavoriteFoodKeys((prev) =>
       prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
     );
@@ -389,7 +365,6 @@ export default function App() {
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
   const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
   const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
-
   const remainingCalories = targetCalories - totalCalories + exerciseValue;
   const progress = targetCalories ? Math.min((totalCalories / targetCalories) * 100, 100) : 0;
 
@@ -414,7 +389,6 @@ export default function App() {
       const eaten = log.entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
       const ex = log.exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
       const remaining = targetCalories - eaten + ex;
-
       return { date, eaten, exercise: ex, remaining };
     });
   }, [selectedDate, dailyLogs, targetCalories]);
@@ -430,7 +404,11 @@ export default function App() {
     targetCalories, totalCalories, exerciseValue,
     remainingCalories, progress, goalType,
     proteinTarget, totalProtein, last7Days,
-    mode, macroTargets, foods
+    mode, macroTargets, foods,
+    dailyLogs,
+    weightLog,
+    onAddWeight: addWeight,
+    onDeleteWeight: deleteWeight
   };
 
   const foodProps = {
@@ -448,12 +426,6 @@ export default function App() {
     setCustomExerciseMinutes, customExerciseRate,
     setCustomExerciseRate, addExerciseByMinutes,
     addCustomExercise, deleteExercise
-  };
-
-  const weightProps = {
-    weightLog,
-    onAddWeight: addWeight,
-    onDeleteWeight: deleteWeight
   };
 
   const profileProps = {
@@ -485,7 +457,6 @@ export default function App() {
         {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
         {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
         {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
-        {appReady && activeTab === "weight" && <WeightTab {...weightProps} />}
         {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
 
         <div style={{ height: 110 }} />

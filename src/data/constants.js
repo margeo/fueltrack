@@ -13,6 +13,5 @@ export const APP_TABS = [
   { key: "summary", icon: "🏠", label: "Summary" },
   { key: "food", icon: "🍔", label: "Food" },
   { key: "exercise", icon: "🏃", label: "Exercise" },
-  { key: "weight", icon: "⚖️", label: "Weight" },
   { key: "profile", icon: "👤", label: "Profile" }
 ];
