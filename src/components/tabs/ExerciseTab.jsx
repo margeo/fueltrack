@@ -21,100 +21,65 @@ export default function ExerciseTab({
       <div className="card">
         <h2>Άσκηση ημέρας</h2>
 
-        <div className="soft-box exercise-summary-box">
-          <div className="exercise-summary-head">
-            <div style={{ fontWeight: 700 }}>Σύνοψη ημέρας</div>
-            <div className="exercise-summary-kcal">
-              +{formatNumber(exerciseValue)} kcal
-            </div>
-          </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span className="muted">Σύνολο σήμερα</span>
+          <span style={{ fontWeight: 800, color: "#166534" }}>+{formatNumber(exerciseValue)} kcal</span>
+        </div>
 
-          {exercises.length === 0 ? (
-            <div className="muted">
-              Δεν έχεις βάλει άσκηση για αυτή την ημέρα.
-            </div>
-          ) : (
-            <div className="exercise-day-list">
-              {exercises.map((item) => (
-                <div key={item.id} className="exercise-entry-card">
-                  <div className="exercise-entry-main">
-                    <div className="exercise-entry-title">
-                      {item.name}
-                    </div>
-
-                    <div className="muted exercise-entry-meta">
-                      {item.minutes} λεπτά ·{" "}
-                      {formatNumber(item.caloriesPerMinute)} kcal/λεπτό · +
-                      {formatNumber(item.calories)} kcal
-                    </div>
-                  </div>
-
-                  <div className="exercise-entry-actions">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => deleteExercise(item.id)}
-                      type="button"
-                    >
-                      Διαγραφή
-                    </button>
+        {exercises.length === 0 ? (
+          <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει άσκηση.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {exercises.map((item) => (
+              <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)", gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{item.name}</div>
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    {item.minutes} λεπτά · +{formatNumber(item.calories)} kcal
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <button
+                  className="btn btn-light"
+                  onClick={() => deleteExercise(item.id)}
+                  type="button"
+                  style={{ padding: "4px 10px", fontSize: 12 }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="card">
-        <h2>Προσθήκη άσκησης με λεπτά</h2>
-
-        <div className="muted" style={{ marginBottom: 12 }}>
-          Βάζεις λεπτά και το app υπολογίζει αυτόματα τις θερμίδες.
-        </div>
-
-        <div className="exercise-library-list">
+        <h2>Προσθήκη άσκησης</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {EXERCISE_LIBRARY.map((exercise) => (
-            <div key={exercise.name} className="soft-box exercise-library-item">
-              <div className="exercise-library-main">
-                <div className="exercise-library-title">
-                  {exercise.name}
-                </div>
-                <div className="muted" style={{ marginTop: 4 }}>
-                  {formatNumber(exercise.caloriesPerMinute)} kcal / λεπτό
-                </div>
+            <div key={exercise.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{exercise.name}</span>
+                <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(exercise.caloriesPerMinute)} kcal/λεπτό</span>
               </div>
-
-              <div className="exercise-library-controls">
-                <label className="exercise-inline-field">
-                  <span className="exercise-inline-label">Λεπτά</span>
-                  <input
-                    className="input exercise-compact-input"
-                    type="number"
-                    min="1"
-                    placeholder="0"
-                    value={exerciseMinutes[exercise.name] || ""}
-                    onChange={(e) =>
-                      setExerciseMinutes((prev) => ({
-                        ...prev,
-                        [exercise.name]: e.target.value
-                      }))
-                    }
-                  />
-                </label>
-
-                <button
-                  className="btn btn-dark exercise-add-btn"
-                  onClick={() =>
-                    addExerciseByMinutes(
-                      exercise,
-                      exerciseMinutes[exercise.name]
-                    )
-                  }
-                  type="button"
-                >
-                  Προσθήκη
-                </button>
-              </div>
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder="λεπτά"
+                value={exerciseMinutes[exercise.name] || ""}
+                onChange={(e) =>
+                  setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: e.target.value }))
+                }
+                style={{ width: 70, padding: "6px 8px", fontSize: 13, textAlign: "center" }}
+              />
+              <button
+                className="btn btn-dark"
+                onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
+                type="button"
+                style={{ padding: "6px 12px", fontSize: 13 }}
+              >
+                +
+              </button>
             </div>
           ))}
         </div>
@@ -122,49 +87,31 @@ export default function ExerciseTab({
 
       <div className="card">
         <h2>Custom άσκηση</h2>
-
-        <div className="stack-10">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input
             className="input"
             placeholder="Όνομα άσκησης"
             value={customExerciseName}
             onChange={(e) => setCustomExerciseName(e.target.value)}
           />
-
-          <div className="grid-2">
-            <label className="soft-box exercise-field-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                Λεπτά
-              </div>
-              <input
-                className="input"
-                placeholder="Λεπτά"
-                inputMode="numeric"
-                value={customExerciseMinutes}
-                onChange={(e) => setCustomExerciseMinutes(e.target.value)}
-              />
-            </label>
-
-            <label className="soft-box exercise-field-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                kcal / λεπτό
-              </div>
-              <input
-                className="input"
-                placeholder="kcal / λεπτό"
-                inputMode="decimal"
-                value={customExerciseRate}
-                onChange={(e) => setCustomExerciseRate(e.target.value)}
-              />
-            </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              className="input"
+              placeholder="Λεπτά"
+              inputMode="numeric"
+              value={customExerciseMinutes}
+              onChange={(e) => setCustomExerciseMinutes(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="kcal/λεπτό"
+              inputMode="decimal"
+              value={customExerciseRate}
+              onChange={(e) => setCustomExerciseRate(e.target.value)}
+            />
           </div>
-
-          <button
-            className="btn btn-dark"
-            onClick={addCustomExercise}
-            type="button"
-          >
-            Προσθήκη custom άσκησης
+          <button className="btn btn-dark" onClick={addCustomExercise} type="button">
+            Προσθήκη
           </button>
         </div>
       </div>
