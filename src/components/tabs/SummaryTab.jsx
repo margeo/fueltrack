@@ -15,6 +15,8 @@ export default function SummaryTab({
   last7Days,
   proteinTarget,
   totalProtein,
+  totalCarbs,
+  totalFat,
   mode,
   macroTargets,
   foods,
@@ -143,6 +145,16 @@ export default function SummaryTab({
   const suggestions = getSuggestedFoods();
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
 
+  const proteinPercent = macroTargets?.proteinGrams
+    ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100)
+    : 0;
+  const carbsPercent = macroTargets?.carbsGrams
+    ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100)
+    : 0;
+  const fatPercent = macroTargets?.fatGrams
+    ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100)
+    : 0;
+
   return (
     <>
       {/* HERO CARD */}
@@ -153,7 +165,6 @@ export default function SummaryTab({
             <div className="summary-date-title">{formatDisplayDate(selectedDate)}</div>
             <div className="hero-subtle">{selectedDate}</div>
           </div>
-
           <div className="summary-date-controls">
             <button
               className="btn btn-light"
@@ -162,7 +173,6 @@ export default function SummaryTab({
             >
               {isToday ? "Σήμερα ✓" : "Σήμερα"}
             </button>
-
             <input
               className="input summary-date-input"
               type="date"
@@ -212,27 +222,62 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div className="hero-grid summary-hero-grid-3">
-          <div className="hero-stat">
-            <div className="hero-subtle">Πρωτεΐνη</div>
-            <div>{formatNumber(totalProtein || 0)} / {formatNumber(proteinTarget || 0)} g</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-subtle">Carbs στόχος</div>
-            <div>{formatNumber(macroTargets?.carbsGrams || 0)} g</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-subtle">Fat στόχος</div>
-            <div>{formatNumber(macroTargets?.fatGrams || 0)} g</div>
-          </div>
-        </div>
-
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
-
         <div className="hero-subtle summary-progress-text">
           {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal από το φαγητό
+        </div>
+      </div>
+
+      {/* MACRO PROGRESS BARS */}
+      <div className="card">
+        <h2>Macros σήμερα</h2>
+        <div className="macro-bars">
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Πρωτεΐνη</span>
+              <span className="macro-bar-value">
+                {formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g
+              </span>
+            </div>
+            <div className="macro-bar-outer">
+              <div
+                className="macro-bar-inner macro-bar-protein"
+                style={{ width: `${proteinPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Υδατάνθρακες</span>
+              <span className="macro-bar-value">
+                {formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g
+              </span>
+            </div>
+            <div className="macro-bar-outer">
+              <div
+                className="macro-bar-inner macro-bar-carbs"
+                style={{ width: `${carbsPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Λίπος</span>
+              <span className="macro-bar-value">
+                {formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g
+              </span>
+            </div>
+            <div className="macro-bar-outer">
+              <div
+                className="macro-bar-inner macro-bar-fat"
+                style={{ width: `${fatPercent}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -248,7 +293,6 @@ export default function SummaryTab({
       {/* WEIGHT TRACKING */}
       <div className="card">
         <h2>⚖️ Βάρος</h2>
-
         <div className="soft-box">
           <div className="grid-2">
             <label className="profile-field">
@@ -289,7 +333,6 @@ export default function SummaryTab({
                 const next = chartData[i + 1];
                 const nx = next ? ((i + 1) / (chartData.length - 1)) * (chartW - 20) + 10 : null;
                 const ny = next ? chartH - ((next.weight - minW) / range) * (chartH - 20) + 10 : null;
-
                 return (
                   <g key={point.date}>
                     {next && (
@@ -303,7 +346,6 @@ export default function SummaryTab({
                 );
               })}
             </svg>
-
             {diff !== null && (
               <div style={{ marginTop: 8 }}>
                 <span className="muted">Αλλαγή (30 μέρες): </span>

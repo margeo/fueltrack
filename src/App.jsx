@@ -26,8 +26,10 @@ import {
   calculateMacroTargets
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
+import { getInitialTheme, applyTheme } from "./utils/theme";
 
 export default function App() {
+  const [theme, setTheme] = useState(() => getInitialTheme());
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
   const [age, setAge] = useState(() => loadValue("ft_age", ""));
@@ -72,6 +74,14 @@ export default function App() {
     loadValue("ft_hasSeenWelcome", "false") === "true"
   );
 
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }
+
   const profileComplete = useMemo(() => {
     return (
       String(age).trim() !== "" &&
@@ -111,14 +121,10 @@ export default function App() {
     return savedTab;
   });
 
-  useEffect(() => {
-    setSelectedDate(getTodayKey());
-  }, []);
+  useEffect(() => { setSelectedDate(getTodayKey()); }, []);
 
   useEffect(() => {
-    if (goalType === "fitness") {
-      setGoalType("maintain");
-    }
+    if (goalType === "fitness") setGoalType("maintain");
   }, [goalType]);
 
   useEffect(() => saveValue("ft_age", age), [age]);
@@ -207,7 +213,6 @@ export default function App() {
       ...current,
       entries: current.entries.map((item) => (item.id === editingEntry.id ? updated : item))
     }));
-
     closeEditEntry();
   }
 
@@ -336,27 +341,19 @@ export default function App() {
     () => calculateBMR({ age, gender, height, weight }),
     [age, gender, height, weight]
   );
-
-  const tdee = useMemo(
-    () => calculateTDEE({ bmr, activity }),
-    [bmr, activity]
-  );
-
+  const tdee = useMemo(() => calculateTDEE({ bmr, activity }), [bmr, activity]);
   const dailyDeficit = useMemo(
     () => calculateDailyDeficit({ kilos: targetWeightLoss, weeks }),
     [targetWeightLoss, weeks]
   );
-
   const targetCalories = useMemo(
     () => calculateTargetCalories({ goalType, tdee, targetWeightChange: targetWeightLoss, weeks }),
     [goalType, tdee, targetWeightLoss, weeks]
   );
-
   const proteinTarget = useMemo(
     () => calculateProteinTarget({ weight, goalType, modeKey: mode }),
     [weight, goalType, mode]
   );
-
   const macroTargets = useMemo(
     () => calculateMacroTargets({ targetCalories, proteinTarget, modeKey: mode }),
     [targetCalories, proteinTarget, mode]
@@ -364,6 +361,8 @@ export default function App() {
 
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
   const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
+  const totalCarbs = round1(entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0));
+  const totalFat = round1(entries.reduce((sum, item) => sum + Number(item.fat || 0), 0));
   const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
   const remainingCalories = targetCalories - totalCalories + exerciseValue;
   const progress = targetCalories ? Math.min((totalCalories / targetCalories) * 100, 100) : 0;
@@ -403,10 +402,9 @@ export default function App() {
     selectedDate, setSelectedDate, isToday,
     targetCalories, totalCalories, exerciseValue,
     remainingCalories, progress, goalType,
-    proteinTarget, totalProtein, last7Days,
-    mode, macroTargets, foods,
-    dailyLogs,
-    weightLog,
+    proteinTarget, totalProtein, totalCarbs, totalFat,
+    last7Days, mode, macroTargets, foods,
+    dailyLogs, weightLog,
     onAddWeight: addWeight,
     onDeleteWeight: deleteWeight
   };
@@ -446,9 +444,14 @@ export default function App() {
     <div className="app-shell">
       <div className="app-container">
         <div className="app-header">
-          <h1>FuelTrack</h1>
-          {showWelcome && <p>Welcome</p>}
-          {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
+          <div className="app-header-left">
+            <h1>FuelTrack</h1>
+            {showWelcome && <p>Welcome</p>}
+            {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
+          </div>
+          <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
         </div>
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
