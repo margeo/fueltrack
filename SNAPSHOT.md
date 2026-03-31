@@ -11,7 +11,8 @@ import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
 import ProfileTab from "./components/tabs/ProfileTab";
-import { DEFAULT_FOODS, EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
+import foodsData from "./data/foods.json";
+import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
 import {
   getTodayKey,
   normalizeDayLog,
@@ -49,7 +50,7 @@ export default function App() {
   );
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [foods, setFoods] = useState(() => loadJSON("ft_foods", DEFAULT_FOODS));
+  const [foods, setFoods] = useState(() => loadJSON("ft_foods", foodsData));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
@@ -748,7 +749,6 @@ export default function SummaryTab({
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
-    if (goalType === "fitness") return "Fitness";
     return "Maintain";
   }
 
@@ -760,10 +760,10 @@ export default function SummaryTab({
     return "Balanced";
   }
 
-  function getRemainingColor() {
-    if (remainingCalories > 100) return "#86efac";
-    if (remainingCalories < -150) return "#fca5a5";
-    return "#fde68a";
+  function getRemainingClassName() {
+    if (remainingCalories > 100) return "summary-remaining-positive";
+    if (remainingCalories < -150) return "summary-remaining-negative";
+    return "summary-remaining-neutral";
   }
 
   function getModeHint() {
@@ -872,26 +872,24 @@ export default function SummaryTab({
   return (
     <>
       <div className="hero-card">
-        <div className="row wrap">
+        <div className="summary-date-row">
           <div>
             <div className="hero-subtle">Επιλεγμένη ημέρα</div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>
-              {formatDisplayDate(selectedDate)}
-            </div>
+            <div className="summary-date-title">{formatDisplayDate(selectedDate)}</div>
             <div className="hero-subtle">{selectedDate}</div>
           </div>
 
-          <div className="row">
+          <div className="summary-date-controls">
             <button
               className="btn btn-light"
               onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
+              type="button"
             >
               {isToday ? "Σήμερα ✓" : "Σήμερα"}
             </button>
 
             <input
-              className="input"
-              style={{ width: 160, marginBottom: 0 }}
+              className="input summary-date-input"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -899,18 +897,18 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div className="summary-remaining-block">
           <div className="hero-subtle">Υπόλοιπο ημέρας</div>
-          <div className="hero-big" style={{ color: getRemainingColor() }}>
+          <div className={`hero-big ${getRemainingClassName()}`}>
             {formatNumber(remainingCalories)} kcal
           </div>
 
-          <div className="hero-subtle" style={{ marginTop: 8 }}>
+          <div className="hero-subtle summary-remaining-formula">
             Υπόλοιπο = Στόχος - Φαγητό + Άσκηση
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 16 }}>
+        <div className="hero-grid summary-hero-grid">
           <div className="hero-stat">
             <div className="hero-subtle">Στόχος</div>
             <div>{formatNumber(targetCalories)} kcal</div>
@@ -932,7 +930,7 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 12 }}>
+        <div className="hero-grid summary-hero-grid-2">
           <div className="hero-stat">
             <div className="hero-subtle">Στόχος</div>
             <div>{getGoalLabel()}</div>
@@ -944,7 +942,7 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div className="hero-grid" style={{ marginTop: 12 }}>
+        <div className="hero-grid summary-hero-grid-3">
           <div className="hero-stat">
             <div className="hero-subtle">Πρωτεΐνη</div>
             <div>
@@ -967,7 +965,7 @@ export default function SummaryTab({
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="hero-subtle" style={{ marginTop: 8 }}>
+        <div className="hero-subtle summary-progress-text">
           {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal από το φαγητό
         </div>
       </div>
@@ -976,13 +974,11 @@ export default function SummaryTab({
         <h2>Κατεύθυνση ημέρας</h2>
 
         <div className="soft-box">
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>
+          <div className="summary-section-title">
             Σήμερα δουλεύεις με {getModeLabel()}
           </div>
 
-          <div className="muted" style={{ marginBottom: 10 }}>
-            {getModeHint()}
-          </div>
+          <div className="muted summary-mode-hint">{getModeHint()}</div>
 
           <div className="stack-10">
             <div>
@@ -1008,11 +1004,11 @@ export default function SummaryTab({
             </div>
           </div>
         ) : (
-          <div className="stack-10">
+          <div className="summary-suggestions-list">
             {suggestions.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} className="soft-box">
-                <div className="row wrap" style={{ marginBottom: 6 }}>
-                  <div style={{ fontWeight: 700 }}>
+              <div key={`${food.source || "local"}-${food.id}`} className="summary-suggestion-card">
+                <div className="summary-suggestion-top">
+                  <div className="summary-suggestion-title">
                     {food.name}
                     {food.brand ? ` · ${food.brand}` : ""}
                   </div>
@@ -1021,7 +1017,7 @@ export default function SummaryTab({
                   </div>
                 </div>
 
-                <div className="muted" style={{ marginBottom: 8 }}>
+                <div className="muted summary-suggestion-meta">
                   Πρωτεΐνη {formatNumber(food.proteinPer100g || 0)}g · Υδατ.{" "}
                   {formatNumber(food.carbsPer100g || 0)}g · Λίπος{" "}
                   {formatNumber(food.fatPer100g || 0)}g
@@ -1037,47 +1033,45 @@ export default function SummaryTab({
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
 
-        {last7Days.map((day) => (
-          <button
-            key={day.date}
-            className="history-row"
-            onClick={() => setSelectedDate(day.date)}
-            style={{
-              border:
-                day.date === selectedDate
-                  ? "2px solid #111827"
-                  : "1px solid #e5e7eb"
-            }}
-          >
-            <div className="row">
-              <div>
-                <div style={{ fontWeight: 700 }}>
-                  {formatDisplayDate(day.date)}
-                </div>
-                <div className="muted">{day.date}</div>
-              </div>
-
-              <div style={{ textAlign: "right" }}>
-                <div className="muted">
-                  Φαγητό: {formatNumber(day.eaten)} kcal
+        <div className="summary-history-list">
+          {last7Days.map((day) => (
+            <button
+              key={day.date}
+              className={`history-row summary-history-row ${
+                day.date === selectedDate ? "summary-history-row-active" : ""
+              }`}
+              onClick={() => setSelectedDate(day.date)}
+              type="button"
+            >
+              <div className="summary-history-main">
+                <div>
+                  <div className="summary-history-title">{formatDisplayDate(day.date)}</div>
+                  <div className="muted">{day.date}</div>
                 </div>
 
-                <div className="muted">
-                  Άσκηση: +{formatNumber(day.exercise)} kcal
-                </div>
+                <div className="summary-history-stats">
+                  <div className="muted">
+                    Φαγητό: {formatNumber(day.eaten)} kcal
+                  </div>
 
-                <div
-                  style={{
-                    color: day.remaining >= 0 ? "#166534" : "#b91c1c",
-                    fontWeight: 700
-                  }}
-                >
-                  Υπόλοιπο: {formatNumber(day.remaining)} kcal
+                  <div className="muted">
+                    Άσκηση: +{formatNumber(day.exercise)} kcal
+                  </div>
+
+                  <div
+                    className={
+                      day.remaining >= 0
+                        ? "summary-history-remaining-positive"
+                        : "summary-history-remaining-negative"
+                    }
+                  >
+                    Υπόλοιπο: {formatNumber(day.remaining)} kcal
+                  </div>
                 </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
     </>
   );
@@ -1090,6 +1084,42 @@ import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim();
+}
+
+function getFoodSearchScore(food, query) {
+  const q = normalizeSearchText(query);
+  if (!q) return 0;
+
+  const name = normalizeSearchText(food.name);
+  const brand = normalizeSearchText(food.brand);
+  const combined = `${name} ${brand}`.trim();
+
+  let score = 0;
+
+  if (name === q) score += 120;
+  if (combined === q) score += 110;
+  if (name.startsWith(q)) score += 80;
+  if (brand.startsWith(q)) score += 35;
+  if (name.includes(q)) score += 45;
+  if (combined.includes(q)) score += 20;
+
+  if (food.source === "local") score += 25;
+  if (food.source === "usda") score += 10;
+  if (food.source === "off") score += 8;
+
+  const protein = Number(food.proteinPer100g || 0);
+  const calories = Number(food.caloriesPer100g || 0);
+
+  if (protein > 0) score += Math.min(protein, 30) * 0.1;
+  if (calories > 0 && calories < 700) score += 2;
+
+  return score;
+}
 
 export default function FoodTab({
   foods,
@@ -1137,15 +1167,11 @@ export default function FoodTab({
         source: food.source || "database",
         sourceLabel: food.sourceLabel || "Database",
         name: food.name,
-        brand: food.brand || "USDA",
-        caloriesPer100g:
-          Number(food.caloriesPer100g ?? food.calories) || 0,
-        proteinPer100g:
-          Number(food.proteinPer100g ?? food.protein) || 0,
-        carbsPer100g:
-          Number(food.carbsPer100g ?? food.carbs) || 0,
-        fatPer100g:
-          Number(food.fatPer100g ?? food.fat) || 0
+        brand: food.brand || "",
+        caloriesPer100g: Number(food.caloriesPer100g ?? food.calories) || 0,
+        proteinPer100g: Number(food.proteinPer100g ?? food.protein) || 0,
+        carbsPer100g: Number(food.carbsPer100g ?? food.carbs) || 0,
+        fatPer100g: Number(food.fatPer100g ?? food.fat) || 0
       })
     );
   }, [databaseResults]);
@@ -1162,7 +1188,7 @@ export default function FoodTab({
     const merged = [...localFoods, ...normalizedDatabaseResults];
     const seen = new Set();
 
-    return merged.filter((food) => {
+    const deduped = merged.filter((food) => {
       const key = `${String(food.name || "").trim().toLowerCase()}|${String(
         food.brand || ""
       )
@@ -1173,7 +1199,17 @@ export default function FoodTab({
       seen.add(key);
       return true;
     });
-  }, [filteredFoods, normalizedDatabaseResults]);
+
+    if (!query.trim()) {
+      return deduped;
+    }
+
+    return [...deduped].sort((a, b) => {
+      const aScore = getFoodSearchScore(a, query);
+      const bScore = getFoodSearchScore(b, query);
+      return bScore - aScore;
+    });
+  }, [filteredFoods, normalizedDatabaseResults, query]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const preview = selectedFood ? createFoodEntry(selectedFood, foodGrams, mealType) : null;
@@ -1229,10 +1265,10 @@ export default function FoodTab({
   }
 
   function getSourceBadge(food) {
-    if (food.sourceLabel) return food.sourceLabel;
-    if (food.source === "local") return "Local";
+    if (food.source === "local") return "";
     if (food.source === "usda") return "USDA";
-    if (food.source === "off") return "Open Food";
+    if (food.source === "off") return "Open Food Facts";
+    if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
     if (food.source === "database") return "Database";
     return "";
   }
@@ -1243,7 +1279,9 @@ export default function FoodTab({
         <h2>Φαγητό ημέρας</h2>
 
         {entries.length === 0 ? (
-          <div className="muted">Δεν έχεις βάλει φαγητό.</div>
+          <div className="soft-box">
+            <div className="muted">Δεν έχεις βάλει φαγητό.</div>
+          </div>
         ) : (
           <div className="stack-10">
             {MEALS.map((meal) => {
@@ -1251,33 +1289,23 @@ export default function FoodTab({
               if (!group || group.items.length === 0) return null;
 
               return (
-                <div key={meal} className="soft-box">
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 10,
-                      marginBottom: 10,
-                      flexWrap: "wrap"
-                    }}
-                  >
+                <div key={meal} className="soft-box food-meal-group">
+                  <div className="food-meal-head">
                     <div style={{ fontWeight: 700 }}>{meal}</div>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      {formatNumber(group.totalCalories)} kcal
-                    </div>
+                    <div className="muted">{formatNumber(group.totalCalories)} kcal</div>
                   </div>
 
-                  <div className="stack-10">
+                  <div className="food-day-list">
                     {group.items.map((item) => (
-                      <div key={item.id} className="food-list-item">
+                      <div key={item.id} className="food-entry-card">
                         <button
-                          className="food-choice"
+                          className="food-entry-main"
                           onClick={() => openEditEntry(item)}
-                          style={{ textAlign: "left" }}
+                          type="button"
                         >
-                          <div style={{ fontWeight: 700 }}>{item.name}</div>
-                          <div className="muted" style={{ marginTop: 4 }}>
+                          <div className="food-entry-title">{item.name}</div>
+
+                          <div className="muted food-entry-meta">
                             {item.grams}g · {formatNumber(item.calories || 0)} kcal
                             {item.protein !== undefined
                               ? ` · P ${formatNumber(item.protein || 0)}`
@@ -1291,19 +1319,23 @@ export default function FoodTab({
                           </div>
                         </button>
 
-                        <button
-                          className="btn btn-light"
-                          onClick={() => openEditEntry(item)}
-                        >
-                          Edit
-                        </button>
+                        <div className="food-entry-actions">
+                          <button
+                            className="btn btn-light"
+                            onClick={() => openEditEntry(item)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
 
-                        <button
-                          className="btn btn-light"
-                          onClick={() => deleteEntry(item.id)}
-                        >
-                          X
-                        </button>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => deleteEntry(item.id)}
+                            type="button"
+                          >
+                            X
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1317,7 +1349,7 @@ export default function FoodTab({
       <div className="card">
         <h2>Αναζήτηση φαγητού</h2>
 
-        <div style={{ position: "relative" }}>
+        <div className="food-search-wrap">
           <input
             className="input"
             placeholder="Γράψε φαγητό"
@@ -1329,23 +1361,13 @@ export default function FoodTab({
           />
 
           {showAutocomplete && (
-            <div
-              className="soft-box"
-              style={{
-                marginTop: -4,
-                marginBottom: 12,
-                padding: 8,
-                border: "1px solid rgba(255,255,255,0.08)"
-              }}
-            >
+            <div className="food-autocomplete-panel">
               {databaseLoading && (
-                <div className="muted" style={{ padding: "6px 4px" }}>
-                  Αναζήτηση...
-                </div>
+                <div className="muted food-autocomplete-state">Αναζήτηση...</div>
               )}
 
               {!databaseLoading && topSearchResults.length === 0 && (
-                <div className="muted" style={{ padding: "6px 4px" }}>
+                <div className="muted food-autocomplete-state">
                   Δεν βρέθηκαν αποτελέσματα.
                 </div>
               )}
@@ -1353,25 +1375,13 @@ export default function FoodTab({
               {!databaseLoading &&
                 topSearchResults.map((food) => (
                   <button
-                    key={`auto-${food.id}`}
-                    className="food-choice"
+                    key={`auto-${food.source || "local"}-${food.id}`}
+                    className="food-autocomplete-item"
                     onClick={() => setSelectedFood(food)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "10px 8px",
-                      borderRadius: 10
-                    }}
+                    type="button"
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        flexWrap: "wrap"
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>
+                    <div className="food-result-top">
+                      <div className="food-result-name">
                         {food.name}
                         {food.brand ? ` · ${food.brand}` : ""}
                       </div>
@@ -1381,7 +1391,7 @@ export default function FoodTab({
                       ) : null}
                     </div>
 
-                    <div className="muted" style={{ marginTop: 4 }}>
+                    <div className="muted food-result-meta">
                       {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                       {formatNumber(food.proteinPer100g || 0)} · C{" "}
                       {formatNumber(food.carbsPer100g || 0)} · F{" "}
@@ -1393,63 +1403,10 @@ export default function FoodTab({
           )}
         </div>
 
-        {showFullResultsList && (
-          <div className="stack-10" style={{ marginTop: 12 }}>
-            {visibleFoods.map((food) => (
-              <div key={food.id} className="food-list-item">
-                <button
-                  className="food-choice"
-                  onClick={() => setSelectedFood(food)}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>
-                      {food.name}
-                      {food.brand ? ` · ${food.brand}` : ""}
-                    </div>
-
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
-                  </div>
-
-                  <div className="muted">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                    {formatNumber(food.fatPer100g || 0)}
-                  </div>
-                </button>
-
-                <button
-                  className="btn btn-light"
-                  onClick={() => toggleFavorite(food)}
-                >
-                  {isFavorite(food) ? "★" : "☆"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {selectedFood && (
-          <div className="soft-box" style={{ marginTop: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-                marginBottom: 8
-              }}
-            >
-              <div style={{ fontWeight: 700 }}>
+          <div className="soft-box food-selected-box">
+            <div className="food-selected-head">
+              <div className="food-selected-title">
                 {selectedFood.name}
                 {selectedFood.brand ? ` · ${selectedFood.brand}` : ""}
               </div>
@@ -1459,44 +1416,104 @@ export default function FoodTab({
               ) : null}
             </div>
 
-            <div className="stack-10">
-              <input
-                className="input"
-                value={foodGrams}
-                onChange={(e) => setFoodGrams(e.target.value)}
-                placeholder="Γραμμάρια"
-                inputMode="numeric"
-              />
+            <div className="food-selected-controls">
+              <label className="food-inline-field">
+                <span className="muted">Γραμμάρια</span>
+                <input
+                  className="input"
+                  value={foodGrams}
+                  onChange={(e) => setFoodGrams(e.target.value)}
+                  placeholder="Γραμμάρια"
+                  inputMode="numeric"
+                />
+              </label>
 
-              <select
-                className="input"
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-              >
-                {MEALS.map((meal) => (
-                  <option key={meal} value={meal}>
-                    {meal}
-                  </option>
-                ))}
-              </select>
+              <label className="food-inline-field">
+                <span className="muted">Γεύμα</span>
+                <select
+                  className="input"
+                  value={mealType}
+                  onChange={(e) => setMealType(e.target.value)}
+                >
+                  {MEALS.map((meal) => (
+                    <option key={meal} value={meal}>
+                      {meal}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-              {preview && (
+            {preview && (
+              <div className="soft-box food-preview-box">
                 <div className="muted">
                   Preview: {formatNumber(preview.calories || 0)} kcal · P{" "}
                   {formatNumber(preview.protein || 0)} · C{" "}
                   {formatNumber(preview.carbs || 0)} · F{" "}
                   {formatNumber(preview.fat || 0)}
                 </div>
-              )}
+              </div>
+            )}
 
-              <button className="btn btn-dark" onClick={addSelectedFood}>
+            <div className="action-row">
+              <button className="btn btn-dark" onClick={addSelectedFood} type="button">
                 Προσθήκη
+              </button>
+
+              <button
+                className="btn btn-light"
+                onClick={clearSearchAndSelection}
+                type="button"
+              >
+                Καθαρισμός
               </button>
             </div>
           </div>
         )}
 
-        <div className="soft-box" style={{ marginTop: 12 }}>
+        {showFullResultsList && (
+          <div className="food-results-list">
+            {visibleFoods.map((food) => (
+              <div key={`${food.source || "local"}-${food.id}`} className="food-result-card">
+                <button
+                  className="food-result-main"
+                  onClick={() => setSelectedFood(food)}
+                  type="button"
+                >
+                  <div className="food-result-top">
+                    <div className="food-result-name">
+                      {food.name}
+                      {food.brand ? ` · ${food.brand}` : ""}
+                    </div>
+
+                    {getSourceBadge(food) ? (
+                      <span className="tag">{getSourceBadge(food)}</span>
+                    ) : null}
+                  </div>
+
+                  <div className="muted food-result-meta">
+                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
+                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
+                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
+                    {formatNumber(food.fatPer100g || 0)}
+                  </div>
+                </button>
+
+                <button
+                  className={`food-fav-icon-btn ${isFavorite(food) ? "is-active" : ""}`}
+                  onClick={() => toggleFavorite(food)}
+                  type="button"
+                  aria-label={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                >
+                  {isFavorite(food) ? "★" : "☆"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="soft-box food-custom-box">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Custom φαγητό</div>
 
           <div className="stack-10">
@@ -1507,39 +1524,41 @@ export default function FoodTab({
               onChange={(e) => setNewName(e.target.value)}
             />
 
-            <input
-              className="input"
-              placeholder="kcal / 100g"
-              inputMode="numeric"
-              value={newCalories}
-              onChange={(e) => setNewCalories(e.target.value)}
-            />
+            <div className="grid-2">
+              <input
+                className="input"
+                placeholder="kcal / 100g"
+                inputMode="numeric"
+                value={newCalories}
+                onChange={(e) => setNewCalories(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Protein / 100g"
-              inputMode="decimal"
-              value={newProtein}
-              onChange={(e) => setNewProtein(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Protein / 100g"
+                inputMode="decimal"
+                value={newProtein}
+                onChange={(e) => setNewProtein(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Carbs / 100g"
-              inputMode="decimal"
-              value={newCarbs}
-              onChange={(e) => setNewCarbs(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Carbs / 100g"
+                inputMode="decimal"
+                value={newCarbs}
+                onChange={(e) => setNewCarbs(e.target.value)}
+              />
 
-            <input
-              className="input"
-              placeholder="Fat / 100g"
-              inputMode="decimal"
-              value={newFat}
-              onChange={(e) => setNewFat(e.target.value)}
-            />
+              <input
+                className="input"
+                placeholder="Fat / 100g"
+                inputMode="decimal"
+                value={newFat}
+                onChange={(e) => setNewFat(e.target.value)}
+              />
+            </div>
 
-            <button className="btn btn-dark" onClick={handleAddCustomFood}>
+            <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">
               Αποθήκευση food
             </button>
           </div>
@@ -1550,36 +1569,41 @@ export default function FoodTab({
         <div className="card">
           <h2>Πρόσφατα</h2>
 
-          <div className="stack-10">
+          <div className="food-compact-list">
             {recentFoods.slice(0, 6).map((item) => {
               const recentPreview = createFoodEntry(item.food, item.grams, item.mealType);
 
               return (
-                <div key={item.key} className="food-list-item">
-                  <div className="food-choice" style={{ cursor: "default" }}>
-                    <div style={{ fontWeight: 700 }}>{item.food.name}</div>
-                    <div className="muted">
-                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)} kcal
+                <div key={item.key} className="food-compact-card">
+                  <div className="food-compact-main">
+                    <div className="food-compact-title">{item.food.name}</div>
+                    <div className="muted food-compact-meta">
+                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)}{" "}
+                      kcal
                     </div>
                   </div>
 
-                  <button
-                    className="btn btn-light"
-                    onClick={() => {
-                      setSelectedFood(item.food);
-                      setFoodGrams(String(item.grams || 100));
-                      setMealType(item.mealType || "Πρωινό");
-                    }}
-                  >
-                    Edit
-                  </button>
+                  <div className="food-compact-actions">
+                    <button
+                      className="btn btn-light"
+                      onClick={() => {
+                        setSelectedFood(item.food);
+                        setFoodGrams(String(item.grams || 100));
+                        setMealType(item.mealType || "Πρωινό");
+                      }}
+                      type="button"
+                    >
+                      Edit
+                    </button>
 
-                  <button
-                    className="btn btn-dark"
-                    onClick={() => quickAddRecent(item)}
-                  >
-                    +
-                  </button>
+                    <button
+                      className="btn btn-dark"
+                      onClick={() => quickAddRecent(item)}
+                      type="button"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -1591,43 +1615,38 @@ export default function FoodTab({
         <div className="card">
           <h2>Αγαπημένα</h2>
 
-          <div className="stack-10">
+          <div className="food-compact-list">
             {favoriteFoods.map((food) => (
-              <div key={food.id} className="food-list-item">
-                <div className="food-choice" style={{ cursor: "default" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>{food.name}</div>
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
+              <div key={`${food.source || "local"}-${food.id}`} className="food-compact-card">
+                <div className="food-compact-main">
+                  <div className="food-result-top">
+                    <div className="food-compact-title">{food.name}</div>
+                    {getSourceBadge(food) ? <span className="tag">{getSourceBadge(food)}</span> : null}
                   </div>
 
-                  <div className="muted">
+                  <div className="muted food-compact-meta">
                     {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
                     {formatNumber(food.proteinPer100g || 0)}
                   </div>
                 </div>
 
-                <button
-                  className="btn btn-light"
-                  onClick={() => setSelectedFood(food)}
-                >
-                  Άνοιγμα
-                </button>
+                <div className="food-compact-actions">
+                  <button
+                    className="btn btn-light"
+                    onClick={() => setSelectedFood(food)}
+                    type="button"
+                  >
+                    Άνοιγμα
+                  </button>
 
-                <button
-                  className="btn btn-dark"
-                  onClick={() => quickAddFavorite(food)}
-                >
-                  +100g
-                </button>
+                  <button
+                    className="btn btn-dark"
+                    onClick={() => quickAddFavorite(food)}
+                    type="button"
+                  >
+                    +100g
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1663,44 +1682,42 @@ export default function ExerciseTab({
       <div className="card">
         <h2>Άσκηση ημέρας</h2>
 
-        <div className="soft-box" style={{ marginTop: 10 }}>
-          <div className="row wrap" style={{ marginBottom: 10 }}>
+        <div className="soft-box exercise-summary-box">
+          <div className="exercise-summary-head">
             <div style={{ fontWeight: 700 }}>Σύνοψη ημέρας</div>
-            <div className="muted">+{formatNumber(exerciseValue)} kcal</div>
+            <div className="exercise-summary-kcal">
+              +{formatNumber(exerciseValue)} kcal
+            </div>
           </div>
 
           {exercises.length === 0 ? (
-            <div className="muted">Δεν έχεις βάλει άσκηση για αυτή την ημέρα.</div>
+            <div className="muted">
+              Δεν έχεις βάλει άσκηση για αυτή την ημέρα.
+            </div>
           ) : (
-            <div className="stack-10">
+            <div className="exercise-day-list">
               {exercises.map((item) => (
-                <div
-                  key={item.id}
-                  className="soft-box"
-                  style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
-                >
-                  <div className="row wrap" style={{ gap: 10 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700 }}>{item.name}</div>
-                      <div className="muted" style={{ marginTop: 6 }}>
-                        {item.minutes} λεπτά · {formatNumber(item.caloriesPerMinute)} kcal/λεπτό · +
-                        {formatNumber(item.calories)} kcal
-                      </div>
+                <div key={item.id} className="exercise-entry-card">
+                  <div className="exercise-entry-main">
+                    <div className="exercise-entry-title">
+                      {item.name}
                     </div>
 
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button className="btn btn-light" type="button">
-                        Edit
-                      </button>
-
-                      <button
-                        className="btn btn-light"
-                        onClick={() => deleteExercise(item.id)}
-                        type="button"
-                      >
-                        X
-                      </button>
+                    <div className="muted exercise-entry-meta">
+                      {item.minutes} λεπτά ·{" "}
+                      {formatNumber(item.caloriesPerMinute)} kcal/λεπτό · +
+                      {formatNumber(item.calories)} kcal
                     </div>
+                  </div>
+
+                  <div className="exercise-entry-actions">
+                    <button
+                      className="btn btn-light"
+                      onClick={() => deleteExercise(item.id)}
+                      type="button"
+                    >
+                      Διαγραφή
+                    </button>
                   </div>
                 </div>
               ))}
@@ -1711,59 +1728,50 @@ export default function ExerciseTab({
 
       <div className="card">
         <h2>Προσθήκη άσκησης με λεπτά</h2>
+
         <div className="muted" style={{ marginBottom: 12 }}>
           Βάζεις λεπτά και το app υπολογίζει αυτόματα τις θερμίδες.
         </div>
 
-        <div className="stack-10">
+        <div className="exercise-library-list">
           {EXERCISE_LIBRARY.map((exercise) => (
-            <div
-              key={exercise.name}
-              className="soft-box"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 120 }}>
-                <div style={{ fontWeight: 700 }}>{exercise.name}</div>
+            <div key={exercise.name} className="soft-box exercise-library-item">
+              <div className="exercise-library-main">
+                <div className="exercise-library-title">
+                  {exercise.name}
+                </div>
                 <div className="muted" style={{ marginTop: 4 }}>
                   {formatNumber(exercise.caloriesPerMinute)} kcal / λεπτό
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  flexShrink: 0
-                }}
-              >
-                <input
-                  className="input"
-                  type="number"
-                  min="1"
-                  placeholder="Λεπτά"
-                  value={exerciseMinutes[exercise.name] || ""}
-                  onChange={(e) =>
-                    setExerciseMinutes((prev) => ({
-                      ...prev,
-                      [exercise.name]: e.target.value
-                    }))
-                  }
-                  style={{ width: 78, marginBottom: 0 }}
-                />
+              <div className="exercise-library-controls">
+                <label className="exercise-inline-field">
+                  <span className="exercise-inline-label">Λεπτά</span>
+                  <input
+                    className="input exercise-compact-input"
+                    type="number"
+                    min="1"
+                    placeholder="0"
+                    value={exerciseMinutes[exercise.name] || ""}
+                    onChange={(e) =>
+                      setExerciseMinutes((prev) => ({
+                        ...prev,
+                        [exercise.name]: e.target.value
+                      }))
+                    }
+                  />
+                </label>
 
                 <button
-                  className="btn btn-dark"
-                  onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
+                  className="btn btn-dark exercise-add-btn"
+                  onClick={() =>
+                    addExerciseByMinutes(
+                      exercise,
+                      exerciseMinutes[exercise.name]
+                    )
+                  }
                   type="button"
-                  style={{
-                    whiteSpace: "nowrap",
-                    paddingInline: 12
-                  }}
                 >
                   Προσθήκη
                 </button>
@@ -1785,24 +1793,38 @@ export default function ExerciseTab({
           />
 
           <div className="grid-2">
-            <input
-              className="input"
-              placeholder="Λεπτά"
-              inputMode="numeric"
-              value={customExerciseMinutes}
-              onChange={(e) => setCustomExerciseMinutes(e.target.value)}
-            />
+            <label className="soft-box exercise-field-box">
+              <div className="muted" style={{ marginBottom: 6 }}>
+                Λεπτά
+              </div>
+              <input
+                className="input"
+                placeholder="Λεπτά"
+                inputMode="numeric"
+                value={customExerciseMinutes}
+                onChange={(e) => setCustomExerciseMinutes(e.target.value)}
+              />
+            </label>
 
-            <input
-              className="input"
-              placeholder="kcal / λεπτό"
-              inputMode="decimal"
-              value={customExerciseRate}
-              onChange={(e) => setCustomExerciseRate(e.target.value)}
-            />
+            <label className="soft-box exercise-field-box">
+              <div className="muted" style={{ marginBottom: 6 }}>
+                kcal / λεπτό
+              </div>
+              <input
+                className="input"
+                placeholder="kcal / λεπτό"
+                inputMode="decimal"
+                value={customExerciseRate}
+                onChange={(e) => setCustomExerciseRate(e.target.value)}
+              />
+            </label>
           </div>
 
-          <button className="btn btn-dark" onClick={addCustomExercise} type="button">
+          <button
+            className="btn btn-dark"
+            onClick={addCustomExercise}
+            type="button"
+          >
             Προσθήκη custom άσκησης
           </button>
         </div>
@@ -1814,6 +1836,7 @@ export default function ExerciseTab({
 
 ## FILE: src/components/tabs/ProfileTab.jsx
 ```javascript
+import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 
 export default function ProfileTab({
@@ -1866,15 +1889,27 @@ export default function ProfileTab({
     return "-";
   }
 
+  const rawDeficit = Number(dailyDeficit || 0);
+  const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
+
+  const kilosNum = Number(targetWeightLoss || 0);
+  const weeksNum = Number(weeks || 0);
+  const kilosPerWeek =
+    goalType === "lose" && kilosNum > 0 && weeksNum > 0
+      ? kilosNum / weeksNum
+      : 0;
+
+  const isCapped = goalType === "lose" && rawDeficit > 1000;
+  const isAggressiveGoal = goalType === "lose" && kilosPerWeek > 1;
+  const isVeryUnrealisticGoal = goalType === "lose" && kilosPerWeek > 1.5;
+
   return (
     <div className="card">
       <h2>Προφίλ & στόχος</h2>
 
       {!profileComplete && (
-        <div className="soft-box" style={{ marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>
-            Συμπλήρωσε πρώτα το προφίλ σου
-          </div>
+        <div className="soft-box profile-intro-box">
+          <div className="profile-section-title">Συμπλήρωσε πρώτα το προφίλ σου</div>
           <div className="muted">
             Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά
             τον ημερήσιο στόχο θερμίδων και πρωτεΐνης.
@@ -1882,14 +1917,12 @@ export default function ProfileTab({
         </div>
       )}
 
-      <div className="soft-box" style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Βασικά στοιχεία</div>
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Βασικά στοιχεία</div>
 
-        <div className="grid-2">
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Ηλικία
-            </div>
+        <div className="grid-2 profile-grid-compact">
+          <label className="profile-field">
+            <div className="profile-label">Ηλικία</div>
             <input
               className="input"
               placeholder="Ηλικία"
@@ -1897,12 +1930,10 @@ export default function ProfileTab({
               value={age}
               onChange={(e) => setAge(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Φύλο
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Φύλο</div>
             <select
               className="input"
               value={gender}
@@ -1911,12 +1942,10 @@ export default function ProfileTab({
               <option value="male">Άνδρας</option>
               <option value="female">Γυναίκα</option>
             </select>
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Ύψος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Ύψος (cm)</div>
             <input
               className="input"
               placeholder="Ύψος (cm)"
@@ -1924,12 +1953,10 @@ export default function ProfileTab({
               value={height}
               onChange={(e) => setHeight(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="soft-box">
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Βάρος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Βάρος (kg)</div>
             <input
               className="input"
               placeholder="Βάρος (kg)"
@@ -1937,18 +1964,16 @@ export default function ProfileTab({
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
-          </div>
+          </label>
         </div>
       </div>
 
-      <div className="soft-box" style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Ρυθμίσεις στόχου</div>
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Ρυθμίσεις στόχου</div>
 
         <div className="stack-10">
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Επίπεδο δραστηριότητας
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Επίπεδο δραστηριότητας</div>
             <select
               className="input"
               value={activity}
@@ -1959,12 +1984,10 @@ export default function ProfileTab({
               <option value="1.6">Moderate</option>
               <option value="1.8">High</option>
             </select>
-          </div>
+          </label>
 
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Στόχος
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Στόχος</div>
             <select
               className="input"
               value={goalType}
@@ -1974,12 +1997,10 @@ export default function ProfileTab({
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
             </select>
-          </div>
+          </label>
 
-          <div>
-            <div className="muted" style={{ marginBottom: 6 }}>
-              Τρόπος διατροφής
-            </div>
+          <label className="profile-field">
+            <div className="profile-label">Τρόπος διατροφής</div>
             <select
               className="input"
               value={mode}
@@ -1991,19 +2012,17 @@ export default function ProfileTab({
               <option value="fasting">Fasting 16:8</option>
               <option value="high_protein">High Protein</option>
             </select>
-          </div>
+          </label>
         </div>
       </div>
 
       {showGoalFields && (
-        <div className="soft-box" style={{ marginBottom: 14 }}>
-          <div style={{ fontWeight: 700, marginBottom: 10 }}>
-            Στοιχεία στόχου
-          </div>
+        <div className="soft-box profile-section-box">
+          <div className="profile-section-title">Στοιχεία στόχου</div>
 
-          <div className="grid-2">
-            <div className="soft-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
+          <div className="grid-2 profile-grid-compact">
+            <label className="profile-field">
+              <div className="profile-label">
                 {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
               </div>
               <input
@@ -2013,12 +2032,10 @@ export default function ProfileTab({
                 value={targetWeightLoss}
                 onChange={(e) => setTargetWeightLoss(e.target.value)}
               />
-            </div>
+            </label>
 
-            <div className="soft-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                Διάρκεια
-              </div>
+            <label className="profile-field">
+              <div className="profile-label">Εβδομάδες</div>
               <input
                 className="input"
                 placeholder="Σε πόσες εβδομάδες"
@@ -2026,41 +2043,86 @@ export default function ProfileTab({
                 value={weeks}
                 onChange={(e) => setWeeks(e.target.value)}
               />
-            </div>
+            </label>
           </div>
         </div>
       )}
 
-      <div className="soft-box" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Υπολογισμοί</div>
+      <div className="soft-box profile-section-box profile-highlight-box">
+        <div className="profile-section-title">Υπολογισμοί</div>
 
-        <div style={{ marginBottom: 8 }}>
-          Maintenance / TDEE: <strong>{formatNumber(tdee)} kcal</strong>
+        <div className="profile-stat-row">
+          <span>Maintenance / TDEE</span>
+          <strong>{formatNumber(tdee)} kcal</strong>
         </div>
 
-        <div style={{ marginBottom: 8 }}>
-          Ημερήσιος στόχος: <strong>{formatNumber(targetCalories)} kcal</strong>
+        <div className="profile-stat-row">
+          <span>Ημερήσιος στόχος</span>
+          <strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
 
-        {goalType === "lose" && dailyDeficit > 0 && (
-          <div style={{ marginBottom: 8 }}>
-            Ημερήσιο έλλειμμα: <strong>{formatNumber(dailyDeficit)} kcal</strong>
+        {goalType === "lose" && rawDeficit > 0 && (
+          <div className="profile-stat-row">
+            <span>Υπολογισμένο έλλειμμα</span>
+            <strong>{formatNumber(rawDeficit)} kcal</strong>
+          </div>
+        )}
+
+        {goalType === "lose" && appliedDeficit > 0 && (
+          <div className="profile-stat-row">
+            <span>Εφαρμοσμένο έλλειμμα</span>
+            <strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
 
         {goalType === "gain" && (
-          <div style={{ marginBottom: 8 }}>
-            Ημερήσιο πλεόνασμα: <strong>300 kcal</strong>
+          <div className="profile-stat-row">
+            <span>Ημερήσιο πλεόνασμα</span>
+            <strong>300 kcal</strong>
           </div>
         )}
 
-        <div>
-          Στόχος πρωτεΐνης: <strong>{formatNumber(proteinTarget || 0)} g</strong>
+        <div className="profile-stat-row profile-stat-row-last">
+          <span>Στόχος πρωτεΐνης</span>
+          <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
 
-      <div className="soft-box" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>Σύνοψη</div>
+      {isCapped && (
+        <div className="soft-box profile-warning-box">
+          <div className="profile-warning-title">Περιορισμός ελλείμματος</div>
+          <div className="muted">
+            Ο στόχος που έβαλες απαιτεί πολύ μεγάλο ημερήσιο έλλειμμα.
+            Για γενική χρήση, το app περιορίζει το εφαρμοσμένο έλλειμμα
+            στις <strong>1000 kcal/ημέρα</strong>.
+          </div>
+        </div>
+      )}
+
+      {isAggressiveGoal && (
+        <div className="soft-box profile-warning-box">
+          <div className="profile-warning-title">Πολύ επιθετικός στόχος</div>
+          <div className="muted">
+            Ο ρυθμός που έχεις βάλει είναι περίπου{" "}
+            <strong>{formatNumber(kilosPerWeek)} κιλά/εβδομάδα</strong>.
+            Αυτό θεωρείται αρκετά επιθετικό για γενική καθοδήγηση.
+          </div>
+        </div>
+      )}
+
+      {isVeryUnrealisticGoal && (
+        <div className="soft-box profile-danger-box">
+          <div className="profile-warning-title">Μη ρεαλιστικός στόχος</div>
+          <div className="muted">
+            Ο στόχος αυτός δεν φαίνεται ρεαλιστικός με ασφαλές ημερήσιο
+            θερμιδικό έλλειμμα. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο
+            στόχο κιλών.
+          </div>
+        </div>
+      )}
+
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">Σύνοψη</div>
 
         <div className="stack-10">
           <div>
@@ -2121,69 +2183,6 @@ export default function ProfileTab({
 
 ## FILE: src/data/constants.js
 ```javascript
-export const DEFAULT_FOODS = [
-  {
-    id: "local-tost",
-    source: "local",
-    name: "Τοστ",
-    brand: "",
-    caloriesPer100g: 250,
-    proteinPer100g: 10,
-    carbsPer100g: 30,
-    fatPer100g: 10
-  },
-  {
-    id: "local-avga",
-    source: "local",
-    name: "Αυγά",
-    brand: "",
-    caloriesPer100g: 140,
-    proteinPer100g: 12,
-    carbsPer100g: 1,
-    fatPer100g: 10
-  },
-  {
-    id: "local-kotopoulo",
-    source: "local",
-    name: "Κοτόπουλο",
-    brand: "",
-    caloriesPer100g: 300,
-    proteinPer100g: 40,
-    carbsPer100g: 0,
-    fatPer100g: 15
-  },
-  {
-    id: "local-banana",
-    source: "local",
-    name: "Μπανάνα",
-    brand: "",
-    caloriesPer100g: 100,
-    proteinPer100g: 1,
-    carbsPer100g: 25,
-    fatPer100g: 0
-  },
-  {
-    id: "local-ryzi",
-    source: "local",
-    name: "Ρύζι",
-    brand: "",
-    caloriesPer100g: 200,
-    proteinPer100g: 4,
-    carbsPer100g: 44,
-    fatPer100g: 1
-  },
-  {
-    id: "local-giaourti",
-    source: "local",
-    name: "Γιαούρτι",
-    brand: "",
-    caloriesPer100g: 150,
-    proteinPer100g: 15,
-    carbsPer100g: 8,
-    fatPer100g: 6
-  }
-];
-
 export const EXERCISE_LIBRARY = [
   { name: "Περπάτημα", caloriesPerMinute: 4 },
   { name: "Γρήγορο περπάτημα", caloriesPerMinute: 5.5 },
@@ -2374,6 +2373,12 @@ export function calculateDailyDeficit({ kilos, weeks }) {
   return Math.round(total / days);
 }
 
+export function calculateAppliedDailyDeficit(rawDeficit) {
+  const deficit = Number(rawDeficit || 0);
+  if (!deficit) return 0;
+  return Math.min(Math.max(deficit, 150), 1000);
+}
+
 export function calculateTargetCalories({
   goalType,
   tdee,
@@ -2389,14 +2394,14 @@ export function calculateTargetCalories({
   if (goalType === "gain") return Math.round(base + 300);
 
   if (goalType === "lose") {
-    const deficit = calculateDailyDeficit({
+    const rawDeficit = calculateDailyDeficit({
       kilos: targetWeightChange,
       weeks
     });
 
-    const safe = Math.min(Math.max(deficit, 150), 900);
+    const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
 
-    return Math.max(Math.round(base - safe), 1200);
+    return Math.max(Math.round(base - appliedDeficit), 1200);
   }
 
   return base;
@@ -2714,12 +2719,24 @@ export async function handler(event) {
 
     const API_KEY = process.env.USDA_API_KEY;
 
-    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(
-      query
-    )}&pageSize=12&api_key=${API_KEY}`;
+    // 🔥 USDA (κύριο - γρήγορο)
+    const usdaPromise = fetch(
+      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(
+        query
+      )}&pageSize=10&api_key=${API_KEY}`
+    ).then((res) => res.json());
 
-    const response = await fetch(url);
-    const data = await response.json();
+    // 🔥 Open Food Facts (secondary - μπορεί να αργήσει)
+    const offPromise = fetch(
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
+        query
+      )}&search_simple=1&action=process&json=1&page_size=10`
+    )
+      .then((res) => res.json())
+      .catch(() => null); // αν fail → ignore
+
+    // 👉 ΠΕΡΙΜΕΝΟΥΜΕ ΜΟΝΟ USDA
+    const usdaData = await usdaPromise;
 
     function getNutrientValue(food, possibleNames) {
       const match = (food.foodNutrients || []).find((n) =>
@@ -2728,19 +2745,54 @@ export async function handler(event) {
       return Number(match?.value) || 0;
     }
 
-    const foods = (data.foods || []).map((food) => ({
-      id: food.fdcId,
+    const usdaFoods = (usdaData.foods || []).map((food) => ({
+      id: `usda-${food.fdcId}`,
+      source: "usda",
+      sourceLabel: "USDA",
       name: food.description || "Unknown food",
       brand: food.brandOwner || food.brandName || "USDA",
-      calories: getNutrientValue(food, ["Energy", "Energy (kcal)"]),
-      protein: getNutrientValue(food, ["Protein"]),
-      carbs: getNutrientValue(food, ["Carbohydrate, by difference"]),
-      fat: getNutrientValue(food, ["Total lipid (fat)"]),
+      caloriesPer100g: getNutrientValue(food, ["Energy", "Energy (kcal)"]),
+      proteinPer100g: getNutrientValue(food, ["Protein"]),
+      carbsPer100g: getNutrientValue(food, [
+        "Carbohydrate, by difference",
+      ]),
+      fatPer100g: getNutrientValue(food, ["Total lipid (fat)"]),
     }));
+
+    // 👉 Προσπαθούμε να πάρουμε OFF αλλά δεν περιμένουμε
+    let offFoods = [];
+
+    try {
+      const offData = await Promise.race([
+        offPromise,
+        new Promise((resolve) => setTimeout(() => resolve(null), 800)), // timeout 800ms
+      ]);
+
+      if (offData?.products) {
+        offFoods = offData.products.map((p) => ({
+          id: `off-${p.code}`,
+          source: "off",
+          sourceLabel: "OpenFood",
+          name: p.product_name || "Unknown",
+          brand: p.brands || "",
+          caloriesPer100g: Number(
+            p.nutriments?.["energy-kcal_100g"] || 0
+          ),
+          proteinPer100g: Number(p.nutriments?.proteins_100g || 0),
+          carbsPer100g: Number(p.nutriments?.carbohydrates_100g || 0),
+          fatPer100g: Number(p.nutriments?.fat_100g || 0),
+        }));
+      }
+    } catch {
+      // ignore completely
+    }
+
+    // 🔥 ΕΝΩΝΟΥΜΕ
+    const results = [...usdaFoods, ...offFoods];
 
     return {
       statusCode: 200,
-      body: JSON.stringify(foods),
+      body: JSON.stringify(results),
     };
   } catch (error) {
     return {
