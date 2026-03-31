@@ -3,6 +3,42 @@ import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim();
+}
+
+function getFoodSearchScore(food, query) {
+  const q = normalizeSearchText(query);
+  if (!q) return 0;
+
+  const name = normalizeSearchText(food.name);
+  const brand = normalizeSearchText(food.brand);
+  const combined = `${name} ${brand}`.trim();
+
+  let score = 0;
+
+  if (name === q) score += 120;
+  if (combined === q) score += 110;
+  if (name.startsWith(q)) score += 80;
+  if (brand.startsWith(q)) score += 35;
+  if (name.includes(q)) score += 45;
+  if (combined.includes(q)) score += 20;
+
+  if (food.source === "local") score += 25;
+  if (food.source === "usda") score += 10;
+  if (food.source === "off") score += 8;
+
+  const protein = Number(food.proteinPer100g || 0);
+  const calories = Number(food.caloriesPer100g || 0);
+
+  if (protein > 0) score += Math.min(protein, 30) * 0.1;
+  if (calories > 0 && calories < 700) score += 2;
+
+  return score;
+}
+
 export default function FoodTab({
   foods,
   recentFoods,
@@ -49,7 +85,7 @@ export default function FoodTab({
         source: food.source || "database",
         sourceLabel: food.sourceLabel || "Database",
         name: food.name,
-        brand: food.brand || "USDA",
+        brand: food.brand || "",
         caloriesPer100g: Number(food.caloriesPer100g ?? food.calories) || 0,
         proteinPer100g: Number(food.proteinPer100g ?? food.protein) || 0,
         carbsPer100g: Number(food.carbsPer100g ?? food.carbs) || 0,
@@ -70,7 +106,7 @@ export default function FoodTab({
     const merged = [...localFoods, ...normalizedDatabaseResults];
     const seen = new Set();
 
-    return merged.filter((food) => {
+    const deduped = merged.filter((food) => {
       const key = `${String(food.name || "").trim().toLowerCase()}|${String(
         food.brand || ""
       )
@@ -81,7 +117,17 @@ export default function FoodTab({
       seen.add(key);
       return true;
     });
-  }, [filteredFoods, normalizedDatabaseResults]);
+
+    if (!query.trim()) {
+      return deduped;
+    }
+
+    return [...deduped].sort((a, b) => {
+      const aScore = getFoodSearchScore(a, query);
+      const bScore = getFoodSearchScore(b, query);
+      return bScore - aScore;
+    });
+  }, [filteredFoods, normalizedDatabaseResults, query]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const preview = selectedFood ? createFoodEntry(selectedFood, foodGrams, mealType) : null;
@@ -138,9 +184,9 @@ export default function FoodTab({
 
   function getSourceBadge(food) {
     if (food.source === "local") return "";
-    if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
     if (food.source === "usda") return "USDA";
-    if (food.source === "off") return "Open Food";
+    if (food.source === "off") return "Open Food Facts";
+    if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
     if (food.source === "database") return "Database";
     return "";
   }
@@ -247,7 +293,7 @@ export default function FoodTab({
               {!databaseLoading &&
                 topSearchResults.map((food) => (
                   <button
-                    key={`auto-${food.id}`}
+                    key={`auto-${food.source || "local"}-${food.id}`}
                     className="food-autocomplete-item"
                     onClick={() => setSelectedFood(food)}
                     type="button"
@@ -346,7 +392,7 @@ export default function FoodTab({
         {showFullResultsList && (
           <div className="food-results-list">
             {visibleFoods.map((food) => (
-              <div key={food.id} className="food-result-card">
+              <div key={`${food.source || "local"}-${food.id}`} className="food-result-card">
                 <button
                   className="food-result-main"
                   onClick={() => setSelectedFood(food)}
@@ -489,7 +535,7 @@ export default function FoodTab({
 
           <div className="food-compact-list">
             {favoriteFoods.map((food) => (
-              <div key={food.id} className="food-compact-card">
+              <div key={`${food.source || "local"}-${food.id}`} className="food-compact-card">
                 <div className="food-compact-main">
                   <div className="food-result-top">
                     <div className="food-compact-title">{food.name}</div>
