@@ -50,6 +50,29 @@ export function stripDiacritics(value) {
 }
 
 export function transliterateGreekToLatin(value) {
+  let text = stripDiacritics(String(value || "").toLowerCase());
+
+  const digraphs = [
+    [/ου/g, "ou"],
+    [/αι/g, "ai"],
+    [/ει/g, "ei"],
+    [/οι/g, "oi"],
+    [/υι/g, "yi"],
+    [/αυ/g, "av"],
+    [/ευ/g, "ev"],
+    [/ηυ/g, "iv"],
+    [/γκ/g, "gk"],
+    [/γγ/g, "ng"],
+    [/μπ/g, "b"],
+    [/ντ/g, "nt"],
+    [/τσ/g, "ts"],
+    [/τζ/g, "tz"]
+  ];
+
+  digraphs.forEach(([pattern, replacement]) => {
+    text = text.replace(pattern, replacement);
+  });
+
   const map = {
     α: "a",
     β: "v",
@@ -78,7 +101,7 @@ export function transliterateGreekToLatin(value) {
     ω: "o"
   };
 
-  return stripDiacritics(String(value || "").toLowerCase())
+  return text
     .split("")
     .map((char) => map[char] || char)
     .join("");
