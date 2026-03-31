@@ -49,6 +49,17 @@ export function stripDiacritics(value) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+export function normalizeSearchText(value) {
+  return stripDiacritics(String(value || "").toLowerCase())
+    .replace(/[\/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function toCompactSearchText(value) {
+  return normalizeSearchText(value).replace(/\s+/g, "");
+}
+
 export function transliterateGreekToLatin(value) {
   let text = stripDiacritics(String(value || "").toLowerCase());
 
@@ -107,11 +118,45 @@ export function transliterateGreekToLatin(value) {
     .join("");
 }
 
-export function normalizeSearchText(value) {
-  return stripDiacritics(String(value || "").toLowerCase())
-    .replace(/[\/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+export function simplifyLatinGreeklish(value) {
+  return normalizeSearchText(value)
+    .replace(/ou/g, "u")
+    .replace(/ei/g, "i")
+    .replace(/oi/g, "i")
+    .replace(/ai/g, "e")
+    .replace(/yi/g, "i")
+    .replace(/th/g, "8")
+    .replace(/ch/g, "x")
+    .replace(/gk/g, "g")
+    .replace(/mp/g, "b")
+    .replace(/nt/g, "d")
+    .replace(/tz/g, "z")
+    .replace(/ts/g, "s")
+    .replace(/y/g, "i");
+}
+
+export function buildSearchVariants(value) {
+  const original = normalizeSearchText(value);
+  const compact = toCompactSearchText(value);
+  const latin = normalizeSearchText(transliterateGreekToLatin(value));
+  const latinCompact = toCompactSearchText(transliterateGreekToLatin(value));
+  const simplifiedLatin = simplifyLatinGreeklish(transliterateGreekToLatin(value));
+  const simplifiedOriginal = simplifyLatinGreeklish(value);
+
+  return Array.from(
+    new Set(
+      [
+        original,
+        compact,
+        latin,
+        latinCompact,
+        simplifiedLatin,
+        simplifiedOriginal,
+        toCompactSearchText(simplifiedLatin),
+        toCompactSearchText(simplifiedOriginal)
+      ].filter(Boolean)
+    )
+  );
 }
 
 export function getFoodAliases(food) {
@@ -126,13 +171,9 @@ export function getFoodSearchTexts(food) {
   const aliases = getFoodAliases(food);
 
   const rawValues = [name, brand, ...aliases].filter(Boolean);
+  const expanded = rawValues.flatMap((item) => buildSearchVariants(item));
 
-  const normalized = rawValues.map((item) => normalizeSearchText(item)).filter(Boolean);
-  const latinized = rawValues
-    .map((item) => normalizeSearchText(transliterateGreekToLatin(item)))
-    .filter(Boolean);
-
-  return Array.from(new Set([...normalized, ...latinized]));
+  return Array.from(new Set(expanded.filter(Boolean)));
 }
 
 export function getFoodIdentityKey(food) {
