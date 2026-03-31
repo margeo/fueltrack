@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji, getStreakMessage } from "../../utils/streak";
+import AiCoach from "../AiCoach";
 
 export default function SummaryTab({
   selectedDate,
@@ -246,6 +247,18 @@ export default function SummaryTab({
         </div>
       </div>
 
+      {/* AI COACH */}
+      <AiCoach
+        last7Days={last7Days}
+        dailyLogs={dailyLogs}
+        targetCalories={targetCalories}
+        proteinTarget={proteinTarget}
+        mode={mode}
+        goalType={goalType}
+        streak={streak}
+        weightLog={weightLog}
+      />
+
       {/* WEIGHT TRACKING */}
       <div className="card">
         <h2>⚖️ Βάρος</h2>
@@ -307,9 +320,7 @@ export default function SummaryTab({
                 <strong style={{ color: diff <= 0 ? "green" : "red" }}>
                   {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
                 </strong>
-                {lastWeight && (
-                  <span className="muted"> · Τώρα: {lastWeight} kg</span>
-                )}
+                {lastWeight && <span className="muted"> · Τώρα: {lastWeight} kg</span>}
               </div>
             )}
           </div>
@@ -339,9 +350,7 @@ export default function SummaryTab({
       <div className="card">
         <h2>Κατεύθυνση ημέρας</h2>
         <div className="soft-box" style={{ padding: "10px 14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
-            <span style={{ fontWeight: 700, fontSize: 13 }}>{getModeLabel()} · {getModeHint()}</span>
-          </div>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{getModeLabel()} · {getModeHint()}</div>
           <div style={{ marginTop: 8, display: "flex", gap: 16, fontSize: 13 }}>
             <span><span className="muted">Kcal: </span><strong>{formatNumber(remainingCalories)}</strong></span>
             <span><span className="muted">Protein: </span><strong>{formatNumber(remainingProtein)}g</strong></span>
@@ -390,7 +399,8 @@ export default function SummaryTab({
               }}
             >
               <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
-              <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }} className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
+              <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
+                className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
                 {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} υπόλοιπο
               </span>
             </button>
