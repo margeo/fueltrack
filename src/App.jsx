@@ -5,6 +5,7 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
 import ExerciseTab from "./components/tabs/ExerciseTab";
+import WeightTab from "./components/tabs/WeightTab";
 import ProfileTab from "./components/tabs/ProfileTab";
 import foodsData from "./data/foods.json";
 import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
@@ -27,22 +28,6 @@ import {
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 
-function mergeBundledFoodsWithStoredFoods(storedFoods, bundledFoods) {
-  const normalizedBundled = Array.isArray(bundledFoods)
-    ? bundledFoods.map((food) => normalizeFood(food))
-    : [];
-
-  const normalizedStored = Array.isArray(storedFoods)
-    ? storedFoods.map((food) => normalizeFood(food))
-    : [];
-
-  const bundledIds = new Set(normalizedBundled.map((food) => food.id));
-
-  const customStoredFoods = normalizedStored.filter((food) => !bundledIds.has(food.id));
-
-  return [...customStoredFoods, ...normalizedBundled];
-}
-
 export default function App() {
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
@@ -61,15 +46,13 @@ export default function App() {
   );
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [foods, setFoods] = useState(() => {
-    const storedFoods = loadJSON("ft_foods", []);
-    return mergeBundledFoodsWithStoredFoods(storedFoods, foodsData);
-  });
+  const [foods, setFoods] = useState(() => loadJSON("ft_foods", foodsData));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
     loadJSON("ft_favoriteFoodKeys", [])
   );
+  const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [editEntryGrams, setEditEntryGrams] = useState("100");
@@ -125,16 +108,12 @@ export default function App() {
 
     if (!savedHasSeenWelcome) return "welcome";
     if (!savedProfileComplete) return "profile";
-    if (!["summary", "food", "exercise", "profile"].includes(savedTab)) return "summary";
+    if (!["summary", "food", "exercise", "weight", "profile"].includes(savedTab)) return "summary";
     return savedTab;
   });
 
   useEffect(() => {
     setSelectedDate(getTodayKey());
-  }, []);
-
-  useEffect(() => {
-    setFoods((prev) => mergeBundledFoodsWithStoredFoods(prev, foodsData));
   }, []);
 
   useEffect(() => {
@@ -156,6 +135,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+  useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
   useEffect(() => {
@@ -355,6 +335,17 @@ export default function App() {
     return favoriteFoodKeys.includes(key);
   }
 
+  function addWeight({ date, weight: w }) {
+    setWeightLog((prev) => {
+      const filtered = prev.filter((entry) => entry.date !== date);
+      return [...filtered, { date, weight: w }];
+    });
+  }
+
+  function deleteWeight(date) {
+    setWeightLog((prev) => prev.filter((entry) => entry.date !== date));
+  }
+
   function startOnboarding() {
     setHasSeenWelcome(true);
     setActiveTab("profile");
@@ -366,62 +357,32 @@ export default function App() {
   }
 
   const bmr = useMemo(
-    () =>
-      calculateBMR({
-        age,
-        gender,
-        height,
-        weight
-      }),
+    () => calculateBMR({ age, gender, height, weight }),
     [age, gender, height, weight]
   );
 
   const tdee = useMemo(
-    () =>
-      calculateTDEE({
-        bmr,
-        activity
-      }),
+    () => calculateTDEE({ bmr, activity }),
     [bmr, activity]
   );
 
   const dailyDeficit = useMemo(
-    () =>
-      calculateDailyDeficit({
-        kilos: targetWeightLoss,
-        weeks
-      }),
+    () => calculateDailyDeficit({ kilos: targetWeightLoss, weeks }),
     [targetWeightLoss, weeks]
   );
 
   const targetCalories = useMemo(
-    () =>
-      calculateTargetCalories({
-        goalType,
-        tdee,
-        targetWeightChange: targetWeightLoss,
-        weeks
-      }),
+    () => calculateTargetCalories({ goalType, tdee, targetWeightChange: targetWeightLoss, weeks }),
     [goalType, tdee, targetWeightLoss, weeks]
   );
 
   const proteinTarget = useMemo(
-    () =>
-      calculateProteinTarget({
-        weight,
-        goalType,
-        modeKey: mode
-      }),
+    () => calculateProteinTarget({ weight, goalType, modeKey: mode }),
     [weight, goalType, mode]
   );
 
   const macroTargets = useMemo(
-    () =>
-      calculateMacroTargets({
-        targetCalories,
-        proteinTarget,
-        modeKey: mode
-      }),
+    () => calculateMacroTargets({ targetCalories, proteinTarget, modeKey: mode }),
     [targetCalories, proteinTarget, mode]
   );
 
@@ -454,12 +415,7 @@ export default function App() {
       const ex = log.exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
       const remaining = targetCalories - eaten + ex;
 
-      return {
-        date,
-        eaten,
-        exercise: ex,
-        remaining
-      };
+      return { date, eaten, exercise: ex, remaining };
     });
   }, [selectedDate, dailyLogs, targetCalories]);
 
@@ -470,80 +426,43 @@ export default function App() {
   }, [foods, favoriteFoodKeys]);
 
   const summaryProps = {
-    selectedDate,
-    setSelectedDate,
-    isToday,
-    targetCalories,
-    totalCalories,
-    exerciseValue,
-    remainingCalories,
-    progress,
-    goalType,
-    proteinTarget,
-    totalProtein,
-    last7Days,
-    mode,
-    macroTargets,
-    foods
+    selectedDate, setSelectedDate, isToday,
+    targetCalories, totalCalories, exerciseValue,
+    remainingCalories, progress, goalType,
+    proteinTarget, totalProtein, last7Days,
+    mode, macroTargets, foods
   };
 
   const foodProps = {
-    foods,
-    recentFoods,
-    favoriteFoods,
-    isFavorite,
-    toggleFavorite,
-    addCustomFood,
-    saveRecentFood,
-    updateCurrentDay,
-    quickAddRecent,
-    quickAddFavorite,
-    entries,
-    groupedEntries,
-    deleteEntry,
-    openEditEntry
+    foods, recentFoods, favoriteFoods,
+    isFavorite, toggleFavorite, addCustomFood,
+    saveRecentFood, updateCurrentDay,
+    quickAddRecent, quickAddFavorite,
+    entries, groupedEntries, deleteEntry, openEditEntry
   };
 
   const exerciseProps = {
-    exercises,
-    exerciseValue,
-    exerciseMinutes,
-    setExerciseMinutes,
-    customExerciseName,
-    setCustomExerciseName,
-    customExerciseMinutes,
-    setCustomExerciseMinutes,
-    customExerciseRate,
-    setCustomExerciseRate,
-    addExerciseByMinutes,
-    addCustomExercise,
-    deleteExercise
+    exercises, exerciseValue, exerciseMinutes,
+    setExerciseMinutes, customExerciseName,
+    setCustomExerciseName, customExerciseMinutes,
+    setCustomExerciseMinutes, customExerciseRate,
+    setCustomExerciseRate, addExerciseByMinutes,
+    addCustomExercise, deleteExercise
+  };
+
+  const weightProps = {
+    weightLog,
+    onAddWeight: addWeight,
+    onDeleteWeight: deleteWeight
   };
 
   const profileProps = {
-    age,
-    setAge,
-    gender,
-    setGender,
-    height,
-    setHeight,
-    weight,
-    setWeight,
-    activity,
-    setActivity,
-    goalType,
-    setGoalType,
-    mode,
-    setMode,
-    targetWeightLoss,
-    setTargetWeightLoss,
-    weeks,
-    setWeeks,
-    tdee,
-    targetCalories,
-    dailyDeficit,
-    proteinTarget,
-    profileComplete,
+    age, setAge, gender, setGender,
+    height, setHeight, weight, setWeight,
+    activity, setActivity, goalType, setGoalType,
+    mode, setMode, targetWeightLoss, setTargetWeightLoss,
+    weeks, setWeeks, tdee, targetCalories,
+    dailyDeficit, proteinTarget, profileComplete,
     onContinue: goToSummaryAfterProfile
   };
 
@@ -566,6 +485,7 @@ export default function App() {
         {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
         {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
         {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
+        {appReady && activeTab === "weight" && <WeightTab {...weightProps} />}
         {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
 
         <div style={{ height: 110 }} />
