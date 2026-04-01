@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
+import BarcodeScanner from "../BarcodeScanner";
 
 function normalizeSearchText(value) {
   return String(value || "").toLowerCase().trim();
@@ -54,6 +55,9 @@ export default function FoodTab({
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodGrams, setFoodGrams] = useState("100");
   const [mealType, setMealType] = useState("Πρωινό");
+  const [showScanner, setShowScanner] = useState(false);
+  const [barcodeLoading, setBarcodeLoading] = useState(false);
+  const [barcodeError, setBarcodeError] = useState("");
 
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
@@ -145,6 +149,31 @@ export default function FoodTab({
     setNewName(""); setNewCalories(""); setNewProtein(""); setNewCarbs(""); setNewFat("");
   }
 
+  async function handleBarcodeResult(code) {
+    setShowScanner(false);
+    setBarcodeLoading(true);
+    setBarcodeError("");
+
+    try {
+      const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+
+      if (!data.found) {
+        setBarcodeError(`Δεν βρέθηκε προϊόν για barcode: ${code}`);
+        return;
+      }
+
+      const food = normalizeFood(data);
+      setSelectedFood(food);
+      setFoodGrams("100");
+      setMealType("Πρωινό");
+    } catch {
+      setBarcodeError("Σφάλμα κατά την αναζήτηση barcode.");
+    } finally {
+      setBarcodeLoading(false);
+    }
+  }
+
   function getSourceBadge(food) {
     if (food.source === "local") return "";
     if (food.source === "usda") return "USDA";
@@ -153,15 +182,20 @@ export default function FoodTab({
     return "";
   }
 
-  const totalEntries = entries.length;
-
   return (
     <>
+      {showScanner && (
+        <BarcodeScanner
+          onResult={handleBarcodeResult}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="card">
         <h2>Φαγητό ημέρας</h2>
 
-        {totalEntries === 0 ? (
+        {entries.length === 0 ? (
           <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -202,7 +236,29 @@ export default function FoodTab({
 
       {/* ΑΝΑΖΗΤΗΣΗ */}
       <div className="card">
-        <h2>Αναζήτηση φαγητού</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Αναζήτηση φαγητού</h2>
+          <button
+            className="btn btn-dark"
+            onClick={() => { setShowScanner(true); setBarcodeError(""); }}
+            type="button"
+            style={{ fontSize: 13, padding: "8px 12px" }}
+          >
+            📷 Barcode
+          </button>
+        </div>
+
+        {barcodeLoading && (
+          <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>
+            🔍 Αναζήτηση barcode...
+          </div>
+        )}
+
+        {barcodeError && (
+          <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>
+            {barcodeError}
+          </div>
+        )}
 
         <div style={{ position: "relative" }}>
           <input
