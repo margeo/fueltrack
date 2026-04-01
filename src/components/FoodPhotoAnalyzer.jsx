@@ -139,7 +139,6 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
           ref={fileRef}
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handleFileChange}
           style={{ display: "none" }}
         />
