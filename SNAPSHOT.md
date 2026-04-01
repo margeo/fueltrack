@@ -31,8 +31,10 @@ import {
   calculateMacroTargets
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
+import { getInitialTheme, applyTheme } from "./utils/theme";
 
 export default function App() {
+  const [theme, setTheme] = useState(() => getInitialTheme());
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
   const [age, setAge] = useState(() => loadValue("ft_age", ""));
@@ -56,6 +58,7 @@ export default function App() {
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() =>
     loadJSON("ft_favoriteFoodKeys", [])
   );
+  const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [editEntryGrams, setEditEntryGrams] = useState("100");
@@ -75,6 +78,14 @@ export default function App() {
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() =>
     loadValue("ft_hasSeenWelcome", "false") === "true"
   );
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }
 
   const profileComplete = useMemo(() => {
     return (
@@ -115,14 +126,10 @@ export default function App() {
     return savedTab;
   });
 
-  useEffect(() => {
-    setSelectedDate(getTodayKey());
-  }, []);
+  useEffect(() => { setSelectedDate(getTodayKey()); }, []);
 
   useEffect(() => {
-    if (goalType === "fitness") {
-      setGoalType("maintain");
-    }
+    if (goalType === "fitness") setGoalType("maintain");
   }, [goalType]);
 
   useEffect(() => saveValue("ft_age", age), [age]);
@@ -138,6 +145,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+  useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
   useEffect(() => {
@@ -145,12 +153,10 @@ export default function App() {
       setActiveTab("welcome");
       return;
     }
-
     if (hasSeenWelcome && !profileComplete && activeTab !== "profile") {
       setActiveTab("profile");
       return;
     }
-
     if (hasSeenWelcome && profileComplete) {
       saveValue("ft_activeTab", activeTab);
     }
@@ -164,10 +170,7 @@ export default function App() {
     setDailyLogs((prev) => {
       const current = normalizeDayLog(prev[selectedDate]);
       const nextDay = normalizeDayLog(updater(current));
-      return {
-        ...prev,
-        [selectedDate]: nextDay
-      };
+      return { ...prev, [selectedDate]: nextDay };
     });
   }
 
@@ -192,7 +195,6 @@ export default function App() {
 
   function saveEditedEntry() {
     if (!editingEntry) return;
-
     const grams = Math.max(Number(editEntryGrams) || 100, 1);
     const meal = editEntryMeal || "Πρωινό";
     const base = entryBasePer100g(editingEntry);
@@ -216,13 +218,11 @@ export default function App() {
       ...current,
       entries: current.entries.map((item) => (item.id === editingEntry.id ? updated : item))
     }));
-
     closeEditEntry();
   }
 
   function addExerciseByMinutes(exercise, minutesValue) {
     const minutes = Math.max(Number(minutesValue) || 0, 1);
-
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${exercise.name} ${minutes} λεπτά`,
@@ -230,24 +230,17 @@ export default function App() {
       caloriesPerMinute: exercise.caloriesPerMinute,
       calories: Math.round(exercise.caloriesPerMinute * minutes)
     };
-
     updateCurrentDay((current) => ({
       ...current,
       exercises: [newExercise, ...current.exercises]
     }));
-
-    setExerciseMinutes((prev) => ({
-      ...prev,
-      [exercise.name]: ""
-    }));
+    setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: "" }));
   }
 
   function addCustomExercise() {
     const minutes = Math.max(Number(customExerciseMinutes) || 0, 1);
     const rate = Math.max(Number(customExerciseRate) || 0, 0.1);
-
     if (!customExerciseName.trim()) return;
-
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${customExerciseName.trim()} ${minutes} λεπτά`,
@@ -255,12 +248,10 @@ export default function App() {
       caloriesPerMinute: rate,
       calories: Math.round(rate * minutes)
     };
-
     updateCurrentDay((current) => ({
       ...current,
       exercises: [newExercise, ...current.exercises]
     }));
-
     setCustomExerciseName("");
     setCustomExerciseMinutes("");
     setCustomExerciseRate("");
@@ -279,7 +270,6 @@ export default function App() {
 
   function saveRecentFood(food, gramsValue, meal) {
     const normalized = normalizeFood(food);
-
     setRecentFoods((prev) => {
       const filtered = prev.filter(
         (item) =>
@@ -288,7 +278,6 @@ export default function App() {
             (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
           )
       );
-
       return [
         {
           key: `${normalized.name}-${normalized.brand || ""}`.toLowerCase(),
@@ -304,29 +293,24 @@ export default function App() {
 
   function quickAddRecent(item) {
     const entry = createFoodEntry(item.food, item.grams, item.mealType);
-
     updateCurrentDay((current) => ({
       ...current,
       entries: [entry, ...current.entries]
     }));
-
     saveRecentFood(item.food, item.grams, item.mealType);
   }
 
   function quickAddFavorite(food) {
     const entry = createFoodEntry(food, 100, "Σνακ");
-
     updateCurrentDay((current) => ({
       ...current,
       entries: [entry, ...current.entries]
     }));
-
     saveRecentFood(food, 100, "Σνακ");
   }
 
   function toggleFavorite(food) {
     const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
-
     setFavoriteFoodKeys((prev) =>
       prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
     );
@@ -335,6 +319,17 @@ export default function App() {
   function isFavorite(food) {
     const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
     return favoriteFoodKeys.includes(key);
+  }
+
+  function addWeight({ date, weight: w }) {
+    setWeightLog((prev) => {
+      const filtered = prev.filter((entry) => entry.date !== date);
+      return [...filtered, { date, weight: w }];
+    });
+  }
+
+  function deleteWeight(date) {
+    setWeightLog((prev) => prev.filter((entry) => entry.date !== date));
   }
 
   function startOnboarding() {
@@ -348,69 +343,32 @@ export default function App() {
   }
 
   const bmr = useMemo(
-    () =>
-      calculateBMR({
-        age,
-        gender,
-        height,
-        weight
-      }),
+    () => calculateBMR({ age, gender, height, weight }),
     [age, gender, height, weight]
   );
-
-  const tdee = useMemo(
-    () =>
-      calculateTDEE({
-        bmr,
-        activity
-      }),
-    [bmr, activity]
-  );
-
+  const tdee = useMemo(() => calculateTDEE({ bmr, activity }), [bmr, activity]);
   const dailyDeficit = useMemo(
-    () =>
-      calculateDailyDeficit({
-        kilos: targetWeightLoss,
-        weeks
-      }),
+    () => calculateDailyDeficit({ kilos: targetWeightLoss, weeks }),
     [targetWeightLoss, weeks]
   );
-
   const targetCalories = useMemo(
-    () =>
-      calculateTargetCalories({
-        goalType,
-        tdee,
-        targetWeightChange: targetWeightLoss,
-        weeks
-      }),
+    () => calculateTargetCalories({ goalType, tdee, targetWeightChange: targetWeightLoss, weeks }),
     [goalType, tdee, targetWeightLoss, weeks]
   );
-
   const proteinTarget = useMemo(
-    () =>
-      calculateProteinTarget({
-        weight,
-        goalType,
-        modeKey: mode
-      }),
+    () => calculateProteinTarget({ weight, goalType, modeKey: mode }),
     [weight, goalType, mode]
   );
-
   const macroTargets = useMemo(
-    () =>
-      calculateMacroTargets({
-        targetCalories,
-        proteinTarget,
-        modeKey: mode
-      }),
+    () => calculateMacroTargets({ targetCalories, proteinTarget, modeKey: mode }),
     [targetCalories, proteinTarget, mode]
   );
 
   const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
   const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
+  const totalCarbs = round1(entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0));
+  const totalFat = round1(entries.reduce((sum, item) => sum + Number(item.fat || 0), 0));
   const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
-
   const remainingCalories = targetCalories - totalCalories + exerciseValue;
   const progress = targetCalories ? Math.min((totalCalories / targetCalories) * 100, 100) : 0;
 
@@ -435,13 +393,7 @@ export default function App() {
       const eaten = log.entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
       const ex = log.exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
       const remaining = targetCalories - eaten + ex;
-
-      return {
-        date,
-        eaten,
-        exercise: ex,
-        remaining
-      };
+      return { date, eaten, exercise: ex, remaining };
     });
   }, [selectedDate, dailyLogs, targetCalories]);
 
@@ -452,80 +404,40 @@ export default function App() {
   }, [foods, favoriteFoodKeys]);
 
   const summaryProps = {
-    selectedDate,
-    setSelectedDate,
-    isToday,
-    targetCalories,
-    totalCalories,
-    exerciseValue,
-    remainingCalories,
-    progress,
-    goalType,
-    proteinTarget,
-    totalProtein,
-    last7Days,
-    mode,
-    macroTargets,
-    foods
+    selectedDate, setSelectedDate, isToday,
+    targetCalories, totalCalories, exerciseValue,
+    remainingCalories, progress, goalType,
+    proteinTarget, totalProtein, totalCarbs, totalFat,
+    last7Days, mode, macroTargets, foods,
+    dailyLogs, weightLog,
+    onAddWeight: addWeight,
+    onDeleteWeight: deleteWeight
   };
 
   const foodProps = {
-    foods,
-    recentFoods,
-    favoriteFoods,
-    isFavorite,
-    toggleFavorite,
-    addCustomFood,
-    saveRecentFood,
-    updateCurrentDay,
-    quickAddRecent,
-    quickAddFavorite,
-    entries,
-    groupedEntries,
-    deleteEntry,
-    openEditEntry
+    foods, recentFoods, favoriteFoods,
+    isFavorite, toggleFavorite, addCustomFood,
+    saveRecentFood, updateCurrentDay,
+    quickAddRecent, quickAddFavorite,
+    entries, groupedEntries, deleteEntry, openEditEntry
   };
 
   const exerciseProps = {
-    exercises,
-    exerciseValue,
-    exerciseMinutes,
-    setExerciseMinutes,
-    customExerciseName,
-    setCustomExerciseName,
-    customExerciseMinutes,
-    setCustomExerciseMinutes,
-    customExerciseRate,
-    setCustomExerciseRate,
-    addExerciseByMinutes,
-    addCustomExercise,
-    deleteExercise
+    exercises, exerciseValue, exerciseMinutes,
+    setExerciseMinutes, customExerciseName,
+    setCustomExerciseName, customExerciseMinutes,
+    setCustomExerciseMinutes, customExerciseRate,
+    setCustomExerciseRate, addExerciseByMinutes,
+    addCustomExercise, deleteExercise
   };
 
   const profileProps = {
-    age,
-    setAge,
-    gender,
-    setGender,
-    height,
-    setHeight,
-    weight,
-    setWeight,
-    activity,
-    setActivity,
-    goalType,
-    setGoalType,
-    mode,
-    setMode,
-    targetWeightLoss,
-    setTargetWeightLoss,
-    weeks,
-    setWeeks,
-    tdee,
-    targetCalories,
-    dailyDeficit,
-    proteinTarget,
-    profileComplete,
+    age, setAge, gender, setGender,
+    height, setHeight, weight, setWeight,
+    activity, setActivity, goalType, setGoalType,
+    mode, setMode, targetWeightLoss, setTargetWeightLoss,
+    weeks, setWeeks, tdee, targetCalories,
+    dailyDeficit, proteinTarget, profileComplete,
     onContinue: goToSummaryAfterProfile
   };
 
@@ -537,9 +449,14 @@ export default function App() {
     <div className="app-shell">
       <div className="app-container">
         <div className="app-header">
-          <h1>FuelTrack</h1>
-          {showWelcome && <p>Welcome</p>}
-          {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
+          <div className="app-header-left">
+            <h1>FuelTrack</h1>
+            {showWelcome && <p>Welcome</p>}
+            {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
+          </div>
+          <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
         </div>
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
@@ -727,7 +644,10 @@ export default function WelcomeScreen({ onStart }) {
 
 ## FILE: src/components/tabs/SummaryTab.jsx
 ```javascript
+import { useMemo, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
+import { calculateStreak, getStreakEmoji, getStreakMessage } from "../../utils/streak";
+import AiCoach from "../AiCoach";
 
 export default function SummaryTab({
   selectedDate,
@@ -742,10 +662,52 @@ export default function SummaryTab({
   last7Days,
   proteinTarget,
   totalProtein,
+  totalCarbs,
+  totalFat,
   mode,
   macroTargets,
-  foods
+  foods,
+  dailyLogs,
+  weightLog,
+  onAddWeight,
+  onDeleteWeight
 }) {
+  const [weightInput, setWeightInput] = useState("");
+  const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
+  const [showAllWeight, setShowAllWeight] = useState(false);
+
+  const streak = useMemo(
+    () => calculateStreak(dailyLogs, targetCalories),
+    [dailyLogs, targetCalories]
+  );
+
+  const sortedWeightLog = useMemo(() => {
+    return [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date));
+  }, [weightLog]);
+
+  const chartData = useMemo(() => {
+    return [...(weightLog || [])]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-30);
+  }, [weightLog]);
+
+  const firstWeight = chartData[0]?.weight;
+  const lastWeight = chartData[chartData.length - 1]?.weight;
+  const diff = firstWeight && lastWeight ? lastWeight - firstWeight : null;
+
+  const minW = chartData.length ? Math.min(...chartData.map((d) => d.weight)) - 1 : 0;
+  const maxW = chartData.length ? Math.max(...chartData.map((d) => d.weight)) + 1 : 1;
+  const range = maxW - minW || 1;
+  const chartH = 100;
+  const chartW = 300;
+
+  function handleAddWeight() {
+    const w = parseFloat(weightInput);
+    if (!w || w <= 0) return;
+    onAddWeight({ date: weightDate, weight: w });
+    setWeightInput("");
+  }
+
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
@@ -767,51 +729,25 @@ export default function SummaryTab({
   }
 
   function getModeHint() {
-    if (mode === "low_carb") {
-      return "Σήμερα δώσε έμφαση σε πρωτεΐνη και πιο χαμηλούς υδατάνθρακες.";
-    }
-
-    if (mode === "keto") {
-      return "Σήμερα κράτα πολύ χαμηλά τους υδατάνθρακες και προτίμησε πιο keto-friendly επιλογές.";
-    }
-
-    if (mode === "fasting") {
-      return "Σήμερα ο τρόπος διατροφής σου είναι fasting, άρα έχει σημασία και το timing των γευμάτων.";
-    }
-
-    if (mode === "high_protein") {
-      return "Σήμερα δώσε έμφαση στην πρωτεΐνη ώστε να πλησιάσεις τον στόχο σου.";
-    }
-
-    return "Σήμερα στόχευσε σε ισορροπημένη πρόσληψη θερμίδων και πρωτεΐνης.";
+    if (mode === "low_carb") return "Δώσε έμφαση σε πρωτεΐνη και χαμηλούς υδατάνθρακες.";
+    if (mode === "keto") return "Κράτα τους υδατάνθρακες πολύ χαμηλά.";
+    if (mode === "fasting") return "Έχει σημασία και το timing των γευμάτων.";
+    if (mode === "high_protein") return "Δώσε έμφαση στην πρωτεΐνη.";
+    return "Στόχευσε σε ισορροπημένη πρόσληψη θερμίδων.";
   }
 
   function getSuggestionReason(food) {
     const protein = Number(food.proteinPer100g || 0);
     const carbs = Number(food.carbsPer100g || 0);
-
-    if (mode === "high_protein" && protein >= 18) {
-      return "Καλή επιλογή για υψηλή πρωτεΐνη.";
-    }
-
-    if (mode === "low_carb" && carbs <= 12) {
-      return "Ταιριάζει σε low carb λογική.";
-    }
-
-    if (mode === "keto" && carbs <= 8) {
-      return "Πιο κοντά σε keto επιλογή.";
-    }
-
-    if (mode === "fasting") {
-      return "Καλή επιλογή για πιο χορταστικό γεύμα όταν ανοίγει το eating window.";
-    }
-
-    return "Καλή πρακτική επιλογή για σήμερα.";
+    if (mode === "high_protein" && protein >= 18) return "Υψηλή πρωτεΐνη";
+    if (mode === "low_carb" && carbs <= 12) return "Low carb";
+    if (mode === "keto" && carbs <= 8) return "Keto friendly";
+    if (mode === "fasting") return "Χορταστικό";
+    return "Καλή επιλογή";
   }
 
   function getSuggestedFoods() {
     if (!Array.isArray(foods) || foods.length === 0) return [];
-
     const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
 
     return foods
@@ -819,7 +755,6 @@ export default function SummaryTab({
       .filter((food) => Number(food.caloriesPer100g || 0) <= Math.max(remainingCalories, 250) + 120)
       .filter((food) => {
         const carbs = Number(food.carbsPer100g || 0);
-
         if (mode === "keto") return carbs <= 8;
         if (mode === "low_carb") return carbs <= 15;
         return true;
@@ -835,28 +770,12 @@ export default function SummaryTab({
         let aScore = 0;
         let bScore = 0;
 
-        if (remainingProtein > 15) {
-          aScore += aProtein * 3;
-          bScore += bProtein * 3;
-        } else {
-          aScore += aProtein * 1.5;
-          bScore += bProtein * 1.5;
-        }
+        if (remainingProtein > 15) { aScore += aProtein * 3; bScore += bProtein * 3; }
+        else { aScore += aProtein * 1.5; bScore += bProtein * 1.5; }
 
-        if (mode === "high_protein") {
-          aScore += aProtein * 2;
-          bScore += bProtein * 2;
-        }
-
-        if (mode === "low_carb") {
-          aScore -= aCarbs * 2;
-          bScore -= bCarbs * 2;
-        }
-
-        if (mode === "keto") {
-          aScore -= aCarbs * 4;
-          bScore -= bCarbs * 4;
-        }
+        if (mode === "high_protein") { aScore += aProtein * 2; bScore += bProtein * 2; }
+        if (mode === "low_carb") { aScore -= aCarbs * 2; bScore -= bCarbs * 2; }
+        if (mode === "keto") { aScore -= aCarbs * 4; bScore -= bCarbs * 4; }
 
         aScore -= aCalories * 0.03;
         bScore -= bCalories * 0.03;
@@ -869,206 +788,283 @@ export default function SummaryTab({
   const suggestions = getSuggestedFoods();
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
 
+  const proteinPercent = macroTargets?.proteinGrams
+    ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
+  const carbsPercent = macroTargets?.carbsGrams
+    ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
+  const fatPercent = macroTargets?.fatGrams
+    ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;
+
   return (
     <>
+      {/* HERO CARD — compact */}
       <div className="hero-card">
-        <div className="summary-date-row">
-          <div>
-            <div className="hero-subtle">Επιλεγμένη ημέρα</div>
-            <div className="summary-date-title">{formatDisplayDate(selectedDate)}</div>
-            <div className="hero-subtle">{selectedDate}</div>
+        {/* Ημερομηνία + controls */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>
+            {formatDisplayDate(selectedDate)}
+            {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· Σήμερα</span>}
           </div>
-
-          <div className="summary-date-controls">
-            <button
-              className="btn btn-light"
-              onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
-              type="button"
-            >
-              {isToday ? "Σήμερα ✓" : "Σήμερα"}
-            </button>
-
+          <div style={{ display: "flex", gap: 6 }}>
+            {!isToday && (
+              <button
+                className="btn btn-light"
+                onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
+                type="button"
+                style={{ fontSize: 12, padding: "6px 10px" }}
+              >
+                Σήμερα
+              </button>
+            )}
             <input
-              className="input summary-date-input"
+              className="input"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              style={{ width: 140, padding: "6px 8px", fontSize: 12 }}
             />
           </div>
         </div>
 
-        <div className="summary-remaining-block">
-          <div className="hero-subtle">Υπόλοιπο ημέρας</div>
-          <div className={`hero-big ${getRemainingClassName()}`}>
+        {/* Υπόλοιπο — κεντρικό */}
+        <div style={{ marginTop: 16, marginBottom: 8 }}>
+          <div className="hero-subtle" style={{ fontSize: 12 }}>Υπόλοιπο ημέρας</div>
+          <div className={`hero-big ${getRemainingClassName()}`} style={{ fontSize: 36, fontWeight: 800 }}>
             {formatNumber(remainingCalories)} kcal
           </div>
+        </div>
 
-          <div className="hero-subtle summary-remaining-formula">
-            Υπόλοιπο = Στόχος - Φαγητό + Άσκηση
+        {/* Εξίσωση */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Στόχος</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>−</div>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Φαγητό</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>+</div>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Άσκηση</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
           </div>
         </div>
 
-        <div className="hero-grid summary-hero-grid">
-          <div className="hero-stat">
-            <div className="hero-subtle">Στόχος</div>
-            <div>{formatNumber(targetCalories)} kcal</div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Φαγητό</div>
-            <div>{formatNumber(totalCalories)} kcal</div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Άσκηση</div>
-            <div>+{formatNumber(exerciseValue)} kcal</div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Υπόλοιπο</div>
-            <div>{formatNumber(remainingCalories)} kcal</div>
-          </div>
-        </div>
-
-        <div className="hero-grid summary-hero-grid-2">
-          <div className="hero-stat">
-            <div className="hero-subtle">Στόχος</div>
-            <div>{getGoalLabel()}</div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Τρόπος διατροφής</div>
-            <div>{getModeLabel()}</div>
-          </div>
-        </div>
-
-        <div className="hero-grid summary-hero-grid-3">
-          <div className="hero-stat">
-            <div className="hero-subtle">Πρωτεΐνη</div>
-            <div>
-              {formatNumber(totalProtein || 0)} / {formatNumber(proteinTarget || 0)} g
-            </div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Carbs στόχος</div>
-            <div>{formatNumber(macroTargets?.carbsGrams || 0)} g</div>
-          </div>
-
-          <div className="hero-stat">
-            <div className="hero-subtle">Fat στόχος</div>
-            <div>{formatNumber(macroTargets?.fatGrams || 0)} g</div>
-          </div>
-        </div>
-
+        {/* Progress bar */}
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
-
-        <div className="hero-subtle summary-progress-text">
-          {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal από το φαγητό
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>
+            {getGoalLabel()} · {getModeLabel()}
+          </div>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>
+            {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
+          </div>
         </div>
       </div>
 
+      {/* MACRO PROGRESS BARS */}
+      <div className="card">
+        <h2>Macros</h2>
+        <div className="macro-bars">
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Πρωτεΐνη</span>
+              <span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span>
+            </div>
+            <div className="macro-bar-outer">
+              <div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} />
+            </div>
+          </div>
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Υδατάνθρακες</span>
+              <span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span>
+            </div>
+            <div className="macro-bar-outer">
+              <div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} />
+            </div>
+          </div>
+          <div className="macro-bar-row">
+            <div className="macro-bar-label">
+              <span className="macro-bar-title">Λίπος</span>
+              <span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span>
+            </div>
+            <div className="macro-bar-outer">
+              <div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* STREAK inline */}
+        <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)" }}>
+          <div style={{ fontWeight: 700 }}>Streak {getStreakEmoji(streak)}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 800, fontSize: 20 }}>{streak}</span>
+            <span className="muted">μέρες</span>
+          </div>
+        </div>
+      </div>
+
+      {/* AI COACH */}
+      <AiCoach
+        last7Days={last7Days}
+        dailyLogs={dailyLogs}
+        targetCalories={targetCalories}
+        proteinTarget={proteinTarget}
+        mode={mode}
+        goalType={goalType}
+        streak={streak}
+        weightLog={weightLog}
+      />
+
+      {/* WEIGHT TRACKING */}
+      <div className="card">
+        <h2>⚖️ Βάρος</h2>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <label className="profile-field" style={{ flex: 1 }}>
+            <div className="profile-label">kg</div>
+            <input
+              className="input"
+              type="number"
+              step="0.1"
+              placeholder="π.χ. 82.5"
+              inputMode="decimal"
+              value={weightInput}
+              onChange={(e) => setWeightInput(e.target.value)}
+            />
+          </label>
+          <label className="profile-field" style={{ flex: 1 }}>
+            <div className="profile-label">Ημερομηνία</div>
+            <input
+              className="input"
+              type="date"
+              value={weightDate}
+              onChange={(e) => setWeightDate(e.target.value)}
+            />
+          </label>
+          <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ marginBottom: 1 }}>
+            +
+          </button>
+        </div>
+
+        {chartData.length >= 2 && (
+          <div style={{ marginTop: 10, overflowX: "auto" }}>
+            <svg viewBox={`0 0 ${chartW} ${chartH + 16}`} style={{ width: "100%", maxWidth: chartW }}>
+              {chartData.map((point, i) => {
+                const x = (i / (chartData.length - 1)) * (chartW - 20) + 10;
+                const y = chartH - ((point.weight - minW) / range) * (chartH - 10) + 5;
+                const next = chartData[i + 1];
+                const nx = next ? ((i + 1) / (chartData.length - 1)) * (chartW - 20) + 10 : null;
+                const ny = next ? chartH - ((next.weight - minW) / range) * (chartH - 10) + 5 : null;
+                const showLabel = i === 0 || i === chartData.length - 1 || i % Math.ceil(chartData.length / 5) === 0;
+                return (
+                  <g key={point.date}>
+                    {next && (
+                      <line x1={x} y1={y} x2={nx} y2={ny} stroke="var(--color-accent, #111)" strokeWidth="1.5" />
+                    )}
+                    <circle cx={x} cy={y} r="3" fill="var(--color-accent, #111)" />
+                    {showLabel && (
+                      <text x={x} y={chartH + 14} textAnchor="middle" fontSize="7" fill="var(--text-muted, #888)">
+                        {point.date.slice(5)}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+            {diff !== null && (
+              <div style={{ fontSize: 13 }}>
+                <span className="muted">30 μέρες: </span>
+                <strong style={{ color: diff <= 0 ? "green" : "red" }}>
+                  {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
+                </strong>
+                {lastWeight && <span className="muted"> · Τώρα: {lastWeight} kg</span>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {sortedWeightLog.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            {(showAllWeight ? sortedWeightLog : sortedWeightLog.slice(0, 3)).map((entry) => (
+              <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
+                <span className="muted">{formatDisplayDate(entry.date)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
+                  <button className="btn btn-light" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
+                </div>
+              </div>
+            ))}
+            {sortedWeightLog.length > 3 && (
+              <button className="btn btn-light" style={{ marginTop: 8, width: "100%", fontSize: 12 }} onClick={() => setShowAllWeight(!showAllWeight)} type="button">
+                {showAllWeight ? "Λιγότερα ▲" : `+${sortedWeightLog.length - 3} ακόμα ▼`}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ΚΑΤΕΥΘΥΝΣΗ + ΠΡΟΤΑΣΕΙΣ */}
       <div className="card">
         <h2>Κατεύθυνση ημέρας</h2>
-
-        <div className="soft-box">
-          <div className="summary-section-title">
-            Σήμερα δουλεύεις με {getModeLabel()}
-          </div>
-
-          <div className="muted summary-mode-hint">{getModeHint()}</div>
-
-          <div className="stack-10">
-            <div>
-              <span className="muted">Θερμίδες που μένουν:</span>{" "}
-              <strong>{formatNumber(remainingCalories)} kcal</strong>
-            </div>
-
-            <div>
-              <span className="muted">Πρωτεΐνη που μένει:</span>{" "}
-              <strong>{formatNumber(remainingProtein)} g</strong>
-            </div>
+        <div className="soft-box" style={{ padding: "10px 14px" }}>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{getModeLabel()} · {getModeHint()}</div>
+          <div style={{ marginTop: 8, display: "flex", gap: 16, fontSize: 13 }}>
+            <span><span className="muted">Kcal: </span><strong>{formatNumber(remainingCalories)}</strong></span>
+            <span><span className="muted">Protein: </span><strong>{formatNumber(remainingProtein)}g</strong></span>
           </div>
         </div>
-      </div>
 
-      <div className="card">
-        <h2>Τι να φας τώρα</h2>
-
+        <h2 style={{ marginTop: 16 }}>Τι να φας τώρα</h2>
         {suggestions.length === 0 ? (
-          <div className="soft-box">
-            <div className="muted">
-              Δεν βρέθηκαν προτάσεις για το τωρινό υπόλοιπο της ημέρας.
-            </div>
-          </div>
+          <div className="muted" style={{ fontSize: 13 }}>Δεν βρέθηκαν προτάσεις.</div>
         ) : (
-          <div className="summary-suggestions-list">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {suggestions.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} className="summary-suggestion-card">
-                <div className="summary-suggestion-top">
-                  <div className="summary-suggestion-title">
-                    {food.name}
-                    {food.brand ? ` · ${food.brand}` : ""}
-                  </div>
-                  <div className="muted">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal / 100g
-                  </div>
-                </div>
-
-                <div className="muted summary-suggestion-meta">
-                  Πρωτεΐνη {formatNumber(food.proteinPer100g || 0)}g · Υδατ.{" "}
-                  {formatNumber(food.carbsPer100g || 0)}g · Λίπος{" "}
-                  {formatNumber(food.fatPer100g || 0)}g
-                </div>
-
-                <div className="muted">{getSuggestionReason(food)}</div>
+              <div key={`${food.source || "local"}-${food.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
+                <span className="muted" style={{ fontSize: 12 }}>
+                  {formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)} · {getSuggestionReason(food)}
+                </span>
               </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* ΙΣΤΟΡΙΚΟ 7 ΗΜΕΡΩΝ */}
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
-
-        <div className="summary-history-list">
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => (
             <button
               key={day.date}
-              className={`history-row summary-history-row ${
-                day.date === selectedDate ? "summary-history-row-active" : ""
-              }`}
               onClick={() => setSelectedDate(day.date)}
               type="button"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "8px 12px",
+                background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)",
+                color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)",
+                borderRadius: 10,
+                border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`,
+                cursor: "pointer",
+                textAlign: "left",
+                flexWrap: "wrap",
+                gap: 6
+              }}
             >
-              <div className="summary-history-main">
-                <div>
-                  <div className="summary-history-title">{formatDisplayDate(day.date)}</div>
-                  <div className="muted">{day.date}</div>
-                </div>
-
-                <div className="summary-history-stats">
-                  <div className="muted">
-                    Φαγητό: {formatNumber(day.eaten)} kcal
-                  </div>
-
-                  <div className="muted">
-                    Άσκηση: +{formatNumber(day.exercise)} kcal
-                  </div>
-
-                  <div
-                    className={
-                      day.remaining >= 0
-                        ? "summary-history-remaining-positive"
-                        : "summary-history-remaining-negative"
-                    }
-                  >
-                    Υπόλοιπο: {formatNumber(day.remaining)} kcal
-                  </div>
-                </div>
-              </div>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
+              <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
+                className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
+                {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} υπόλοιπο
+              </span>
             </button>
           ))}
         </div>
@@ -1084,11 +1080,11 @@ import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
+import BarcodeScanner from "../BarcodeScanner";
+import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
 
 function normalizeSearchText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .trim();
+  return String(value || "").toLowerCase().trim();
 }
 
 function getFoodSearchScore(food, query) {
@@ -1100,25 +1096,115 @@ function getFoodSearchScore(food, query) {
   const combined = `${name} ${brand}`.trim();
 
   let score = 0;
-
   if (name === q) score += 120;
   if (combined === q) score += 110;
   if (name.startsWith(q)) score += 80;
   if (brand.startsWith(q)) score += 35;
   if (name.includes(q)) score += 45;
   if (combined.includes(q)) score += 20;
-
   if (food.source === "local") score += 25;
   if (food.source === "usda") score += 10;
   if (food.source === "off") score += 8;
 
   const protein = Number(food.proteinPer100g || 0);
   const calories = Number(food.caloriesPer100g || 0);
-
   if (protein > 0) score += Math.min(protein, 30) * 0.1;
   if (calories > 0 && calories < 700) score += 2;
 
   return score;
+}
+
+const FILTERS = [
+  { key: "all", label: "Όλα" },
+  { key: "high_protein", label: "💪 High Protein", check: (f) => Number(f.proteinPer100g || 0) >= 15 },
+  { key: "low_carb", label: "🥑 Low Carb", check: (f) => Number(f.carbsPer100g || 0) <= 15 },
+  { key: "low_cal", label: "🥗 Low Cal", check: (f) => Number(f.caloriesPer100g || 0) <= 200 },
+  { key: "keto", label: "⚡ Keto", check: (f) => Number(f.carbsPer100g || 0) <= 8 },
+];
+
+function FoodAddModal({ food, onAdd, onClose }) {
+  const [grams, setGrams] = useState(String(food.estimatedGrams || 100));
+  const [meal, setMeal] = useState("Πρωινό");
+
+  const preview = createFoodEntry(food, grams, meal);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "var(--bg-card)",
+          borderRadius: 20,
+          padding: 20,
+          width: "100%",
+          maxWidth: 400,
+          boxShadow: "var(--shadow-modal)"
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+          {food.name}
+        </div>
+        {food.brand && (
+          <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+            {food.brand}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <label style={{ flex: 1 }}>
+            <div className="profile-label">Γραμμάρια</div>
+            <input
+              className="input"
+              type="number"
+              value={grams}
+              onChange={(e) => setGrams(e.target.value)}
+              inputMode="numeric"
+              autoFocus
+            />
+          </label>
+          <label style={{ flex: 1 }}>
+            <div className="profile-label">Γεύμα</div>
+            <select className="input" value={meal} onChange={(e) => setMeal(e.target.value)}>
+              {MEALS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <div style={{
+          background: "var(--bg-soft)",
+          borderRadius: 10,
+          padding: "8px 12px",
+          marginBottom: 14,
+          fontSize: 13
+        }}>
+          <span className="muted">Preview: </span>
+          <strong>{formatNumber(preview.calories)} kcal</strong>
+          <span className="muted"> · P{formatNumber(preview.protein)} · C{formatNumber(preview.carbs)} · F{formatNumber(preview.fat)}</span>
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-dark" onClick={() => onAdd(food, grams, meal)} type="button" style={{ flex: 1 }}>
+            Προσθήκη
+          </button>
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Άκυρο
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function FoodTab({
@@ -1138,9 +1224,12 @@ export default function FoodTab({
   openEditEntry
 }) {
   const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [selectedFood, setSelectedFood] = useState(null);
-  const [foodGrams, setFoodGrams] = useState("100");
-  const [mealType, setMealType] = useState("Πρωινό");
+  const [showScanner, setShowScanner] = useState(false);
+  const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
+  const [barcodeLoading, setBarcodeLoading] = useState(false);
+  const [barcodeError, setBarcodeError] = useState("");
 
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
@@ -1152,9 +1241,7 @@ export default function FoodTab({
 
   const filteredFoods = useMemo(() => {
     if (!query.trim()) return foods;
-
     const q = query.toLowerCase().trim();
-
     return foods.filter((food) =>
       `${food.name} ${food.brand || ""}`.toLowerCase().includes(q)
     );
@@ -1178,167 +1265,148 @@ export default function FoodTab({
 
   const visibleFoods = useMemo(() => {
     const localFoods = filteredFoods.map((food) =>
-      normalizeFood({
-        ...food,
-        source: food.source || "local",
-        sourceLabel: food.sourceLabel || "Local"
-      })
+      normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
     );
-
     const merged = [...localFoods, ...normalizedDatabaseResults];
     const seen = new Set();
-
     const deduped = merged.filter((food) => {
-      const key = `${String(food.name || "").trim().toLowerCase()}|${String(
-        food.brand || ""
-      )
-        .trim()
-        .toLowerCase()}`;
-
+      const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
 
-    if (!query.trim()) {
-      return deduped;
-    }
+    const filter = FILTERS.find((f) => f.key === activeFilter);
+    const afterFilter = filter?.check ? deduped.filter(filter.check) : deduped;
 
-    return [...deduped].sort((a, b) => {
-      const aScore = getFoodSearchScore(a, query);
-      const bScore = getFoodSearchScore(b, query);
-      return bScore - aScore;
-    });
-  }, [filteredFoods, normalizedDatabaseResults, query]);
+    if (!query.trim()) return afterFilter;
+    return [...afterFilter].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
+  }, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
-  const preview = selectedFood ? createFoodEntry(selectedFood, foodGrams, mealType) : null;
   const showAutocomplete = query.trim().length >= 2;
-  const showFullResultsList = query.trim().length === 0 || visibleFoods.length > 0;
 
-  function resetSelection() {
-    setSelectedFood(null);
-    setFoodGrams("100");
-    setMealType("Πρωινό");
-  }
-
-  function clearSearchAndSelection() {
+  function handleFoodSelect(food) {
+    setSelectedFood(food);
     setQuery("");
-    resetSelection();
   }
 
-  function addSelectedFood() {
-    if (!selectedFood) return;
-
-    const entry = createFoodEntry(selectedFood, foodGrams, mealType);
-
+  function handleAdd(food, grams, meal) {
+    const entry = createFoodEntry(food, grams, meal);
     updateCurrentDay((current) => ({
       ...current,
       entries: [entry, ...current.entries]
     }));
-
-    saveRecentFood(selectedFood, foodGrams, mealType);
-    clearSearchAndSelection();
+    saveRecentFood(food, grams, meal);
+    setSelectedFood(null);
   }
 
   function handleAddCustomFood() {
     if (!newName.trim() || !newCalories) return;
+    addCustomFood(normalizeFood({
+      id: `local-${Date.now()}`,
+      source: "local",
+      sourceLabel: "Local",
+      name: newName.trim(),
+      caloriesPer100g: Number(newCalories) || 0,
+      proteinPer100g: Number(newProtein) || 0,
+      carbsPer100g: Number(newCarbs) || 0,
+      fatPer100g: Number(newFat) || 0
+    }));
+    setNewName(""); setNewCalories(""); setNewProtein(""); setNewCarbs(""); setNewFat("");
+  }
 
-    addCustomFood(
-      normalizeFood({
-        id: `local-${Date.now()}`,
-        source: "local",
-        sourceLabel: "Local",
-        name: newName.trim(),
-        caloriesPer100g: Number(newCalories) || 0,
-        proteinPer100g: Number(newProtein) || 0,
-        carbsPer100g: Number(newCarbs) || 0,
-        fatPer100g: Number(newFat) || 0
-      })
-    );
+  async function handleBarcodeResult(code) {
+    setShowScanner(false);
+    setBarcodeLoading(true);
+    setBarcodeError("");
 
-    setNewName("");
-    setNewCalories("");
-    setNewProtein("");
-    setNewCarbs("");
-    setNewFat("");
+    try {
+      const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+
+      if (!data.found) {
+        setBarcodeError(`Δεν βρέθηκε προϊόν για barcode: ${code}`);
+        return;
+      }
+
+      setSelectedFood(normalizeFood(data));
+    } catch {
+      setBarcodeError("Σφάλμα κατά την αναζήτηση barcode.");
+    } finally {
+      setBarcodeLoading(false);
+    }
   }
 
   function getSourceBadge(food) {
     if (food.source === "local") return "";
     if (food.source === "usda") return "USDA";
-    if (food.source === "off") return "Open Food Facts";
+    if (food.source === "off") return "OpenFood";
     if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
-    if (food.source === "database") return "Database";
     return "";
   }
 
   return (
     <>
+      {showScanner && (
+        <BarcodeScanner
+          onResult={handleBarcodeResult}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
+      {showPhotoAnalyzer && (
+        <FoodPhotoAnalyzer
+          onFoodFound={(food) => {
+            setSelectedFood(food);
+            setShowPhotoAnalyzer(false);
+          }}
+          onClose={() => setShowPhotoAnalyzer(false)}
+        />
+      )}
+
+      {selectedFood && (
+        <FoodAddModal
+          food={selectedFood}
+          onAdd={handleAdd}
+          onClose={() => setSelectedFood(null)}
+        />
+      )}
+
+      {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="card">
         <h2>Φαγητό ημέρας</h2>
-
         {entries.length === 0 ? (
-          <div className="soft-box">
-            <div className="muted">Δεν έχεις βάλει φαγητό.</div>
-          </div>
+          <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
         ) : (
-          <div className="stack-10">
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {MEALS.map((meal) => {
               const group = groupedEntries[meal];
               if (!group || group.items.length === 0) return null;
-
               return (
-                <div key={meal} className="soft-box food-meal-group">
-                  <div className="food-meal-head">
-                    <div style={{ fontWeight: 700 }}>{meal}</div>
-                    <div className="muted">{formatNumber(group.totalCalories)} kcal</div>
+                <div key={meal}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 4px" }}>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{meal}</span>
+                    <span className="muted" style={{ fontSize: 12 }}>{formatNumber(group.totalCalories)} kcal</span>
                   </div>
-
-                  <div className="food-day-list">
-                    {group.items.map((item) => (
-                      <div key={item.id} className="food-entry-card">
-                        <button
-                          className="food-entry-main"
-                          onClick={() => openEditEntry(item)}
-                          type="button"
-                        >
-                          <div className="food-entry-title">{item.name}</div>
-
-                          <div className="muted food-entry-meta">
-                            {item.grams}g · {formatNumber(item.calories || 0)} kcal
-                            {item.protein !== undefined
-                              ? ` · P ${formatNumber(item.protein || 0)}`
-                              : ""}
-                            {item.carbs !== undefined
-                              ? ` · C ${formatNumber(item.carbs || 0)}`
-                              : ""}
-                            {item.fat !== undefined
-                              ? ` · F ${formatNumber(item.fat || 0)}`
-                              : ""}
-                          </div>
-                        </button>
-
-                        <div className="food-entry-actions">
-                          <button
-                            className="btn btn-light"
-                            onClick={() => openEditEntry(item)}
-                            type="button"
-                          >
-                            Edit
-                          </button>
-
-                          <button
-                            className="btn btn-light"
-                            onClick={() => deleteEntry(item.id)}
-                            type="button"
-                          >
-                            X
-                          </button>
-                        </div>
+                  {group.items.map((item) => (
+                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--bg-soft)", borderRadius: 8, marginBottom: 4, border: "1px solid var(--border-soft)", gap: 8 }}>
+                      <button
+                        onClick={() => openEditEntry(item)}
+                        type="button"
+                        style={{ flex: 1, minWidth: 0, background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}
+                      >
+                        <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{item.name}</span>
+                        <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
+                          {item.grams}g · {formatNumber(item.calories)} kcal · P{formatNumber(item.protein)}
+                        </span>
+                      </button>
+                      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                        <button className="btn btn-light" onClick={() => openEditEntry(item)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
+                        <button className="btn btn-light" onClick={() => deleteEntry(item.id)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✕</button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               );
             })}
@@ -1346,263 +1414,113 @@ export default function FoodTab({
         )}
       </div>
 
+      {/* ΑΝΑΖΗΤΗΣΗ */}
       <div className="card">
-        <h2>Αναζήτηση φαγητού</h2>
-
-        <div className="food-search-wrap">
-          <input
-            className="input"
-            placeholder="Γράψε φαγητό"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSelectedFood(null);
-            }}
-          />
-
-          {showAutocomplete && (
-            <div className="food-autocomplete-panel">
-              {databaseLoading && (
-                <div className="muted food-autocomplete-state">Αναζήτηση...</div>
-              )}
-
-              {!databaseLoading && topSearchResults.length === 0 && (
-                <div className="muted food-autocomplete-state">
-                  Δεν βρέθηκαν αποτελέσματα.
-                </div>
-              )}
-
-              {!databaseLoading &&
-                topSearchResults.map((food) => (
-                  <button
-                    key={`auto-${food.source || "local"}-${food.id}`}
-                    className="food-autocomplete-item"
-                    onClick={() => setSelectedFood(food)}
-                    type="button"
-                  >
-                    <div className="food-result-top">
-                      <div className="food-result-name">
-                        {food.name}
-                        {food.brand ? ` · ${food.brand}` : ""}
-                      </div>
-
-                      {getSourceBadge(food) ? (
-                        <span className="tag">{getSourceBadge(food)}</span>
-                      ) : null}
-                    </div>
-
-                    <div className="muted food-result-meta">
-                      {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                      {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                      {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                      {formatNumber(food.fatPer100g || 0)}
-                    </div>
-                  </button>
-                ))}
-            </div>
-          )}
-        </div>
-
-        {selectedFood && (
-          <div className="soft-box food-selected-box">
-            <div className="food-selected-head">
-              <div className="food-selected-title">
-                {selectedFood.name}
-                {selectedFood.brand ? ` · ${selectedFood.brand}` : ""}
-              </div>
-
-              {getSourceBadge(selectedFood) ? (
-                <span className="tag">{getSourceBadge(selectedFood)}</span>
-              ) : null}
-            </div>
-
-            <div className="food-selected-controls">
-              <label className="food-inline-field">
-                <span className="muted">Γραμμάρια</span>
-                <input
-                  className="input"
-                  value={foodGrams}
-                  onChange={(e) => setFoodGrams(e.target.value)}
-                  placeholder="Γραμμάρια"
-                  inputMode="numeric"
-                />
-              </label>
-
-              <label className="food-inline-field">
-                <span className="muted">Γεύμα</span>
-                <select
-                  className="input"
-                  value={mealType}
-                  onChange={(e) => setMealType(e.target.value)}
-                >
-                  {MEALS.map((meal) => (
-                    <option key={meal} value={meal}>
-                      {meal}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {preview && (
-              <div className="soft-box food-preview-box">
-                <div className="muted">
-                  Preview: {formatNumber(preview.calories || 0)} kcal · P{" "}
-                  {formatNumber(preview.protein || 0)} · C{" "}
-                  {formatNumber(preview.carbs || 0)} · F{" "}
-                  {formatNumber(preview.fat || 0)}
-                </div>
-              </div>
-            )}
-
-            <div className="action-row">
-              <button className="btn btn-dark" onClick={addSelectedFood} type="button">
-                Προσθήκη
-              </button>
-
-              <button
-                className="btn btn-light"
-                onClick={clearSearchAndSelection}
-                type="button"
-              >
-                Καθαρισμός
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showFullResultsList && (
-          <div className="food-results-list">
-            {visibleFoods.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} className="food-result-card">
-                <button
-                  className="food-result-main"
-                  onClick={() => setSelectedFood(food)}
-                  type="button"
-                >
-                  <div className="food-result-top">
-                    <div className="food-result-name">
-                      {food.name}
-                      {food.brand ? ` · ${food.brand}` : ""}
-                    </div>
-
-                    {getSourceBadge(food) ? (
-                      <span className="tag">{getSourceBadge(food)}</span>
-                    ) : null}
-                  </div>
-
-                  <div className="muted food-result-meta">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                    {formatNumber(food.proteinPer100g || 0)} · C{" "}
-                    {formatNumber(food.carbsPer100g || 0)} · F{" "}
-                    {formatNumber(food.fatPer100g || 0)}
-                  </div>
-                </button>
-
-                <button
-                  className={`food-fav-icon-btn ${isFavorite(food) ? "is-active" : ""}`}
-                  onClick={() => toggleFavorite(food)}
-                  type="button"
-                  aria-label={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-                >
-                  {isFavorite(food) ? "★" : "☆"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="soft-box food-custom-box">
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Custom φαγητό</div>
-
-          <div className="stack-10">
-            <input
-              className="input"
-              placeholder="Όνομα"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-
-            <div className="grid-2">
-              <input
-                className="input"
-                placeholder="kcal / 100g"
-                inputMode="numeric"
-                value={newCalories}
-                onChange={(e) => setNewCalories(e.target.value)}
-              />
-
-              <input
-                className="input"
-                placeholder="Protein / 100g"
-                inputMode="decimal"
-                value={newProtein}
-                onChange={(e) => setNewProtein(e.target.value)}
-              />
-
-              <input
-                className="input"
-                placeholder="Carbs / 100g"
-                inputMode="decimal"
-                value={newCarbs}
-                onChange={(e) => setNewCarbs(e.target.value)}
-              />
-
-              <input
-                className="input"
-                placeholder="Fat / 100g"
-                inputMode="decimal"
-                value={newFat}
-                onChange={(e) => setNewFat(e.target.value)}
-              />
-            </div>
-
-            <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">
-              Αποθήκευση food
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0 }}>Αναζήτηση φαγητού</h2>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              className="btn btn-dark"
+              onClick={() => setShowPhotoAnalyzer(true)}
+              type="button"
+              style={{ fontSize: 13, padding: "8px 12px" }}
+            >
+              📸
+            </button>
+            <button
+              className="btn btn-dark"
+              onClick={() => { setShowScanner(true); setBarcodeError(""); }}
+              type="button"
+              style={{ fontSize: 13, padding: "8px 12px" }}
+            >
+              📷 Barcode
             </button>
           </div>
         </div>
+
+        {/* ΦΙΛΤΡΑ */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              type="button"
+              style={{
+                padding: "5px 10px",
+                borderRadius: 999,
+                border: `1px solid ${activeFilter === f.key ? "var(--color-accent)" : "var(--border-color)"}`,
+                background: activeFilter === f.key ? "var(--color-accent)" : "var(--bg-soft)",
+                color: activeFilter === f.key ? "var(--bg-card)" : "var(--text-primary)",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {barcodeLoading && (
+          <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 Αναζήτηση barcode...</div>
+        )}
+        {barcodeError && (
+          <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>
+        )}
+
+        <input
+          className="input"
+          placeholder="Γράψε φαγητό..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+
+        {showAutocomplete && (
+          <div style={{ marginTop: 6, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+            {databaseLoading && <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>Αναζήτηση...</div>}
+            {!databaseLoading && topSearchResults.length === 0 && (
+              <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>Δεν βρέθηκαν αποτελέσματα.</div>
+            )}
+            {!databaseLoading && topSearchResults.map((food) => (
+              <button
+                key={`auto-${food.source || "local"}-${food.id}`}
+                onClick={() => handleFoodSelect(food)}
+                type="button"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: "var(--bg-card)", borderRadius: 8, border: "1px solid var(--border-color)", cursor: "pointer", gap: 8, flexWrap: "wrap" }}
+              >
+                <div style={{ textAlign: "left" }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>
+                    {food.name}{food.brand ? ` · ${food.brand}` : ""}
+                  </span>
+                  {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
+                </div>
+                <span className="muted" style={{ fontSize: 12 }}>
+                  {formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* ΠΡΟΣΦΑΤΑ */}
       {recentFoods.length > 0 && (
         <div className="card">
           <h2>Πρόσφατα</h2>
-
-          <div className="food-compact-list">
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {recentFoods.slice(0, 6).map((item) => {
-              const recentPreview = createFoodEntry(item.food, item.grams, item.mealType);
-
+              const cal = createFoodEntry(item.food, item.grams, item.mealType);
               return (
-                <div key={item.key} className="food-compact-card">
-                  <div className="food-compact-main">
-                    <div className="food-compact-title">{item.food.name}</div>
-                    <div className="muted food-compact-meta">
-                      {item.grams}g · {item.mealType} · {formatNumber(recentPreview.calories || 0)}{" "}
-                      kcal
-                    </div>
+                <div key={item.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{item.food.name}</span>
+                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
+                      {item.grams}g · {item.mealType} · {formatNumber(cal.calories)} kcal
+                    </span>
                   </div>
-
-                  <div className="food-compact-actions">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => {
-                        setSelectedFood(item.food);
-                        setFoodGrams(String(item.grams || 100));
-                        setMealType(item.mealType || "Πρωινό");
-                      }}
-                      type="button"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="btn btn-dark"
-                      onClick={() => quickAddRecent(item)}
-                      type="button"
-                    >
-                      +
-                    </button>
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                    <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
+                    <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
                   </div>
                 </div>
               );
@@ -1611,47 +1529,46 @@ export default function FoodTab({
         </div>
       )}
 
+      {/* ΑΓΑΠΗΜΕΝΑ */}
       {favoriteFoods.length > 0 && (
         <div className="card">
           <h2>Αγαπημένα</h2>
-
-          <div className="food-compact-list">
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {favoriteFoods.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} className="food-compact-card">
-                <div className="food-compact-main">
-                  <div className="food-result-top">
-                    <div className="food-compact-title">{food.name}</div>
-                    {getSourceBadge(food) ? <span className="tag">{getSourceBadge(food)}</span> : null}
-                  </div>
-
-                  <div className="muted food-compact-meta">
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{" "}
-                    {formatNumber(food.proteinPer100g || 0)}
-                  </div>
+              <div key={`${food.source || "local"}-${food.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
+                  {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
+                  <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
+                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}
+                  </span>
                 </div>
-
-                <div className="food-compact-actions">
-                  <button
-                    className="btn btn-light"
-                    onClick={() => setSelectedFood(food)}
-                    type="button"
-                  >
-                    Άνοιγμα
-                  </button>
-
-                  <button
-                    className="btn btn-dark"
-                    onClick={() => quickAddFavorite(food)}
-                    type="button"
-                  >
-                    +100g
-                  </button>
+                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                  <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
+                  <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+100g</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* CUSTOM ΦΑΓΗΤΟ */}
+      <div className="card">
+        <h2>Custom φαγητό</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <input className="input" placeholder="Όνομα" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <input className="input" placeholder="kcal/100g" inputMode="numeric" value={newCalories} onChange={(e) => setNewCalories(e.target.value)} />
+            <input className="input" placeholder="Protein" inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input className="input" placeholder="Carbs" inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} />
+            <input className="input" placeholder="Fat" inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} />
+          </div>
+          <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">Αποθήκευση</button>
+        </div>
+      </div>
     </>
   );
 }
@@ -1682,100 +1599,65 @@ export default function ExerciseTab({
       <div className="card">
         <h2>Άσκηση ημέρας</h2>
 
-        <div className="soft-box exercise-summary-box">
-          <div className="exercise-summary-head">
-            <div style={{ fontWeight: 700 }}>Σύνοψη ημέρας</div>
-            <div className="exercise-summary-kcal">
-              +{formatNumber(exerciseValue)} kcal
-            </div>
-          </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span className="muted">Σύνολο σήμερα</span>
+          <span style={{ fontWeight: 800, color: "#166534" }}>+{formatNumber(exerciseValue)} kcal</span>
+        </div>
 
-          {exercises.length === 0 ? (
-            <div className="muted">
-              Δεν έχεις βάλει άσκηση για αυτή την ημέρα.
-            </div>
-          ) : (
-            <div className="exercise-day-list">
-              {exercises.map((item) => (
-                <div key={item.id} className="exercise-entry-card">
-                  <div className="exercise-entry-main">
-                    <div className="exercise-entry-title">
-                      {item.name}
-                    </div>
-
-                    <div className="muted exercise-entry-meta">
-                      {item.minutes} λεπτά ·{" "}
-                      {formatNumber(item.caloriesPerMinute)} kcal/λεπτό · +
-                      {formatNumber(item.calories)} kcal
-                    </div>
-                  </div>
-
-                  <div className="exercise-entry-actions">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => deleteExercise(item.id)}
-                      type="button"
-                    >
-                      Διαγραφή
-                    </button>
+        {exercises.length === 0 ? (
+          <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει άσκηση.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {exercises.map((item) => (
+              <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)", gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{item.name}</div>
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    {item.minutes} λεπτά · +{formatNumber(item.calories)} kcal
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <button
+                  className="btn btn-light"
+                  onClick={() => deleteExercise(item.id)}
+                  type="button"
+                  style={{ padding: "4px 10px", fontSize: 12 }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="card">
-        <h2>Προσθήκη άσκησης με λεπτά</h2>
-
-        <div className="muted" style={{ marginBottom: 12 }}>
-          Βάζεις λεπτά και το app υπολογίζει αυτόματα τις θερμίδες.
-        </div>
-
-        <div className="exercise-library-list">
+        <h2>Προσθήκη άσκησης</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {EXERCISE_LIBRARY.map((exercise) => (
-            <div key={exercise.name} className="soft-box exercise-library-item">
-              <div className="exercise-library-main">
-                <div className="exercise-library-title">
-                  {exercise.name}
-                </div>
-                <div className="muted" style={{ marginTop: 4 }}>
-                  {formatNumber(exercise.caloriesPerMinute)} kcal / λεπτό
-                </div>
+            <div key={exercise.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{exercise.name}</span>
+                <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(exercise.caloriesPerMinute)} kcal/λεπτό</span>
               </div>
-
-              <div className="exercise-library-controls">
-                <label className="exercise-inline-field">
-                  <span className="exercise-inline-label">Λεπτά</span>
-                  <input
-                    className="input exercise-compact-input"
-                    type="number"
-                    min="1"
-                    placeholder="0"
-                    value={exerciseMinutes[exercise.name] || ""}
-                    onChange={(e) =>
-                      setExerciseMinutes((prev) => ({
-                        ...prev,
-                        [exercise.name]: e.target.value
-                      }))
-                    }
-                  />
-                </label>
-
-                <button
-                  className="btn btn-dark exercise-add-btn"
-                  onClick={() =>
-                    addExerciseByMinutes(
-                      exercise,
-                      exerciseMinutes[exercise.name]
-                    )
-                  }
-                  type="button"
-                >
-                  Προσθήκη
-                </button>
-              </div>
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder="λεπτά"
+                value={exerciseMinutes[exercise.name] || ""}
+                onChange={(e) =>
+                  setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: e.target.value }))
+                }
+                style={{ width: 70, padding: "6px 8px", fontSize: 13, textAlign: "center" }}
+              />
+              <button
+                className="btn btn-dark"
+                onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
+                type="button"
+                style={{ padding: "6px 12px", fontSize: 13 }}
+              >
+                +
+              </button>
             </div>
           ))}
         </div>
@@ -1783,49 +1665,31 @@ export default function ExerciseTab({
 
       <div className="card">
         <h2>Custom άσκηση</h2>
-
-        <div className="stack-10">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input
             className="input"
             placeholder="Όνομα άσκησης"
             value={customExerciseName}
             onChange={(e) => setCustomExerciseName(e.target.value)}
           />
-
-          <div className="grid-2">
-            <label className="soft-box exercise-field-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                Λεπτά
-              </div>
-              <input
-                className="input"
-                placeholder="Λεπτά"
-                inputMode="numeric"
-                value={customExerciseMinutes}
-                onChange={(e) => setCustomExerciseMinutes(e.target.value)}
-              />
-            </label>
-
-            <label className="soft-box exercise-field-box">
-              <div className="muted" style={{ marginBottom: 6 }}>
-                kcal / λεπτό
-              </div>
-              <input
-                className="input"
-                placeholder="kcal / λεπτό"
-                inputMode="decimal"
-                value={customExerciseRate}
-                onChange={(e) => setCustomExerciseRate(e.target.value)}
-              />
-            </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              className="input"
+              placeholder="Λεπτά"
+              inputMode="numeric"
+              value={customExerciseMinutes}
+              onChange={(e) => setCustomExerciseMinutes(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="kcal/λεπτό"
+              inputMode="decimal"
+              value={customExerciseRate}
+              onChange={(e) => setCustomExerciseRate(e.target.value)}
+            />
           </div>
-
-          <button
-            className="btn btn-dark"
-            onClick={addCustomExercise}
-            type="button"
-          >
-            Προσθήκη custom άσκησης
+          <button className="btn btn-dark" onClick={addCustomExercise} type="button">
+            Προσθήκη
           </button>
         </div>
       </div>
@@ -1838,6 +1702,48 @@ export default function ExerciseTab({
 ```javascript
 import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
+
+function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
+  if (goalType !== "lose" || kilosPerWeek <= 0) return null;
+
+  let color = "#166534";
+  let bg = "#dcfce7";
+  let border = "#86efac";
+  let icon = "✅";
+  let message = "";
+
+  if (kilosPerWeek > 1.5) {
+    color = "#b91c1c";
+    bg = "#fef2f2";
+    border = "#fecaca";
+    icon = "⚠️";
+    message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο κιλών. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
+  } else if (kilosPerWeek > 1) {
+    color = "#92400e";
+    bg = "#fffbeb";
+    border = "#fde68a";
+    icon = "⚡";
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός. Είναι εφικτός αλλά απαιτεί αυστηρή τήρηση.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα για ασφάλεια." : ""}`;
+  } else {
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός. Συνέχισε έτσι!${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα." : ""}`;
+  }
+
+  return (
+    <div style={{
+      background: bg,
+      border: `1px solid ${border}`,
+      borderRadius: 14,
+      padding: "12px 14px",
+      marginBottom: 14,
+      display: "flex",
+      gap: 10,
+      alignItems: "flex-start"
+    }}>
+      <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+      <div style={{ color, fontSize: 13, lineHeight: 1.5 }}>{message}</div>
+    </div>
+  );
+}
 
 export default function ProfileTab({
   age,
@@ -1891,17 +1797,11 @@ export default function ProfileTab({
 
   const rawDeficit = Number(dailyDeficit || 0);
   const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
-
   const kilosNum = Number(targetWeightLoss || 0);
   const weeksNum = Number(weeks || 0);
-  const kilosPerWeek =
-    goalType === "lose" && kilosNum > 0 && weeksNum > 0
-      ? kilosNum / weeksNum
-      : 0;
-
+  const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0
+    ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
-  const isAggressiveGoal = goalType === "lose" && kilosPerWeek > 1;
-  const isVeryUnrealisticGoal = goalType === "lose" && kilosPerWeek > 1.5;
 
   return (
     <div className="card">
@@ -1917,95 +1817,56 @@ export default function ProfileTab({
         </div>
       )}
 
+      {/* ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Βασικά στοιχεία</div>
-
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
             <div className="profile-label">Ηλικία</div>
-            <input
-              className="input"
-              placeholder="Ηλικία"
-              inputMode="numeric"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-            />
+            <input className="input" placeholder="Ηλικία" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Φύλο</div>
-            <select
-              className="input"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-            >
+            <select className="input" value={gender} onChange={(e) => setGender(e.target.value)}>
               <option value="male">Άνδρας</option>
               <option value="female">Γυναίκα</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Ύψος (cm)</div>
-            <input
-              className="input"
-              placeholder="Ύψος (cm)"
-              inputMode="numeric"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-            />
+            <input className="input" placeholder="Ύψος (cm)" inputMode="numeric" value={height} onChange={(e) => setHeight(e.target.value)} />
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Βάρος (kg)</div>
-            <input
-              className="input"
-              placeholder="Βάρος (kg)"
-              inputMode="decimal"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
+            <input className="input" placeholder="Βάρος (kg)" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
           </label>
         </div>
       </div>
 
+      {/* ΡΥΘΜΙΣΕΙΣ ΣΤΟΧΟΥ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Ρυθμίσεις στόχου</div>
-
         <div className="stack-10">
           <label className="profile-field">
             <div className="profile-label">Επίπεδο δραστηριότητας</div>
-            <select
-              className="input"
-              value={activity}
-              onChange={(e) => setActivity(e.target.value)}
-            >
+            <select className="input" value={activity} onChange={(e) => setActivity(e.target.value)}>
               <option value="1.2">Καθιστική</option>
               <option value="1.4">Light</option>
               <option value="1.6">Moderate</option>
               <option value="1.8">High</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Στόχος</div>
-            <select
-              className="input"
-              value={goalType}
-              onChange={(e) => setGoalType(e.target.value)}
-            >
+            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
               <option value="lose">Lose weight</option>
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Τρόπος διατροφής</div>
-            <select
-              className="input"
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-            >
+            <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="balanced">Balanced</option>
               <option value="low_carb">Low Carb</option>
               <option value="keto">Keto</option>
@@ -2016,15 +1877,13 @@ export default function ProfileTab({
         </div>
       </div>
 
+      {/* ΣΤΟΙΧΕΙΑ ΣΤΟΧΟΥ */}
       {showGoalFields && (
         <div className="soft-box profile-section-box">
           <div className="profile-section-title">Στοιχεία στόχου</div>
-
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
-              <div className="profile-label">
-                {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-              </div>
+              <div className="profile-label">{goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}</div>
               <input
                 className="input"
                 placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
@@ -2033,7 +1892,6 @@ export default function ProfileTab({
                 onChange={(e) => setTargetWeightLoss(e.target.value)}
               />
             </label>
-
             <label className="profile-field">
               <div className="profile-label">Εβδομάδες</div>
               <input
@@ -2048,6 +1906,15 @@ export default function ProfileTab({
         </div>
       )}
 
+      {/* ΕΝΟΠΟΙΗΜΕΝΟ WARNING */}
+      <GoalWarning
+        goalType={goalType}
+        kilosPerWeek={kilosPerWeek}
+        rawDeficit={rawDeficit}
+        isCapped={isCapped}
+      />
+
+      {/* ΥΠΟΛΟΓΙΣΜΟΙ */}
       <div className="soft-box profile-section-box profile-highlight-box">
         <div className="profile-section-title">Υπολογισμοί</div>
 
@@ -2055,109 +1922,48 @@ export default function ProfileTab({
           <span>Maintenance / TDEE</span>
           <strong>{formatNumber(tdee)} kcal</strong>
         </div>
-
         <div className="profile-stat-row">
           <span>Ημερήσιος στόχος</span>
           <strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
-
-        {goalType === "lose" && rawDeficit > 0 && (
-          <div className="profile-stat-row">
-            <span>Υπολογισμένο έλλειμμα</span>
-            <strong>{formatNumber(rawDeficit)} kcal</strong>
-          </div>
-        )}
-
         {goalType === "lose" && appliedDeficit > 0 && (
           <div className="profile-stat-row">
-            <span>Εφαρμοσμένο έλλειμμα</span>
+            <span>Ημερήσιο έλλειμμα</span>
             <strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
-
         {goalType === "gain" && (
           <div className="profile-stat-row">
             <span>Ημερήσιο πλεόνασμα</span>
             <strong>300 kcal</strong>
           </div>
         )}
-
         <div className="profile-stat-row profile-stat-row-last">
           <span>Στόχος πρωτεΐνης</span>
           <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
 
-      {isCapped && (
-        <div className="soft-box profile-warning-box">
-          <div className="profile-warning-title">Περιορισμός ελλείμματος</div>
-          <div className="muted">
-            Ο στόχος που έβαλες απαιτεί πολύ μεγάλο ημερήσιο έλλειμμα.
-            Για γενική χρήση, το app περιορίζει το εφαρμοσμένο έλλειμμα
-            στις <strong>1000 kcal/ημέρα</strong>.
-          </div>
-        </div>
-      )}
-
-      {isAggressiveGoal && (
-        <div className="soft-box profile-warning-box">
-          <div className="profile-warning-title">Πολύ επιθετικός στόχος</div>
-          <div className="muted">
-            Ο ρυθμός που έχεις βάλει είναι περίπου{" "}
-            <strong>{formatNumber(kilosPerWeek)} κιλά/εβδομάδα</strong>.
-            Αυτό θεωρείται αρκετά επιθετικό για γενική καθοδήγηση.
-          </div>
-        </div>
-      )}
-
-      {isVeryUnrealisticGoal && (
-        <div className="soft-box profile-danger-box">
-          <div className="profile-warning-title">Μη ρεαλιστικός στόχος</div>
-          <div className="muted">
-            Ο στόχος αυτός δεν φαίνεται ρεαλιστικός με ασφαλές ημερήσιο
-            θερμιδικό έλλειμμα. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο
-            στόχο κιλών.
-          </div>
-        </div>
-      )}
-
+      {/* ΣΥΝΟΨΗ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Σύνοψη</div>
-
-        <div className="stack-10">
-          <div>
-            <span className="muted">Τύπος στόχου:</span>{" "}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Στόχος</span>
             <strong>{getGoalLabel()}</strong>
           </div>
-
-          <div>
-            <span className="muted">Τρόπος διατροφής:</span>{" "}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Διατροφή</span>
             <strong>{getModeLabel()}</strong>
           </div>
-
-          <div>
-            <span className="muted">Επίπεδο δραστηριότητας:</span>{" "}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Δραστηριότητα</span>
             <strong>{getActivityLabel()}</strong>
           </div>
-
-          {goalType === "lose" && (
-            <div className="muted">
-              Στόχος: να τρως κάτω από το Maintenance / TDEE σου με ελεγχόμενο
-              ημερήσιο έλλειμμα θερμίδων.
-            </div>
-          )}
-
-          {goalType === "maintain" && (
-            <div className="muted">
-              Στόχος: να διατηρείς περίπου το βάρος σου, με ημερήσιο στόχο
-              κοντά στο Maintenance / TDEE σου.
-            </div>
-          )}
-
-          {goalType === "gain" && (
-            <div className="muted">
-              Στόχος: να υποστηρίζεις μυϊκή ανάπτυξη με περίπου 300 kcal πάνω
-              από το Maintenance / TDEE σου και αυξημένη πρωτεΐνη.
+          {goalType === "lose" && kilosPerWeek > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span className="muted">Ρυθμός</span>
+              <strong>{formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα</strong>
             </div>
           )}
         </div>
@@ -2168,10 +1974,7 @@ export default function ProfileTab({
           className="btn btn-dark"
           onClick={onContinue}
           disabled={!profileComplete}
-          style={{
-            opacity: profileComplete ? 1 : 0.5,
-            cursor: profileComplete ? "pointer" : "not-allowed"
-          }}
+          style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}
         >
           Αποθήκευση & συνέχεια
         </button>
@@ -2278,6 +2081,55 @@ export const MODE_OPTIONS = Object.values(MODES);
 ```javascript
 import { useEffect, useState } from "react";
 
+function removeAccents(str) {
+  return str
+    .replace(/ά/g, "α").replace(/έ/g, "ε").replace(/ή/g, "η")
+    .replace(/ί/g, "ι").replace(/ό/g, "ο").replace(/ύ/g, "υ")
+    .replace(/ώ/g, "ω").replace(/ϊ/g, "ι").replace(/ϋ/g, "υ")
+    .replace(/ΐ/g, "ι").replace(/ΰ/g, "υ").replace(/Ά/g, "Α")
+    .replace(/Έ/g, "Ε").replace(/Ή/g, "Η").replace(/Ί/g, "Ι")
+    .replace(/Ό/g, "Ο").replace(/Ύ/g, "Υ").replace(/Ώ/g, "Ω");
+}
+
+function addAccents(str) {
+  // Δοκιμάζει κοινές λέξεις χωρίς τόνο και επιστρέφει με τόνο
+  const map = {
+    "φετα": "φέτα",
+    "γιαουρτι": "γιαούρτι",
+    "κοτοπουλο": "κοτόπουλο",
+    "ψωμι": "ψωμί",
+    "τυρι": "τυρί",
+    "γαλα": "γάλα",
+    "αυγα": "αυγά",
+    "ελαιολαδο": "ελαιόλαδο",
+    "μελι": "μέλι",
+    "ζαχαρη": "ζάχαρη",
+    "αλατι": "αλάτι",
+    "ρυζι": "ρύζι",
+    "μακαρονια": "μακαρόνια",
+    "πατατες": "πατάτες",
+    "ντοματες": "ντομάτες",
+    "κρεμμυδι": "κρεμμύδι",
+    "σκορδο": "σκόρδο",
+    "λαδι": "λάδι",
+    "βουτυρο": "βούτυρο",
+    "μοσχαρι": "μοσχάρι",
+    "αρνι": "αρνί",
+    "χοιρινο": "χοιρινό",
+    "ψαρι": "ψάρι",
+    "σολομος": "σολομός",
+    "τονος": "τόνος",
+    "σαρδελες": "σαρδέλες",
+    "καφες": "καφές",
+    "τσαι": "τσάι",
+    "χυμος": "χυμός",
+    "μπιρα": "μπύρα",
+    "κρασι": "κρασί",
+    "νερο": "νερό",
+  };
+  return map[str.toLowerCase()] || str;
+}
+
 export default function useFoodSearch(query) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -2297,35 +2149,37 @@ export default function useFoodSearch(query) {
       setLoading(true);
 
       try {
-        const res = await fetch(
-          `/.netlify/functions/food-search?q=${encodeURIComponent(q)}`
+        const qNoAccents = removeAccents(q);
+        const qWithAccents = addAccents(qNoAccents);
+
+        // Στέλνουμε και τις δύο εκδοχές παράλληλα
+        const queries = new Set([q, qNoAccents, qWithAccents]);
+        
+        const allResults = await Promise.all(
+          [...queries].map((searchQ) =>
+            fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`)
+              .then((res) => res.ok ? res.json() : [])
+              .catch(() => [])
+          )
         );
 
-        if (!res.ok) {
-          throw new Error(`Search failed: ${res.status}`);
-        }
+        if (cancelled) return;
 
-        const data = await res.json();
+        // Merge και deduplicate
+        const seen = new Set();
+        const merged = allResults.flat().filter((food) => {
+          const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
 
-        const arr = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.results)
-            ? data.results
-            : [];
-
-        if (!cancelled) {
-          setResults(arr);
-        }
+        setResults(merged);
       } catch (err) {
         console.error("Food search error:", err);
-
-        if (!cancelled) {
-          setResults([]);
-        }
+        if (!cancelled) setResults([]);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }, 300);
 
@@ -2497,12 +2351,153 @@ export function normalizeDayLog(log) {
   };
 }
 
+export function stripDiacritics(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+export function normalizeSearchText(value) {
+  return stripDiacritics(String(value || "").toLowerCase())
+    .replace(/[\/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function toCompactSearchText(value) {
+  return normalizeSearchText(value).replace(/\s+/g, "");
+}
+
+export function transliterateGreekToLatin(value) {
+  let text = stripDiacritics(String(value || "").toLowerCase());
+
+  const digraphs = [
+    [/ου/g, "ou"],
+    [/αι/g, "ai"],
+    [/ει/g, "ei"],
+    [/οι/g, "oi"],
+    [/υι/g, "yi"],
+    [/αυ/g, "av"],
+    [/ευ/g, "ev"],
+    [/ηυ/g, "iv"],
+    [/γκ/g, "gk"],
+    [/γγ/g, "ng"],
+    [/μπ/g, "b"],
+    [/ντ/g, "nt"],
+    [/τσ/g, "ts"],
+    [/τζ/g, "tz"]
+  ];
+
+  digraphs.forEach(([pattern, replacement]) => {
+    text = text.replace(pattern, replacement);
+  });
+
+  const map = {
+    α: "a",
+    β: "v",
+    γ: "g",
+    δ: "d",
+    ε: "e",
+    ζ: "z",
+    η: "i",
+    θ: "th",
+    ι: "i",
+    κ: "k",
+    λ: "l",
+    μ: "m",
+    ν: "n",
+    ξ: "x",
+    ο: "o",
+    π: "p",
+    ρ: "r",
+    σ: "s",
+    ς: "s",
+    τ: "t",
+    υ: "y",
+    φ: "f",
+    χ: "x",
+    ψ: "ps",
+    ω: "o"
+  };
+
+  return text
+    .split("")
+    .map((char) => map[char] || char)
+    .join("");
+}
+
+export function simplifyLatinGreeklish(value) {
+  return normalizeSearchText(value)
+    .replace(/ou/g, "u")
+    .replace(/ei/g, "i")
+    .replace(/oi/g, "i")
+    .replace(/ai/g, "e")
+    .replace(/yi/g, "i")
+    .replace(/th/g, "8")
+    .replace(/ch/g, "x")
+    .replace(/gk/g, "g")
+    .replace(/mp/g, "b")
+    .replace(/nt/g, "d")
+    .replace(/tz/g, "z")
+    .replace(/ts/g, "s")
+    .replace(/y/g, "i");
+}
+
+export function buildSearchVariants(value) {
+  const original = normalizeSearchText(value);
+  const compact = toCompactSearchText(value);
+  const latin = normalizeSearchText(transliterateGreekToLatin(value));
+  const latinCompact = toCompactSearchText(transliterateGreekToLatin(value));
+  const simplifiedLatin = simplifyLatinGreeklish(transliterateGreekToLatin(value));
+  const simplifiedOriginal = simplifyLatinGreeklish(value);
+
+  return Array.from(
+    new Set(
+      [
+        original,
+        compact,
+        latin,
+        latinCompact,
+        simplifiedLatin,
+        simplifiedOriginal,
+        toCompactSearchText(simplifiedLatin),
+        toCompactSearchText(simplifiedOriginal)
+      ].filter(Boolean)
+    )
+  );
+}
+
+export function getFoodAliases(food) {
+  return Array.isArray(food?.aliases)
+    ? food.aliases.filter(Boolean).map((item) => String(item).trim()).filter(Boolean)
+    : [];
+}
+
+export function getFoodSearchTexts(food) {
+  const name = String(food?.name || "");
+  const brand = String(food?.brand || "");
+  const aliases = getFoodAliases(food);
+
+  const rawValues = [name, brand, ...aliases].filter(Boolean);
+  const expanded = rawValues.flatMap((item) => buildSearchVariants(item));
+
+  return Array.from(new Set(expanded.filter(Boolean)));
+}
+
+export function getFoodIdentityKey(food) {
+  const normalizedName = normalizeSearchText(food?.name || "");
+  const normalizedBrand = normalizeSearchText(food?.brand || "");
+  return `${normalizedName}|${normalizedBrand}`;
+}
+
 export function normalizeFood(food) {
   return {
     id: food.id || `food-${Date.now()}`,
     source: food.source || "local",
+    sourceLabel: food.sourceLabel || "",
     name: food.name || "Unknown food",
     brand: food.brand || "",
+    aliases: getFoodAliases(food),
     caloriesPer100g: Number(food.caloriesPer100g || 0),
     proteinPer100g: Number(food.proteinPer100g || 0),
     carbsPer100g: Number(food.carbsPer100g || 0),
@@ -2662,80 +2657,112 @@ export function saveJSON(key, value) {
 
 ## FILE: src/utils/suggestions.js
 ```javascript
-import { getSuggestedFoods } from "../utils/suggestions";
-
-export default function SuggestionsBox({
+export function getSuggestedFoods({
   foods,
-  mode,
+  modeKey,
   remainingCalories,
-  remainingProtein,
-  onSelectFood
+  remainingProtein
 }) {
-  const suggestions = getSuggestedFoods({
-    foods,
-    modeKey: mode,
-    remainingCalories,
-    remainingProtein
-  });
+  if (!Array.isArray(foods) || foods.length === 0) return [];
 
-  if (!suggestions.length) return null;
+  return foods
+    .filter((food) => Number(food.caloriesPer100g || 0) > 0)
+    .filter((food) => Number(food.caloriesPer100g || 0) <= Math.max(remainingCalories, 250) + 120)
+    .filter((food) => {
+      const carbs = Number(food.carbsPer100g || 0);
+      if (modeKey === "keto") return carbs <= 8;
+      if (modeKey === "low_carb") return carbs <= 15;
+      return true;
+    })
+    .sort((a, b) => {
+      const aProtein = Number(a.proteinPer100g || 0);
+      const bProtein = Number(b.proteinPer100g || 0);
+      const aCalories = Number(a.caloriesPer100g || 0);
+      const bCalories = Number(b.caloriesPer100g || 0);
+      const aCarbs = Number(a.carbsPer100g || 0);
+      const bCarbs = Number(b.carbsPer100g || 0);
 
-  return (
-    <div className="card">
-      <h2>Τι να φας τώρα</h2>
+      let aScore = 0;
+      let bScore = 0;
 
-      <div className="stack-10">
-        {suggestions.map((food) => (
-          <button
-            key={food.id}
-            className="food-choice"
-            onClick={() => onSelectFood(food)}
-          >
-            <div style={{ fontWeight: 700 }}>{food.name}</div>
+      if (remainingProtein > 15) {
+        aScore += aProtein * 3;
+        bScore += bProtein * 3;
+      } else {
+        aScore += aProtein * 1.5;
+        bScore += bProtein * 1.5;
+      }
 
-            <div className="muted">
-              {food.caloriesPer100g} kcal · P {food.proteinPer100g}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+      if (modeKey === "high_protein") {
+        aScore += aProtein * 2;
+        bScore += bProtein * 2;
+      }
+
+      if (modeKey === "low_carb") {
+        aScore -= aCarbs * 2;
+        bScore -= bCarbs * 2;
+      }
+
+      if (modeKey === "keto") {
+        aScore -= aCarbs * 4;
+        bScore -= bCarbs * 4;
+      }
+
+      aScore -= aCalories * 0.03;
+      bScore -= bCalories * 0.03;
+
+      return bScore - aScore;
+    })
+    .slice(0, 5);
 }
 ```
 
 ## FILE: netlify/functions/food-search.js
 ```javascript
+function removeAccents(str) {
+  return str
+    .replace(/ά/g, "α").replace(/έ/g, "ε").replace(/ή/g, "η")
+    .replace(/ί/g, "ι").replace(/ό/g, "ο").replace(/ύ/g, "υ")
+    .replace(/ώ/g, "ω").replace(/ϊ/g, "ι").replace(/ϋ/g, "υ")
+    .replace(/ΐ/g, "ι").replace(/ΰ/g, "υ").replace(/Ά/g, "Α")
+    .replace(/Έ/g, "Ε").replace(/Ή/g, "Η").replace(/Ί/g, "Ι")
+    .replace(/Ό/g, "Ο").replace(/Ύ/g, "Υ").replace(/Ώ/g, "Ω");
+}
+
 export async function handler(event) {
   try {
     const query = event.queryStringParameters?.q?.trim();
 
     if (!query || query.length < 2) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify([]),
-      };
+      return { statusCode: 200, body: JSON.stringify([]) };
     }
 
     const API_KEY = process.env.USDA_API_KEY;
+    const queryNoAccents = removeAccents(query);
 
-    // 🔥 USDA (κύριο - γρήγορο)
+    // USDA
     const usdaPromise = fetch(
-      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(
-        query
-      )}&pageSize=10&api_key=${API_KEY}`
-    ).then((res) => res.json());
+      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=15&api_key=${API_KEY}`
+    ).then((res) => res.json()).catch(() => null);
 
-    // 🔥 Open Food Facts (secondary - μπορεί να αργήσει)
-    const offPromise = fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
-        query
-      )}&search_simple=1&action=process&json=1&page_size=10`
-    )
-      .then((res) => res.json())
-      .catch(() => null); // αν fail → ignore
+    // OFF Greek - με τόνους
+    const offGrPromise = fetch(
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
+    ).then((res) => res.json()).catch(() => null);
 
-    // 👉 ΠΕΡΙΜΕΝΟΥΜΕ ΜΟΝΟ USDA
+    // OFF Greek - χωρίς τόνους
+    const offGrNoAccentsPromise = queryNoAccents !== query
+      ? fetch(
+          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(queryNoAccents)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
+        ).then((res) => res.json()).catch(() => null)
+      : Promise.resolve(null);
+
+    // OFF World
+    const offWorldPromise = fetch(
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15`
+    ).then((res) => res.json()).catch(() => null);
+
+    // Περιμένουμε USDA πρώτα
     const usdaData = await usdaPromise;
 
     function getNutrientValue(food, possibleNames) {
@@ -2745,61 +2772,73 @@ export async function handler(event) {
       return Number(match?.value) || 0;
     }
 
-    const usdaFoods = (usdaData.foods || []).map((food) => ({
+    const usdaFoods = (usdaData?.foods || []).map((food) => ({
       id: `usda-${food.fdcId}`,
       source: "usda",
       sourceLabel: "USDA",
       name: food.description || "Unknown food",
-      brand: food.brandOwner || food.brandName || "USDA",
+      brand: food.brandOwner || food.brandName || "",
       caloriesPer100g: getNutrientValue(food, ["Energy", "Energy (kcal)"]),
       proteinPer100g: getNutrientValue(food, ["Protein"]),
-      carbsPer100g: getNutrientValue(food, [
-        "Carbohydrate, by difference",
-      ]),
+      carbsPer100g: getNutrientValue(food, ["Carbohydrate, by difference"]),
       fatPer100g: getNutrientValue(food, ["Total lipid (fat)"]),
     }));
 
-    // 👉 Προσπαθούμε να πάρουμε OFF αλλά δεν περιμένουμε
+    // OFF με timeout 3000ms
     let offFoods = [];
 
     try {
-      const offData = await Promise.race([
-        offPromise,
-        new Promise((resolve) => setTimeout(() => resolve(null), 800)), // timeout 800ms
+      const [offGrData, offGrNoAccentsData, offWorldData] = await Promise.all([
+        Promise.race([offGrPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
+        Promise.race([offGrNoAccentsPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
+        Promise.race([offWorldPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
       ]);
 
-      if (offData?.products) {
-        offFoods = offData.products.map((p) => ({
-          id: `off-${p.code}`,
-          source: "off",
-          sourceLabel: "OpenFood",
-          name: p.product_name || "Unknown",
-          brand: p.brands || "",
-          caloriesPer100g: Number(
-            p.nutriments?.["energy-kcal_100g"] || 0
-          ),
-          proteinPer100g: Number(p.nutriments?.proteins_100g || 0),
-          carbsPer100g: Number(p.nutriments?.carbohydrates_100g || 0),
-          fatPer100g: Number(p.nutriments?.fat_100g || 0),
-        }));
-      }
+      const parseOFF = (data, label) => {
+        if (!data?.products) return [];
+        return data.products
+          .filter((p) => p.product_name && Number(p.nutriments?.["energy-kcal_100g"] || 0) > 0)
+          .map((p) => ({
+            id: `off-${p.code}`,
+            source: "off",
+            sourceLabel: label,
+            name: p.product_name_el || p.product_name || "Unknown",
+            brand: p.brands || "",
+            caloriesPer100g: Number(p.nutriments?.["energy-kcal_100g"] || 0),
+            proteinPer100g: Number(p.nutriments?.proteins_100g || 0),
+            carbsPer100g: Number(p.nutriments?.carbohydrates_100g || 0),
+            fatPer100g: Number(p.nutriments?.fat_100g || 0),
+          }));
+      };
+
+      const grFoods = parseOFF(offGrData, "🇬🇷 Greek");
+      const grNoAccentFoods = parseOFF(offGrNoAccentsData, "🇬🇷 Greek");
+      const worldFoods = parseOFF(offWorldData, "OpenFood");
+
+      // Ελληνικά πρώτα
+      offFoods = [...grFoods, ...grNoAccentFoods, ...worldFoods];
+
     } catch {
-      // ignore completely
+      // ignore
     }
 
-    // 🔥 ΕΝΩΝΟΥΜΕ
-    const results = [...usdaFoods, ...offFoods];
+    // Deduplicate όλα
+    const seen = new Set();
+    const allFoods = [...usdaFoods, ...offFoods].filter((f) => {
+      const key = `${String(f.name || "").trim().toLowerCase()}|${String(f.brand || "").trim().toLowerCase()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     return {
       statusCode: 200,
-      body: JSON.stringify(results),
+      body: JSON.stringify(allFoods),
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: error.message || "Unknown error",
-      }),
+      body: JSON.stringify({ error: error.message || "Unknown error" }),
     };
   }
 }

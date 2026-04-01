@@ -10,21 +10,23 @@ export async function handler(event) {
       };
     }
 
-    const prompt = `Είσαι ένας fitness και nutrition coach. Αναλύεις τα δεδομένα του χρήστη και δίνεις σύντομες, πρακτικές συμβουλές στα Ελληνικά.
+    const prompt = `Είσαι fitness και nutrition coach. Δίνεις σύντομες, πρακτικές συμβουλές στα Ελληνικά.
 
-Προφίλ χρήστη:
+Προφίλ:
 - Στόχος: ${profile.goalType === "lose" ? "Απώλεια βάρους" : profile.goalType === "gain" ? "Μυϊκή ανάπτυξη" : "Διατήρηση"}
-- Τρόπος διατροφής: ${profile.mode}
-- Ημερήσιος στόχος: ${profile.targetCalories} kcal
-- Στόχος πρωτεΐνης: ${profile.proteinTarget}g
+- Διατροφή: ${profile.mode}
+- Στόχος: ${profile.targetCalories} kcal / ${profile.proteinTarget}g πρωτεΐνη
+- Streak: ${profile.streak} μέρες${profile.lastWeight ? ` · Βάρος: ${profile.lastWeight} kg` : ""}
 
-Δεδομένα τελευταίων 7 ημερών:
-${weekData.map((day, i) => `Ημέρα ${i + 1}: ${day.eaten} kcal φαγητό, ${day.exercise} kcal άσκηση, υπόλοιπο ${day.remaining} kcal, πρωτεΐνη ${day.protein}g`).join("\n")}
+7 ημέρες:
+${weekData.map((d, i) => `${i + 1}. ${d.eaten} kcal, άσκηση ${d.exercise} kcal, υπόλοιπο ${d.remaining}, πρωτεΐνη ${d.protein}g`).join("\n")}
 
-Streak: ${profile.streak} συνεχόμενες μέρες εντός στόχου.
-${profile.lastWeight ? `Τελευταίο βάρος: ${profile.lastWeight} kg` : ""}
+Γράψε:
+1. Σύντομη αξιολόγηση εβδομάδας (2-3 προτάσεις)
+2. 3 συγκεκριμένες συμβουλές για την επόμενη εβδομάδα
+3. Μια πρόταση κινήτρου
 
-Δώσε μια σύντομη ανάλυση (3-4 προτάσεις) και 2-3 συγκεκριμένες συμβουλές για την επόμενη εβδομάδα. Να είσαι ενθαρρυντικός αλλά ειλικρινής. Απάντησε μόνο στα Ελληνικά.`;
+Να είσαι ειλικρινής και ενθαρρυντικός. Μόνο Ελληνικά.`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -35,7 +37,7 @@ ${profile.lastWeight ? `Τελευταίο βάρος: ${profile.lastWeight} kg`
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 600,
+        max_tokens: 1200,
         messages: [{ role: "user", content: prompt }]
       })
     });

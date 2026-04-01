@@ -47,53 +47,35 @@ const FILTERS = [
 function FoodAddModal({ food, onAdd, onClose }) {
   const [grams, setGrams] = useState(String(food.estimatedGrams || 100));
   const [meal, setMeal] = useState("Πρωινό");
-
   const preview = createFoodEntry(food, grams, meal);
 
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.5)",
-        zIndex: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        zIndex: 200, display: "flex", alignItems: "center",
+        justifyContent: "center", padding: 16
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: "var(--bg-card)",
-          borderRadius: 20,
-          padding: 20,
-          width: "100%",
-          maxWidth: 400,
-          boxShadow: "var(--shadow-modal)"
+          background: "var(--bg-card)", borderRadius: 20, padding: 20,
+          width: "100%", maxWidth: 400, boxShadow: "var(--shadow-modal)"
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
-          {food.name}
-        </div>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{food.name}</div>
         {food.brand && (
-          <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-            {food.brand}
-          </div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>{food.brand}</div>
         )}
-
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <label style={{ flex: 1 }}>
             <div className="profile-label">Γραμμάρια</div>
             <input
-              className="input"
-              type="number"
-              value={grams}
+              className="input" type="number" value={grams}
               onChange={(e) => setGrams(e.target.value)}
-              inputMode="numeric"
-              autoFocus
+              inputMode="numeric" autoFocus
             />
           </label>
           <label style={{ flex: 1 }}>
@@ -103,26 +85,19 @@ function FoodAddModal({ food, onAdd, onClose }) {
             </select>
           </label>
         </div>
-
         <div style={{
-          background: "var(--bg-soft)",
-          borderRadius: 10,
-          padding: "8px 12px",
-          marginBottom: 14,
-          fontSize: 13
+          background: "var(--bg-soft)", borderRadius: 10,
+          padding: "8px 12px", marginBottom: 14, fontSize: 13
         }}>
           <span className="muted">Preview: </span>
           <strong>{formatNumber(preview.calories)} kcal</strong>
           <span className="muted"> · P{formatNumber(preview.protein)} · C{formatNumber(preview.carbs)} · F{formatNumber(preview.fat)}</span>
         </div>
-
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn btn-dark" onClick={() => onAdd(food, grams, meal)} type="button" style={{ flex: 1 }}>
             Προσθήκη
           </button>
-          <button className="btn btn-light" onClick={onClose} type="button">
-            Άκυρο
-          </button>
+          <button className="btn btn-light" onClick={onClose} type="button">Άκυρο</button>
         </div>
       </div>
     </div>
@@ -242,16 +217,13 @@ export default function FoodTab({
     setShowScanner(false);
     setBarcodeLoading(true);
     setBarcodeError("");
-
     try {
       const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
       const data = await res.json();
-
       if (!data.found) {
         setBarcodeError(`Δεν βρέθηκε προϊόν για barcode: ${code}`);
         return;
       }
-
       setSelectedFood(normalizeFood(data));
     } catch {
       setBarcodeError("Σφάλμα κατά την αναζήτηση barcode.");
@@ -271,28 +243,16 @@ export default function FoodTab({
   return (
     <>
       {showScanner && (
-        <BarcodeScanner
-          onResult={handleBarcodeResult}
-          onClose={() => setShowScanner(false)}
-        />
+        <BarcodeScanner onResult={handleBarcodeResult} onClose={() => setShowScanner(false)} />
       )}
-
       {showPhotoAnalyzer && (
         <FoodPhotoAnalyzer
-          onFoodFound={(food) => {
-            setSelectedFood(food);
-            setShowPhotoAnalyzer(false);
-          }}
+          onFoodFound={(food) => { setSelectedFood(food); setShowPhotoAnalyzer(false); }}
           onClose={() => setShowPhotoAnalyzer(false)}
         />
       )}
-
       {selectedFood && (
-        <FoodAddModal
-          food={selectedFood}
-          onAdd={handleAdd}
-          onClose={() => setSelectedFood(null)}
-        />
+        <FoodAddModal food={selectedFood} onAdd={handleAdd} onClose={() => setSelectedFood(null)} />
       )}
 
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
@@ -347,7 +307,7 @@ export default function FoodTab({
               type="button"
               style={{ fontSize: 13, padding: "8px 12px" }}
             >
-              📸
+              📸 Photo
             </button>
             <button
               className="btn btn-dark"
@@ -355,7 +315,7 @@ export default function FoodTab({
               type="button"
               style={{ fontSize: 13, padding: "8px 12px" }}
             >
-              📷 Barcode
+              🔲 Barcode
             </button>
           </div>
         </div>
@@ -368,14 +328,11 @@ export default function FoodTab({
               onClick={() => setActiveFilter(f.key)}
               type="button"
               style={{
-                padding: "5px 10px",
-                borderRadius: 999,
+                padding: "5px 10px", borderRadius: 999,
                 border: `1px solid ${activeFilter === f.key ? "var(--color-accent)" : "var(--border-color)"}`,
                 background: activeFilter === f.key ? "var(--color-accent)" : "var(--bg-soft)",
                 color: activeFilter === f.key ? "var(--bg-card)" : "var(--text-primary)",
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer"
+                fontSize: 12, fontWeight: 700, cursor: "pointer"
               }}
             >
               {f.label}

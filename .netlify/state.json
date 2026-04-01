@@ -1,0 +1,20 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Voula",
+			"country": {
+				"code": "GR",
+				"name": "Greece"
+			},
+			"subdivision": {
+				"code": "I",
+				"name": "Attica"
+			},
+			"timezone": "Europe/Athens",
+			"latitude": 37.8522,
+			"longitude": 23.7768
+		},
+		"timestamp": 1775049420901
+	},
+	"siteId": "a8c157d9-9ef2-44f0-8813-c680074181dc"
+}

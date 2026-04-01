@@ -120,20 +120,15 @@ export default function SummaryTab({
         const bCalories = Number(b.caloriesPer100g || 0);
         const aCarbs = Number(a.carbsPer100g || 0);
         const bCarbs = Number(b.carbsPer100g || 0);
-
         let aScore = 0;
         let bScore = 0;
-
         if (remainingProtein > 15) { aScore += aProtein * 3; bScore += bProtein * 3; }
         else { aScore += aProtein * 1.5; bScore += bProtein * 1.5; }
-
         if (mode === "high_protein") { aScore += aProtein * 2; bScore += bProtein * 2; }
         if (mode === "low_carb") { aScore -= aCarbs * 2; bScore -= bCarbs * 2; }
         if (mode === "keto") { aScore -= aCarbs * 4; bScore -= bCarbs * 4; }
-
         aScore -= aCalories * 0.03;
         bScore -= bCalories * 0.03;
-
         return bScore - aScore;
       })
       .slice(0, 5);
@@ -151,9 +146,8 @@ export default function SummaryTab({
 
   return (
     <>
-      {/* HERO CARD — compact */}
+      {/* HERO CARD */}
       <div className="hero-card">
-        {/* Ημερομηνία + controls */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
             {formatDisplayDate(selectedDate)}
@@ -180,7 +174,6 @@ export default function SummaryTab({
           </div>
         </div>
 
-        {/* Υπόλοιπο — κεντρικό */}
         <div style={{ marginTop: 16, marginBottom: 8 }}>
           <div className="hero-subtle" style={{ fontSize: 12 }}>Υπόλοιπο ημέρας</div>
           <div className={`hero-big ${getRemainingClassName()}`} style={{ fontSize: 36, fontWeight: 800 }}>
@@ -188,7 +181,6 @@ export default function SummaryTab({
           </div>
         </div>
 
-        {/* Εξίσωση */}
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
           <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
             <div className="hero-subtle" style={{ fontSize: 11 }}>Στόχος</div>
@@ -206,21 +198,16 @@ export default function SummaryTab({
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-          <div className="hero-subtle" style={{ fontSize: 11 }}>
-            {getGoalLabel()} · {getModeLabel()}
-          </div>
-          <div className="hero-subtle" style={{ fontSize: 11 }}>
-            {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
-          </div>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>{getGoalLabel()} · {getModeLabel()}</div>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>{formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal</div>
         </div>
       </div>
 
-      {/* MACRO PROGRESS BARS */}
+      {/* MACROS */}
       <div className="card">
         <h2>Macros</h2>
         <div className="macro-bars">
@@ -253,7 +240,6 @@ export default function SummaryTab({
           </div>
         </div>
 
-        {/* STREAK inline */}
         <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)" }}>
           <div style={{ fontWeight: 700 }}>Streak {getStreakEmoji(streak)}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -275,38 +261,40 @@ export default function SummaryTab({
         weightLog={weightLog}
       />
 
-      {/* WEIGHT TRACKING */}
+      {/* WEIGHT TRACKING — compact */}
       <div className="card">
         <h2>⚖️ Βάρος</h2>
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
-          <label className="profile-field" style={{ flex: 1 }}>
-            <div className="profile-label">kg</div>
-            <input
-              className="input"
-              type="number"
-              step="0.1"
-              placeholder="π.χ. 82.5"
-              inputMode="decimal"
-              value={weightInput}
-              onChange={(e) => setWeightInput(e.target.value)}
-            />
-          </label>
-          <label className="profile-field" style={{ flex: 1 }}>
-            <div className="profile-label">Ημερομηνία</div>
-            <input
-              className="input"
-              type="date"
-              value={weightDate}
-              onChange={(e) => setWeightDate(e.target.value)}
-            />
-          </label>
-          <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ marginBottom: 1 }}>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
+          <input
+            className="input"
+            type="number"
+            step="0.1"
+            placeholder="kg"
+            inputMode="decimal"
+            value={weightInput}
+            onChange={(e) => setWeightInput(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <input
+            className="input"
+            type="date"
+            value={weightDate}
+            onChange={(e) => setWeightDate(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button
+            className="btn btn-dark"
+            onClick={handleAddWeight}
+            type="button"
+            style={{ flexShrink: 0, padding: "12px 16px" }}
+          >
             +
           </button>
         </div>
 
         {chartData.length >= 2 && (
-          <div style={{ marginTop: 10, overflowX: "auto" }}>
+          <div style={{ marginBottom: 8, overflowX: "auto" }}>
             <svg viewBox={`0 0 ${chartW} ${chartH + 16}`} style={{ width: "100%", maxWidth: chartW }}>
               {chartData.map((point, i) => {
                 const x = (i / (chartData.length - 1)) * (chartW - 20) + 10;
@@ -343,13 +331,13 @@ export default function SummaryTab({
         )}
 
         {sortedWeightLog.length > 0 && (
-          <div style={{ marginTop: 8 }}>
+          <div>
             {(showAllWeight ? sortedWeightLog : sortedWeightLog.slice(0, 3)).map((entry) => (
-              <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
+              <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
                 <span className="muted">{formatDisplayDate(entry.date)}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
-                  <button className="btn btn-light" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
+                  <button className="btn btn-light" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
                 </div>
               </div>
             ))}
@@ -400,18 +388,13 @@ export default function SummaryTab({
               onClick={() => setSelectedDate(day.date)}
               type="button"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
                 padding: "8px 12px",
                 background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)",
                 color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)",
                 borderRadius: 10,
                 border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`,
-                cursor: "pointer",
-                textAlign: "left",
-                flexWrap: "wrap",
-                gap: 6
+                cursor: "pointer", textAlign: "left", flexWrap: "wrap", gap: 6
               }}
             >
               <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
