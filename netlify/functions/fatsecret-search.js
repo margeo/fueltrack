@@ -45,7 +45,7 @@ export async function handler(event) {
     const token = await getAccessToken();
 
     const response = await fetch(
-      `https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json&max_results=20`,
+      `https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json&max_results=5`,
       {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -58,32 +58,11 @@ export async function handler(event) {
     }
 
     const data = await response.json();
-    const foods = data?.foods?.food || [];
-    const foodArray = Array.isArray(foods) ? foods : [foods];
 
-    const results = foodArray.map((food) => {
-      const desc = food.food_description || "";
-      const caloriesMatch = desc.match(/Calories:\s*([\d.]+)kcal/i);
-      const fatMatch = desc.match(/Fat:\s*([\d.]+)g/i);
-      const carbsMatch = desc.match(/Carbs:\s*([\d.]+)g/i);
-      const proteinMatch = desc.match(/Protein:\s*([\d.]+)g/i);
-
-      return {
-        id: `fs-${food.food_id}`,
-        source: "fatsecret",
-        sourceLabel: "FatSecret",
-        name: food.food_name || "Unknown",
-        brand: food.brand_name || "",
-        caloriesPer100g: caloriesMatch ? Number(caloriesMatch[1]) : 0,
-        fatPer100g: fatMatch ? Number(fatMatch[1]) : 0,
-        carbsPer100g: carbsMatch ? Number(carbsMatch[1]) : 0,
-        proteinPer100g: proteinMatch ? Number(proteinMatch[1]) : 0
-      };
-    }).filter((food) => food.caloriesPer100g > 0);
-
+    // Return raw data for debugging
     return {
       statusCode: 200,
-      body: JSON.stringify(results)
+      body: JSON.stringify(data)
     };
   } catch (error) {
     return {
