@@ -19,31 +19,16 @@ export default function useFoodSearch(query) {
       setLoading(true);
 
       try {
-        // Παράλληλα USDA+OFF και FatSecret
-        const [mainRes, fatSecretRes] = await Promise.all([
-          fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(q)}`)
-            .then((res) => res.ok ? res.json() : [])
-            .catch(() => []),
-          fetch(`/.netlify/functions/fatsecret-search?q=${encodeURIComponent(q)}`)
-            .then((res) => res.ok ? res.json() : [])
-            .catch(() => [])
-        ]);
+        const res = await fetch(
+          `/.netlify/functions/food-search?q=${encodeURIComponent(q)}`
+        );
 
-        if (cancelled) return;
+        if (!res.ok) throw new Error(`Search failed: ${res.status}`);
 
-        const mainArr = Array.isArray(mainRes) ? mainRes : [];
-        const fatSecretArr = Array.isArray(fatSecretRes) ? fatSecretRes : [];
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : [];
 
-        // Deduplicate
-        const seen = new Set();
-        const merged = [...mainArr, ...fatSecretArr].filter((food) => {
-          const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-
-        setResults(merged);
+        if (!cancelled) setResults(arr);
       } catch (err) {
         console.error("Food search error:", err);
         if (!cancelled) setResults([]);

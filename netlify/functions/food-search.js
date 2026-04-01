@@ -1,29 +1,44 @@
+function removeAccents(str) {
+  return str
+    .replace(/ά/g, "α").replace(/έ/g, "ε").replace(/ή/g, "η")
+    .replace(/ί/g, "ι").replace(/ό/g, "ο").replace(/ύ/g, "υ")
+    .replace(/ώ/g, "ω").replace(/ϊ/g, "ι").replace(/ϋ/g, "υ")
+    .replace(/ΐ/g, "ι").replace(/ΰ/g, "υ").replace(/Ά/g, "Α")
+    .replace(/Έ/g, "Ε").replace(/Ή/g, "Η").replace(/Ί/g, "Ι")
+    .replace(/Ό/g, "Ο").replace(/Ύ/g, "Υ").replace(/Ώ/g, "Ω");
+}
+
 export async function handler(event) {
   try {
     const query = event.queryStringParameters?.q?.trim();
 
     if (!query || query.length < 2) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify([]),
-      };
+      return { statusCode: 200, body: JSON.stringify([]) };
     }
 
     const API_KEY = process.env.USDA_API_KEY;
+    const queryNoAccents = removeAccents(query);
 
     // USDA
     const usdaPromise = fetch(
       `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=15&api_key=${API_KEY}`
     ).then((res) => res.json()).catch(() => null);
 
-    // Open Food Facts - Greek products
+    // OFF Greek - με τόνους
     const offGrPromise = fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&lc=el&cc=gr`
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
     ).then((res) => res.json()).catch(() => null);
 
-    // Open Food Facts - Global
+    // OFF Greek - χωρίς τόνους
+    const offGrNoAccentsPromise = queryNoAccents !== query
+      ? fetch(
+          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(queryNoAccents)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
+        ).then((res) => res.json()).catch(() => null)
+      : Promise.resolve(null);
+
+    // OFF World
     const offWorldPromise = fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10`
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15`
     ).then((res) => res.json()).catch(() => null);
 
     // Περιμένουμε USDA πρώτα
@@ -48,13 +63,14 @@ export async function handler(event) {
       fatPer100g: getNutrientValue(food, ["Total lipid (fat)"]),
     }));
 
-    // OFF με timeout 2000ms
+    // OFF με timeout 3000ms
     let offFoods = [];
 
     try {
-      const [offGrData, offWorldData] = await Promise.all([
-        Promise.race([offGrPromise, new Promise((resolve) => setTimeout(() => resolve(null), 2000))]),
-        Promise.race([offWorldPromise, new Promise((resolve) => setTimeout(() => resolve(null), 2000))]),
+      const [offGrData, offGrNoAccentsData, offWorldData] = await Promise.all([
+        Promise.race([offGrPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
+        Promise.race([offGrNoAccentsPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
+        Promise.race([offWorldPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
       ]);
 
       const parseOFF = (data, label) => {
@@ -75,29 +91,28 @@ export async function handler(event) {
       };
 
       const grFoods = parseOFF(offGrData, "🇬🇷 Greek");
+      const grNoAccentFoods = parseOFF(offGrNoAccentsData, "🇬🇷 Greek");
       const worldFoods = parseOFF(offWorldData, "OpenFood");
 
       // Ελληνικά πρώτα
-      offFoods = [...grFoods, ...worldFoods];
+      offFoods = [...grFoods, ...grNoAccentFoods, ...worldFoods];
 
     } catch {
       // ignore
     }
 
-    // Deduplicate OFF
+    // Deduplicate όλα
     const seen = new Set();
-    const dedupedOff = offFoods.filter((f) => {
-      const key = `${f.name.toLowerCase()}|${f.brand.toLowerCase()}`;
+    const allFoods = [...usdaFoods, ...offFoods].filter((f) => {
+      const key = `${String(f.name || "").trim().toLowerCase()}|${String(f.brand || "").trim().toLowerCase()}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
 
-    const results = [...usdaFoods, ...dedupedOff];
-
     return {
       statusCode: 200,
-      body: JSON.stringify(results),
+      body: JSON.stringify(allFoods),
     };
   } catch (error) {
     return {
