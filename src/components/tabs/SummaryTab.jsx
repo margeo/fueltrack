@@ -151,56 +151,72 @@ export default function SummaryTab({
 
   return (
     <>
-      {/* HERO CARD */}
+      {/* HERO CARD — compact */}
       <div className="hero-card">
-        <div className="summary-date-row">
-          <div>
-            <div className="hero-subtle">Επιλεγμένη ημέρα</div>
-            <div className="summary-date-title">{formatDisplayDate(selectedDate)}</div>
+        {/* Ημερομηνία + controls */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>
+            {formatDisplayDate(selectedDate)}
+            {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· Σήμερα</span>}
           </div>
-          <div className="summary-date-controls">
-            <button
-              className="btn btn-light"
-              onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
-              type="button"
-            >
-              {isToday ? "Σήμερα ✓" : "Σήμερα"}
-            </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            {!isToday && (
+              <button
+                className="btn btn-light"
+                onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
+                type="button"
+                style={{ fontSize: 12, padding: "6px 10px" }}
+              >
+                Σήμερα
+              </button>
+            )}
             <input
-              className="input summary-date-input"
+              className="input"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              style={{ width: 140, padding: "6px 8px", fontSize: 12 }}
             />
           </div>
         </div>
 
-        <div className="summary-remaining-block">
-          <div className="hero-subtle">Υπόλοιπο ημέρας</div>
-          <div className={`hero-big ${getRemainingClassName()}`}>
+        {/* Υπόλοιπο — κεντρικό */}
+        <div style={{ marginTop: 16, marginBottom: 8 }}>
+          <div className="hero-subtle" style={{ fontSize: 12 }}>Υπόλοιπο ημέρας</div>
+          <div className={`hero-big ${getRemainingClassName()}`} style={{ fontSize: 36, fontWeight: 800 }}>
             {formatNumber(remainingCalories)} kcal
           </div>
-          <div className="hero-subtle" style={{ marginTop: 4, fontSize: 12 }}>
-            Στόχος {formatNumber(targetCalories)} · Φαγητό {formatNumber(totalCalories)} · Άσκηση +{formatNumber(exerciseValue)}
+        </div>
+
+        {/* Εξίσωση */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Στόχος</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>−</div>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Φαγητό</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>+</div>
+          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+            <div className="hero-subtle" style={{ fontSize: 11 }}>Άσκηση</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
           </div>
         </div>
 
-        <div className="hero-grid summary-hero-grid-2" style={{ marginTop: 12 }}>
-          <div className="hero-stat">
-            <div className="hero-subtle">Στόχος</div>
-            <div>{getGoalLabel()}</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-subtle">Mode</div>
-            <div>{getModeLabel()}</div>
-          </div>
-        </div>
-
+        {/* Progress bar */}
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${progress}%` }} />
         </div>
-        <div className="hero-subtle summary-progress-text" style={{ fontSize: 11 }}>
-          {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>
+            {getGoalLabel()} · {getModeLabel()}
+          </div>
+          <div className="hero-subtle" style={{ fontSize: 11 }}>
+            {formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal
+          </div>
         </div>
       </div>
 
