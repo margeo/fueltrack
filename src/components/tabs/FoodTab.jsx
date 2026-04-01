@@ -3,6 +3,7 @@ import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
+import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
 
 function normalizeSearchText(value) {
   return String(value || "").toLowerCase().trim();
@@ -44,7 +45,7 @@ const FILTERS = [
 ];
 
 function FoodAddModal({ food, onAdd, onClose }) {
-  const [grams, setGrams] = useState("100");
+  const [grams, setGrams] = useState(String(food.estimatedGrams || 100));
   const [meal, setMeal] = useState("Πρωινό");
 
   const preview = createFoodEntry(food, grams, meal);
@@ -148,6 +149,7 @@ export default function FoodTab({
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedFood, setSelectedFood] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState("");
 
@@ -184,26 +186,24 @@ export default function FoodTab({
   }, [databaseResults]);
 
   const visibleFoods = useMemo(() => {
-  const localFoods = filteredFoods.map((food) =>
-    normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
-  );
-  const merged = [...localFoods, ...normalizedDatabaseResults];
-  const seen = new Set();
-  const deduped = merged.filter((food) => {
-    const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    const localFoods = filteredFoods.map((food) =>
+      normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
+    );
+    const merged = [...localFoods, ...normalizedDatabaseResults];
+    const seen = new Set();
+    const deduped = merged.filter((food) => {
+      const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
-  // Φίλτρο ΜΕΤΑ το merge
-  const filter = FILTERS.find((f) => f.key === activeFilter);
-  const afterFilter = filter?.check ? deduped.filter(filter.check) : deduped;
+    const filter = FILTERS.find((f) => f.key === activeFilter);
+    const afterFilter = filter?.check ? deduped.filter(filter.check) : deduped;
 
-  // Sorting
-  if (!query.trim()) return afterFilter;
-  return [...afterFilter].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
-}, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
+    if (!query.trim()) return afterFilter;
+    return [...afterFilter].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
+  }, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const showAutocomplete = query.trim().length >= 2;
@@ -277,6 +277,16 @@ export default function FoodTab({
         />
       )}
 
+      {showPhotoAnalyzer && (
+        <FoodPhotoAnalyzer
+          onFoodFound={(food) => {
+            setSelectedFood(food);
+            setShowPhotoAnalyzer(false);
+          }}
+          onClose={() => setShowPhotoAnalyzer(false)}
+        />
+      )}
+
       {selectedFood && (
         <FoodAddModal
           food={selectedFood}
@@ -328,16 +338,26 @@ export default function FoodTab({
 
       {/* ΑΝΑΖΗΤΗΣΗ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>Αναζήτηση φαγητού</h2>
-          <button
-            className="btn btn-dark"
-            onClick={() => { setShowScanner(true); setBarcodeError(""); }}
-            type="button"
-            style={{ fontSize: 13, padding: "8px 12px" }}
-          >
-            📷 Barcode
-          </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              className="btn btn-dark"
+              onClick={() => setShowPhotoAnalyzer(true)}
+              type="button"
+              style={{ fontSize: 13, padding: "8px 12px" }}
+            >
+              📸
+            </button>
+            <button
+              className="btn btn-dark"
+              onClick={() => { setShowScanner(true); setBarcodeError(""); }}
+              type="button"
+              style={{ fontSize: 13, padding: "8px 12px" }}
+            >
+              📷 Barcode
+            </button>
+          </div>
         </div>
 
         {/* ΦΙΛΤΡΑ */}
