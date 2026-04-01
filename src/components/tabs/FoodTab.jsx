@@ -35,6 +35,14 @@ function getFoodSearchScore(food, query) {
   return score;
 }
 
+const FILTERS = [
+  { key: "all", label: "Όλα" },
+  { key: "high_protein", label: "💪 High Protein", check: (f) => Number(f.proteinPer100g || 0) >= 15 },
+  { key: "low_carb", label: "🥑 Low Carb", check: (f) => Number(f.carbsPer100g || 0) <= 15 },
+  { key: "low_cal", label: "🥗 Low Cal", check: (f) => Number(f.caloriesPer100g || 0) <= 200 },
+  { key: "keto", label: "⚡ Keto", check: (f) => Number(f.carbsPer100g || 0) <= 8 },
+];
+
 function FoodAddModal({ food, onAdd, onClose }) {
   const [grams, setGrams] = useState("100");
   const [meal, setMeal] = useState("Πρωινό");
@@ -108,19 +116,10 @@ function FoodAddModal({ food, onAdd, onClose }) {
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="btn btn-dark"
-            onClick={() => onAdd(food, grams, meal)}
-            type="button"
-            style={{ flex: 1 }}
-          >
+          <button className="btn btn-dark" onClick={() => onAdd(food, grams, meal)} type="button" style={{ flex: 1 }}>
             Προσθήκη
           </button>
-          <button
-            className="btn btn-light"
-            onClick={onClose}
-            type="button"
-          >
+          <button className="btn btn-light" onClick={onClose} type="button">
             Άκυρο
           </button>
         </div>
@@ -146,6 +145,7 @@ export default function FoodTab({
   openEditEntry
 }) {
   const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [selectedFood, setSelectedFood] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
@@ -196,9 +196,13 @@ export default function FoodTab({
       return true;
     });
 
-    if (!query.trim()) return deduped;
-    return [...deduped].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
-  }, [filteredFoods, normalizedDatabaseResults, query]);
+    // Εφαρμογή φίλτρου
+    const filter = FILTERS.find((f) => f.key === activeFilter);
+    const filtered = filter?.check ? deduped.filter(filter.check) : deduped;
+
+    if (!query.trim()) return filtered;
+    return [...filtered].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
+  }, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const showAutocomplete = query.trim().length >= 2;
@@ -283,7 +287,6 @@ export default function FoodTab({
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="card">
         <h2>Φαγητό ημέρας</h2>
-
         {entries.length === 0 ? (
           <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
         ) : (
@@ -291,7 +294,6 @@ export default function FoodTab({
             {MEALS.map((meal) => {
               const group = groupedEntries[meal];
               if (!group || group.items.length === 0) return null;
-
               return (
                 <div key={meal}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 4px" }}>
@@ -337,16 +339,34 @@ export default function FoodTab({
           </button>
         </div>
 
-        {barcodeLoading && (
-          <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>
-            🔍 Αναζήτηση barcode...
-          </div>
-        )}
+        {/* ΦΙΛΤΡΑ */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              type="button"
+              style={{
+                padding: "5px 10px",
+                borderRadius: 999,
+                border: `1px solid ${activeFilter === f.key ? "var(--color-accent)" : "var(--border-color)"}`,
+                background: activeFilter === f.key ? "var(--color-accent)" : "var(--bg-soft)",
+                color: activeFilter === f.key ? "var(--bg-card)" : "var(--text-primary)",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
 
+        {barcodeLoading && (
+          <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 Αναζήτηση barcode...</div>
+        )}
         {barcodeError && (
-          <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>
-            {barcodeError}
-          </div>
+          <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>
         )}
 
         <input
@@ -400,12 +420,7 @@ export default function FoodTab({
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                    <button
-                      className="btn btn-light"
-                      onClick={() => handleFoodSelect(item.food)}
-                      type="button"
-                      style={{ padding: "4px 8px", fontSize: 11 }}
-                    >✏️</button>
+                    <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                     <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
                   </div>
                 </div>
