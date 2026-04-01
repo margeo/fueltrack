@@ -184,25 +184,26 @@ export default function FoodTab({
   }, [databaseResults]);
 
   const visibleFoods = useMemo(() => {
-    const localFoods = filteredFoods.map((food) =>
-      normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
-    );
-    const merged = [...localFoods, ...normalizedDatabaseResults];
-    const seen = new Set();
-    const deduped = merged.filter((food) => {
-      const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+  const localFoods = filteredFoods.map((food) =>
+    normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
+  );
+  const merged = [...localFoods, ...normalizedDatabaseResults];
+  const seen = new Set();
+  const deduped = merged.filter((food) => {
+    const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
-    // Εφαρμογή φίλτρου
-    const filter = FILTERS.find((f) => f.key === activeFilter);
-    const filtered = filter?.check ? deduped.filter(filter.check) : deduped;
+  // Φίλτρο ΜΕΤΑ το merge
+  const filter = FILTERS.find((f) => f.key === activeFilter);
+  const afterFilter = filter?.check ? deduped.filter(filter.check) : deduped;
 
-    if (!query.trim()) return filtered;
-    return [...filtered].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
-  }, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
+  // Sorting
+  if (!query.trim()) return afterFilter;
+  return [...afterFilter].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
+}, [filteredFoods, normalizedDatabaseResults, query, activeFilter]);
 
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const showAutocomplete = query.trim().length >= 2;
