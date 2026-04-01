@@ -1,6 +1,48 @@
 import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 
+function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
+  if (goalType !== "lose" || kilosPerWeek <= 0) return null;
+
+  let color = "#166534";
+  let bg = "#dcfce7";
+  let border = "#86efac";
+  let icon = "✅";
+  let message = "";
+
+  if (kilosPerWeek > 1.5) {
+    color = "#b91c1c";
+    bg = "#fef2f2";
+    border = "#fecaca";
+    icon = "⚠️";
+    message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο κιλών. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
+  } else if (kilosPerWeek > 1) {
+    color = "#92400e";
+    bg = "#fffbeb";
+    border = "#fde68a";
+    icon = "⚡";
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός. Είναι εφικτός αλλά απαιτεί αυστηρή τήρηση.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα για ασφάλεια." : ""}`;
+  } else {
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός. Συνέχισε έτσι!${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα." : ""}`;
+  }
+
+  return (
+    <div style={{
+      background: bg,
+      border: `1px solid ${border}`,
+      borderRadius: 14,
+      padding: "12px 14px",
+      marginBottom: 14,
+      display: "flex",
+      gap: 10,
+      alignItems: "flex-start"
+    }}>
+      <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+      <div style={{ color, fontSize: 13, lineHeight: 1.5 }}>{message}</div>
+    </div>
+  );
+}
+
 export default function ProfileTab({
   age,
   setAge,
@@ -53,17 +95,11 @@ export default function ProfileTab({
 
   const rawDeficit = Number(dailyDeficit || 0);
   const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
-
   const kilosNum = Number(targetWeightLoss || 0);
   const weeksNum = Number(weeks || 0);
-  const kilosPerWeek =
-    goalType === "lose" && kilosNum > 0 && weeksNum > 0
-      ? kilosNum / weeksNum
-      : 0;
-
+  const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0
+    ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
-  const isAggressiveGoal = goalType === "lose" && kilosPerWeek > 1;
-  const isVeryUnrealisticGoal = goalType === "lose" && kilosPerWeek > 1.5;
 
   return (
     <div className="card">
@@ -79,95 +115,56 @@ export default function ProfileTab({
         </div>
       )}
 
+      {/* ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Βασικά στοιχεία</div>
-
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
             <div className="profile-label">Ηλικία</div>
-            <input
-              className="input"
-              placeholder="Ηλικία"
-              inputMode="numeric"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-            />
+            <input className="input" placeholder="Ηλικία" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Φύλο</div>
-            <select
-              className="input"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-            >
+            <select className="input" value={gender} onChange={(e) => setGender(e.target.value)}>
               <option value="male">Άνδρας</option>
               <option value="female">Γυναίκα</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Ύψος (cm)</div>
-            <input
-              className="input"
-              placeholder="Ύψος (cm)"
-              inputMode="numeric"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-            />
+            <input className="input" placeholder="Ύψος (cm)" inputMode="numeric" value={height} onChange={(e) => setHeight(e.target.value)} />
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Βάρος (kg)</div>
-            <input
-              className="input"
-              placeholder="Βάρος (kg)"
-              inputMode="decimal"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
+            <input className="input" placeholder="Βάρος (kg)" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
           </label>
         </div>
       </div>
 
+      {/* ΡΥΘΜΙΣΕΙΣ ΣΤΟΧΟΥ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Ρυθμίσεις στόχου</div>
-
         <div className="stack-10">
           <label className="profile-field">
             <div className="profile-label">Επίπεδο δραστηριότητας</div>
-            <select
-              className="input"
-              value={activity}
-              onChange={(e) => setActivity(e.target.value)}
-            >
+            <select className="input" value={activity} onChange={(e) => setActivity(e.target.value)}>
               <option value="1.2">Καθιστική</option>
               <option value="1.4">Light</option>
               <option value="1.6">Moderate</option>
               <option value="1.8">High</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Στόχος</div>
-            <select
-              className="input"
-              value={goalType}
-              onChange={(e) => setGoalType(e.target.value)}
-            >
+            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
               <option value="lose">Lose weight</option>
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
             </select>
           </label>
-
           <label className="profile-field">
             <div className="profile-label">Τρόπος διατροφής</div>
-            <select
-              className="input"
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-            >
+            <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="balanced">Balanced</option>
               <option value="low_carb">Low Carb</option>
               <option value="keto">Keto</option>
@@ -178,15 +175,13 @@ export default function ProfileTab({
         </div>
       </div>
 
+      {/* ΣΤΟΙΧΕΙΑ ΣΤΟΧΟΥ */}
       {showGoalFields && (
         <div className="soft-box profile-section-box">
           <div className="profile-section-title">Στοιχεία στόχου</div>
-
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
-              <div className="profile-label">
-                {goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-              </div>
+              <div className="profile-label">{goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}</div>
               <input
                 className="input"
                 placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
@@ -195,7 +190,6 @@ export default function ProfileTab({
                 onChange={(e) => setTargetWeightLoss(e.target.value)}
               />
             </label>
-
             <label className="profile-field">
               <div className="profile-label">Εβδομάδες</div>
               <input
@@ -210,6 +204,15 @@ export default function ProfileTab({
         </div>
       )}
 
+      {/* ΕΝΟΠΟΙΗΜΕΝΟ WARNING */}
+      <GoalWarning
+        goalType={goalType}
+        kilosPerWeek={kilosPerWeek}
+        rawDeficit={rawDeficit}
+        isCapped={isCapped}
+      />
+
+      {/* ΥΠΟΛΟΓΙΣΜΟΙ */}
       <div className="soft-box profile-section-box profile-highlight-box">
         <div className="profile-section-title">Υπολογισμοί</div>
 
@@ -217,109 +220,48 @@ export default function ProfileTab({
           <span>Maintenance / TDEE</span>
           <strong>{formatNumber(tdee)} kcal</strong>
         </div>
-
         <div className="profile-stat-row">
           <span>Ημερήσιος στόχος</span>
           <strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
-
-        {goalType === "lose" && rawDeficit > 0 && (
-          <div className="profile-stat-row">
-            <span>Υπολογισμένο έλλειμμα</span>
-            <strong>{formatNumber(rawDeficit)} kcal</strong>
-          </div>
-        )}
-
         {goalType === "lose" && appliedDeficit > 0 && (
           <div className="profile-stat-row">
-            <span>Εφαρμοσμένο έλλειμμα</span>
+            <span>Ημερήσιο έλλειμμα</span>
             <strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
-
         {goalType === "gain" && (
           <div className="profile-stat-row">
             <span>Ημερήσιο πλεόνασμα</span>
             <strong>300 kcal</strong>
           </div>
         )}
-
         <div className="profile-stat-row profile-stat-row-last">
           <span>Στόχος πρωτεΐνης</span>
           <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
 
-      {isCapped && (
-        <div className="soft-box profile-warning-box">
-          <div className="profile-warning-title">Περιορισμός ελλείμματος</div>
-          <div className="muted">
-            Ο στόχος που έβαλες απαιτεί πολύ μεγάλο ημερήσιο έλλειμμα.
-            Για γενική χρήση, το app περιορίζει το εφαρμοσμένο έλλειμμα
-            στις <strong>1000 kcal/ημέρα</strong>.
-          </div>
-        </div>
-      )}
-
-      {isAggressiveGoal && (
-        <div className="soft-box profile-warning-box">
-          <div className="profile-warning-title">Πολύ επιθετικός στόχος</div>
-          <div className="muted">
-            Ο ρυθμός που έχεις βάλει είναι περίπου{" "}
-            <strong>{formatNumber(kilosPerWeek)} κιλά/εβδομάδα</strong>.
-            Αυτό θεωρείται αρκετά επιθετικό για γενική καθοδήγηση.
-          </div>
-        </div>
-      )}
-
-      {isVeryUnrealisticGoal && (
-        <div className="soft-box profile-danger-box">
-          <div className="profile-warning-title">Μη ρεαλιστικός στόχος</div>
-          <div className="muted">
-            Ο στόχος αυτός δεν φαίνεται ρεαλιστικός με ασφαλές ημερήσιο
-            θερμιδικό έλλειμμα. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο
-            στόχο κιλών.
-          </div>
-        </div>
-      )}
-
+      {/* ΣΥΝΟΨΗ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Σύνοψη</div>
-
-        <div className="stack-10">
-          <div>
-            <span className="muted">Τύπος στόχου:</span>{" "}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Στόχος</span>
             <strong>{getGoalLabel()}</strong>
           </div>
-
-          <div>
-            <span className="muted">Τρόπος διατροφής:</span>{" "}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Διατροφή</span>
             <strong>{getModeLabel()}</strong>
           </div>
-
-          <div>
-            <span className="muted">Επίπεδο δραστηριότητας:</span>{" "}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Δραστηριότητα</span>
             <strong>{getActivityLabel()}</strong>
           </div>
-
-          {goalType === "lose" && (
-            <div className="muted">
-              Στόχος: να τρως κάτω από το Maintenance / TDEE σου με ελεγχόμενο
-              ημερήσιο έλλειμμα θερμίδων.
-            </div>
-          )}
-
-          {goalType === "maintain" && (
-            <div className="muted">
-              Στόχος: να διατηρείς περίπου το βάρος σου, με ημερήσιο στόχο
-              κοντά στο Maintenance / TDEE σου.
-            </div>
-          )}
-
-          {goalType === "gain" && (
-            <div className="muted">
-              Στόχος: να υποστηρίζεις μυϊκή ανάπτυξη με περίπου 300 kcal πάνω
-              από το Maintenance / TDEE σου και αυξημένη πρωτεΐνη.
+          {goalType === "lose" && kilosPerWeek > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span className="muted">Ρυθμός</span>
+              <strong>{formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα</strong>
             </div>
           )}
         </div>
@@ -330,10 +272,7 @@ export default function ProfileTab({
           className="btn btn-dark"
           onClick={onContinue}
           disabled={!profileComplete}
-          style={{
-            opacity: profileComplete ? 1 : 0.5,
-            cursor: profileComplete ? "pointer" : "not-allowed"
-          }}
+          style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}
         >
           Αποθήκευση & συνέχεια
         </button>
