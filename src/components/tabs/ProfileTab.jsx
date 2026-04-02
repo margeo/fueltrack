@@ -31,25 +31,19 @@ export default function ProfileTab({
   activity, setActivity, goalType, setGoalType,
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
-  dailyDeficit, proteinTarget, profileComplete, onContinue,
-  favoriteFoodsText, setFavoriteFoodsText,
-  favoriteExercisesText, setFavoriteExercisesText
+  dailyDeficit, proteinTarget, profileComplete, onContinue
 }) {
   const [localAge, setLocalAge] = useState(age);
   const [localHeight, setLocalHeight] = useState(height);
   const [localWeight, setLocalWeight] = useState(weight);
   const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(targetWeightLoss);
   const [localWeeks, setLocalWeeks] = useState(weeks);
-  const [localFavFoods, setLocalFavFoods] = useState(favoriteFoodsText || "");
-  const [localFavExercises, setLocalFavExercises] = useState(favoriteExercisesText || "");
 
   useEffect(() => { setLocalAge(age); }, [age]);
   useEffect(() => { setLocalHeight(height); }, [height]);
   useEffect(() => { setLocalWeight(weight); }, [weight]);
   useEffect(() => { setLocalTargetWeightLoss(targetWeightLoss); }, [targetWeightLoss]);
   useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
-  useEffect(() => { setLocalFavFoods(favoriteFoodsText || ""); }, [favoriteFoodsText]);
-  useEffect(() => { setLocalFavExercises(favoriteExercisesText || ""); }, [favoriteExercisesText]);
 
   const showGoalFields = goalType === "lose" || goalType === "gain";
 
@@ -206,40 +200,6 @@ export default function ProfileTab({
           <span>Στόχος πρωτεΐνης</span>
           <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
-      </div>
-
-      {/* ΤΑ ΓΟΥΣΤΑ ΜΟΥ */}
-      <div className="soft-box profile-section-box">
-        <div className="profile-section-title">🍽️ Τα γούστα μου</div>
-        <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
-          Ο AI Coach χρησιμοποιεί αυτές τις πληροφορίες για να σου προτείνει συγκεκριμένα φαγητά και ασκήσεις που σου αρέσουν.
-        </div>
-
-        <label className="profile-field" style={{ marginBottom: 10 }}>
-          <div className="profile-label">Αγαπημένα φαγητά</div>
-          <textarea
-            className="input"
-            placeholder="π.χ. κοτόπουλο, αυγά, φέτα, σαλάτες, τοστ, γιαούρτι..."
-            value={localFavFoods}
-            onChange={(e) => setLocalFavFoods(e.target.value)}
-            onBlur={() => setFavoriteFoodsText(localFavFoods)}
-            rows={3}
-            style={{ resize: "vertical", lineHeight: 1.5 }}
-          />
-        </label>
-
-        <label className="profile-field">
-          <div className="profile-label">Αγαπημένες ασκήσεις</div>
-          <textarea
-            className="input"
-            placeholder="π.χ. τρέξιμο, ποδήλατο, βάρη, κολύμπι, περπάτημα..."
-            value={localFavExercises}
-            onChange={(e) => setLocalFavExercises(e.target.value)}
-            onBlur={() => setFavoriteExercisesText(localFavExercises)}
-            rows={2}
-            style={{ resize: "vertical", lineHeight: 1.5 }}
-          />
-        </label>
       </div>
 
       {/* ΣΥΝΟΨΗ */}
