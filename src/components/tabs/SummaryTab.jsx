@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
@@ -17,7 +17,6 @@ export default function SummaryTab({
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
-  const dateInputRef = useRef(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
@@ -134,22 +133,40 @@ export default function SummaryTab({
             {!isToday && (
               <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>
             )}
-            {/* Hidden date input triggered by calendar icon */}
-            <input
-              ref={dateInputRef}
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
-            />
-            <button
-              onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.click()}
-              type="button"
-              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, color: "white", lineHeight: 1 }}
-              title="Επίλεξε ημερομηνία"
-            >
-              📅
-            </button>
+            {/* Calendar icon with overlaid date input */}
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <button
+                type="button"
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: 10,
+                  padding: "7px 10px",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  color: "white",
+                  lineHeight: 1,
+                  display: "block"
+                }}
+                title="Επίλεξε ημερομηνία"
+              >
+                📅
+              </button>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: 0,
+                  cursor: "pointer",
+                  width: "100%",
+                  height: "100%",
+                  fontSize: 0
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -254,13 +271,33 @@ export default function SummaryTab({
         favoriteExercises={favoriteExercises}
       />
 
-      {/* WEIGHT TRACKING */}
+      {/* WEIGHT TRACKING — compact */}
       <div className="card">
-        <h2>⚖️ Προσθήκη βάρους</h2>
+        <h2 style={{ marginBottom: 10 }}>⚖️ Βάρος</h2>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
-          <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1 }} />
-          <input className="input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value)} style={{ flex: 1 }} />
-          <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ flexShrink: 0, padding: "12px 16px" }}>+</button>
+          <input
+            className="input"
+            type="number"
+            step="0.1"
+            placeholder="kg"
+            inputMode="decimal"
+            value={weightInput}
+            onChange={(e) => setWeightInput(e.target.value)}
+            style={{ flex: 1, padding: "10px 12px" }}
+          />
+          <input
+            className="input"
+            type="date"
+            value={weightDate}
+            onChange={(e) => setWeightDate(e.target.value)}
+            style={{ flex: 1, padding: "10px 12px" }}
+          />
+          <button
+            className="btn btn-dark"
+            onClick={handleAddWeight}
+            type="button"
+            style={{ flexShrink: 0, padding: "10px 14px" }}
+          >+</button>
         </div>
 
         {chartData.length >= 2 && (
@@ -283,9 +320,9 @@ export default function SummaryTab({
               })}
             </svg>
             {diff !== null && (
-              <div style={{ fontSize: 13 }}>
+              <div style={{ fontSize: 12 }}>
                 <span className="muted">30 μέρες: </span>
-                <strong style={{ color: diff <= 0 ? "green" : "red" }}>
+                <strong style={{ color: diff <= 0 ? "#22c55e" : "#ef4444" }}>
                   {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
                 </strong>
                 {lastWeight && <span className="muted"> · Τώρα: {lastWeight} kg</span>}
@@ -301,7 +338,7 @@ export default function SummaryTab({
                 <span className="muted">{formatDisplayDate(entry.date)}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
-                  <button className="btn btn-light" style={{ padding: "3px 8px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
+                  <button className="btn btn-light" style={{ padding: "2px 7px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
                 </div>
               </div>
             ))}
