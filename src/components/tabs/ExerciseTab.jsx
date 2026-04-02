@@ -14,24 +14,16 @@ export default function ExerciseTab({
   selectedDate, updateCurrentDay,
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise
 }) {
-  const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Όλα");
-  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
 
   const filteredExercises = useMemo(() => {
-    let list = EXERCISE_LIBRARY;
-    if (activeCategory !== "Όλα") {
-      list = list.filter((e) => e.category === activeCategory);
-    }
-    if (query.trim().length >= 1) {
-      const q = stripDiacritics(query.toLowerCase().trim());
-      list = list.filter((e) =>
-        stripDiacritics(e.name.toLowerCase()).includes(q)
-      );
-    }
-    return list;
-  }, [query, activeCategory]);
+    if (activeCategory === "Όλα") return EXERCISE_LIBRARY;
+    return EXERCISE_LIBRARY.filter((e) => e.category === activeCategory);
+  }, [activeCategory]);
+
+  const selectedExercise = EXERCISE_LIBRARY.find((e) => e.name === selectedExerciseName) || null;
 
   const favoriteExercises = useMemo(() => {
     return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise?.(e));
@@ -40,7 +32,7 @@ export default function ExerciseTab({
   function handleAddExercise() {
     if (!selectedExercise) return;
     addExerciseByMinutes(selectedExercise, selectedMinutes);
-    setSelectedExercise(null);
+    setSelectedExerciseName("");
     setSelectedMinutes("30");
   }
 
@@ -79,29 +71,47 @@ export default function ExerciseTab({
         <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
       </div>
 
-      {/* ΑΝΑΖΗΤΗΣΗ ΑΣΚΗΣΗΣ */}
+      {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
         <h2 style={{ marginBottom: 12 }}>Προσθήκη άσκησης</h2>
 
         {/* Φίλτρα κατηγορίας */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => setActiveCategory(cat)} type="button"
+            <button key={cat} onClick={() => { setActiveCategory(cat); setSelectedExerciseName(""); }} type="button"
               style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeCategory === cat ? "var(--color-accent)" : "var(--border-color)"}`, background: activeCategory === cat ? "var(--color-accent)" : "var(--bg-soft)", color: activeCategory === cat ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
               {cat}
             </button>
           ))}
         </div>
 
-        <input
-          className="input"
-          placeholder="Αναζήτηση άσκησης..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ marginBottom: 8 }}
-        />
+        {/* Dropdown + Star */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
+          <select
+            className="input"
+            value={selectedExerciseName}
+            onChange={(e) => setSelectedExerciseName(e.target.value)}
+            style={{ flex: 1 }}
+          >
+            <option value="">— Επίλεξε άσκηση —</option>
+            {filteredExercises.map((e) => (
+              <option key={e.name} value={e.name}>
+                {e.icon} {e.name} · {e.caloriesPerMinute} kcal/λεπτό
+              </option>
+            ))}
+          </select>
+          {selectedExercise && (
+            <button
+              onClick={() => toggleFavoriteExercise?.(selectedExercise)}
+              type="button"
+              title={isFavoriteExercise?.(selectedExercise) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+              style={{ padding: "10px 12px", background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, cursor: "pointer", fontSize: 18, flexShrink: 0, color: isFavoriteExercise?.(selectedExercise) ? "#d97706" : "var(--text-muted)" }}>
+              {isFavoriteExercise?.(selectedExercise) ? "⭐" : "☆"}
+            </button>
+          )}
+        </div>
 
-        {/* Modal επιλογής λεπτών */}
+        {/* Λεπτά + Preview + Add */}
         {selectedExercise && (
           <div style={{ background: "var(--bg-soft)", borderRadius: 14, padding: 14, marginBottom: 10, border: "1px solid var(--border-color)" }}>
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
@@ -123,37 +133,10 @@ export default function ExerciseTab({
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn btn-dark" onClick={handleAddExercise} type="button" style={{ flex: 1 }}>Προσθήκη</button>
-              <button className="btn btn-light" onClick={() => setSelectedExercise(null)} type="button">Άκυρο</button>
+              <button className="btn btn-light" onClick={() => setSelectedExerciseName("")} type="button">Άκυρο</button>
             </div>
           </div>
         )}
-
-        {/* Λίστα αποτελεσμάτων */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {filteredExercises.map((exercise) => (
-            <div key={exercise.name}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: selectedExercise?.name === exercise.name ? "var(--bg-soft)" : "var(--bg-card)", borderRadius: 8, border: `1px solid ${selectedExercise?.name === exercise.name ? "var(--color-accent)" : "var(--border-color)"}`, overflow: "hidden" }}>
-              {/* Star button */}
-              <button
-                onClick={() => toggleFavoriteExercise?.(exercise)}
-                type="button"
-                title={isFavoriteExercise?.(exercise) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-                style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: isFavoriteExercise?.(exercise) ? "#d97706" : "var(--text-muted)" }}>
-                {isFavoriteExercise?.(exercise) ? "⭐" : "☆"}
-              </button>
-              {/* Exercise info */}
-              <button onClick={() => setSelectedExercise(exercise)} type="button"
-                style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 8 }}>
-                <div>
-                  <span style={{ fontSize: 16, marginRight: 6 }}>{exercise.icon}</span>
-                  <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{exercise.name}</span>
-                  <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>{exercise.category}</span>
-                </div>
-                <span className="muted" style={{ fontSize: 12, flexShrink: 0 }}>{exercise.caloriesPerMinute} kcal/λεπτό</span>
-              </button>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
@@ -163,7 +146,7 @@ export default function ExerciseTab({
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
             <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Δεν έχεις αγαπημένες ασκήσεις ακόμα</div>
             <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
-              Ψάξε μια άσκηση παραπάνω και πάτα ☆ για να την προσθέσεις. Ο AI Coach θα προτείνει ασκήσεις από τα αγαπημένα σου!
+              Επίλεξε μια άσκηση από το dropdown και πάτα ☆ για να την προσθέσεις. Ο AI Coach θα προτείνει ασκήσεις από τα αγαπημένα σου!
             </div>
           </div>
         ) : (
@@ -173,7 +156,7 @@ export default function ExerciseTab({
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
                 <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
                   style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: "#d97706" }}>⭐</button>
-                <button onClick={() => setSelectedExercise(exercise)} type="button"
+                <button onClick={() => setSelectedExerciseName(exercise.name)} type="button"
                   style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 8 }}>
                   <div>
                     <span style={{ fontSize: 16, marginRight: 6 }}>{exercise.icon}</span>
