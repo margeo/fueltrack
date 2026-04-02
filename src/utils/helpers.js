@@ -193,7 +193,8 @@ export function normalizeFood(food) {
     caloriesPer100g: Number(food.caloriesPer100g || 0),
     proteinPer100g: Number(food.proteinPer100g || 0),
     carbsPer100g: Number(food.carbsPer100g || 0),
-    fatPer100g: Number(food.fatPer100g || 0)
+    fatPer100g: Number(food.fatPer100g || 0),
+    portions: Array.isArray(food.portions) ? food.portions : []
   };
 }
 
