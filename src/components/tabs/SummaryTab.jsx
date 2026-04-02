@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
@@ -11,11 +11,13 @@ export default function SummaryTab({
   totalCarbs, totalFat, mode, macroTargets,
   foods, dailyLogs, weightLog,
   onAddWeight, onDeleteWeight,
-  favoriteFoods, favoriteFoodsText, favoriteExercisesText
+  favoriteFoods, favoriteFoodsText, favoriteExercisesText,
+  favoriteExercises
 }) {
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
+  const dateInputRef = useRef(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
@@ -46,6 +48,7 @@ export default function SummaryTab({
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
+    if (goalType === "fitness") return "Fitness & Cardio";
     return "Maintain";
   }
 
@@ -127,11 +130,26 @@ export default function SummaryTab({
             {formatDisplayDate(selectedDate)}
             {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· Σήμερα</span>}
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {!isToday && (
               <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>
             )}
-            <input className="input" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ width: 140, padding: "6px 8px", fontSize: 12 }} />
+            {/* Hidden date input triggered by calendar icon */}
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
+            />
+            <button
+              onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.click()}
+              type="button"
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, color: "white", lineHeight: 1 }}
+              title="Επίλεξε ημερομηνία"
+            >
+              📅
+            </button>
           </div>
         </div>
 
@@ -140,7 +158,6 @@ export default function SummaryTab({
           <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
 
-            {/* Υπόλοιπο — μεγάλο box */}
             <div className="hero-stat" style={{ padding: "10px 14px", minWidth: 100, textAlign: "center", flexShrink: 0 }}>
               <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: getRemainingColor() }}>
                 {formatNumber(remainingCalories)}
@@ -148,28 +165,22 @@ export default function SummaryTab({
               <div className="hero-subtle" style={{ fontSize: 11, marginTop: 3 }}>kcal</div>
             </div>
 
-            {/* = */}
             <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>=</div>
 
-            {/* Στόχος */}
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Στόχος</div>
             </div>
 
-            {/* − */}
             <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>−</div>
 
-            {/* Φαγητό */}
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Φαγητό</div>
             </div>
 
-            {/* + */}
             <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>+</div>
 
-            {/* Άσκηση */}
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Άσκηση</div>
@@ -240,6 +251,7 @@ export default function SummaryTab({
         remainingCalories={remainingCalories}
         favoriteFoodsText={favoriteFoodsText}
         favoriteExercisesText={favoriteExercisesText}
+        favoriteExercises={favoriteExercises}
       />
 
       {/* WEIGHT TRACKING */}
