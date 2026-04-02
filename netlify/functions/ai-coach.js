@@ -17,34 +17,35 @@ export async function handler(event) {
 - Τρόπος διατροφής: ${profile.mode}
 - Ημερήσιος στόχος: ${profile.targetCalories} kcal
 - Στόχος πρωτεΐνης: ${profile.proteinTarget}g
-- Streak: ${profile.streak} συνεχόμενες μέρες εντός στόχου
+- Streak: ${profile.streak} συνεχόμενες μέρες
 ${profile.lastWeight ? `- Τελευταίο βάρος: ${profile.lastWeight} kg` : ""}
+
+ΓΟΥΣΤΑ ΧΡΗΣΤΗ:
+- Αγαπημένα φαγητά: ${profile.favoriteFoodsText || "Δεν έχει δηλώσει"}
+- Αγαπημένες ασκήσεις: ${profile.favoriteExercisesText || "Δεν έχει δηλώσει"}
+- Αγαπημένα από το app: ${(favoriteFoods || []).length > 0 ? (favoriteFoods || []).map(f => f.name).join(", ") : "Κανένα ακόμα"}
 
 ΣΗΜΕΡΑ:
 - Έφαγε: ${todayData?.eaten || 0} kcal από ${profile.targetCalories} kcal
 - Πρωτεΐνη: ${todayData?.protein || 0}g από ${profile.proteinTarget}g
 - Άσκηση: ${todayData?.exercise || 0} kcal
 - Υπόλοιπο: ${todayData?.remaining || profile.targetCalories} kcal
-- Τύπος υπολοίπου: Υπόλοιπο = Στόχος − Φαγητό + Άσκηση
+  (Υπόλοιπο = Στόχος − Φαγητό + Άσκηση)
 
 ΕΒΔΟΜΑΔΑ:
 ${(weekData || []).map((d, i) => `Μέρα ${i + 1}: ${d.eaten} kcal, πρωτεΐνη ${d.protein}g, άσκηση ${d.exercise} kcal`).join("\n")}
 
-ΑΓΑΠΗΜΕΝΑ ΦΑΓΗΤΑ ΤΟΥ ΧΡΗΣΤΗ:
-${(favoriteFoods || []).length > 0
-  ? (favoriteFoods || []).map(f => `- ${f.name} (${f.caloriesPer100g} kcal/100g, πρωτεΐνη ${f.proteinPer100g}g/100g)`).join("\n")
-  : "Δεν έχει αγαπημένα ακόμα"}
-
 ΚΑΝΟΝΕΣ:
-- Όταν προτείνεις φαγητό, προτίμα από τα αγαπημένα του χρήστη αν υπάρχουν
-- Για γυμναστική, πρότεινε συγκεκριμένο τύπο, διάρκεια και ένταση
-- Να είσαι σύντομος — max 150-200 λέξεις ανά απάντηση
-- Χρησιμοποίησε emojis με μέτρο
-- Αν ρωτήσει για λάθη, να είσαι ειλικρινής αλλά ενθαρρυντικός`;
+- ΠΑΝΤΑ πρότεινε φαγητά από τα γούστα του χρήστη αν υπάρχουν
+- ΠΑΝΤΑ πρότεινε ασκήσεις από τα αγαπημένα του αν υπάρχουν
+- Όταν ζητάει meal plan, δώσε συγκεκριμένο πρόγραμμα για ολόκληρη την ημέρα (πρωινό, μεσημεριανό, βραδινό, σνακ) με θερμίδες
+- Όταν ζητάει training plan, δώσε συγκεκριμένο πρόγραμμα με τύπο, διάρκεια, ένταση
+- Να είσαι σύντομος αλλά πλήρης — χρησιμοποίησε bullet points
+- Χρησιμοποίησε emojis με μέτρο`;
 
     const userMessage = chatMessage ||
       `Κοίτα τα δεδομένα μου και πες μου:
-1. Τι να φάω για την υπόλοιπη μέρα (συγκεκριμένα, από τα αγαπημένα μου αν μπορείς)
+1. Τι να φάω για την υπόλοιπη μέρα (από τα αγαπημένα μου)
 2. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς
 3. Ένα πράγμα που κάνω λάθος αυτή την εβδομάδα`;
 
@@ -57,14 +58,13 @@ ${(favoriteFoods || []).length > 0
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 1200,
+        max_tokens: 1500,
         system: systemPrompt,
         messages: [{ role: "user", content: userMessage }]
       })
     });
 
     if (!response.ok) throw new Error(`API error: ${response.status}`);
-
     const data = await response.json();
     const text = data.content?.[0]?.text || "Δεν ήταν δυνατή η ανάλυση.";
 

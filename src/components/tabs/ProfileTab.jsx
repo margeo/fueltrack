@@ -5,39 +5,20 @@ import { formatNumber } from "../../utils/helpers";
 function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
 
-  let color = "#166534";
-  let bg = "#dcfce7";
-  let border = "#86efac";
-  let icon = "✅";
-  let message = "";
+  let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
 
   if (kilosPerWeek > 1.5) {
-    color = "#b91c1c";
-    bg = "#fef2f2";
-    border = "#fecaca";
-    icon = "⚠️";
+    color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
     message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο κιλών. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
   } else if (kilosPerWeek > 1) {
-    color = "#92400e";
-    bg = "#fffbeb";
-    border = "#fde68a";
-    icon = "⚡";
+    color = "#92400e"; bg = "#fffbeb"; border = "#fde68a"; icon = "⚡";
     message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός. Είναι εφικτός αλλά απαιτεί αυστηρή τήρηση.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα για ασφάλεια." : ""}`;
   } else {
-    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός. Συνέχισε έτσι!${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα." : ""}`;
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα." : ""}`;
   }
 
   return (
-    <div style={{
-      background: bg,
-      border: `1px solid ${border}`,
-      borderRadius: 14,
-      padding: "12px 14px",
-      marginBottom: 14,
-      display: "flex",
-      gap: 10,
-      alignItems: "flex-start"
-    }}>
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 14, padding: "12px 14px", marginBottom: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
       <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
       <div style={{ color, fontSize: 13, lineHeight: 1.5 }}>{message}</div>
     </div>
@@ -45,32 +26,30 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
 }
 
 export default function ProfileTab({
-  age, setAge,
-  gender, setGender,
-  height, setHeight,
-  weight, setWeight,
-  activity, setActivity,
-  goalType, setGoalType,
-  mode, setMode,
-  targetWeightLoss, setTargetWeightLoss,
-  weeks, setWeeks,
-  tdee, targetCalories,
-  dailyDeficit, proteinTarget,
-  profileComplete, onContinue
+  age, setAge, gender, setGender,
+  height, setHeight, weight, setWeight,
+  activity, setActivity, goalType, setGoalType,
+  mode, setMode, targetWeightLoss, setTargetWeightLoss,
+  weeks, setWeeks, tdee, targetCalories,
+  dailyDeficit, proteinTarget, profileComplete, onContinue,
+  favoriteFoodsText, setFavoriteFoodsText,
+  favoriteExercisesText, setFavoriteExercisesText
 }) {
-  // Local state για τα text inputs — αποφεύγει re-render on every keystroke
   const [localAge, setLocalAge] = useState(age);
   const [localHeight, setLocalHeight] = useState(height);
   const [localWeight, setLocalWeight] = useState(weight);
   const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(targetWeightLoss);
   const [localWeeks, setLocalWeeks] = useState(weeks);
+  const [localFavFoods, setLocalFavFoods] = useState(favoriteFoodsText || "");
+  const [localFavExercises, setLocalFavExercises] = useState(favoriteExercisesText || "");
 
-  // Sync αν αλλάξουν από έξω
   useEffect(() => { setLocalAge(age); }, [age]);
   useEffect(() => { setLocalHeight(height); }, [height]);
   useEffect(() => { setLocalWeight(weight); }, [weight]);
   useEffect(() => { setLocalTargetWeightLoss(targetWeightLoss); }, [targetWeightLoss]);
   useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
+  useEffect(() => { setLocalFavFoods(favoriteFoodsText || ""); }, [favoriteFoodsText]);
+  useEffect(() => { setLocalFavExercises(favoriteExercisesText || ""); }, [favoriteExercisesText]);
 
   const showGoalFields = goalType === "lose" || goalType === "gain";
 
@@ -100,8 +79,7 @@ export default function ProfileTab({
   const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
   const kilosNum = Number(targetWeightLoss || 0);
   const weeksNum = Number(weeks || 0);
-  const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0
-    ? kilosNum / weeksNum : 0;
+  const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0 ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
 
   return (
@@ -111,10 +89,7 @@ export default function ProfileTab({
       {!profileComplete && (
         <div className="soft-box profile-intro-box">
           <div className="profile-section-title">Συμπλήρωσε πρώτα το προφίλ σου</div>
-          <div className="muted">
-            Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά
-            τον ημερήσιο στόχο θερμίδων και πρωτεΐνης.
-          </div>
+          <div className="muted">Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά τον ημερήσιο στόχο θερμίδων και πρωτεΐνης.</div>
         </div>
       )}
 
@@ -124,14 +99,8 @@ export default function ProfileTab({
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
             <div className="profile-label">Ηλικία</div>
-            <input
-              className="input"
-              placeholder="Ηλικία"
-              inputMode="numeric"
-              value={localAge}
-              onChange={(e) => setLocalAge(e.target.value)}
-              onBlur={() => setAge(localAge)}
-            />
+            <input className="input" placeholder="Ηλικία" inputMode="numeric" value={localAge}
+              onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)} />
           </label>
           <label className="profile-field">
             <div className="profile-label">Φύλο</div>
@@ -142,25 +111,13 @@ export default function ProfileTab({
           </label>
           <label className="profile-field">
             <div className="profile-label">Ύψος (cm)</div>
-            <input
-              className="input"
-              placeholder="Ύψος (cm)"
-              inputMode="numeric"
-              value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)}
-              onBlur={() => setHeight(localHeight)}
-            />
+            <input className="input" placeholder="Ύψος (cm)" inputMode="numeric" value={localHeight}
+              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)} />
           </label>
           <label className="profile-field">
             <div className="profile-label">Βάρος (kg)</div>
-            <input
-              className="input"
-              placeholder="Βάρος (kg)"
-              inputMode="decimal"
-              value={localWeight}
-              onChange={(e) => setLocalWeight(e.target.value)}
-              onBlur={() => setWeight(localWeight)}
-            />
+            <input className="input" placeholder="Βάρος (kg)" inputMode="decimal" value={localWeight}
+              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)} />
           </label>
         </div>
       </div>
@@ -206,37 +163,21 @@ export default function ProfileTab({
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
               <div className="profile-label">{goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}</div>
-              <input
-                className="input"
-                placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-                inputMode="decimal"
-                value={localTargetWeightLoss}
+              <input className="input" placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
+                inputMode="decimal" value={localTargetWeightLoss}
                 onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                onBlur={() => setTargetWeightLoss(localTargetWeightLoss)}
-              />
+                onBlur={() => setTargetWeightLoss(localTargetWeightLoss)} />
             </label>
             <label className="profile-field">
               <div className="profile-label">Εβδομάδες</div>
-              <input
-                className="input"
-                placeholder="Σε πόσες εβδομάδες"
-                inputMode="numeric"
-                value={localWeeks}
-                onChange={(e) => setLocalWeeks(e.target.value)}
-                onBlur={() => setWeeks(localWeeks)}
-              />
+              <input className="input" placeholder="Σε πόσες εβδομάδες" inputMode="numeric" value={localWeeks}
+                onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => setWeeks(localWeeks)} />
             </label>
           </div>
         </div>
       )}
 
-      {/* ΕΝΟΠΟΙΗΜΕΝΟ WARNING */}
-      <GoalWarning
-        goalType={goalType}
-        kilosPerWeek={kilosPerWeek}
-        rawDeficit={rawDeficit}
-        isCapped={isCapped}
-      />
+      <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
 
       {/* ΥΠΟΛΟΓΙΣΜΟΙ */}
       <div className="soft-box profile-section-box profile-highlight-box">
@@ -267,6 +208,40 @@ export default function ProfileTab({
         </div>
       </div>
 
+      {/* ΤΑ ΓΟΥΣΤΑ ΜΟΥ */}
+      <div className="soft-box profile-section-box">
+        <div className="profile-section-title">🍽️ Τα γούστα μου</div>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
+          Ο AI Coach χρησιμοποιεί αυτές τις πληροφορίες για να σου προτείνει συγκεκριμένα φαγητά και ασκήσεις που σου αρέσουν.
+        </div>
+
+        <label className="profile-field" style={{ marginBottom: 10 }}>
+          <div className="profile-label">Αγαπημένα φαγητά</div>
+          <textarea
+            className="input"
+            placeholder="π.χ. κοτόπουλο, αυγά, φέτα, σαλάτες, τοστ, γιαούρτι..."
+            value={localFavFoods}
+            onChange={(e) => setLocalFavFoods(e.target.value)}
+            onBlur={() => setFavoriteFoodsText(localFavFoods)}
+            rows={3}
+            style={{ resize: "vertical", lineHeight: 1.5 }}
+          />
+        </label>
+
+        <label className="profile-field">
+          <div className="profile-label">Αγαπημένες ασκήσεις</div>
+          <textarea
+            className="input"
+            placeholder="π.χ. τρέξιμο, ποδήλατο, βάρη, κολύμπι, περπάτημα..."
+            value={localFavExercises}
+            onChange={(e) => setLocalFavExercises(e.target.value)}
+            onBlur={() => setFavoriteExercisesText(localFavExercises)}
+            rows={2}
+            style={{ resize: "vertical", lineHeight: 1.5 }}
+          />
+        </label>
+      </div>
+
       {/* ΣΥΝΟΨΗ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Σύνοψη</div>
@@ -293,12 +268,8 @@ export default function ProfileTab({
       </div>
 
       <div className="action-row" style={{ marginTop: 16 }}>
-        <button
-          className="btn btn-dark"
-          onClick={onContinue}
-          disabled={!profileComplete}
-          style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}
-        >
+        <button className="btn btn-dark" onClick={onContinue} disabled={!profileComplete}
+          style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}>
           Αποθήκευση & συνέχεια
         </button>
       </div>
