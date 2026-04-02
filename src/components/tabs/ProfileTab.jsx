@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 
@@ -44,31 +45,33 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
 }
 
 export default function ProfileTab({
-  age,
-  setAge,
-  gender,
-  setGender,
-  height,
-  setHeight,
-  weight,
-  setWeight,
-  activity,
-  setActivity,
-  goalType,
-  setGoalType,
-  mode,
-  setMode,
-  targetWeightLoss,
-  setTargetWeightLoss,
-  weeks,
-  setWeeks,
-  tdee,
-  targetCalories,
-  dailyDeficit,
-  proteinTarget,
-  profileComplete,
-  onContinue
+  age, setAge,
+  gender, setGender,
+  height, setHeight,
+  weight, setWeight,
+  activity, setActivity,
+  goalType, setGoalType,
+  mode, setMode,
+  targetWeightLoss, setTargetWeightLoss,
+  weeks, setWeeks,
+  tdee, targetCalories,
+  dailyDeficit, proteinTarget,
+  profileComplete, onContinue
 }) {
+  // Local state για τα text inputs — αποφεύγει re-render on every keystroke
+  const [localAge, setLocalAge] = useState(age);
+  const [localHeight, setLocalHeight] = useState(height);
+  const [localWeight, setLocalWeight] = useState(weight);
+  const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(targetWeightLoss);
+  const [localWeeks, setLocalWeeks] = useState(weeks);
+
+  // Sync αν αλλάξουν από έξω
+  useEffect(() => { setLocalAge(age); }, [age]);
+  useEffect(() => { setLocalHeight(height); }, [height]);
+  useEffect(() => { setLocalWeight(weight); }, [weight]);
+  useEffect(() => { setLocalTargetWeightLoss(targetWeightLoss); }, [targetWeightLoss]);
+  useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
+
   const showGoalFields = goalType === "lose" || goalType === "gain";
 
   function getGoalLabel() {
@@ -121,7 +124,14 @@ export default function ProfileTab({
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
             <div className="profile-label">Ηλικία</div>
-            <input className="input" placeholder="Ηλικία" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
+            <input
+              className="input"
+              placeholder="Ηλικία"
+              inputMode="numeric"
+              value={localAge}
+              onChange={(e) => setLocalAge(e.target.value)}
+              onBlur={() => setAge(localAge)}
+            />
           </label>
           <label className="profile-field">
             <div className="profile-label">Φύλο</div>
@@ -132,11 +142,25 @@ export default function ProfileTab({
           </label>
           <label className="profile-field">
             <div className="profile-label">Ύψος (cm)</div>
-            <input className="input" placeholder="Ύψος (cm)" inputMode="numeric" value={height} onChange={(e) => setHeight(e.target.value)} />
+            <input
+              className="input"
+              placeholder="Ύψος (cm)"
+              inputMode="numeric"
+              value={localHeight}
+              onChange={(e) => setLocalHeight(e.target.value)}
+              onBlur={() => setHeight(localHeight)}
+            />
           </label>
           <label className="profile-field">
             <div className="profile-label">Βάρος (kg)</div>
-            <input className="input" placeholder="Βάρος (kg)" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            <input
+              className="input"
+              placeholder="Βάρος (kg)"
+              inputMode="decimal"
+              value={localWeight}
+              onChange={(e) => setLocalWeight(e.target.value)}
+              onBlur={() => setWeight(localWeight)}
+            />
           </label>
         </div>
       </div>
@@ -186,8 +210,9 @@ export default function ProfileTab({
                 className="input"
                 placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
                 inputMode="decimal"
-                value={targetWeightLoss}
-                onChange={(e) => setTargetWeightLoss(e.target.value)}
+                value={localTargetWeightLoss}
+                onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
+                onBlur={() => setTargetWeightLoss(localTargetWeightLoss)}
               />
             </label>
             <label className="profile-field">
@@ -196,8 +221,9 @@ export default function ProfileTab({
                 className="input"
                 placeholder="Σε πόσες εβδομάδες"
                 inputMode="numeric"
-                value={weeks}
-                onChange={(e) => setWeeks(e.target.value)}
+                value={localWeeks}
+                onChange={(e) => setLocalWeeks(e.target.value)}
+                onBlur={() => setWeeks(localWeeks)}
               />
             </label>
           </div>
@@ -215,7 +241,6 @@ export default function ProfileTab({
       {/* ΥΠΟΛΟΓΙΣΜΟΙ */}
       <div className="soft-box profile-section-box profile-highlight-box">
         <div className="profile-section-title">Υπολογισμοί</div>
-
         <div className="profile-stat-row">
           <span>Maintenance / TDEE</span>
           <strong>{formatNumber(tdee)} kcal</strong>
