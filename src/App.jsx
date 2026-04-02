@@ -344,21 +344,19 @@ export default function App() {
     return foods.filter((food) => isFavorite(food)).slice(0, 8);
   }, [foods, favoriteFoodKeys]);
 
-  const allSearchFoods = useMemo(() => [...foods], [foods]);
-
   const summaryProps = {
     selectedDate, setSelectedDate, isToday,
     targetCalories, totalCalories, exerciseValue,
     remainingCalories, progress, goalType,
     proteinTarget, totalProtein, totalCarbs, totalFat,
-    last7Days, mode, macroTargets, foods: allSearchFoods,
+    last7Days, mode, macroTargets, foods,
     dailyLogs, weightLog,
     onAddWeight: addWeight,
     onDeleteWeight: deleteWeight
   };
 
   const foodProps = {
-    foods: allSearchFoods,
+    foods,
     customFoods,
     onAddCustomFood: (food) => setCustomFoods((prev) => [normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" }), ...prev]),
     onDeleteCustomFood: (id) => setCustomFoods((prev) => prev.filter((f) => f.id !== id)),
@@ -375,7 +373,8 @@ export default function App() {
     setCustomExerciseName, customExerciseMinutes,
     setCustomExerciseMinutes, customExerciseRate,
     setCustomExerciseRate, addExerciseByMinutes,
-    addCustomExercise, deleteExercise
+    addCustomExercise, deleteExercise,
+    selectedDate, updateCurrentDay
   };
 
   const profileProps = {

@@ -1,0 +1,130 @@
+import { useEffect, useState } from "react";
+import { formatNumber } from "../utils/helpers";
+
+export default function GoogleFitButton({ selectedDate, onAddExercise }) {
+  const [token, setToken] = useState(() => localStorage.getItem("ft_gfit_token") || "");
+  const [fitData, setFitData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fitToken = params.get("fit_token");
+    const fitRefresh = params.get("fit_refresh");
+    const fitError = params.get("fit_error");
+
+    if (fitToken) {
+      localStorage.setItem("ft_gfit_token", fitToken);
+      if (fitRefresh) localStorage.setItem("ft_gfit_refresh", fitRefresh);
+      setToken(fitToken);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    if (fitError) {
+      setError("Σφάλμα σύνδεσης με Google Fit.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (token && selectedDate) fetchFitData();
+  }, [token, selectedDate]);
+
+  async function fetchFitData() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/.netlify/functions/google-fit-data?token=${encodeURIComponent(token)}&date=${selectedDate}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setFitData(data);
+    } catch {
+      setError("Δεν ήταν δυνατή η φόρτωση δεδομένων.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleConnect() {
+    window.location.href = "/.netlify/functions/google-fit-auth";
+  }
+
+  function handleDisconnect() {
+    localStorage.removeItem("ft_gfit_token");
+    localStorage.removeItem("ft_gfit_refresh");
+    setToken("");
+    setFitData(null);
+  }
+
+  function handleAddToLog() {
+    if (!fitData || !fitData.calories) return;
+    onAddExercise({
+      id: Date.now() + Math.random(),
+      name: `Google Fit — ${fitData.steps ? fitData.steps.toLocaleString("el-GR") + " βήματα" : ""} ${fitData.distanceKm ? fitData.distanceKm + " km" : ""}`.trim(),
+      minutes: 0,
+      caloriesPerMinute: 0,
+      calories: fitData.calories
+    });
+  }
+
+  if (!token) {
+    return (
+      <div style={{ marginTop: 12 }}>
+        <button
+          className="btn btn-dark"
+          onClick={handleConnect}
+          type="button"
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+        >
+          <span style={{ fontSize: 18 }}>🏃</span> Σύνδεση με Google Fit
+        </button>
+        <div className="muted" style={{ fontSize: 12, marginTop: 6, textAlign: "center" }}>
+          Διαβάζει βήματα, απόσταση και θερμίδες αυτόματα
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: 14, border: "1px solid var(--border-soft)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <span style={{ fontWeight: 700, fontSize: 14 }}>🏃 Google Fit</span>
+        <button className="btn btn-light" onClick={handleDisconnect} type="button" style={{ fontSize: 12, padding: "4px 10px" }}>
+          Αποσύνδεση
+        </button>
+      </div>
+
+      {loading && <div className="muted" style={{ fontSize: 13 }}>Φόρτωση δεδομένων...</div>}
+      {error && <div style={{ color: "#b91c1c", fontSize: 13 }}>{error}</div>}
+
+      {fitData && !loading && (
+        <>
+          <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{formatNumber(fitData.steps)}</div>
+              <div className="muted" style={{ fontSize: 12 }}>βήματα</div>
+            </div>
+            <div style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{fitData.distanceKm}</div>
+              <div className="muted" style={{ fontSize: 12 }}>km</div>
+            </div>
+            <div style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{formatNumber(fitData.calories)}</div>
+              <div className="muted" style={{ fontSize: 12 }}>kcal</div>
+            </div>
+          </div>
+
+          {fitData.calories > 0 && (
+            <button className="btn btn-dark" onClick={handleAddToLog} type="button" style={{ width: "100%", fontSize: 13 }}>
+              + Προσθήκη στο log ({formatNumber(fitData.calories)} kcal)
+            </button>
+          )}
+
+          <button className="btn btn-light" onClick={fetchFitData} type="button" style={{ width: "100%", marginTop: 8, fontSize: 12 }}>
+            🔄 Ανανέωση
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

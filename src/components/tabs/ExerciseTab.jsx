@@ -1,5 +1,6 @@
 import { EXERCISE_LIBRARY } from "../../data/constants";
 import { formatNumber } from "../../utils/helpers";
+import GoogleFitButton from "../GoogleFitButton";
 
 export default function ExerciseTab({
   exercises,
@@ -14,8 +15,17 @@ export default function ExerciseTab({
   setCustomExerciseRate,
   addExerciseByMinutes,
   addCustomExercise,
-  deleteExercise
+  deleteExercise,
+  selectedDate,
+  updateCurrentDay
 }) {
+  function handleAddFromFit(exercise) {
+    updateCurrentDay((current) => ({
+      ...current,
+      exercises: [exercise, ...current.exercises]
+    }));
+  }
+
   return (
     <>
       <div className="card">
@@ -35,7 +45,7 @@ export default function ExerciseTab({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 13 }}>{item.name}</div>
                   <div className="muted" style={{ fontSize: 12 }}>
-                    {item.minutes} λεπτά · +{formatNumber(item.calories)} kcal
+                    {item.minutes > 0 ? `${item.minutes} λεπτά · ` : ""}+{formatNumber(item.calories)} kcal
                   </div>
                 </div>
                 <button
@@ -50,6 +60,11 @@ export default function ExerciseTab({
             ))}
           </div>
         )}
+
+        <GoogleFitButton
+          selectedDate={selectedDate}
+          onAddExercise={handleAddFromFit}
+        />
       </div>
 
       <div className="card">
