@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
-import { calculateStreak, getStreakEmoji, getStreakMessage } from "../../utils/streak";
+import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
 export default function SummaryTab({
@@ -24,7 +24,8 @@ export default function SummaryTab({
   dailyLogs,
   weightLog,
   onAddWeight,
-  onDeleteWeight
+  onDeleteWeight,
+  favoriteFoods
 }) {
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
@@ -103,7 +104,6 @@ export default function SummaryTab({
   function getSuggestedFoods() {
     if (!Array.isArray(foods) || foods.length === 0) return [];
     const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
-
     return foods
       .filter((food) => Number(food.caloriesPer100g || 0) > 0)
       .filter((food) => Number(food.caloriesPer100g || 0) <= Math.max(remainingCalories, 250) + 120)
@@ -120,15 +120,13 @@ export default function SummaryTab({
         const bCalories = Number(b.caloriesPer100g || 0);
         const aCarbs = Number(a.carbsPer100g || 0);
         const bCarbs = Number(b.carbsPer100g || 0);
-        let aScore = 0;
-        let bScore = 0;
+        let aScore = 0; let bScore = 0;
         if (remainingProtein > 15) { aScore += aProtein * 3; bScore += bProtein * 3; }
         else { aScore += aProtein * 1.5; bScore += bProtein * 1.5; }
         if (mode === "high_protein") { aScore += aProtein * 2; bScore += bProtein * 2; }
         if (mode === "low_carb") { aScore -= aCarbs * 2; bScore -= bCarbs * 2; }
         if (mode === "keto") { aScore -= aCarbs * 4; bScore -= bCarbs * 4; }
-        aScore -= aCalories * 0.03;
-        bScore -= bCalories * 0.03;
+        aScore -= aCalories * 0.03; bScore -= bCalories * 0.03;
         return bScore - aScore;
       })
       .slice(0, 5);
@@ -155,33 +153,25 @@ export default function SummaryTab({
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             {!isToday && (
-              <button
-                className="btn btn-light"
-                onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
-                type="button"
-                style={{ fontSize: 12, padding: "6px 10px" }}
-              >
+              <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>
                 Σήμερα
               </button>
             )}
-            <input
-              className="input"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ width: 140, padding: "6px 8px", fontSize: 12 }}
-            />
+            <input className="input" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ width: 140, padding: "6px 8px", fontSize: 12 }} />
           </div>
         </div>
 
-        <div style={{ marginTop: 16, marginBottom: 8 }}>
+        <div style={{ marginTop: 16, marginBottom: 4 }}>
           <div className="hero-subtle" style={{ fontSize: 12 }}>Υπόλοιπο ημέρας</div>
           <div className={`hero-big ${getRemainingClassName()}`} style={{ fontSize: 36, fontWeight: 800 }}>
             {formatNumber(remainingCalories)} kcal
           </div>
+          <div className="hero-subtle" style={{ fontSize: 11, marginTop: 4, opacity: 0.8 }}>
+            = {formatNumber(targetCalories)} − {formatNumber(totalCalories)} + {formatNumber(exerciseValue)}
+          </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12, marginTop: 12 }}>
           <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
             <div className="hero-subtle" style={{ fontSize: 11 }}>Στόχος</div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
@@ -259,38 +249,20 @@ export default function SummaryTab({
         goalType={goalType}
         streak={streak}
         weightLog={weightLog}
+        favoriteFoods={favoriteFoods}
+        totalCalories={totalCalories}
+        totalProtein={totalProtein}
+        exerciseValue={exerciseValue}
+        remainingCalories={remainingCalories}
       />
 
-      {/* WEIGHT TRACKING — compact */}
+      {/* WEIGHT TRACKING */}
       <div className="card">
         <h2>⚖️ Προσθήκη βάρους</h2>
-
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
-          <input
-            className="input"
-            type="number"
-            step="0.1"
-            placeholder="kg"
-            inputMode="decimal"
-            value={weightInput}
-            onChange={(e) => setWeightInput(e.target.value)}
-            style={{ flex: 1 }}
-          />
-          <input
-            className="input"
-            type="date"
-            value={weightDate}
-            onChange={(e) => setWeightDate(e.target.value)}
-            style={{ flex: 1 }}
-          />
-          <button
-            className="btn btn-dark"
-            onClick={handleAddWeight}
-            type="button"
-            style={{ flexShrink: 0, padding: "12px 16px" }}
-          >
-            +
-          </button>
+          <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1 }} />
+          <input className="input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value)} style={{ flex: 1 }} />
+          <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ flexShrink: 0, padding: "12px 16px" }}>+</button>
         </div>
 
         {chartData.length >= 2 && (
@@ -305,15 +277,9 @@ export default function SummaryTab({
                 const showLabel = i === 0 || i === chartData.length - 1 || i % Math.ceil(chartData.length / 5) === 0;
                 return (
                   <g key={point.date}>
-                    {next && (
-                      <line x1={x} y1={y} x2={nx} y2={ny} stroke="var(--color-accent, #111)" strokeWidth="1.5" />
-                    )}
+                    {next && <line x1={x} y1={y} x2={nx} y2={ny} stroke="var(--color-accent, #111)" strokeWidth="1.5" />}
                     <circle cx={x} cy={y} r="3" fill="var(--color-accent, #111)" />
-                    {showLabel && (
-                      <text x={x} y={chartH + 14} textAnchor="middle" fontSize="7" fill="var(--text-muted, #888)">
-                        {point.date.slice(5)}
-                      </text>
-                    )}
+                    {showLabel && <text x={x} y={chartH + 14} textAnchor="middle" fontSize="7" fill="var(--text-muted, #888)">{point.date.slice(5)}</text>}
                   </g>
                 );
               })}
@@ -383,20 +349,8 @@ export default function SummaryTab({
         <h2>Τελευταίες 7 ημέρες</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => (
-            <button
-              key={day.date}
-              onClick={() => setSelectedDate(day.date)}
-              type="button"
-              style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "8px 12px",
-                background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)",
-                color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)",
-                borderRadius: 10,
-                border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`,
-                cursor: "pointer", textAlign: "left", flexWrap: "wrap", gap: 6
-              }}
-            >
+            <button key={day.date} onClick={() => setSelectedDate(day.date)} type="button"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, cursor: "pointer", textAlign: "left", flexWrap: "wrap", gap: 6 }}>
               <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
               <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
                 className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>

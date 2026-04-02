@@ -46,12 +46,10 @@ export default function App() {
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
   const [foods, setFoods] = useState(() => {
-  const saved = loadJSON("ft_foods", []);
-  // Κράτα μόνο τα custom (non-local) foods του χρήστη
-  const customOnly = saved.filter((f) => f.source !== "local");
-  // Merge: local από foodsData + custom του χρήστη
-  return [...foodsData, ...customOnly];
-});
+    const saved = loadJSON("ft_foods", []);
+    const customOnly = saved.filter((f) => f.source !== "local");
+    return [...foodsData, ...customOnly];
+  });
   const [customFoods, setCustomFoods] = useState(() => loadJSON("ft_customFoods", []));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
@@ -181,8 +179,7 @@ export default function App() {
     const factor = grams / 100;
     const updated = {
       ...editingEntry,
-      grams,
-      mealType: meal,
+      grams, mealType: meal,
       calories: Math.round(base.caloriesPer100g * factor),
       protein: round1(base.proteinPer100g * factor),
       carbs: round1(base.carbsPer100g * factor),
@@ -219,8 +216,7 @@ export default function App() {
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${customExerciseName.trim()} ${minutes} λεπτά`,
-      minutes,
-      caloriesPerMinute: rate,
+      minutes, caloriesPerMinute: rate,
       calories: Math.round(rate * minutes)
     };
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
@@ -358,7 +354,8 @@ export default function App() {
     last7Days, mode, macroTargets, foods,
     dailyLogs, weightLog,
     onAddWeight: addWeight,
-    onDeleteWeight: deleteWeight
+    onDeleteWeight: deleteWeight,
+    favoriteFoods
   };
 
   const foodProps = {
