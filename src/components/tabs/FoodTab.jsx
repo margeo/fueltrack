@@ -46,14 +46,8 @@ function FoodAddModal({ food, onAdd, onClose }) {
   const preview = createFoodEntry(food, grams, meal);
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
-      onClick={onClose}
-    >
-      <div
-        style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, width: "100%", maxWidth: 400, boxShadow: "var(--shadow-modal)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, width: "100%", maxWidth: 400, boxShadow: "var(--shadow-modal)" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{food.name}</div>
         {food.brand && <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>{food.brand}</div>}
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -83,22 +77,10 @@ function FoodAddModal({ food, onAdd, onClose }) {
 }
 
 export default function FoodTab({
-  foods,
-  customFoods,
-  onAddCustomFood,
-  onDeleteCustomFood,
-  recentFoods,
-  favoriteFoods,
-  isFavorite,
-  toggleFavorite,
-  saveRecentFood,
-  updateCurrentDay,
-  quickAddRecent,
-  quickAddFavorite,
-  entries,
-  groupedEntries,
-  deleteEntry,
-  openEditEntry
+  foods, customFoods, onAddCustomFood, onDeleteCustomFood,
+  recentFoods, favoriteFoods, isFavorite, toggleFavorite,
+  saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
+  entries, groupedEntries, deleteEntry, openEditEntry
 }) {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -126,11 +108,8 @@ export default function FoodTab({
   const normalizedDatabaseResults = useMemo(() => {
     return (Array.isArray(databaseResults) ? databaseResults : []).map((food) =>
       normalizeFood({
-        id: food.id,
-        source: food.source || "database",
-        sourceLabel: food.sourceLabel || "Database",
-        name: food.name,
-        brand: food.brand || "",
+        id: food.id, source: food.source || "database", sourceLabel: food.sourceLabel || "Database",
+        name: food.name, brand: food.brand || "",
         caloriesPer100g: Number(food.caloriesPer100g ?? food.calories) || 0,
         proteinPer100g: Number(food.proteinPer100g ?? food.protein) || 0,
         carbsPer100g: Number(food.carbsPer100g ?? food.carbs) || 0,
@@ -140,9 +119,7 @@ export default function FoodTab({
   }, [databaseResults]);
 
   const visibleFoods = useMemo(() => {
-    const localFoods = filteredFoods.map((food) =>
-      normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" })
-    );
+    const localFoods = filteredFoods.map((food) => normalizeFood({ ...food, source: food.source || "local", sourceLabel: food.sourceLabel || "Local" }));
     const merged = [...localFoods, ...normalizedDatabaseResults];
     const seen = new Set();
     const deduped = merged.filter((food) => {
@@ -160,10 +137,7 @@ export default function FoodTab({
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const showAutocomplete = query.trim().length >= 2;
 
-  function handleFoodSelect(food) {
-    setSelectedFood(food);
-    setQuery("");
-  }
+  function handleFoodSelect(food) { setSelectedFood(food); setQuery(""); }
 
   function handleAdd(food, grams, meal) {
     const entry = createFoodEntry(food, grams, meal);
@@ -174,32 +148,21 @@ export default function FoodTab({
 
   function handleAddCustomFood() {
     if (!newName.trim() || !newCalories) return;
-    onAddCustomFood({
-      name: newName.trim(),
-      caloriesPer100g: Number(newCalories) || 0,
-      proteinPer100g: Number(newProtein) || 0,
-      carbsPer100g: Number(newCarbs) || 0,
-      fatPer100g: Number(newFat) || 0
-    });
+    onAddCustomFood({ name: newName.trim(), caloriesPer100g: Number(newCalories) || 0, proteinPer100g: Number(newProtein) || 0, carbsPer100g: Number(newCarbs) || 0, fatPer100g: Number(newFat) || 0 });
     setNewName(""); setNewCalories(""); setNewProtein(""); setNewCarbs(""); setNewFat("");
     setSavedFeedback(true);
     setTimeout(() => setSavedFeedback(false), 2000);
   }
 
   async function handleBarcodeResult(code) {
-    setShowScanner(false);
-    setBarcodeLoading(true);
-    setBarcodeError("");
+    setShowScanner(false); setBarcodeLoading(true); setBarcodeError("");
     try {
       const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
       const data = await res.json();
       if (!data.found) { setBarcodeError(`Δεν βρέθηκε προϊόν για barcode: ${code}`); return; }
       setSelectedFood(normalizeFood(data));
-    } catch {
-      setBarcodeError("Σφάλμα κατά την αναζήτηση barcode.");
-    } finally {
-      setBarcodeLoading(false);
-    }
+    } catch { setBarcodeError("Σφάλμα κατά την αναζήτηση barcode."); }
+    finally { setBarcodeLoading(false); }
   }
 
   function getSourceBadge(food) {
@@ -209,6 +172,8 @@ export default function FoodTab({
     if (food.sourceLabel && food.sourceLabel !== "Local") return food.sourceLabel;
     return "";
   }
+
+  const totalFoodCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
 
   return (
     <>
@@ -221,11 +186,15 @@ export default function FoodTab({
       )}
       {selectedFood && <FoodAddModal food={selectedFood} onAdd={handleAdd} onClose={() => setSelectedFood(null)} />}
 
-      {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
-      <div className="card">
-        <h2>Φαγητό ημέρας</h2>
+      {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ — day card */}
+      <div className="day-card">
+        <div className="day-card-total">
+          <h2 style={{ color: "white", margin: 0, fontSize: 16 }}>Φαγητό ημέρας</h2>
+          <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
+        </div>
+
         {entries.length === 0 ? (
-          <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
+          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {MEALS.map((meal) => {
@@ -233,19 +202,19 @@ export default function FoodTab({
               if (!group || group.items.length === 0) return null;
               return (
                 <div key={meal}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 4px" }}>
-                    <span style={{ fontWeight: 700, fontSize: 13 }}>{meal}</span>
-                    <span className="muted" style={{ fontSize: 12 }}>{formatNumber(group.totalCalories)} kcal</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 2px" }}>
+                    <span style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{meal}</span>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{formatNumber(group.totalCalories)} kcal</span>
                   </div>
                   {group.items.map((item) => (
-                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--bg-soft)", borderRadius: 8, marginBottom: 4, border: "1px solid var(--border-soft)", gap: 8 }}>
+                    <div key={item.id} className="day-card-entry">
                       <button onClick={() => openEditEntry(item)} type="button" style={{ flex: 1, minWidth: 0, background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
-                        <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{item.name}</span>
-                        <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{item.grams}g · {formatNumber(item.calories)} kcal · P{formatNumber(item.protein)}</span>
+                        <span className="day-card-entry-title">{item.name}</span>
+                        <span className="day-card-entry-meta">{item.grams}g · {formatNumber(item.calories)} kcal · P{formatNumber(item.protein)}</span>
                       </button>
                       <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                        <button className="btn btn-light" onClick={() => openEditEntry(item)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
-                        <button className="btn btn-light" onClick={() => deleteEntry(item.id)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✕</button>
+                        <button className="day-card-btn" onClick={() => openEditEntry(item)} type="button">✏️</button>
+                        <button className="day-card-btn" onClick={() => deleteEntry(item.id)} type="button">✕</button>
                       </div>
                     </div>
                   ))}
@@ -266,7 +235,6 @@ export default function FoodTab({
           </div>
         </div>
 
-        {/* ΦΙΛΤΡΑ */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setActiveFilter(f.key)} type="button"
@@ -363,7 +331,6 @@ export default function FoodTab({
           </button>
         </div>
 
-        {/* ΛΙΣΤΑ CUSTOM ΦΑΓΗΤΩΝ */}
         {customFoods.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--text-muted)" }}>Τα custom φαγητά μου</div>

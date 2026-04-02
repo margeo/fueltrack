@@ -10,8 +10,8 @@
   --bg-input: #ffffff;
   --bg-btn-light: #f3f4f6;
   --bg-modal: #ffffff;
-  --bg-hero-from: #111827;
-  --bg-hero-to: #1f2937;
+  --bg-hero-from: #1e3a5f;
+  --bg-hero-to: #2d5282;
 
   --border-color: #e5e7eb;
   --border-soft: #eef2f7;
@@ -42,8 +42,8 @@
   --bg-input: #1e293b;
   --bg-btn-light: #334155;
   --bg-modal: #1e293b;
-  --bg-hero-from: #0f172a;
-  --bg-hero-to: #1e293b;
+  --bg-hero-from: #1e3a5f;
+  --bg-hero-to: #2d4a7a;
 
   --border-color: #334155;
   --border-soft: #1e293b;
@@ -279,6 +279,73 @@ select {
   background: var(--color-green);
   border-radius: 999px;
   transition: width 0.3s ease;
+}
+
+/* Day card — για Food/Exercise ημέρας */
+.day-card {
+  background: linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-hero);
+}
+
+.day-card h2 {
+  color: white;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.day-card .muted {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.day-card-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 8px;
+}
+
+.day-card-entry-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: white;
+}
+
+.day-card-entry-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 6px;
+}
+
+.day-card-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.day-card-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.day-card-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 /* Macro progress bars */

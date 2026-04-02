@@ -3,21 +3,12 @@ import { formatNumber } from "../../utils/helpers";
 import GoogleFitButton from "../GoogleFitButton";
 
 export default function ExerciseTab({
-  exercises,
-  exerciseValue,
-  exerciseMinutes,
-  setExerciseMinutes,
-  customExerciseName,
-  setCustomExerciseName,
-  customExerciseMinutes,
-  setCustomExerciseMinutes,
-  customExerciseRate,
-  setCustomExerciseRate,
-  addExerciseByMinutes,
-  addCustomExercise,
-  deleteExercise,
-  selectedDate,
-  updateCurrentDay
+  exercises, exerciseValue, exerciseMinutes, setExerciseMinutes,
+  customExerciseName, setCustomExerciseName,
+  customExerciseMinutes, setCustomExerciseMinutes,
+  customExerciseRate, setCustomExerciseRate,
+  addExerciseByMinutes, addCustomExercise, deleteExercise,
+  selectedDate, updateCurrentDay
 }) {
   function handleAddFromFit(exercise) {
     updateCurrentDay((current) => ({
@@ -28,45 +19,35 @@ export default function ExerciseTab({
 
   return (
     <>
-      <div className="card">
-        <h2>Άσκηση ημέρας</h2>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span className="muted">Σύνολο σήμερα</span>
-          <span style={{ fontWeight: 800, color: "#166534" }}>+{formatNumber(exerciseValue)} kcal</span>
+      {/* ΑΣΚΗΣΗ ΗΜΕΡΑΣ — day card */}
+      <div className="day-card">
+        <div className="day-card-total">
+          <h2 style={{ color: "white", margin: 0, fontSize: 16 }}>Άσκηση ημέρας</h2>
+          <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
         </div>
 
         {exercises.length === 0 ? (
-          <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις βάλει άσκηση.</div>
+          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει άσκηση.</div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {exercises.map((item) => (
-              <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)", gap: 8 }}>
+              <div key={item.id} className="day-card-entry">
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13 }}>{item.name}</div>
-                  <div className="muted" style={{ fontSize: 12 }}>
+                  <span className="day-card-entry-title">{item.name}</span>
+                  <span className="day-card-entry-meta">
                     {item.minutes > 0 ? `${item.minutes} λεπτά · ` : ""}+{formatNumber(item.calories)} kcal
-                  </div>
+                  </span>
                 </div>
-                <button
-                  className="btn btn-light"
-                  onClick={() => deleteExercise(item.id)}
-                  type="button"
-                  style={{ padding: "4px 10px", fontSize: 12 }}
-                >
-                  ✕
-                </button>
+                <button className="day-card-btn" onClick={() => deleteExercise(item.id)} type="button">✕</button>
               </div>
             ))}
           </div>
         )}
 
-        <GoogleFitButton
-          selectedDate={selectedDate}
-          onAddExercise={handleAddFromFit}
-        />
+        <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
       </div>
 
+      {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
         <h2>Προσθήκη άσκησης</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -82,52 +63,25 @@ export default function ExerciseTab({
                 min="1"
                 placeholder="λεπτά"
                 value={exerciseMinutes[exercise.name] || ""}
-                onChange={(e) =>
-                  setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: e.target.value }))
-                }
+                onChange={(e) => setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: e.target.value }))}
                 style={{ width: 70, padding: "6px 8px", fontSize: 13, textAlign: "center" }}
               />
-              <button
-                className="btn btn-dark"
-                onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])}
-                type="button"
-                style={{ padding: "6px 12px", fontSize: 13 }}
-              >
-                +
-              </button>
+              <button className="btn btn-dark" onClick={() => addExerciseByMinutes(exercise, exerciseMinutes[exercise.name])} type="button" style={{ padding: "6px 12px", fontSize: 13 }}>+</button>
             </div>
           ))}
         </div>
       </div>
 
+      {/* CUSTOM ΑΣΚΗΣΗ */}
       <div className="card">
         <h2>Custom άσκηση</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <input
-            className="input"
-            placeholder="Όνομα άσκησης"
-            value={customExerciseName}
-            onChange={(e) => setCustomExerciseName(e.target.value)}
-          />
+          <input className="input" placeholder="Όνομα άσκησης" value={customExerciseName} onChange={(e) => setCustomExerciseName(e.target.value)} />
           <div style={{ display: "flex", gap: 8 }}>
-            <input
-              className="input"
-              placeholder="Λεπτά"
-              inputMode="numeric"
-              value={customExerciseMinutes}
-              onChange={(e) => setCustomExerciseMinutes(e.target.value)}
-            />
-            <input
-              className="input"
-              placeholder="kcal/λεπτό"
-              inputMode="decimal"
-              value={customExerciseRate}
-              onChange={(e) => setCustomExerciseRate(e.target.value)}
-            />
+            <input className="input" placeholder="Λεπτά" inputMode="numeric" value={customExerciseMinutes} onChange={(e) => setCustomExerciseMinutes(e.target.value)} />
+            <input className="input" placeholder="kcal/λεπτό" inputMode="decimal" value={customExerciseRate} onChange={(e) => setCustomExerciseRate(e.target.value)} />
           </div>
-          <button className="btn btn-dark" onClick={addCustomExercise} type="button">
-            Προσθήκη
-          </button>
+          <button className="btn btn-dark" onClick={addCustomExercise} type="button">Προσθήκη</button>
         </div>
       </div>
     </>
