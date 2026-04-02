@@ -45,7 +45,13 @@ export default function App() {
   const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
 
-  const [foods, setFoods] = useState(() => loadJSON("ft_foods", foodsData));
+  const [foods, setFoods] = useState(() => {
+  const saved = loadJSON("ft_foods", []);
+  // Κράτα μόνο τα custom (non-local) foods του χρήστη
+  const customOnly = saved.filter((f) => f.source !== "local");
+  // Merge: local από foodsData + custom του χρήστη
+  return [...foodsData, ...customOnly];
+});
   const [customFoods, setCustomFoods] = useState(() => loadJSON("ft_customFoods", []));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
