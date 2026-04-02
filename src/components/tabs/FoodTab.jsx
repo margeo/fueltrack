@@ -1,19 +1,15 @@
 import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
-import { createFoodEntry, formatNumber, normalizeFood } from "../../utils/helpers";
+import { createFoodEntry, formatNumber, normalizeFood, stripDiacritics } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
 import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
 
-function normalizeSearchText(value) {
-  return String(value || "").toLowerCase().trim();
-}
-
 function getFoodSearchScore(food, query) {
-  const q = normalizeSearchText(query);
+  const q = stripDiacritics(String(query || "")).toLowerCase().trim();
   if (!q) return 0;
-  const name = normalizeSearchText(food.name);
-  const brand = normalizeSearchText(food.brand);
+  const name = stripDiacritics(String(food.name || "")).toLowerCase();
+  const brand = stripDiacritics(String(food.brand || "")).toLowerCase();
   const combined = `${name} ${brand}`.trim();
   let score = 0;
   if (name === q) score += 120;
@@ -69,102 +65,52 @@ function FoodAddModal({ food, onAdd, onClose }) {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{food.name}</div>
         {food.brand && <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>{food.brand}</div>}
 
-        {/* TABS — Μερίδα / Γραμμάρια */}
         {hasPotions && (
           <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-            <button
-              onClick={() => setMode("portion")}
-              type="button"
-              style={{
-                flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13,
-                background: mode === "portion" ? "var(--color-accent)" : "var(--bg-soft)",
-                color: mode === "portion" ? "var(--bg-card)" : "var(--text-muted)"
-              }}
-            >
+            <button onClick={() => setMode("portion")} type="button"
+              style={{ flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: mode === "portion" ? "var(--color-accent)" : "var(--bg-soft)", color: mode === "portion" ? "var(--bg-card)" : "var(--text-muted)" }}>
               🥣 Μερίδα
             </button>
-            <button
-              onClick={() => setMode("grams")}
-              type="button"
-              style={{
-                flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13,
-                background: mode === "grams" ? "var(--color-accent)" : "var(--bg-soft)",
-                color: mode === "grams" ? "var(--bg-card)" : "var(--text-muted)"
-              }}
-            >
+            <button onClick={() => setMode("grams")} type="button"
+              style={{ flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: mode === "grams" ? "var(--color-accent)" : "var(--bg-soft)", color: mode === "grams" ? "var(--bg-card)" : "var(--text-muted)" }}>
               ⚖️ Γραμμάρια
             </button>
           </div>
         )}
 
-        {/* PORTION MODE */}
         {mode === "portion" && hasPotions && (
           <div style={{ marginBottom: 14 }}>
             <div className="profile-label" style={{ marginBottom: 6 }}>Μερίδα</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
               {food.portions.map((portion, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedPortion(i)}
-                  type="button"
-                  style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "10px 14px", borderRadius: 12, cursor: "pointer", fontWeight: 600, fontSize: 13,
-                    border: `2px solid ${selectedPortion === i ? "var(--color-accent)" : "var(--border-color)"}`,
-                    background: selectedPortion === i ? "var(--bg-soft)" : "var(--bg-card)",
-                    color: "var(--text-primary)"
-                  }}
-                >
+                <button key={i} onClick={() => setSelectedPortion(i)} type="button"
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderRadius: 12, cursor: "pointer", fontWeight: 600, fontSize: 13, border: `2px solid ${selectedPortion === i ? "var(--color-accent)" : "var(--border-color)"}`, background: selectedPortion === i ? "var(--bg-soft)" : "var(--bg-card)", color: "var(--text-primary)" }}>
                   <span>{portion.label}</span>
                   <span className="muted" style={{ fontSize: 12 }}>{portion.grams}g</span>
                 </button>
               ))}
             </div>
-
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div className="profile-label" style={{ margin: 0, whiteSpace: "nowrap" }}>Ποσότητα:</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <button
-                  onClick={() => setPortionQty((prev) => String(Math.max(0.5, parseFloat(prev) - 0.5)))}
-                  type="button"
-                  style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}
-                >−</button>
-                <input
-                  className="input"
-                  type="number"
-                  step="0.5"
-                  min="0.5"
-                  value={portionQty}
-                  onChange={(e) => setPortionQty(e.target.value)}
-                  style={{ width: 60, textAlign: "center", padding: "6px 8px" }}
-                />
-                <button
-                  onClick={() => setPortionQty((prev) => String(parseFloat(prev) + 0.5))}
-                  type="button"
-                  style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}
-                >+</button>
+                <button onClick={() => setPortionQty((prev) => String(Math.max(0.5, parseFloat(prev) - 0.5)))} type="button"
+                  style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>−</button>
+                <input className="input" type="number" step="0.5" min="0.5" value={portionQty} onChange={(e) => setPortionQty(e.target.value)} style={{ width: 60, textAlign: "center", padding: "6px 8px" }} />
+                <button onClick={() => setPortionQty((prev) => String(parseFloat(prev) + 0.5))} type="button"
+                  style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>+</button>
               </div>
               <span className="muted" style={{ fontSize: 12 }}>= {effectiveGrams}g</span>
             </div>
           </div>
         )}
 
-        {/* GRAMS MODE */}
         {mode === "grams" && (
           <div style={{ marginBottom: 14 }}>
             <div className="profile-label" style={{ marginBottom: 6 }}>Γραμμάρια</div>
-            <input
-              className="input"
-              type="number"
-              value={grams}
-              onChange={(e) => setGrams(e.target.value)}
-              inputMode="numeric"
-              autoFocus={!hasPotions}
-            />
+            <input className="input" type="number" value={grams} onChange={(e) => setGrams(e.target.value)} inputMode="numeric" autoFocus={!hasPotions} />
           </div>
         )}
 
-        {/* ΓΕΥΜΑ */}
         <div style={{ marginBottom: 14 }}>
           <div className="profile-label" style={{ marginBottom: 6 }}>Γεύμα</div>
           <select className="input" value={meal} onChange={(e) => setMeal(e.target.value)}>
@@ -172,7 +118,6 @@ function FoodAddModal({ food, onAdd, onClose }) {
           </select>
         </div>
 
-        {/* PREVIEW */}
         <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "10px 14px", marginBottom: 16 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, textAlign: "center" }}>
             <div>
@@ -195,14 +140,7 @@ function FoodAddModal({ food, onAdd, onClose }) {
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="btn btn-dark"
-            onClick={() => onAdd(food, effectiveGrams, meal)}
-            type="button"
-            style={{ flex: 1 }}
-          >
-            Προσθήκη
-          </button>
+          <button className="btn btn-dark" onClick={() => onAdd(food, effectiveGrams, meal)} type="button" style={{ flex: 1 }}>Προσθήκη</button>
           <button className="btn btn-light" onClick={onClose} type="button">Άκυρο</button>
         </div>
       </div>
@@ -235,14 +173,11 @@ export default function FoodTab({
 
   const filteredFoods = useMemo(() => {
     if (!query.trim()) return foods;
-    const q = query.toLowerCase().trim();
-    import { stripDiacritics } from "../../utils/helpers";
-
-return foods.filter((food) => {
-  const haystack = stripDiacritics(`${food.name} ${food.brand || ""}`).toLowerCase();
-  const needle = stripDiacritics(q).toLowerCase();
-  return haystack.includes(needle);
-});
+    const q = stripDiacritics(query.toLowerCase().trim());
+    return foods.filter((food) => {
+      const haystack = stripDiacritics(`${food.name} ${food.brand || ""}`).toLowerCase();
+      return haystack.includes(q);
+    });
   }, [foods, query]);
 
   const normalizedDatabaseResults = useMemo(() => {
@@ -334,11 +269,7 @@ return foods.filter((food) => {
         />
       )}
       {selectedFood && (
-        <FoodAddModal
-          food={selectedFood}
-          onAdd={handleAdd}
-          onClose={() => setSelectedFood(null)}
-        />
+        <FoodAddModal food={selectedFood} onAdd={handleAdd} onClose={() => setSelectedFood(null)} />
       )}
 
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
@@ -347,7 +278,6 @@ return foods.filter((food) => {
           <h2 style={{ color: "white", margin: 0, fontSize: 16 }}>Φαγητό ημέρας</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
-
         {entries.length === 0 ? (
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει φαγητό.</div>
         ) : (
@@ -402,12 +332,7 @@ return foods.filter((food) => {
         {barcodeLoading && <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 Αναζήτηση barcode...</div>}
         {barcodeError && <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>}
 
-        <input
-          className="input"
-          placeholder="Γράψε φαγητό..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <input className="input" placeholder="Γράψε φαγητό..." value={query} onChange={(e) => setQuery(e.target.value)} />
 
         {showAutocomplete && (
           <div style={{ marginTop: 6, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: 6, display: "flex", flexDirection: "column", gap: 4 }}>
@@ -416,19 +341,15 @@ return foods.filter((food) => {
               <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>Δεν βρέθηκαν αποτελέσματα.</div>
             )}
             {!databaseLoading && topSearchResults.map((food) => (
-              <button
-                key={`auto-${food.source || "local"}-${food.id}`}
-                onClick={() => handleFoodSelect(food)}
-                type="button"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: "var(--bg-card)", borderRadius: 8, border: "1px solid var(--border-color)", cursor: "pointer", gap: 8, flexWrap: "wrap" }}
-              >
+              <button key={`auto-${food.source || "local"}-${food.id}`} onClick={() => handleFoodSelect(food)} type="button"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: "var(--bg-card)", borderRadius: 8, border: "1px solid var(--border-color)", cursor: "pointer", gap: 8, flexWrap: "wrap" }}>
                 <div style={{ textAlign: "left" }}>
                   <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>
                     {food.name}{food.brand ? ` · ${food.brand}` : ""}
                   </span>
                   {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
                   {food.portions?.length > 0 && (
-                    <span style={{ marginLeft: 6, fontSize: 11, color: "var(--color-green)", fontWeight: 700 }}>🥣 portions</span>
+                    <span style={{ marginLeft: 6, fontSize: 11, color: "var(--color-green)", fontWeight: 700 }}>🥣</span>
                   )}
                 </div>
                 <span className="muted" style={{ fontSize: 12 }}>
@@ -451,9 +372,7 @@ return foods.filter((food) => {
                 <div key={item.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{item.food.name}</span>
-                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
-                      {item.grams}g · {item.mealType} · {formatNumber(cal.calories)} kcal
-                    </span>
+                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{item.grams}g · {item.mealType} · {formatNumber(cal.calories)} kcal</span>
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                     <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
@@ -476,9 +395,7 @@ return foods.filter((food) => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
                   {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
-                  <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
-                    {formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}
-                  </span>
+                  <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}</span>
                 </div>
                 <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                   <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
@@ -516,9 +433,7 @@ return foods.filter((food) => {
                 <div key={food.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
-                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
-                      {formatNumber(food.caloriesPer100g)} kcal · P{formatNumber(food.proteinPer100g)}
-                    </span>
+                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g)} kcal · P{formatNumber(food.proteinPer100g)}</span>
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                     <button className="btn btn-dark" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
