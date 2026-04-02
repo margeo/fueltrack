@@ -50,6 +50,7 @@ export default function ProfileTab({
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
+    if (goalType === "fitness") return "Fitness & Cardio";
     return "Maintain";
   }
 
@@ -135,6 +136,7 @@ export default function ProfileTab({
               <option value="lose">Lose weight</option>
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
+              <option value="fitness">Fitness & Cardio</option>
             </select>
           </label>
           <label className="profile-field">

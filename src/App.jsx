@@ -28,10 +28,7 @@ export default function App() {
   const [height, setHeight] = useState(() => loadValue("ft_height", ""));
   const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
   const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
-  const [goalType, setGoalType] = useState(() => {
-    const saved = loadValue("ft_goalType", "lose");
-    return saved === "fitness" ? "maintain" : saved;
-  });
+  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "lose"));
   const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
@@ -47,6 +44,7 @@ export default function App() {
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() => loadJSON("ft_favoriteFoodKeys", []));
+  const [favoriteExerciseKeys, setFavoriteExerciseKeys] = useState(() => loadJSON("ft_favoriteExerciseKeys", []));
   const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
 
   const [editingEntry, setEditingEntry] = useState(null);
@@ -78,18 +76,16 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState(() => {
     const savedAge = loadValue("ft_age", "");
-    const savedGender = loadValue("ft_gender", "male");
     const savedHeight = loadValue("ft_height", "");
     const savedWeight = loadValue("ft_weight", "");
     const savedActivity = loadValue("ft_activity", "1.4");
-    const rawSavedGoalType = loadValue("ft_goalType", "lose");
-    const savedGoalType = rawSavedGoalType === "fitness" ? "maintain" : rawSavedGoalType;
+    const savedGoalType = loadValue("ft_goalType", "lose");
     const savedMode = loadValue("ft_mode", "balanced");
     const savedHasSeenWelcome = loadValue("ft_hasSeenWelcome", "false") === "true";
     const savedTab = loadValue("ft_activeTab", "summary");
 
     const savedProfileComplete =
-      String(savedAge).trim() !== "" && String(savedGender).trim() !== "" &&
+      String(savedAge).trim() !== "" && String(loadValue("ft_gender", "male")).trim() !== "" &&
       String(savedHeight).trim() !== "" && String(savedWeight).trim() !== "" &&
       String(savedActivity).trim() !== "" && String(savedGoalType).trim() !== "" &&
       String(savedMode).trim() !== "";
@@ -101,14 +97,13 @@ export default function App() {
   });
 
   useEffect(() => { setSelectedDate(getTodayKey()); }, []);
-  useEffect(() => { if (goalType === "fitness") setGoalType("maintain"); }, [goalType]);
 
   useEffect(() => saveValue("ft_age", age), [age]);
   useEffect(() => saveValue("ft_gender", gender), [gender]);
   useEffect(() => saveValue("ft_height", height), [height]);
   useEffect(() => saveValue("ft_weight", weight), [weight]);
   useEffect(() => saveValue("ft_activity", activity), [activity]);
-  useEffect(() => saveValue("ft_goalType", goalType === "fitness" ? "maintain" : goalType), [goalType]);
+  useEffect(() => saveValue("ft_goalType", goalType), [goalType]);
   useEffect(() => saveValue("ft_mode", mode), [mode]);
   useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
   useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
@@ -119,6 +114,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+  useEffect(() => saveJSON("ft_favoriteExerciseKeys", favoriteExerciseKeys), [favoriteExerciseKeys]);
   useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
@@ -262,6 +258,17 @@ export default function App() {
     return favoriteFoodKeys.includes(key);
   }
 
+  function toggleFavoriteExercise(exercise) {
+    const key = exercise.name.toLowerCase();
+    setFavoriteExerciseKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
+    );
+  }
+
+  function isFavoriteExercise(exercise) {
+    return favoriteExerciseKeys.includes(exercise.name.toLowerCase());
+  }
+
   function addWeight({ date, weight: w }) {
     setWeightLog((prev) => {
       const filtered = prev.filter((entry) => entry.date !== date);
@@ -322,19 +329,24 @@ export default function App() {
     return foods.filter((food) => isFavorite(food)).slice(0, 8);
   }, [foods, favoriteFoodKeys]);
 
+  const favoriteExercises = useMemo(() => {
+    return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise(e));
+  }, [favoriteExerciseKeys]);
+
   const summaryProps = {
-  selectedDate, setSelectedDate, isToday,
-  targetCalories, totalCalories, exerciseValue,
-  remainingCalories, progress, goalType,
-  proteinTarget, totalProtein, totalCarbs, totalFat,
-  last7Days, mode, macroTargets, foods,
-  dailyLogs, weightLog,
-  onAddWeight: addWeight,
-  onDeleteWeight: deleteWeight,
-  favoriteFoods,
-  favoriteFoodsText,
-  favoriteExercisesText
-};
+    selectedDate, setSelectedDate, isToday,
+    targetCalories, totalCalories, exerciseValue,
+    remainingCalories, progress, goalType,
+    proteinTarget, totalProtein, totalCarbs, totalFat,
+    last7Days, mode, macroTargets, foods,
+    dailyLogs, weightLog,
+    onAddWeight: addWeight,
+    onDeleteWeight: deleteWeight,
+    favoriteFoods,
+    favoriteFoodsText,
+    favoriteExercisesText,
+    favoriteExercises
+  };
 
   const foodProps = {
     foods, customFoods,
@@ -354,7 +366,10 @@ export default function App() {
     setCustomExerciseMinutes, customExerciseRate,
     setCustomExerciseRate, addExerciseByMinutes,
     addCustomExercise, deleteExercise,
-    selectedDate, updateCurrentDay
+    selectedDate, updateCurrentDay,
+    favoriteExerciseKeys,
+    toggleFavoriteExercise,
+    isFavoriteExercise
   };
 
   const profileProps = {
@@ -364,9 +379,7 @@ export default function App() {
     mode, setMode, targetWeightLoss, setTargetWeightLoss,
     weeks, setWeeks, tdee, targetCalories,
     dailyDeficit, proteinTarget, profileComplete,
-    onContinue: goToSummaryAfterProfile,
-    favoriteFoodsText, setFavoriteFoodsText,
-    favoriteExercisesText, setFavoriteExercisesText
+    onContinue: goToSummaryAfterProfile
   };
 
   const showWelcome = !hasSeenWelcome;
@@ -379,7 +392,6 @@ export default function App() {
         <div className="app-header">
           <div className="app-header-left">
             <h1>FuelTrack</h1>
-            {showWelcome && <p>Welcome</p>}
             {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
           </div>
           <button className="theme-toggle-btn" onClick={toggleTheme} type="button">

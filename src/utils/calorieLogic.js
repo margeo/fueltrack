@@ -47,7 +47,7 @@ export function calculateTargetCalories({
   if (!base) return 0;
 
   if (goalType === "maintain") return base;
-
+  if (goalType === "fitness") return base; // TDEE — focus σε cardio, όχι έλλειμμα
   if (goalType === "gain") return Math.round(base + 300);
 
   if (goalType === "lose") {
@@ -71,6 +71,7 @@ export function calculateProteinTarget({ weight, goalType, modeKey }) {
   if (modeKey === "high_protein") return Math.round(w * 2.2);
   if (goalType === "gain") return Math.round(w * 2.0);
   if (goalType === "lose") return Math.round(w * 1.8);
+  if (goalType === "fitness") return Math.round(w * 1.6); // moderate protein, cardio focus
 
   return Math.round(w * 1.6);
 }
