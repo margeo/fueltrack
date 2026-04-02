@@ -30,7 +30,6 @@ export default function SummaryTab({
   const firstWeight = chartData[0]?.weight;
   const lastWeight = chartData[chartData.length - 1]?.weight;
   const diff = firstWeight && lastWeight ? lastWeight - firstWeight : null;
-
   const minW = chartData.length ? Math.min(...chartData.map((d) => d.weight)) - 1 : 0;
   const maxW = chartData.length ? Math.max(...chartData.map((d) => d.weight)) + 1 : 1;
   const range = maxW - minW || 1;
@@ -58,10 +57,10 @@ export default function SummaryTab({
     return "Balanced";
   }
 
-  function getRemainingClassName() {
-    if (remainingCalories > 100) return "summary-remaining-positive";
-    if (remainingCalories < -150) return "summary-remaining-negative";
-    return "summary-remaining-neutral";
+  function getRemainingColor() {
+    if (remainingCalories > 100) return "#86efac";
+    if (remainingCalories < -150) return "#fca5a5";
+    return "#fde68a";
   }
 
   function getModeHint() {
@@ -115,7 +114,6 @@ export default function SummaryTab({
 
   const suggestions = getSuggestedFoods();
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
-
   const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
   const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
   const fatPercent = macroTargets?.fatGrams ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;
@@ -137,30 +135,46 @@ export default function SummaryTab({
           </div>
         </div>
 
-        <div style={{ marginTop: 16, marginBottom: 4 }}>
-          <div className="hero-subtle" style={{ fontSize: 12 }}>Υπόλοιπο ημέρας</div>
-          <div className={`hero-big ${getRemainingClassName()}`} style={{ fontSize: 36, fontWeight: 800 }}>
-            {formatNumber(remainingCalories)} kcal
-          </div>
-          <div className="hero-subtle" style={{ fontSize: 11, marginTop: 4, opacity: 0.8 }}>
-            = {formatNumber(targetCalories)} − {formatNumber(totalCalories)} + {formatNumber(exerciseValue)}
-          </div>
-        </div>
+        {/* ΕΞΙΣΩΣΗ */}
+        <div style={{ marginTop: 16, marginBottom: 12 }}>
+          <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12, marginTop: 12 }}>
-          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
-            <div className="hero-subtle" style={{ fontSize: 11 }}>Στόχος</div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
-          </div>
-          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>−</div>
-          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
-            <div className="hero-subtle" style={{ fontSize: 11 }}>Φαγητό</div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
-          </div>
-          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>+</div>
-          <div className="hero-stat" style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
-            <div className="hero-subtle" style={{ fontSize: 11 }}>Άσκηση</div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
+            {/* Υπόλοιπο — μεγάλο box */}
+            <div className="hero-stat" style={{ padding: "10px 14px", minWidth: 100, textAlign: "center", flexShrink: 0 }}>
+              <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: getRemainingColor() }}>
+                {formatNumber(remainingCalories)}
+              </div>
+              <div className="hero-subtle" style={{ fontSize: 11, marginTop: 3 }}>kcal</div>
+            </div>
+
+            {/* = */}
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>=</div>
+
+            {/* Στόχος */}
+            <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Στόχος</div>
+            </div>
+
+            {/* − */}
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>−</div>
+
+            {/* Φαγητό */}
+            <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Φαγητό</div>
+            </div>
+
+            {/* + */}
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>+</div>
+
+            {/* Άσκηση */}
+            <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px 8px" }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Άσκηση</div>
+            </div>
+
           </div>
         </div>
 
@@ -182,27 +196,21 @@ export default function SummaryTab({
               <span className="macro-bar-title">Πρωτεΐνη</span>
               <span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span>
             </div>
-            <div className="macro-bar-outer">
-              <div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} />
-            </div>
+            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
             <div className="macro-bar-label">
               <span className="macro-bar-title">Υδατάνθρακες</span>
               <span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span>
             </div>
-            <div className="macro-bar-outer">
-              <div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} />
-            </div>
+            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
             <div className="macro-bar-label">
               <span className="macro-bar-title">Λίπος</span>
               <span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span>
             </div>
-            <div className="macro-bar-outer">
-              <div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} />
-            </div>
+            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
           </div>
         </div>
 
