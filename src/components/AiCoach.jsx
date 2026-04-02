@@ -21,7 +21,9 @@ export default function AiCoach({
   totalCalories,
   totalProtein,
   exerciseValue,
-  remainingCalories
+  remainingCalories,
+  favoriteFoodsText,
+  favoriteExercisesText
 }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -60,7 +62,9 @@ export default function AiCoach({
         remaining: remainingCalories || targetCalories
       },
       profile: {
-        goalType, mode, targetCalories, proteinTarget, streak, lastWeight
+        goalType, mode, targetCalories, proteinTarget, streak, lastWeight,
+        favoriteFoodsText,
+        favoriteExercisesText
       },
       favoriteFoods: (favoriteFoods || []).slice(0, 10).map(f => ({
         name: f.name,
@@ -119,15 +123,12 @@ export default function AiCoach({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <h2 style={{ margin: 0 }}>🤖 AI Coach</h2>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-            Διατροφολόγος & Γυμναστής
-          </div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Γυμναστής</div>
         </div>
         <button className="btn btn-light" onClick={() => setDismissed(true)} type="button"
           style={{ fontSize: 13, padding: "5px 10px" }}>✕</button>
       </div>
 
-      {/* ΑΡΧΙΚΗ ΟΘΟΝΗ */}
       {!hasLoaded && !loading && (
         <div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
@@ -147,7 +148,6 @@ export default function AiCoach({
         </div>
       )}
 
-      {/* LOADING ΑΡΧΙΚΟ */}
       {loading && messages.length === 0 && (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🤔</div>
@@ -155,7 +155,6 @@ export default function AiCoach({
         </div>
       )}
 
-      {/* MESSAGES */}
       {messages.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 420, overflowY: "auto", paddingRight: 2 }}>
           {messages.map((msg, i) => (
@@ -166,10 +165,8 @@ export default function AiCoach({
                 borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                 background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)",
                 color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)",
-                fontSize: 13,
-                lineHeight: 1.65,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
+                fontSize: 13, lineHeight: 1.65,
+                whiteSpace: "pre-wrap", wordBreak: "break-word",
                 border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none"
               }}>
                 {msg.text}
@@ -187,7 +184,6 @@ export default function AiCoach({
         </div>
       )}
 
-      {/* QUICK QUESTIONS μετά το πρώτο μήνυμα */}
       {hasLoaded && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
           {QUICK_QUESTIONS.map((q) => (
@@ -199,7 +195,6 @@ export default function AiCoach({
         </div>
       )}
 
-      {/* CHAT INPUT */}
       {(hasLoaded || messages.length > 0) && (
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input

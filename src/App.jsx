@@ -9,21 +9,12 @@ import ProfileTab from "./components/tabs/ProfileTab";
 import foodsData from "./data/foods.json";
 import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
 import {
-  getTodayKey,
-  normalizeDayLog,
-  normalizeFood,
-  createFoodEntry,
-  round1,
-  shiftDate,
-  entryBasePer100g
+  getTodayKey, normalizeDayLog, normalizeFood,
+  createFoodEntry, round1, shiftDate, entryBasePer100g
 } from "./utils/helpers";
 import {
-  calculateBMR,
-  calculateTDEE,
-  calculateDailyDeficit,
-  calculateTargetCalories,
-  calculateProteinTarget,
-  calculateMacroTargets
+  calculateBMR, calculateTDEE, calculateDailyDeficit,
+  calculateTargetCalories, calculateProteinTarget, calculateMacroTargets
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
@@ -44,6 +35,8 @@ export default function App() {
   const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
+  const [favoriteFoodsText, setFavoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
+  const [favoriteExercisesText, setFavoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
   const [foods, setFoods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
@@ -63,7 +56,6 @@ export default function App() {
   const [exerciseMinutes, setExerciseMinutes] = useState(() =>
     EXERCISE_LIBRARY.reduce((acc, item) => { acc[item.name] = ""; return acc; }, {})
   );
-
   const [customExerciseName, setCustomExerciseName] = useState("");
   const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
   const [customExerciseRate, setCustomExerciseRate] = useState("");
@@ -77,12 +69,9 @@ export default function App() {
 
   const profileComplete = useMemo(() => {
     return (
-      String(age).trim() !== "" &&
-      String(gender).trim() !== "" &&
-      String(height).trim() !== "" &&
-      String(weight).trim() !== "" &&
-      String(activity).trim() !== "" &&
-      String(goalType).trim() !== "" &&
+      String(age).trim() !== "" && String(gender).trim() !== "" &&
+      String(height).trim() !== "" && String(weight).trim() !== "" &&
+      String(activity).trim() !== "" && String(goalType).trim() !== "" &&
       String(mode).trim() !== ""
     );
   }, [age, gender, height, weight, activity, goalType, mode]);
@@ -100,12 +89,9 @@ export default function App() {
     const savedTab = loadValue("ft_activeTab", "summary");
 
     const savedProfileComplete =
-      String(savedAge).trim() !== "" &&
-      String(savedGender).trim() !== "" &&
-      String(savedHeight).trim() !== "" &&
-      String(savedWeight).trim() !== "" &&
-      String(savedActivity).trim() !== "" &&
-      String(savedGoalType).trim() !== "" &&
+      String(savedAge).trim() !== "" && String(savedGender).trim() !== "" &&
+      String(savedHeight).trim() !== "" && String(savedWeight).trim() !== "" &&
+      String(savedActivity).trim() !== "" && String(savedGoalType).trim() !== "" &&
       String(savedMode).trim() !== "";
 
     if (!savedHasSeenWelcome) return "welcome";
@@ -126,6 +112,8 @@ export default function App() {
   useEffect(() => saveValue("ft_mode", mode), [mode]);
   useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
   useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
+  useEffect(() => saveValue("ft_favFoodsText", favoriteFoodsText), [favoriteFoodsText]);
+  useEffect(() => saveValue("ft_favExercisesText", favoriteExercisesText), [favoriteExercisesText]);
   useEffect(() => saveJSON("ft_foods", foods), [foods]);
   useEffect(() => saveJSON("ft_customFoods", customFoods), [customFoods]);
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
@@ -178,8 +166,7 @@ export default function App() {
     const base = entryBasePer100g(editingEntry);
     const factor = grams / 100;
     const updated = {
-      ...editingEntry,
-      grams, mealType: meal,
+      ...editingEntry, grams, mealType: meal,
       calories: Math.round(base.caloriesPer100g * factor),
       protein: round1(base.proteinPer100g * factor),
       carbs: round1(base.carbsPer100g * factor),
@@ -201,8 +188,7 @@ export default function App() {
     const newExercise = {
       id: Date.now() + Math.random(),
       name: `${exercise.name} ${minutes} λεπτά`,
-      minutes,
-      caloriesPerMinute: exercise.caloriesPerMinute,
+      minutes, caloriesPerMinute: exercise.caloriesPerMinute,
       calories: Math.round(exercise.caloriesPerMinute * minutes)
     };
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
@@ -220,9 +206,7 @@ export default function App() {
       calories: Math.round(rate * minutes)
     };
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
-    setCustomExerciseName("");
-    setCustomExerciseMinutes("");
-    setCustomExerciseRate("");
+    setCustomExerciseName(""); setCustomExerciseMinutes(""); setCustomExerciseRate("");
   }
 
   function deleteExercise(id) {
@@ -236,11 +220,10 @@ export default function App() {
     const normalized = normalizeFood(food);
     setRecentFoods((prev) => {
       const filtered = prev.filter(
-        (item) =>
-          !(
-            item.food.name.toLowerCase() === normalized.name.toLowerCase() &&
-            (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
-          )
+        (item) => !(
+          item.food.name.toLowerCase() === normalized.name.toLowerCase() &&
+          (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
+        )
       );
       return [
         {
@@ -290,15 +273,8 @@ export default function App() {
     setWeightLog((prev) => prev.filter((entry) => entry.date !== date));
   }
 
-  function startOnboarding() {
-    setHasSeenWelcome(true);
-    setActiveTab("profile");
-  }
-
-  function goToSummaryAfterProfile() {
-    if (!profileComplete) return;
-    setActiveTab("summary");
-  }
+  function startOnboarding() { setHasSeenWelcome(true); setActiveTab("profile"); }
+  function goToSummaryAfterProfile() { if (!profileComplete) return; setActiveTab("summary"); }
 
   const bmr = useMemo(() => calculateBMR({ age, gender, height, weight }), [age, gender, height, weight]);
   const tdee = useMemo(() => calculateTDEE({ bmr, activity }), [bmr, activity]);
@@ -347,20 +323,21 @@ export default function App() {
   }, [foods, favoriteFoodKeys]);
 
   const summaryProps = {
-    selectedDate, setSelectedDate, isToday,
-    targetCalories, totalCalories, exerciseValue,
-    remainingCalories, progress, goalType,
-    proteinTarget, totalProtein, totalCarbs, totalFat,
-    last7Days, mode, macroTargets, foods,
-    dailyLogs, weightLog,
-    onAddWeight: addWeight,
-    onDeleteWeight: deleteWeight,
-    favoriteFoods
-  };
+  selectedDate, setSelectedDate, isToday,
+  targetCalories, totalCalories, exerciseValue,
+  remainingCalories, progress, goalType,
+  proteinTarget, totalProtein, totalCarbs, totalFat,
+  last7Days, mode, macroTargets, foods,
+  dailyLogs, weightLog,
+  onAddWeight: addWeight,
+  onDeleteWeight: deleteWeight,
+  favoriteFoods,
+  favoriteFoodsText,
+  favoriteExercisesText
+};
 
   const foodProps = {
-    foods,
-    customFoods,
+    foods, customFoods,
     onAddCustomFood: (food) => setCustomFoods((prev) => [normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" }), ...prev]),
     onDeleteCustomFood: (id) => setCustomFoods((prev) => prev.filter((f) => f.id !== id)),
     recentFoods, favoriteFoods,
@@ -387,7 +364,9 @@ export default function App() {
     mode, setMode, targetWeightLoss, setTargetWeightLoss,
     weeks, setWeeks, tdee, targetCalories,
     dailyDeficit, proteinTarget, profileComplete,
-    onContinue: goToSummaryAfterProfile
+    onContinue: goToSummaryAfterProfile,
+    favoriteFoodsText, setFavoriteFoodsText,
+    favoriteExercisesText, setFavoriteExercisesText
   };
 
   const showWelcome = !hasSeenWelcome;

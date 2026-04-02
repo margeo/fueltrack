@@ -4,46 +4,27 @@ import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
 export default function SummaryTab({
-  selectedDate,
-  setSelectedDate,
-  isToday,
-  targetCalories,
-  totalCalories,
-  exerciseValue,
-  remainingCalories,
-  progress,
-  goalType,
-  last7Days,
-  proteinTarget,
-  totalProtein,
-  totalCarbs,
-  totalFat,
-  mode,
-  macroTargets,
-  foods,
-  dailyLogs,
-  weightLog,
-  onAddWeight,
-  onDeleteWeight,
-  favoriteFoods
+  selectedDate, setSelectedDate, isToday,
+  targetCalories, totalCalories, exerciseValue,
+  remainingCalories, progress, goalType,
+  last7Days, proteinTarget, totalProtein,
+  totalCarbs, totalFat, mode, macroTargets,
+  foods, dailyLogs, weightLog,
+  onAddWeight, onDeleteWeight,
+  favoriteFoods, favoriteFoodsText, favoriteExercisesText
 }) {
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
 
-  const streak = useMemo(
-    () => calculateStreak(dailyLogs, targetCalories),
-    [dailyLogs, targetCalories]
-  );
+  const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
   const sortedWeightLog = useMemo(() => {
     return [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date));
   }, [weightLog]);
 
   const chartData = useMemo(() => {
-    return [...(weightLog || [])]
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-30);
+    return [...(weightLog || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-30);
   }, [weightLog]);
 
   const firstWeight = chartData[0]?.weight;
@@ -135,12 +116,9 @@ export default function SummaryTab({
   const suggestions = getSuggestedFoods();
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
 
-  const proteinPercent = macroTargets?.proteinGrams
-    ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
-  const carbsPercent = macroTargets?.carbsGrams
-    ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
-  const fatPercent = macroTargets?.fatGrams
-    ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;
+  const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
+  const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
+  const fatPercent = macroTargets?.fatGrams ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;
 
   return (
     <>
@@ -153,9 +131,7 @@ export default function SummaryTab({
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             {!isToday && (
-              <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>
-                Σήμερα
-              </button>
+              <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>
             )}
             <input className="input" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ width: 140, padding: "6px 8px", fontSize: 12 }} />
           </div>
@@ -254,6 +230,8 @@ export default function SummaryTab({
         totalProtein={totalProtein}
         exerciseValue={exerciseValue}
         remainingCalories={remainingCalories}
+        favoriteFoodsText={favoriteFoodsText}
+        favoriteExercisesText={favoriteExercisesText}
       />
 
       {/* WEIGHT TRACKING */}
