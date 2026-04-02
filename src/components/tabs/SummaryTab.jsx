@@ -263,7 +263,7 @@ export default function SummaryTab({
 
       {/* WEIGHT TRACKING — compact */}
       <div className="card">
-        <h2>⚖️ Βάρος</h2>
+        <h2>⚖️ Προσθήκη βάρους</h2>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
           <input
