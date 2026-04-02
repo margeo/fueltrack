@@ -1,3 +1,5 @@
+import { getFatSecretToken } from "./fatsecret-token.js";
+
 function removeAccents(str) {
   return str
     .replace(/ά/g, "α").replace(/έ/g, "ε").replace(/ή/g, "η")
@@ -21,25 +23,37 @@ export async function handler(event) {
 
     // USDA
     const usdaPromise = fetch(
-      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=15&api_key=${API_KEY}`
+      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=10&api_key=${API_KEY}`
     ).then((res) => res.json()).catch(() => null);
 
-    // OFF Greek - με τόνους
+    // OFF Greek
     const offGrPromise = fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&lc=el&cc=gr`
     ).then((res) => res.json()).catch(() => null);
 
-    // OFF Greek - χωρίς τόνους
+    // OFF Greek no accents
     const offGrNoAccentsPromise = queryNoAccents !== query
       ? fetch(
-          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(queryNoAccents)}&search_simple=1&action=process&json=1&page_size=20&lc=el&cc=gr`
+          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(queryNoAccents)}&search_simple=1&action=process&json=1&page_size=15&lc=el&cc=gr`
         ).then((res) => res.json()).catch(() => null)
       : Promise.resolve(null);
 
     // OFF World
     const offWorldPromise = fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15`
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10`
     ).then((res) => res.json()).catch(() => null);
+
+    // FatSecret
+    const fatSecretPromise = (async () => {
+      try {
+        const token = await getFatSecretToken();
+        const res = await fetch(
+          `https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json&max_results=10`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return await res.json();
+      } catch { return null; }
+    })();
 
     // Περιμένουμε USDA πρώτα
     const usdaData = await usdaPromise;
@@ -63,14 +77,16 @@ export async function handler(event) {
       fatPer100g: getNutrientValue(food, ["Total lipid (fat)"]),
     }));
 
-    // OFF με timeout 3000ms
+    // OFF + FatSecret με timeout
     let offFoods = [];
+    let fatSecretFoods = [];
 
     try {
-      const [offGrData, offGrNoAccentsData, offWorldData] = await Promise.all([
+      const [offGrData, offGrNoAccentsData, offWorldData, fatSecretData] = await Promise.all([
         Promise.race([offGrPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
         Promise.race([offGrNoAccentsPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
         Promise.race([offWorldPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
+        Promise.race([fatSecretPromise, new Promise((r) => setTimeout(() => r(null), 3000))]),
       ]);
 
       const parseOFF = (data, label) => {
@@ -90,20 +106,46 @@ export async function handler(event) {
           }));
       };
 
-      const grFoods = parseOFF(offGrData, "🇬🇷 Greek");
-      const grNoAccentFoods = parseOFF(offGrNoAccentsData, "🇬🇷 Greek");
-      const worldFoods = parseOFF(offWorldData, "OpenFood");
+      offFoods = [
+        ...parseOFF(offGrData, "🇬🇷 Greek"),
+        ...parseOFF(offGrNoAccentsData, "🇬🇷 Greek"),
+        ...parseOFF(offWorldData, "OpenFood")
+      ];
 
-      // Ελληνικά πρώτα
-      offFoods = [...grFoods, ...grNoAccentFoods, ...worldFoods];
+      // Parse FatSecret
+      if (fatSecretData?.foods?.food) {
+        const foods = Array.isArray(fatSecretData.foods.food)
+          ? fatSecretData.foods.food
+          : [fatSecretData.foods.food];
 
-    } catch {
-      // ignore
-    }
+        fatSecretFoods = foods
+          .filter((f) => f.food_name)
+          .map((f) => {
+            const desc = f.food_description || "";
+            const calMatch = desc.match(/Calories:\s*([\d.]+)kcal/i);
+            const fatMatch = desc.match(/Fat:\s*([\d.]+)g/i);
+            const carbMatch = desc.match(/Carbs:\s*([\d.]+)g/i);
+            const protMatch = desc.match(/Protein:\s*([\d.]+)g/i);
 
-    // Deduplicate όλα
+            return {
+              id: `fs-${f.food_id}`,
+              source: "fatsecret",
+              sourceLabel: "FatSecret",
+              name: f.food_name,
+              brand: f.brand_name || "",
+              caloriesPer100g: Number(calMatch?.[1] || 0),
+              proteinPer100g: Number(protMatch?.[1] || 0),
+              carbsPer100g: Number(carbMatch?.[1] || 0),
+              fatPer100g: Number(fatMatch?.[1] || 0),
+            };
+          })
+          .filter((f) => f.caloriesPer100g > 0);
+      }
+    } catch { /* ignore */ }
+
+    // Deduplicate — FatSecret πρώτο για ελληνικά
     const seen = new Set();
-    const allFoods = [...usdaFoods, ...offFoods].filter((f) => {
+    const allFoods = [...fatSecretFoods, ...offFoods, ...usdaFoods].filter((f) => {
       const key = `${String(f.name || "").trim().toLowerCase()}|${String(f.brand || "").trim().toLowerCase()}`;
       if (seen.has(key)) return false;
       seen.add(key);
