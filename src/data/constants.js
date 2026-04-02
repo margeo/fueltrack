@@ -2,7 +2,7 @@ export const MEALS = ["Πρωινό", "Μεσημεριανό", "Βραδινό"
 
 export const APP_TABS = [
   { key: "summary", label: "Summary", icon: "📊" },
-  { key: "food", label: "Food", icon: "🥗" },
+  { key: "food", label: "Food", icon: "🍔" },
   { key: "exercise", label: "Exercise", icon: "💪" },
   { key: "profile", label: "Profile", icon: "👤" }
 ];
