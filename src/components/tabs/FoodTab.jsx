@@ -236,7 +236,13 @@ export default function FoodTab({
   const filteredFoods = useMemo(() => {
     if (!query.trim()) return foods;
     const q = query.toLowerCase().trim();
-    return foods.filter((food) => `${food.name} ${food.brand || ""}`.toLowerCase().includes(q));
+    import { stripDiacritics } from "../../utils/helpers";
+
+return foods.filter((food) => {
+  const haystack = stripDiacritics(`${food.name} ${food.brand || ""}`).toLowerCase();
+  const needle = stripDiacritics(q).toLowerCase();
+  return haystack.includes(needle);
+});
   }, [foods, query]);
 
   const normalizedDatabaseResults = useMemo(() => {
