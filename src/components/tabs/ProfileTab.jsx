@@ -88,7 +88,6 @@ export default function ProfileTab({
         </div>
       )}
 
-      {/* ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Βασικά στοιχεία</div>
         <div className="grid-2 profile-grid-compact">
@@ -117,7 +116,6 @@ export default function ProfileTab({
         </div>
       </div>
 
-      {/* ΡΥΘΜΙΣΕΙΣ ΣΤΟΧΟΥ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Ρυθμίσεις στόχου</div>
         <div className="stack-10">
@@ -152,7 +150,6 @@ export default function ProfileTab({
         </div>
       </div>
 
-      {/* ΣΤΟΙΧΕΙΑ ΣΤΟΧΟΥ */}
       {showGoalFields && (
         <div className="soft-box profile-section-box">
           <div className="profile-section-title">Στοιχεία στόχου</div>
@@ -175,7 +172,6 @@ export default function ProfileTab({
 
       <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
 
-      {/* ΥΠΟΛΟΓΙΣΜΟΙ */}
       <div className="soft-box profile-section-box profile-highlight-box">
         <div className="profile-section-title">Υπολογισμοί</div>
         <div className="profile-stat-row">
@@ -198,13 +194,18 @@ export default function ProfileTab({
             <strong>300 kcal</strong>
           </div>
         )}
+        {goalType === "fitness" && (
+          <div className="profile-stat-row">
+            <span>Focus</span>
+            <strong>Cardio & Aerobic</strong>
+          </div>
+        )}
         <div className="profile-stat-row profile-stat-row-last">
           <span>Στόχος πρωτεΐνης</span>
           <strong>{formatNumber(proteinTarget || 0)} g</strong>
         </div>
       </div>
 
-      {/* ΣΥΝΟΨΗ */}
       <div className="soft-box profile-section-box">
         <div className="profile-section-title">Σύνοψη</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
