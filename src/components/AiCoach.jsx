@@ -22,8 +22,10 @@ export default function AiCoach({
   const [collapsed, setCollapsed] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
   const chatRef = useRef(null);
   const recognitionRef = useRef(null);
+  const inputRef = useRef(null);
 
   const lastWeight = weightLog?.length
     ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight
@@ -46,33 +48,72 @@ export default function AiCoach({
     if (isNearBottom) el.scrollTop = el.scrollHeight;
   }, [messages, loading]);
 
-  // Voice recognition setup
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
+
     const recognition = new SpeechRecognition();
     recognition.lang = "el-GR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+      setVoiceError("");
+      setListening(true);
+    };
+
     recognition.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      setInput((prev) => prev ? prev + " " + transcript : transcript);
+      let interim = "";
+      let final = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      setInput(final || interim);
+    };
+
+    recognition.onerror = (e) => {
+      if (e.error === "not-allowed") {
+        setVoiceError("Δεν επιτράπηκε η πρόσβαση στο μικρόφωνο.");
+      } else if (e.error === "no-speech") {
+        setVoiceError("Δεν ακούστηκε φωνή. Δοκίμασε ξανά.");
+      } else {
+        setVoiceError("Σφάλμα μικροφώνου. Δοκίμασε ξανά.");
+      }
       setListening(false);
     };
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
     recognitionRef.current = recognition;
   }, []);
 
   function toggleVoice() {
     const recognition = recognitionRef.current;
-    if (!recognition) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      // Fallback για iPhone — focus στο input για native keyboard mic
+      setVoiceError("Πάτα το 🎤 στο keyboard σου για φωνητική εισαγωγή.");
+      inputRef.current?.focus();
+      return;
+    }
+
     if (listening) {
       recognition.stop();
       setListening(false);
     } else {
-      recognition.start();
-      setListening(true);
+      setInput("");
+      setVoiceError("");
+      try {
+        recognition.start();
+      } catch {
+        setVoiceError("Δοκίμασε ξανά.");
+        setListening(false);
+      }
     }
   }
 
@@ -173,35 +214,35 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 2. ΗΜΕΡΗΣΙΑ ΔΙΑΙΤΑ: Θερμίδες ΑΚΡΙΒΩΣ στον στόχο (${targetCalories} kcal). Λαμβάνεις υπόψη ηλικία, βάρος, BMI, στόχο.
 
 3. MEAL PLAN ΛΟΓΙΚΗ — κάθε γεύμα έχει ρόλο:
-   🌅 ΠΡΩΙΝΟ: Χορταστικό, εύκολο. 
+   🌅 ΠΡΩΙΝΟ: Χορταστικό, εύκολο.
       - Carnivore/Keto: αυγά (2-3), μπέικον, τυρί, βούτυρο. ΟΧΙ καφές ως γεύμα.
       - Balanced/Mediterranean: βρώμη, αυγά, γιαούρτι, φρούτο.
       - High Protein/Muscle Gain: αυγά + γιαούρτι 0% + whey.
-      - Fasting: το πρώτο γεύμα μετά το fasting window — πλήρες και χορταστικό.
+      - Fasting: πρώτο γεύμα μετά το fasting window — πλήρες και χορταστικό.
       - Vegan/Vegetarian: βρώμη, φυτικό γάλα, ξηροί καρποί, φρούτο.
-   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: Κύριο γεύμα — μεγαλύτερη μερίδα, πλήρες σε macros. Κρέας/ψάρι/όσπρια + λαχανικά.
+   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: Κύριο γεύμα — μεγαλύτερη μερίδα, πλήρες σε macros.
    🌙 ΒΡΑΔΙΝΟ: Ελαφρύτερο από μεσημεριανό. Υψηλή πρωτεΐνη, χαμηλότερα carbs.
    🍎 ΣΝΑΚ: 100-200 kcal. Ξηροί καρποί, τυρί, φρούτο — ανάλογα mode.
-   
+
    ΚΑΝΟΝΕΣ MEAL PLAN:
    - ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές την ίδια μέρα
    - Κάθε γεύμα να έχει συγκεκριμένη ποσότητα (π.χ. "3 αυγά", "150g κοτόπουλο")
-   - Οι θερμίδες να αθροίζουν ΑΚΡΙΒΩΣ τον ημερήσιο στόχο
-   - ΠΑΝΤΑ μετά από meal plan ρώτα: "Θέλεις να αλλάξω κάτι; Π.χ. δεν σου αρέσει κάποιο γεύμα ή θέλεις εναλλακτικό;"
+   - Θερμίδες να αθροίζουν ΑΚΡΙΒΩΣ τον ημερήσιο στόχο
+   - ΠΑΝΤΑ μετά από meal plan ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-4. ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ — παρουσίασε ΩΔΕ:
+4. ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ:
 📅 ΔΕΥΤΕΡΑ
 🌅 Πρωινό: [τρόφιμο + ποσότητα] — [X] kcal
 🌞 Μεσημεριανό: [τρόφιμο + ποσότητα] — [X] kcal
 🌙 Βραδινό: [τρόφιμο + ποσότητα] — [X] kcal
 🍎 Σνακ: [τρόφιμο + ποσότητα] — [X] kcal
 📊 Σύνολο: [X] kcal
-(ΜΗΝ βάζεις carbs/fat/protein breakdown ανά γεύμα — μόνο kcal και ποσότητα)
-Μετά από το εβδομαδιαίο πρόγραμμα ρώτα αν θέλει αλλαγές.
+(ΜΗΝ βάζεις carbs/fat/protein ανά γεύμα — μόνο kcal και ποσότητα)
+Μετά ρώτα αν θέλει αλλαγές.
 
-5. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει, τι θέλει να αλλάξει. Προσάρμοσε βάσει απαντήσεων. Πρότεινε εναλλακτικά όταν ο χρήστης διαφωνεί.
+5. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε βάσει απαντήσεων.
 
-6. ΛΑΘΗ: Επισήμαινε βάσει ΠΡΑΓΜΑΤΙΚΩΝ δεδομένων (λίγη πρωτεΐνη, πολλές/λίγες θερμίδες, παράλειψη γευμάτων κλπ).
+6. ΛΑΘΗ: Επισήμαινε βάσει ΠΡΑΓΜΑΤΙΚΩΝ δεδομένων.
 
 7. ΓΥΜΝΑΣΤΙΚΗ: Από αγαπημένες ασκήσεις. Διάρκεια + ένταση.
 
@@ -256,8 +297,6 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       </div>
     </div>
   );
-
-  const voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
   return (
     <div className="card">
@@ -324,33 +363,44 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       )}
 
       {(hasLoaded || messages.length > 0) && (
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            className="input"
-            placeholder={listening ? "🎤 Μιλάς..." : "Ρώτα με κάτι..."}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            style={{ flex: 1, borderColor: listening ? "var(--color-green)" : undefined }}
-            disabled={loading}
-          />
-          {voiceSupported && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {voiceError && (
+            <div className="muted" style={{ fontSize: 12, textAlign: "center" }}>{voiceError}</div>
+          )}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              ref={inputRef}
+              className="input"
+              placeholder={listening ? "🎤 Μιλάς..." : "Ρώτα με κάτι..."}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+              style={{ flex: 1, borderColor: listening ? "#22c55e" : undefined }}
+              disabled={loading}
+            />
             <button
               onClick={toggleVoice}
               type="button"
-              style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: listening ? "#22c55e" : "var(--bg-soft)", color: listening ? "white" : "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
-              title={listening ? "Σταμάτα εγγραφή" : "Ομιλία"}
+              style={{
+                padding: "12px 14px", flexShrink: 0, borderRadius: 12,
+                border: `1px solid ${listening ? "#22c55e" : "var(--border-color)"}`,
+                background: listening ? "#22c55e" : "var(--bg-soft)",
+                color: listening ? "white" : "var(--text-primary)",
+                cursor: "pointer", fontSize: 16, lineHeight: 1,
+                transition: "all 0.2s"
+              }}
+              title={listening ? "Σταμάτα εγγραφή" : "Φωνητική εισαγωγή"}
             >
               🎤
             </button>
-          )}
-          <button
-            className="btn btn-dark"
-            onClick={() => sendMessage(null)}
-            type="button"
-            disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}
-          >↑</button>
+            <button
+              className="btn btn-dark"
+              onClick={() => sendMessage(null)}
+              type="button"
+              disabled={loading || !input.trim()}
+              style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}
+            >↑</button>
+          </div>
         </div>
       )}
     </div>
