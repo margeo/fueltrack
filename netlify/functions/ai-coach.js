@@ -15,16 +15,20 @@ export async function handler(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
     }
 
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return { statusCode: 500, body: JSON.stringify({ error: "GEMINI_API_KEY not set" }) };
+    }
+
     const recentMessages = validMessages.slice(-10);
 
-    // Μετατροπή μηνυμάτων σε Gemini format
     const geminiMessages = recentMessages.map(m => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }]
     }));
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,14 +45,15 @@ export async function handler(event) {
       }
     );
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API error ${response.status}: ${errText}`);
+      return { statusCode: 500, body: JSON.stringify({ error: `Gemini error ${response.status}: ${responseText}` }) };
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Κενή απάντηση από το API");
+    if (!text) return { statusCode: 500, body: JSON.stringify({ error: "Empty response from Gemini" }) };
 
     return {
       statusCode: 200,
