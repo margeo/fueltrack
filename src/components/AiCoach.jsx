@@ -63,15 +63,18 @@ export default function AiCoach({
     };
 
     recognition.onresult = (e) => {
-      let interim = "";
-      let final = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += t;
-        else interim += t;
-      }
-      setInput(final || interim);
-    };
+  let finalTranscript = "";
+  let interimTranscript = "";
+  
+  for (let i = 0; i < e.results.length; i++) {
+    const t = e.results[i][0].transcript;
+    if (e.results[i].isFinal) finalTranscript += t;
+    else interimTranscript += t;
+  }
+  
+  // Δείχνει final + interim μαζί
+  setInput(finalTranscript + interimTranscript);
+};
 
     recognition.onerror = (e) => {
       if (e.error === "not-allowed") {
