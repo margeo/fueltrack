@@ -21,7 +21,9 @@ export default function AiCoach({
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [listening, setListening] = useState(false);
   const chatRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const lastWeight = weightLog?.length
     ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight
@@ -43,6 +45,36 @@ export default function AiCoach({
     const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
     if (isNearBottom) el.scrollTop = el.scrollHeight;
   }, [messages, loading]);
+
+  // Voice recognition setup
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "el-GR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => prev ? prev + " " + transcript : transcript);
+      setListening(false);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognitionRef.current = recognition;
+  }, []);
+
+  function toggleVoice() {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    if (listening) {
+      recognition.stop();
+      setListening(false);
+    } else {
+      recognition.start();
+      setListening(true);
+    }
+  }
 
   function getCompatibleFoods() {
     if (!Array.isArray(foods)) return [];
@@ -138,9 +170,26 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 ━━━ ΚΑΝΟΝΕΣ ΣΥΜΠΕΡΙΦΟΡΑΣ ━━━
 1. ΦΑΓΗΤΟ: Πρότεινε πρώτα κατάλληλα αγαπημένα. Αν δεν υπάρχουν, πρότεινε από τη βάση. Αν αγαπημένο είναι ακατάλληλο → εξήγησε γιατί + δώσε παρόμοιο εναλλακτικό.
 
-2. ΗΜΕΡΗΣΙΑ ΔΙΑΙΤΑ: Θερμίδες ΑΚΡΙΒΩΣ στον στόχο (${targetCalories} kcal). Λαμβάνεις υπόψη ηλικία (${age}), βάρος (${currentWeight}kg)${bmi ? `, BMI (${bmi})` : ""}, στόχο. Προτείνεις σαν κανονικός διατροφολόγος.
+2. ΗΜΕΡΗΣΙΑ ΔΙΑΙΤΑ: Θερμίδες ΑΚΡΙΒΩΣ στον στόχο (${targetCalories} kcal). Λαμβάνεις υπόψη ηλικία, βάρος, BMI, στόχο.
 
-3. ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ — παρουσίασε ΩΔΕ:
+3. MEAL PLAN ΛΟΓΙΚΗ — κάθε γεύμα έχει ρόλο:
+   🌅 ΠΡΩΙΝΟ: Χορταστικό, εύκολο. 
+      - Carnivore/Keto: αυγά (2-3), μπέικον, τυρί, βούτυρο. ΟΧΙ καφές ως γεύμα.
+      - Balanced/Mediterranean: βρώμη, αυγά, γιαούρτι, φρούτο.
+      - High Protein/Muscle Gain: αυγά + γιαούρτι 0% + whey.
+      - Fasting: το πρώτο γεύμα μετά το fasting window — πλήρες και χορταστικό.
+      - Vegan/Vegetarian: βρώμη, φυτικό γάλα, ξηροί καρποί, φρούτο.
+   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: Κύριο γεύμα — μεγαλύτερη μερίδα, πλήρες σε macros. Κρέας/ψάρι/όσπρια + λαχανικά.
+   🌙 ΒΡΑΔΙΝΟ: Ελαφρύτερο από μεσημεριανό. Υψηλή πρωτεΐνη, χαμηλότερα carbs.
+   🍎 ΣΝΑΚ: 100-200 kcal. Ξηροί καρποί, τυρί, φρούτο — ανάλογα mode.
+   
+   ΚΑΝΟΝΕΣ MEAL PLAN:
+   - ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές την ίδια μέρα
+   - Κάθε γεύμα να έχει συγκεκριμένη ποσότητα (π.χ. "3 αυγά", "150g κοτόπουλο")
+   - Οι θερμίδες να αθροίζουν ΑΚΡΙΒΩΣ τον ημερήσιο στόχο
+   - ΠΑΝΤΑ μετά από meal plan ρώτα: "Θέλεις να αλλάξω κάτι; Π.χ. δεν σου αρέσει κάποιο γεύμα ή θέλεις εναλλακτικό;"
+
+4. ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ — παρουσίασε ΩΔΕ:
 📅 ΔΕΥΤΕΡΑ
 🌅 Πρωινό: [τρόφιμο + ποσότητα] — [X] kcal
 🌞 Μεσημεριανό: [τρόφιμο + ποσότητα] — [X] kcal
@@ -148,14 +197,15 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 🍎 Σνακ: [τρόφιμο + ποσότητα] — [X] kcal
 📊 Σύνολο: [X] kcal
 (ΜΗΝ βάζεις carbs/fat/protein breakdown ανά γεύμα — μόνο kcal και ποσότητα)
+Μετά από το εβδομαδιαίο πρόγραμμα ρώτα αν θέλει αλλαγές.
 
-4. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει, τι θέλει να αλλάξει. Προσάρμοσε βάσει απαντήσεων.
+5. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει, τι θέλει να αλλάξει. Προσάρμοσε βάσει απαντήσεων. Πρότεινε εναλλακτικά όταν ο χρήστης διαφωνεί.
 
-5. ΛΑΘΗ: Επισήμαινε βάσει ΠΡΑΓΜΑΤΙΚΩΝ δεδομένων.
+6. ΛΑΘΗ: Επισήμαινε βάσει ΠΡΑΓΜΑΤΙΚΩΝ δεδομένων (λίγη πρωτεΐνη, πολλές/λίγες θερμίδες, παράλειψη γευμάτων κλπ).
 
-6. ΓΥΜΝΑΣΤΙΚΗ: Από αγαπημένες ασκήσεις. Διάρκεια + ένταση.
+7. ΓΥΜΝΑΣΤΙΚΗ: Από αγαπημένες ασκήσεις. Διάρκεια + ένταση.
 
-7. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
+8. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
   }
 
   function buildMessages(chatMessage) {
@@ -173,7 +223,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const effectiveMessage = isInitial
-      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ΜΟΝΟ κατάλληλα για ${currentMode.label})\n2. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς\n3. Ένα συγκεκριμένο πράγμα που κάνω λάθος\n4. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
+      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ΜΟΝΟ κατάλληλα για ${currentMode.label}, ρεαλιστικά γεύματα)\n2. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς\n3. Ένα συγκεκριμένο πράγμα που κάνω λάθος\n4. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
       : text;
 
     try {
@@ -206,6 +256,8 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       </div>
     </div>
   );
+
+  const voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
   return (
     <div className="card">
@@ -242,27 +294,10 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       )}
 
       {messages.length > 0 && (
-        <div
-          ref={chatRef}
-          style={{
-            display: "flex", flexDirection: "column", gap: 10,
-            marginBottom: 12, maxHeight: 500,
-            overflowY: "auto", overflowX: "hidden",
-            paddingRight: 4,
-            scrollbarWidth: "thin",
-            scrollbarColor: "var(--border-color) transparent"
-          }}
-        >
+        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "90%", padding: "10px 14px",
-                borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)",
-                color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)",
-                fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word",
-                border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none"
-              }}>
+              <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
                 {msg.text}
               </div>
             </div>
@@ -290,15 +325,32 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 
       {(hasLoaded || messages.length > 0) && (
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input className="input" placeholder="Ρώτα με κάτι..." value={input}
+          <input
+            className="input"
+            placeholder={listening ? "🎤 Μιλάς..." : "Ρώτα με κάτι..."}
+            value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            style={{ flex: 1 }} disabled={loading} />
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
+            style={{ flex: 1, borderColor: listening ? "var(--color-green)" : undefined }}
+            disabled={loading}
+          />
+          {voiceSupported && (
+            <button
+              onClick={toggleVoice}
+              type="button"
+              style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: listening ? "#22c55e" : "var(--bg-soft)", color: listening ? "white" : "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
+              title={listening ? "Σταμάτα εγγραφή" : "Ομιλία"}
+            >
+              🎤
+            </button>
+          )}
+          <button
+            className="btn btn-dark"
+            onClick={() => sendMessage(null)}
+            type="button"
             disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>
-            ↑
-          </button>
+            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}
+          >↑</button>
         </div>
       )}
     </div>
