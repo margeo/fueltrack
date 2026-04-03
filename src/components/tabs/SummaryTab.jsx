@@ -196,7 +196,7 @@ export default function SummaryTab({
       <div className="hero-card">
 
         {/* Τίτλος hero */}
-        <div style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>
           Σύνοψη ημέρας
         </div>
 
