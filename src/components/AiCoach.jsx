@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MODES } from "../../data/modes";
+import { MODES } from "../data/modes";
 
 const QUICK_QUESTIONS = [
   "Τι να φάω τώρα;",
