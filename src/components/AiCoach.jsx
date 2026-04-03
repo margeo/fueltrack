@@ -20,7 +20,6 @@ export default function AiCoach({
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
@@ -98,7 +97,7 @@ export default function AiCoach({
 Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
 ${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
 Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
-ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal — ΑΥΤΟΣ ΕΙΝΑΙ Ο ΣΤΟΧΟΣ ΣΟΥ
+ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal — ΑΥΤΟΣ ΕΙΝΑΙ Ο ΣΤΟΧΟΣ
 Πρωτεΐνη: ${proteinTarget}g/μέρα
 Streak: ${streak} μέρες
 
@@ -123,28 +122,29 @@ ${currentMode.aiRule}
 
 1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
 
-2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά — η καταγραφή είναι το πιο σημαντικό εργαλείο για επιτυχία.
+2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά.
 
 3. ΓΕΥΜΑΤΑ — ΛΟΓΙΚΗ ΕΠΙΛΟΓΗ:
-   🌅 ΠΡΩΙΝΟ (07:00-09:00): αυγά, γιαούρτι με φρούτα, βρώμη, τοστ, smoothie. ΠΟΤΕ κρέας ή ψάρι.
-   🍎 ΣΝΑΚ (11:00 και 16:30): φρούτο, ξηροί καρποί, γιαούρτι, protein bar, rice cake. ΠΟΤΕ κρέας/ψάρι.
-   🌞 ΜΕΣΗΜΕΡΙΑΝΟ (13:00-14:30): κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
-   🌙 ΒΡΑΔΙΝΟ (19:00-21:00): ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
-   Ποικιλία κάθε μέρα. Εύκολα, νόστιμα, προσβάσιμα γεύματα.
+   🌅 ΠΡΩΙΝΟ: αυγά, γιαούρτι με φρούτα, βρώμη, τοστ, smoothie. ΠΟΤΕ κρέας ή ψάρι.
+   🍎 ΣΝΑΚ: φρούτο, ξηροί καρποί, γιαούρτι, protein bar. ΠΟΤΕ κρέας/ψάρι.
+   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
+   🌙 ΒΡΑΔΙΝΟ: ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
+   Ποικιλία κάθε μέρα. Εύκολα, νόστιμα γεύματα.
 
 4. ΣΥΜΒΑΤΟΤΗΤΑ ΔΙΑΙΤΑΣ: Αν ο χρήστης αναφέρει τρόφιμο που ΔΕΝ ταιριάζει με ${currentMode.label}, πες το ΑΜΕΣΩΣ και φιλικά.
-   Παράδειγμα — Carnivore + ζυμαρικά: "Τα ζυμαρικά δεν ταιριάζουν με Carnivore — έχουν πολλούς υδατάνθρακες. Μπορώ να σου προτείνω κάτι παρόμοιο;"
-   Παράδειγμα — Keto + ρύζι: "Το ρύζι έχει πολλούς υδατάνθρακες για Keto. Δοκίμασε κουνουπίδι ρύζι!"
    ΜΗΝ προτείνεις ποτέ ακατάλληλα τρόφιμα για τη δίαιτα.
 
 5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
-   ΚΡΙΤΙΚΟ: ΜΟΝΟ φαγητό — χωρίς ασκήσεις, χωρίς γυμναστική.
+   ΚΡΙΤΙΚΟ: ΜΟΝΟ φαγητό — χωρίς ασκήσεις.
 
-   ⚠️ ΚΡΙΤΙΚΟ — ΘΕΡΜΙΔΕΣ: Κάθε μέρα ΠΡΕΠΕΙ να έχει ΑΚΡΙΒΩΣ ${targetCalories} kcal.
-   Πριν γράψεις κάθε μέρα, άθροισε: Πρωινό + Σνακ + Μεσημεριανό + Σνακ + Βραδινό = ${targetCalories} kcal.
-   Αν δεν βγαίνει ${targetCalories} kcal, αύξησε τις ποσότητες μέχρι να βγει.
-   ΠΟΤΕ μη δώσεις μέρα με λιγότερες από ${targetCalories - 50} ή περισσότερες από ${targetCalories + 50} kcal.
-   Αν ο στόχος είναι ${targetCalories} kcal και το πρωινό έχει 400 kcal, το μεσημεριανό πρέπει να έχει ~600-700 kcal, το βραδινό ~400-500 kcal και τα σνακ ~150-200 kcal το καθένα.
+   ΘΕΡΜΙΔΕΣ: Κάθε μέρα ΠΡΕΠΕΙ να έχει ΑΚΡΙΒΩΣ ${targetCalories} kcal.
+   Άθροισε πριν γράψεις: Πρωινό + Σνακ + Μεσημεριανό + Σνακ + Βραδινό = ${targetCalories} kcal.
+   Κατανομή ανά γεύμα για ${targetCalories} kcal:
+   - Πρωινό: ${Math.round(targetCalories * 0.25)} kcal
+   - Σνακ x2: ${Math.round(targetCalories * 0.1)} kcal το καθένα
+   - Μεσημεριανό: ${Math.round(targetCalories * 0.35)} kcal
+   - Βραδινό: ${Math.round(targetCalories * 0.20)} kcal
+   ΠΟΤΕ λιγότερο από ${targetCalories - 50} ή περισσότερο από ${targetCalories + 50} kcal/μέρα.
 
 📅 ΔΕΥΤΕΡΑ
 07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X] kcal)
@@ -155,31 +155,27 @@ ${currentMode.aiRule}
 Σύνολο: [X] kcal
 ─────────────────
 
-   Όλες οι μέρες Δευτέρα-Κυριακή (η Κυριακή πιο ελεύθερη).
-   Χωρίς αστερίσκους. Πρόγραμμα ΠΛΗΡΕΣ με τη μια.
-   Αν θέλει αλλαγές → ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα.
+   Όλες οι μέρες Δευτέρα-Κυριακή. Χωρίς αστερίσκους.
+   Πρόγραμμα ΠΛΗΡΕΣ με τη μια. Αν θέλει αλλαγές → ΟΛΟΚΑΙΝΟΥΡΓΙΟ.
    ΣΤΟ ΤΕΛΟΣ:
 ⚠️ Γενική πρόταση — δεν αντικαθιστά ειδικό. Συμβουλέψου γιατρό αν έχεις παθήσεις ή αλλεργίες.
    Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
 6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
-   ΚΡΙΤΙΚΟ: ΜΟΝΟ ασκήσεις — χωρίς φαγητό, χωρίς διατροφικές συμβουλές.
+   ΚΡΙΤΙΚΟ: ΜΟΝΟ ασκήσεις — χωρίς φαγητό.
 
 📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
 09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
-09:20 💪 [Άσκηση]: [σετ × επαναλήψεις]
 Διάρκεια: ~[X] λεπτά
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
-Ελαφρύ περπάτημα 20-30 λεπτά αν θέλεις.
 
    Όλες οι μέρες Δευτέρα-Κυριακή. 2 rest days τουλάχιστον.
-   Βάσει αγαπημένων ασκήσεων αν έχει δηλώσει.
    ΣΤΟ ΤΕΛΟΣ:
-⚠️ Αν έχεις τραυματισμούς ή παθήσεις, συμβουλέψου γιατρό. Ξεκίνα με χαμηλή ένταση.
+⚠️ Αν έχεις τραυματισμούς, συμβουλέψου γιατρό. Ξεκίνα με χαμηλή ένταση.
    Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-7. ΝΕΟ ΠΡΟΓΡΑΜΜΑ: Αν έχει ήδη αποθηκευμένο, ρώτα: "Έχεις ήδη αποθηκευμένο πρόγραμμα. Θέλεις να το αντικαταστήσω ή να κάνω παραλλαγή;"
+7. ΝΕΟ ΠΡΟΓΡΑΜΜΑ: Αν έχει ήδη αποθηκευμένο, ρώτα αν θέλει αντικατάσταση ή παραλλαγή.
 
 8. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε.
 
@@ -200,11 +196,16 @@ ${currentMode.aiRule}
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
-    const effectiveMessage = isInitial
-      ? `...`
-      : text === "Εβδομαδιαίο πρόγραμμα διατροφής"
-        ? `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών. ΥΠΕΝΘΥΜΙΣΗ: ο ημερήσιος στόχος είναι ΑΚΡΙΒΩΣ ${targetCalories} kcal. Κάθε μέρα ΠΡΕΠΕΙ να έχει ${targetCalories} kcal — όχι 800, όχι 1200, ΑΚΡΙΒΩΣ ${targetCalories} kcal.`
-        : text;
+
+    let effectiveMessage;
+    if (isInitial) {
+      effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
+    } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
+      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΕΝΘΥΜΙΣΗ: ο ημερήσιος στόχος είναι ΑΚΡΙΒΩΣ ${targetCalories} kcal κάθε μέρα. Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)} kcal, κάθε Σνακ ${Math.round(targetCalories * 0.1)} kcal, Μεσημεριανό ${Math.round(targetCalories * 0.35)} kcal, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.`;
+    } else {
+      effectiveMessage = text;
+    }
+
     try {
       const response = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
@@ -224,26 +225,11 @@ ${currentMode.aiRule}
     } finally { setLoading(false); }
   }
 
-  if (collapsed) return (
-    <div className="card" style={{ padding: "10px 16px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>🤖 AI Coach</span>
-          {streak > 0 && <span className="muted" style={{ fontSize: 12, marginLeft: 8 }}>Streak {streak} μέρες 🔥</span>}
-        </div>
-        <button className="btn btn-dark" onClick={() => setCollapsed(false)} type="button" style={{ fontSize: 12, padding: "5px 12px" }}>Άνοιγμα</button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16 }}>🤖 AI Coach</h2>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
-        </div>
-        <button className="btn btn-light" onClick={() => setCollapsed(true)} type="button" style={{ fontSize: 13, padding: "5px 10px", flexShrink: 0 }}>✕</button>
+      <div style={{ marginBottom: 12 }}>
+        <h2 style={{ margin: 0, fontSize: 16 }}>🤖 AI Coach</h2>
+        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
       </div>
 
       {!hasLoaded && !loading && messages.length === 0 && (
