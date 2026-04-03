@@ -7,13 +7,15 @@ function exportToPDF(plan) {
   const title = plan.type === "meal"
     ? "Εβδομαδιαίο Πρόγραμμα Διατροφής"
     : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
+  const emoji = plan.type === "meal" ? "🥗" : "💪";
 
   const lines = plan.content.split("\n").map(line => {
     const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if (line.startsWith("📅")) return `<div class="day-header">${escaped}</div>`;
     if (line.startsWith("Σύνολο")) return `<div class="total">${escaped}</div>`;
     if (line.startsWith("─")) return `<hr>`;
-    if (line.trim() === "") return `<div style="height:8px"></div>`;
+    if (line.startsWith("⚠️")) return `<div class="disclaimer">${escaped}</div>`;
+    if (line.trim() === "") return `<div style="height:6px"></div>`;
     return `<div class="line">${escaped}</div>`;
   }).join("");
 
@@ -24,41 +26,42 @@ function exportToPDF(plan) {
   <title>${title}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; padding: 32px; color: #111; line-height: 1.6; font-size: 14px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 2px solid #111; padding-bottom: 12px; }
-    .title { font-size: 20px; font-weight: bold; }
-    .subtitle { color: #555; font-size: 13px; margin-top: 4px; }
-    .close-btn { background: #111; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .day-header { font-weight: bold; font-size: 15px; margin-top: 16px; margin-bottom: 6px; background: #f5f5f5; padding: 6px 10px; border-radius: 6px; }
+    body { font-family: Arial, sans-serif; padding: 28px; color: #111; line-height: 1.65; font-size: 13px; }
+    .top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #111; padding-bottom: 14px; }
+    .title-block .main-title { font-size: 19px; font-weight: bold; }
+    .title-block .sub { color: #555; font-size: 12px; margin-top: 3px; }
+    .btn-group { display: flex; gap: 8px; }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; border: none; font-weight: bold; }
+    .btn-close { background: #e5e7eb; color: #111; }
+    .btn-print { background: #111; color: white; }
+    .day-header { font-weight: bold; font-size: 14px; margin-top: 14px; margin-bottom: 5px; background: #f3f4f6; padding: 6px 10px; border-radius: 6px; border-left: 4px solid #111; }
     .line { padding: 2px 10px; }
-    .total { font-weight: bold; padding: 4px 10px; color: #333; }
-    hr { border: none; border-top: 1px solid #ddd; margin: 8px 0; }
+    .total { font-weight: bold; padding: 4px 10px; background: #f9fafb; border-radius: 4px; }
+    .disclaimer { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 14px; margin-top: 16px; font-size: 12px; color: #78350f; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 6px 0; }
     @media print {
-      .close-btn { display: none; }
-      body { padding: 20px; }
+      .btn-group { display: none; }
+      body { padding: 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <div class="title">🥗 FuelTrack — ${title}</div>
-      <div class="subtitle">Δημιουργήθηκε: ${plan.date}</div>
+  <div class="top-bar">
+    <div class="title-block">
+      <div class="main-title">${emoji} FuelTrack — ${title}</div>
+      <div class="sub">Δημιουργήθηκε: ${plan.date}</div>
     </div>
-    <button class="close-btn" onclick="window.close()">✕ Κλείσιμο</button>
+    <div class="btn-group">
+      <button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button>
+      <button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button>
+    </div>
   </div>
   ${lines}
-  <div style="margin-top:24px; text-align:center;">
-    <button onclick="window.print()" style="background:#111;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;">🖨️ Εκτύπωση / Save PDF</button>
-  </div>
 </body>
 </html>`;
 
   const win = window.open("", "_blank");
-  if (win) {
-    win.document.write(html);
-    win.document.close();
-  }
+  if (win) { win.document.write(html); win.document.close(); }
 }
 
 export default function SummaryTab({
@@ -70,8 +73,7 @@ export default function SummaryTab({
   foods, dailyLogs, weightLog,
   onAddWeight, onDeleteWeight,
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
-  favoriteExercises,
-  age, weight, height, gender,
+  favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan
 }) {
   const [weightInput, setWeightInput] = useState("");
@@ -80,18 +82,14 @@ export default function SummaryTab({
   const [expandedPlan, setExpandedPlan] = useState(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
-
-  const sortedWeightLog = useMemo(() =>
-    [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)), [weightLog]);
-
-  const chartData = useMemo(() =>
-    [...(weightLog || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-30), [weightLog]);
+  const sortedWeightLog = useMemo(() => [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)), [weightLog]);
+  const chartData = useMemo(() => [...(weightLog || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-30), [weightLog]);
 
   const firstWeight = chartData[0]?.weight;
   const lastWeight = chartData[chartData.length - 1]?.weight;
   const diff = firstWeight && lastWeight ? lastWeight - firstWeight : null;
-  const minW = chartData.length ? Math.min(...chartData.map((d) => d.weight)) - 1 : 0;
-  const maxW = chartData.length ? Math.max(...chartData.map((d) => d.weight)) + 1 : 1;
+  const minW = chartData.length ? Math.min(...chartData.map(d => d.weight)) - 1 : 0;
+  const maxW = chartData.length ? Math.max(...chartData.map(d => d.weight)) + 1 : 1;
   const range = maxW - minW || 1;
   const chartH = 90, chartW = 300;
 
@@ -153,36 +151,38 @@ export default function SummaryTab({
   const mealPlan = savedPlans?.find(p => p.type === "meal");
   const trainingPlan = savedPlans?.find(p => p.type === "training");
 
-  function PlanCard({ plan, type, emoji, title }) {
+  function PlanSection({ plan, type, emoji, title }) {
     const isExpanded = expandedPlan === type;
     return (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 13 }}>{emoji} {title}</div>
           {plan && (
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>
-                {isExpanded ? "Σύμπτυξη ▲" : "Εμφάνιση ▼"}
+                {isExpanded ? "▲" : "▼"}
               </button>
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
           )}
         </div>
+
         {!plan ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
+          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
             <div className="muted" style={{ fontSize: 12 }}>
-              Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}. Ρώτα τον AI Coach!
+              Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}.
+              Ρώτα τον AI Coach!
             </div>
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
-              Τελευταία ενημέρωση: {plan.date}
-              {!isExpanded && <span style={{ marginLeft: 8, color: "var(--color-green)" }}>✓ Αποθηκευμένο</span>}
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>Αποθηκεύτηκε: {plan.date}</span>
+              {!isExpanded && <span style={{ color: "var(--color-green)", fontWeight: 700 }}>✓ Αποθηκευμένο</span>}
             </div>
             {isExpanded && (
-              <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 400, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+              <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
                 {plan.content}
               </div>
             )}
@@ -285,29 +285,24 @@ export default function SummaryTab({
         </div>
       </div>
 
-      {/* 5. ΠΡΟΓΡΑΜΜΑΤΑ — compact με expand */}
+      {/* 5. ΠΡΟΓΡΑΜΜΑΤΑ */}
       <div className="card">
         <h2>📋 Τα προγράμματά μου</h2>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 14 }}>
+          Οι προτάσεις είναι γενικού χαρακτήρα και δεν αντικαθιστούν ειδικό. Συμβουλέψου γιατρό αν έχεις παθήσεις ή αλλεργίες.
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <PlanCard plan={mealPlan} type="meal" emoji="🥗" title="Πρόγραμμα διατροφής" />
+          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title="Πρόγραμμα διατροφής" />
           <div style={{ height: 1, background: "var(--border-soft)" }} />
-          <PlanCard plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
+          <PlanSection plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
         </div>
       </div>
 
       {/* 6. ΠΡΟΟΔΟΣ */}
       <div className="card">
         <h2>Πρόοδος</h2>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginBottom: 16 }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
-            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Συνεχόμενες μέρες στο στόχο</div>
-          </div>
-          <div style={{ fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
-            {streak}<span className="muted" style={{ fontSize: 14, fontWeight: 400, marginLeft: 4 }}>μέρες</span>
-          </div>
-        </div>
 
+        {/* Εισαγωγή βάρους ΠΡΩΤΑ */}
         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>⚖️ Εισαγωγή βάρους</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
           <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
@@ -316,7 +311,7 @@ export default function SummaryTab({
         </div>
 
         {chartData.length >= 2 && (
-          <div style={{ marginBottom: 10, overflowX: "auto" }}>
+          <div style={{ marginBottom: 12, overflowX: "auto" }}>
             <svg viewBox={`0 0 ${chartW} ${chartH + 16}`} style={{ width: "100%", maxWidth: chartW }}>
               {chartData.map((point, i) => {
                 const x = (i / (chartData.length - 1)) * (chartW - 20) + 10;
@@ -345,7 +340,7 @@ export default function SummaryTab({
         )}
 
         {sortedWeightLog.length > 0 && (
-          <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10 }}>
+          <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10, marginBottom: 16 }}>
             {(showAllWeight ? sortedWeightLog : sortedWeightLog.slice(0, 3)).map((entry) => (
               <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
                 <span className="muted">{formatDisplayDate(entry.date)}</span>
@@ -362,6 +357,17 @@ export default function SummaryTab({
             )}
           </div>
         )}
+
+        {/* Streak ΜΕΤΑ το βάρος */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)" }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Συνεχόμενες μέρες στο στόχο</div>
+          </div>
+          <div style={{ fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
+            {streak}<span className="muted" style={{ fontSize: 14, fontWeight: 400, marginLeft: 4 }}>μέρες</span>
+          </div>
+        </div>
       </div>
 
       {/* 7. ΙΣΤΟΡΙΚΟ */}

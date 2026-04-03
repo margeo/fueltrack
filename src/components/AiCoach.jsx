@@ -40,12 +40,10 @@ export default function AiCoach({
     return diff > 0 ? `+${diff}` : `${diff}`;
   })();
 
-  // Scroll to bottom always after new message or loading change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Αυτόματη αποθήκευση plan
   useEffect(() => {
     if (!messages.length) return;
     const last = messages[messages.length - 1];
@@ -94,13 +92,17 @@ export default function AiCoach({
     const todayName = dayNames[today.getDay()];
     const todayDate = today.toLocaleDateString("el-GR");
 
+    // Ανάλυση άδειων ημερών
+    const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
+    const partialDays = (last7Days || []).filter(d => d.eaten > 0 && d.eaten < targetCalories * 0.5);
+
     const weekSummary = (last7Days || []).map((d, i) => {
       const log = dailyLogs?.[d.date] || { entries: [], exercises: [] };
       const entries = Array.isArray(log.entries) ? log.entries : [];
       const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
       const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
         ? log.exercises.map(e => e.name).join(", ") : "—";
-      return `  Μέρα ${i + 1} (${d.date}): ${d.eaten} kcal, πρωτεΐνη ${protein}g, άσκηση ${d.exercise} kcal [${exNames}]`;
+      return `  Μέρα ${i + 1} (${d.date}): ${d.eaten === 0 ? "⚠️ ΑΔΕΙΑ ΜΕΡΑ" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g, άσκηση ${d.exercise} kcal [${exNames}]`;
     }).join("\n");
 
     const { compatible, incompatible } = categorizeFavorites();
@@ -119,12 +121,14 @@ export default function AiCoach({
       .join(", ");
     const favExList = (favoriteExercises || []).map(e => `${e.name} (${e.caloriesPerMinute}kcal/λεπτό)`).join(", ");
 
-    return `Είσαι ο προσωπικός διατροφολόγος και personal trainer στο FuelTrack. Μιλάς ΠΑΝΤΑ στα Ελληνικά και ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, συγκεκριμένος, interactive.
+    return `Είσαι ο προσωπικός διατροφολόγος και personal trainer στο FuelTrack. Μιλάς ΠΑΝΤΑ στα Ελληνικά και ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, επαγγελματικός, interactive.
 
 ΣΗΜΕΡΑ: ${todayName} ${todayDate}
+ΑΔΕΙΕΣ ΜΕΡΕΣ ΤΕΛΕΥΤΑΙΑΣ ΕΒΔΟΜΑΔΑΣ: ${emptyDays.length} (${emptyDays.map(d => d.date).join(", ") || "—"})
+ΜΕΡΕΣ ΜΕ ΕΛΛΙΠΗ ΚΑΤΑΓΡΑΦΗ: ${partialDays.length}
 
 ━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
-Ηλικία: ${age || "—"} χρονών | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
+Ηλικία: ${age || "—"} | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
 Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
 ${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
 Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
@@ -154,24 +158,26 @@ ${topCompatible || "—"}
 ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 
 ━━━ ΚΑΝΟΝΕΣ ━━━
-1. ΕΝΙΚΟΣ παντά.
 
-2. ΦΑΓΗΤΟ: Πρώτα κατάλληλα αγαπημένα, αν δεν υπάρχουν από τη βάση. Αν ακατάλληλο → εξήγησε + εναλλακτικό.
+1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
 
-3. MEAL PLAN ΧΡΟΝΙΚΗ ΣΕΙΡΑ:
+2. ΑΔΕΙΕΣ ΜΕΡΕΣ: Αν υπάρχουν άδειες μέρες ή ελλιπής καταγραφή, να το επισημαίνεις φιλικά. Εξήγησε ότι η καταγραφή είναι το πιο σημαντικό εργαλείο — χωρίς δεδομένα δεν μπορείς να βοηθήσεις σωστά. Μην το κάνεις κάθε φορά, μόνο όταν είναι σχετικό.
+
+3. ΦΑΓΗΤΟ ΕΠΙΛΟΓΕΣ:
+   ΠΡΩΙΝΟ κατάλληλα τρόφιμα: αυγά, γιαούρτι, βρώμη, τυρί, φρούτα, ξηροί καρποί, whey.
+   ΣΝΑΚ κατάλληλα: φρούτο, ξηροί καρποί, γιαούρτι, τυρί, protein bar. ΟΧΙ ψάρια/κρέας ως σνακ.
+   ΜΕΣΗΜΕΡΙΑΝΟ/ΒΡΑΔΙΝΟ: κρέας, ψάρι, όσπρια, λαχανικά, ρύζι, ζυμαρικά (ανάλογα mode).
+   ΜΗΝ προτείνεις ακατάλληλα τρόφιμα για το mode (π.χ. παστίτσιο σε keto).
+   ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές/μέρα.
+
+4. MEAL PLAN — ΧΡΟΝΙΚΗ ΣΕΙΡΑ:
    07:30 🌅 Πρωινό (20-25% θερμίδων)
-   11:00 🍎 Πρωινό σνακ (5-10%)
+   11:00 🍎 Πρωινό σνακ (5-10%) — φρούτο, ξηροί καρποί, γιαούρτι
    13:30 🌞 Μεσημεριανό (30-35%)
-   16:30 🍎 Απογευματινό σνακ (5-10%)
+   16:30 🍎 Απογευματινό σνακ (5-10%) — ελαφρύ
    20:00 🌙 Βραδινό (25-30%)
 
-   Carnivore/Keto πρωινό: αυγά, τυρί, βούτυρο. ΟΧΙ καφές ως γεύμα.
-   ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές/μέρα.
-   Συγκεκριμένες ποσότητες. Θερμίδες ΑΚΡΙΒΩΣ ${targetCalories} kcal.
-   Χωρίς αστερίσκους ή "-" bullets.
-   ΠΑΝΤΑ μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
-
-4. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
+5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
 
 📅 ΔΕΥΤΕΡΑ
 07:30 🌅 Πρωινό — [τρόφιμο + ποσότητα] ([X] kcal)
@@ -181,26 +187,49 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 20:00 🌙 Βραδινό — [τρόφιμο + ποσότητα] ([X] kcal)
 Σύνολο: [X] kcal
 ─────────────────
-(Επανάλαβε για όλες τις μέρες Δευτέρα-Κυριακή)
-(Η ΚΥΡΙΑΚΗ μπορεί να είναι πιο ελεύθερη/cheat meal αν ταιριάζει στον στόχο)
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
+ΚΑΝΟΝΕΣ FORMAT:
+- Κάνε το ίδιο για ΟΛΕΣ τις μέρες Δευτέρα έως Κυριακή — η Κυριακή ΠΡΕΠΕΙ να έχει πλήρες πρόγραμμα
+- Κυριακή: μπορεί να είναι πιο ελεύθερη αλλά ΝΑ ΕΧΕΙ γεύματα
+- Χωρίς αστερίσκους, χωρίς "-" bullets, χωρίς macros ανά γεύμα
+- Θερμίδες ΑΚΡΙΒΩΣ ${targetCalories} kcal/μέρα
+- Το πρόγραμμα να είναι ΠΛΗΡΕΣ και ΣΩΣΤΟ με τη μια — χωρίς "διορθώσεις" ή "σημειώσεις" μέσα στο κείμενο
+- ΑΝ ο χρήστης θέλει αλλαγές, δίνεις ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα, όχι διορθώσεις
+- ΣΤΟ ΤΕΛΟΣ του προγράμματος ΠΑΝΤΑ πρόσθεσε:
 
-📅 ΔΕΥΤΕΡΑ — Strength
-09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
+⚠️ Σημαντική σημείωση: Αυτό το πρόγραμμα είναι γενική πρόταση βασισμένη στα δεδομένα σου. Δεν αντικαθιστά τη γνώμη ειδικού διατροφολόγου ή γιατρού. Αν έχεις αλλεργίες, παθήσεις ή ειδικές ανάγκες, συμβουλέψου ειδικό πριν ξεκινήσεις.
+
+Μετά ρώτα: "Θέλεις να αλλάξω κάτι; Πες μου ποια μέρα ή γεύμα δεν σου αρέσει."
+
+6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
+
+📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
+09:00 💪 [Άσκηση]: [σετ × επαναλήψεις ή διάρκεια]
+09:15 💪 [Άσκηση]: [σετ × επαναλήψεις ή διάρκεια]
 Διάρκεια: ~[X] λεπτά
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
+Σήμερα ξεκουράζεσαι. Ελαφρύ περπάτημα ή stretching αν θέλεις.
 
-(Να περιλαμβάνει 2 rest days. Κυριακή συνήθως rest.)
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
+ΚΑΝΟΝΕΣ:
+- Κάνε για ΟΛΕΣ τις μέρες Δευτέρα-Κυριακή
+- Κυριακή = συνήθως Ανάπαυση με σύντομη περιγραφή
+- 2 rest days ελάχιστα
+- Το πρόγραμμα να είναι ΠΛΗΡΕΣ με τη μια, χωρίς διορθώσεις μέσα
+- ΑΝ ο χρήστης θέλει αλλαγές → ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα
+- ΣΤΟ ΤΕΛΟΣ ΠΑΝΤΑ:
 
-6. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε.
+⚠️ Σημαντική σημείωση: Αυτό το πρόγραμμα είναι γενική πρόταση. Αν έχεις τραυματισμούς, παθήσεις ή δεν έχεις γυμναστεί ξανά, συμβουλέψου γιατρό ή γυμναστή πριν ξεκινήσεις. Ξεκίνα με χαμηλή ένταση και αύξησε σταδιακά.
 
-7. ΛΑΘΗ: Βάσει πραγματικών δεδομένων.
+Μετά ρώτα: "Θέλεις να αλλάξω κάτι; Πες μου ποια μέρα ή άσκηση δεν σου ταιριάζει."
 
-8. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
+7. ΝΕΟΠΡΟΓΡΑΜΜΑ: Αν ο χρήστης ζητήσει νέο πρόγραμμα ενώ έχει ήδη ένα, ρώτα πρώτα: "Έχεις ήδη αποθηκευμένο πρόγραμμα. Θέλεις να το αντικαταστήσω με νέο ή να σου δώσω παραλλαγή;"
+
+8. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε βάσει απαντήσεων.
+
+9. ΛΑΘΗ: Βάσει πραγματικών δεδομένων.
+
+10. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
   }
 
   function buildMessages(chatMessage) {
@@ -218,7 +247,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const effectiveMessage = isInitial
-      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ΜΟΝΟ κατάλληλα για ${currentMode.label})\n2. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς\n3. Ένα συγκεκριμένο πράγμα που κάνω λάθος\n4. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
+      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ΜΟΝΟ κατάλληλα για ${currentMode.label})\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς\n4. Ένα συγκεκριμένο πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
       : text;
 
     try {
@@ -287,10 +316,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       )}
 
       {messages.length > 0 && (
-        <div
-          ref={chatRef}
-          style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}
-        >
+        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
               <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
@@ -332,19 +358,12 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
             style={{ flex: 1 }}
             disabled={loading}
           />
-          <button
-            onClick={() => inputRef.current?.focus()}
-            type="button"
+          <button onClick={() => inputRef.current?.focus()} type="button"
             style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
-            title="Φωνητική εισαγωγή — πάτα το 🎤 στο keyboard"
-          >🎤</button>
-          <button
-            className="btn btn-dark"
-            onClick={() => sendMessage(null)}
-            type="button"
+            title="Φωνητική εισαγωγή — πάτα το 🎤 στο keyboard">🎤</button>
+          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
             disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}
-          >↑</button>
+            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
         </div>
       )}
     </div>
