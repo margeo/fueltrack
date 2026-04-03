@@ -53,17 +53,12 @@ function exportToPDF(plan) {
       <div class="sub">Δημιουργήθηκε: ${plan.date}</div>
     </div>
     <div class="btn-group">
-      <button class="btn btn-save" onclick="savePDF()">💾 Αποθήκευση</button>
+      <button class="btn btn-save" onclick="window.print()">💾 Αποθήκευση</button>
       <button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button>
       <button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button>
     </div>
   </div>
   ${lines}
-  <script>
-    function savePDF() {
-      window.print();
-    }
-  </script>
 </body>
 </html>`;
 
@@ -109,10 +104,10 @@ export default function SummaryTab({
   }
 
   function getGoalLabel() {
-    if (goalType === "lose") return "Lose weight";
-    if (goalType === "gain") return "Muscle gain";
+    if (goalType === "lose") return "Απώλεια βάρους";
+    if (goalType === "gain") return "Μυϊκή ανάπτυξη";
     if (goalType === "fitness") return "Fitness & Cardio";
-    return "Maintain";
+    return "Διατήρηση";
   }
 
   function getModeLabel() {
@@ -134,21 +129,21 @@ export default function SummaryTab({
 
   function getModeHint() {
     const hints = {
-      balanced: "Ισορροπημένη πρόσληψη θερμίδων.",
-      mediterranean: "Ελαιόλαδο, ψάρι και λαχανικά.",
-      whole_foods: "Μόνο φυσικές, ανεπεξέργαστες τροφές.",
-      high_protein: "Κάθε γεύμα να έχει πηγή πρωτεΐνης.",
-      muscle_gain: "Caloric surplus + πρωτεΐνη.",
-      low_carb: "Υδατάνθρακες κάτω από 15g/100g.",
-      keto: "Υδατάνθρακες κάτω από 8g/100g.",
-      carnivore: "Μόνο ζωικά προϊόντα.",
-      fasting_16_8: "Φαγητό σε παράθυρο 8 ωρών.",
-      fasting_18_6: "Φαγητό σε παράθυρο 6 ωρών.",
-      omad: "Ένα γεύμα με όλες τις θερμίδες.",
-      vegetarian: "Χωρίς κρέας.",
-      vegan: "Αποκλειστικά φυτική διατροφή."
+      balanced: "Ισορροπημένη διατροφή",
+      mediterranean: "Ελαιόλαδο, ψάρι, λαχανικά",
+      whole_foods: "Φυσικές, ανεπεξέργαστες τροφές",
+      high_protein: "Υψηλή πρωτεΐνη σε κάθε γεύμα",
+      muscle_gain: "Caloric surplus + πρωτεΐνη",
+      low_carb: "Χαμηλοί υδατάνθρακες",
+      keto: "Κετογονική — max 8g carbs/100g",
+      carnivore: "Μόνο ζωικά προϊόντα",
+      fasting_16_8: "Παράθυρο φαγητού 8 ωρών",
+      fasting_18_6: "Παράθυρο φαγητού 6 ωρών",
+      omad: "Ένα γεύμα την ημέρα",
+      vegetarian: "Χωρίς κρέας",
+      vegan: "Φυτική διατροφή"
     };
-    return hints[mode] || hints.balanced;
+    return hints[mode] || "";
   }
 
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
@@ -185,7 +180,7 @@ export default function SummaryTab({
           <>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, display: "flex", justifyContent: "space-between" }}>
               <span>Αποθηκεύτηκε: {plan.date}</span>
-              {!isExpanded && <span style={{ color: "var(--color-green)", fontWeight: 700 }}>✓</span>}
+              {!isExpanded && <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span>}
             </div>
             {isExpanded && (
               <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
@@ -217,6 +212,7 @@ export default function SummaryTab({
             </div>
           </div>
         </div>
+
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -241,10 +237,27 @@ export default function SummaryTab({
             </div>
           </div>
         </div>
+
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-          <div className="hero-subtle" style={{ fontSize: 11 }}>{getGoalLabel()} · {getModeLabel()}</div>
-          <div className="hero-subtle" style={{ fontSize: 11 }}>{formatNumber(totalCalories)} / {formatNumber(targetCalories)} kcal</div>
+
+        {/* Info row κάτω από progress bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, flexWrap: "wrap", gap: 4 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span className="hero-subtle" style={{ fontSize: 11 }}>{getGoalLabel()} · {getModeLabel()}</span>
+          </div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
+              Protein: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong>
+            </span>
+            <span className="hero-subtle" style={{ fontSize: 11 }}>
+              {formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal
+            </span>
+          </div>
+        </div>
+
+        {/* Mode hint */}
+        <div style={{ marginTop: 4 }}>
+          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 10 }}>{getModeHint()}</span>
         </div>
       </div>
 
@@ -279,19 +292,7 @@ export default function SummaryTab({
         savedPlans={savedPlans} onSavePlan={onSavePlan}
       />
 
-      {/* 4. ΚΑΤΕΥΘΥΝΣΗ */}
-      <div className="card">
-        <h2>Κατεύθυνση ημέρας</h2>
-        <div className="soft-box" style={{ padding: "10px 14px" }}>
-          <div style={{ fontWeight: 700, fontSize: 13 }}>{getModeLabel()} · {getModeHint()}</div>
-          <div style={{ marginTop: 8, display: "flex", gap: 16, fontSize: 13 }}>
-            <span><span className="muted">Kcal: </span><strong>{formatNumber(remainingCalories)}</strong></span>
-            <span><span className="muted">Protein: </span><strong>{formatNumber(remainingProtein)}g</strong></span>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. ΠΡΟΓΡΑΜΜΑΤΑ */}
+      {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}
       <div className="card">
         <h2>📋 Τα προγράμματά μου</h2>
         <div className="muted" style={{ fontSize: 12, marginBottom: 14 }}>
@@ -304,11 +305,10 @@ export default function SummaryTab({
         </div>
       </div>
 
-      {/* 6. ΠΡΟΟΔΟΣ — compact */}
+      {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
         <h2>Πρόοδος</h2>
 
-        {/* Εισαγωγή βάρους */}
         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>⚖️ Εισαγωγή βάρους</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
           <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
@@ -316,7 +316,6 @@ export default function SummaryTab({
           <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
         </div>
 
-        {/* Τελευταίο βάρος + trend — πάντα ορατό */}
         {lastWeight && (
           <div style={{ display: "flex", gap: 12, marginBottom: 10, background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px solid var(--border-soft)" }}>
             <div>
@@ -334,7 +333,6 @@ export default function SummaryTab({
           </div>
         )}
 
-        {/* Chart — dropdown */}
         {chartData.length >= 2 && (
           <button className="btn btn-light" onClick={() => setShowWeightChart(!showWeightChart)} type="button" style={{ width: "100%", marginBottom: showWeightChart ? 8 : 10, fontSize: 12 }}>
             {showWeightChart ? "Απόκρυψη γραφήματος ▲" : "Εμφάνιση γραφήματος ▼"}
@@ -362,7 +360,6 @@ export default function SummaryTab({
           </div>
         )}
 
-        {/* Ιστορικό — dropdown */}
         {sortedWeightLog.length > 0 && (
           <>
             <button className="btn btn-light" onClick={() => setShowWeightHistory(!showWeightHistory)} type="button" style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12 }}>
@@ -384,7 +381,6 @@ export default function SummaryTab({
           </>
         )}
 
-        {/* Streak */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginTop: 14 }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
@@ -396,7 +392,7 @@ export default function SummaryTab({
         </div>
       </div>
 
-      {/* 7. ΙΣΤΟΡΙΚΟ */}
+      {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
