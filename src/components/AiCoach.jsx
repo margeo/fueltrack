@@ -201,9 +201,10 @@ ${currentMode.aiRule}
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const effectiveMessage = isInitial
-      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά γεύματα για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα και τι\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
-      : text;
-
+      ? `...`
+      : text === "Εβδομαδιαίο πρόγραμμα διατροφής"
+        ? `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών. ΥΠΕΝΘΥΜΙΣΗ: ο ημερήσιος στόχος είναι ΑΚΡΙΒΩΣ ${targetCalories} kcal. Κάθε μέρα ΠΡΕΠΕΙ να έχει ${targetCalories} kcal — όχι 800, όχι 1200, ΑΚΡΙΒΩΣ ${targetCalories} kcal.`
+        : text;
     try {
       const response = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
