@@ -15,45 +15,33 @@ export async function handler(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { statusCode: 500, body: JSON.stringify({ error: "GEMINI_API_KEY not set" }) };
-    }
-
     const recentMessages = validMessages.slice(-10);
 
-    const geminiMessages = recentMessages.map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }]
-    }));
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          contents: geminiMessages,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4000
-          }
-        })
-      }
-    );
-
-    const responseText = await response.text();
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 4000,
+        temperature: 0.7,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...recentMessages
+        ]
+      })
+    });
 
     if (!response.ok) {
-      return { statusCode: 500, body: JSON.stringify({ error: `Gemini error ${response.status}: ${responseText}` }) };
+      const errText = await response.text();
+      throw new Error(`Groq API error ${response.status}: ${errText}`);
     }
 
-    const data = JSON.parse(responseText);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return { statusCode: 500, body: JSON.stringify({ error: "Empty response" }) };
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error("Κενή απάντηση από το API");
 
     return {
       statusCode: 200,
