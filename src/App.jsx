@@ -46,6 +46,7 @@ export default function App() {
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() => loadJSON("ft_favoriteFoodKeys", []));
   const [favoriteExerciseKeys, setFavoriteExerciseKeys] = useState(() => loadJSON("ft_favoriteExerciseKeys", []));
   const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
+  const [savedPlans, setSavedPlans] = useState(() => loadJSON("ft_savedPlans", []));
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [editEntryGrams, setEditEntryGrams] = useState("100");
@@ -116,6 +117,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
   useEffect(() => saveJSON("ft_favoriteExerciseKeys", favoriteExerciseKeys), [favoriteExerciseKeys]);
   useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
+  useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
   useEffect(() => {
@@ -280,6 +282,17 @@ export default function App() {
     setWeightLog((prev) => prev.filter((entry) => entry.date !== date));
   }
 
+  function handleSavePlan(plan) {
+    setSavedPlans((prev) => {
+      const filtered = prev.filter((p) => p.type !== plan.type);
+      return [...filtered, plan];
+    });
+  }
+
+  function deletePlan(type) {
+    setSavedPlans((prev) => prev.filter((p) => p.type !== type));
+  }
+
   function startOnboarding() { setHasSeenWelcome(true); setActiveTab("profile"); }
   function goToSummaryAfterProfile() { if (!profileComplete) return; setActiveTab("summary"); }
 
@@ -346,8 +359,10 @@ export default function App() {
     favoriteFoodsText,
     favoriteExercisesText,
     favoriteExercises,
-    // Στοιχεία χρήστη για AI Coach
-    age, weight, height, gender
+    age, weight, height, gender,
+    savedPlans,
+    onSavePlan: handleSavePlan,
+    onDeletePlan: deletePlan
   };
 
   const foodProps = {

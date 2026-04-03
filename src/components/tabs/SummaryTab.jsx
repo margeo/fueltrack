@@ -13,11 +13,13 @@ export default function SummaryTab({
   onAddWeight, onDeleteWeight,
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises,
-  age, weight, height, gender
+  age, weight, height, gender,
+  savedPlans, onSavePlan, onDeletePlan
 }) {
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
+  const [expandedPlan, setExpandedPlan] = useState(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
@@ -89,56 +91,6 @@ export default function SummaryTab({
     return hints[mode] || hints.balanced;
   }
 
-  function getSuggestionReason(food) {
-    const protein = Number(food.proteinPer100g || 0);
-    const carbs = Number(food.carbsPer100g || 0);
-    if ((mode === "high_protein" || mode === "muscle_gain") && protein >= 18) return "Υψηλή πρωτεΐνη";
-    if ((mode === "low_carb") && carbs <= 12) return "Low carb";
-    if ((mode === "keto" || mode === "carnivore") && carbs <= 8) return "Keto friendly";
-    if (mode === "fasting_16_8" || mode === "fasting_18_6" || mode === "omad") return "Χορταστικό";
-    if (mode === "mediterranean") return "Μεσογειακή επιλογή";
-    return "Καλή επιλογή";
-  }
-
-  function getCarbLimit() {
-    if (mode === "keto" || mode === "carnivore") return 8;
-    if (mode === "low_carb") return 15;
-    return null;
-  }
-
-  function getSuggestedFoods() {
-    if (!Array.isArray(foods) || foods.length === 0) return [];
-    const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
-    const carbLimit = getCarbLimit();
-    return foods
-      .filter((food) => Number(food.caloriesPer100g || 0) > 0)
-      .filter((food) => Number(food.caloriesPer100g || 0) <= Math.max(remainingCalories, 250) + 120)
-      .filter((food) => {
-        if (carbLimit === null) return true;
-        return Number(food.carbsPer100g || 0) <= carbLimit;
-      })
-      .filter((food) => {
-        if (mode === "vegetarian") return true;
-        if (mode === "vegan") return true;
-        return true;
-      })
-      .sort((a, b) => {
-        const aP = Number(a.proteinPer100g || 0), bP = Number(b.proteinPer100g || 0);
-        const aC = Number(a.caloriesPer100g || 0), bC = Number(b.caloriesPer100g || 0);
-        const aCr = Number(a.carbsPer100g || 0), bCr = Number(b.carbsPer100g || 0);
-        let aScore = 0, bScore = 0;
-        if (remainingProtein > 15) { aScore += aP * 3; bScore += bP * 3; }
-        else { aScore += aP * 1.5; bScore += bP * 1.5; }
-        if (mode === "high_protein" || mode === "muscle_gain") { aScore += aP * 2; bScore += bP * 2; }
-        if (mode === "low_carb") { aScore -= aCr * 2; bScore -= bCr * 2; }
-        if (mode === "keto" || mode === "carnivore") { aScore -= aCr * 4; bScore -= bCr * 4; }
-        aScore -= aC * 0.03; bScore -= bC * 0.03;
-        return bScore - aScore;
-      })
-      .slice(0, 5);
-  }
-
-  const suggestions = getSuggestedFoods();
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
   const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
   const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
@@ -247,6 +199,8 @@ export default function SummaryTab({
         weight={weight}
         height={height}
         gender={gender}
+        savedPlans={savedPlans}
+        onSavePlan={onSavePlan}
       />
 
       {/* 4. ΚΑΤΕΥΘΥΝΣΗ */}
@@ -259,25 +213,43 @@ export default function SummaryTab({
             <span><span className="muted">Protein: </span><strong>{formatNumber(remainingProtein)}g</strong></span>
           </div>
         </div>
-        <h2 style={{ marginTop: 16 }}>Τι να φας τώρα</h2>
-        {suggestions.length === 0 ? (
-          <div className="muted" style={{ fontSize: 13 }}>Δεν βρέθηκαν προτάσεις για τον τρόπο διατροφής σου.</div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {suggestions.map((food) => (
-              <div key={`${food.source || "local"}-${food.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
-                <span className="muted" style={{ fontSize: 12 }}>{formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)} · {getSuggestionReason(food)}</span>
+      </div>
+
+      {/* 5. ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΡΟΓΡΑΜΜΑΤΑ */}
+      {savedPlans?.length > 0 && (
+        <div className="card">
+          <h2>📋 Τα προγράμματά μου</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {savedPlans.map((plan) => (
+              <div key={plan.type}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>
+                      {plan.type === "meal" ? "🥗 Πρόγραμμα διατροφής" : "💪 Πρόγραμμα γυμναστικής"}
+                    </span>
+                    <span className="muted" style={{ fontSize: 11, marginLeft: 8 }}>{plan.date}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button className="btn btn-light" onClick={() => setExpandedPlan(expandedPlan === plan.type ? null : plan.type)} type="button" style={{ fontSize: 11, padding: "3px 8px" }}>
+                      {expandedPlan === plan.type ? "Σύμπτυξη ▲" : "Εμφάνιση ▼"}
+                    </button>
+                    <button className="btn btn-light" onClick={() => onDeletePlan(plan.type)} type="button" style={{ fontSize: 11, padding: "3px 8px" }}>✕</button>
+                  </div>
+                </div>
+                {expandedPlan === plan.type && (
+                  <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", maxHeight: 400, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+                    {plan.content}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* 5. ΠΡΟΟΔΟΣ — Streak + Βάρος */}
+      {/* 6. ΠΡΟΟΔΟΣ — Streak + Βάρος */}
       <div className="card">
         <h2>Πρόοδος</h2>
-
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginBottom: 16 }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
@@ -344,7 +316,7 @@ export default function SummaryTab({
         )}
       </div>
 
-      {/* 6. ΙΣΤΟΡΙΚΟ 7 ΗΜΕΡΩΝ */}
+      {/* 7. ΙΣΤΟΡΙΚΟ 7 ΗΜΕΡΩΝ */}
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
