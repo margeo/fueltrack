@@ -3,6 +3,42 @@ import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
+function exportToPDF(plan) {
+  const title = plan.type === "meal" ? "Εβδομαδιαίο Πρόγραμμα Διατροφής" : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
+  const content = plan.content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="el">
+    <head>
+      <meta charset="UTF-8">
+      <title>${title}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 30px; color: #111; line-height: 1.7; }
+        h1 { font-size: 22px; margin-bottom: 4px; }
+        .date { color: #666; font-size: 13px; margin-bottom: 24px; }
+        pre { white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 14px; }
+        @media print { body { padding: 20px; } }
+      </style>
+    </head>
+    <body>
+      <h1>🥗 FuelTrack — ${title}</h1>
+      <div class="date">Δημιουργήθηκε: ${plan.date}</div>
+      <pre>${content}</pre>
+    </body>
+    </html>
+  `;
+
+  const win = window.open("", "_blank");
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
 export default function SummaryTab({
   selectedDate, setSelectedDate, isToday,
   targetCalories, totalCalories, exerciseValue,
@@ -19,19 +55,14 @@ export default function SummaryTab({
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
-  const [expandedPlan, setExpandedPlan] = useState(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
   const sortedWeightLog = useMemo(() =>
-    [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)),
-    [weightLog]
-  );
+    [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)), [weightLog]);
 
   const chartData = useMemo(() =>
-    [...(weightLog || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-30),
-    [weightLog]
-  );
+    [...(weightLog || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-30), [weightLog]);
 
   const firstWeight = chartData[0]?.weight;
   const lastWeight = chartData[chartData.length - 1]?.weight;
@@ -74,18 +105,18 @@ export default function SummaryTab({
 
   function getModeHint() {
     const hints = {
-      balanced: "Στόχευσε σε ισορροπημένη πρόσληψη θερμίδων.",
-      mediterranean: "Βάσε σε ελαιόλαδο, ψάρι και λαχανικά.",
+      balanced: "Ισορροπημένη πρόσληψη θερμίδων.",
+      mediterranean: "Ελαιόλαδο, ψάρι και λαχανικά.",
       whole_foods: "Μόνο φυσικές, ανεπεξέργαστες τροφές.",
-      high_protein: "Κάθε γεύμα να έχει σημαντική πηγή πρωτεΐνης.",
-      muscle_gain: "Caloric surplus + πρωτεΐνη γύρω από την προπόνηση.",
-      low_carb: "Κράτα τους υδατάνθρακες κάτω από 15g/100g.",
-      keto: "Κράτα τους υδατάνθρακες κάτω από 8g/100g.",
+      high_protein: "Κάθε γεύμα να έχει πηγή πρωτεΐνης.",
+      muscle_gain: "Caloric surplus + πρωτεΐνη.",
+      low_carb: "Υδατάνθρακες κάτω από 15g/100g.",
+      keto: "Υδατάνθρακες κάτω από 8g/100g.",
       carnivore: "Μόνο ζωικά προϊόντα.",
-      fasting_16_8: "Φαγητό μόνο σε παράθυρο 8 ωρών.",
-      fasting_18_6: "Φαγητό μόνο σε παράθυρο 6 ωρών.",
-      omad: "Ένα γεύμα την ημέρα με όλες τις θερμίδες.",
-      vegetarian: "Χωρίς κρέας — με αυγά και γαλακτοκομικά.",
+      fasting_16_8: "Φαγητό σε παράθυρο 8 ωρών.",
+      fasting_18_6: "Φαγητό σε παράθυρο 6 ωρών.",
+      omad: "Ένα γεύμα με όλες τις θερμίδες.",
+      vegetarian: "Χωρίς κρέας.",
       vegan: "Αποκλειστικά φυτική διατροφή."
     };
     return hints[mode] || hints.balanced;
@@ -95,6 +126,9 @@ export default function SummaryTab({
   const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
   const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
   const fatPercent = macroTargets?.fatGrams ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;
+
+  const mealPlan = savedPlans?.find(p => p.type === "meal");
+  const trainingPlan = savedPlans?.find(p => p.type === "training");
 
   return (
     <>
@@ -115,7 +149,6 @@ export default function SummaryTab({
             </div>
           </div>
         </div>
-
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -140,7 +173,6 @@ export default function SummaryTab({
             </div>
           </div>
         </div>
-
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
           <div className="hero-subtle" style={{ fontSize: 11 }}>{getGoalLabel()} · {getModeLabel()}</div>
@@ -153,24 +185,15 @@ export default function SummaryTab({
         <h2>Macros</h2>
         <div className="macro-bars">
           <div className="macro-bar-row">
-            <div className="macro-bar-label">
-              <span className="macro-bar-title">Πρωτεΐνη</span>
-              <span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span>
-            </div>
+            <div className="macro-bar-label"><span className="macro-bar-title">Πρωτεΐνη</span><span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
-            <div className="macro-bar-label">
-              <span className="macro-bar-title">Υδατάνθρακες</span>
-              <span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span>
-            </div>
+            <div className="macro-bar-label"><span className="macro-bar-title">Υδατάνθρακες</span><span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
-            <div className="macro-bar-label">
-              <span className="macro-bar-title">Λίπος</span>
-              <span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span>
-            </div>
+            <div className="macro-bar-label"><span className="macro-bar-title">Λίπος</span><span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
           </div>
         </div>
@@ -178,29 +201,14 @@ export default function SummaryTab({
 
       {/* 3. AI COACH */}
       <AiCoach
-        last7Days={last7Days}
-        dailyLogs={dailyLogs}
-        targetCalories={targetCalories}
-        proteinTarget={proteinTarget}
-        mode={mode}
-        goalType={goalType}
-        streak={streak}
-        weightLog={weightLog}
-        favoriteFoods={favoriteFoods}
-        foods={foods}
-        totalCalories={totalCalories}
-        totalProtein={totalProtein}
-        exerciseValue={exerciseValue}
-        remainingCalories={remainingCalories}
-        favoriteFoodsText={favoriteFoodsText}
-        favoriteExercisesText={favoriteExercisesText}
-        favoriteExercises={favoriteExercises}
-        age={age}
-        weight={weight}
-        height={height}
-        gender={gender}
-        savedPlans={savedPlans}
-        onSavePlan={onSavePlan}
+        last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
+        proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
+        weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
+        totalCalories={totalCalories} totalProtein={totalProtein} exerciseValue={exerciseValue}
+        remainingCalories={remainingCalories} favoriteFoodsText={favoriteFoodsText}
+        favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
+        age={age} weight={weight} height={height} gender={gender}
+        savedPlans={savedPlans} onSavePlan={onSavePlan}
       />
 
       {/* 4. ΚΑΤΕΥΘΥΝΣΗ */}
@@ -215,39 +223,60 @@ export default function SummaryTab({
         </div>
       </div>
 
-      {/* 5. ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΡΟΓΡΑΜΜΑΤΑ */}
-      {savedPlans?.length > 0 && (
-        <div className="card">
-          <h2>📋 Τα προγράμματά μου</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {savedPlans.map((plan) => (
-              <div key={plan.type}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div>
-                    <span style={{ fontWeight: 700, fontSize: 13 }}>
-                      {plan.type === "meal" ? "🥗 Πρόγραμμα διατροφής" : "💪 Πρόγραμμα γυμναστικής"}
-                    </span>
-                    <span className="muted" style={{ fontSize: 11, marginLeft: 8 }}>{plan.date}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button className="btn btn-light" onClick={() => setExpandedPlan(expandedPlan === plan.type ? null : plan.type)} type="button" style={{ fontSize: 11, padding: "3px 8px" }}>
-                      {expandedPlan === plan.type ? "Σύμπτυξη ▲" : "Εμφάνιση ▼"}
-                    </button>
-                    <button className="btn btn-light" onClick={() => onDeletePlan(plan.type)} type="button" style={{ fontSize: 11, padding: "3px 8px" }}>✕</button>
-                  </div>
-                </div>
-                {expandedPlan === plan.type && (
-                  <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", maxHeight: 400, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
-                    {plan.content}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* 5. ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΡΟΓΡΑΜΜΑΤΑ — πάντα ορατά */}
+      <div className="card">
+        <h2>📋 Τα προγράμματά μου</h2>
 
-      {/* 6. ΠΡΟΟΔΟΣ — Streak + Βάρος */}
+        {/* Πρόγραμμα διατροφής */}
+        <div style={{ marginBottom: mealPlan ? 16 : 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>🥗 Πρόγραμμα διατροφής</div>
+            {mealPlan && (
+              <div style={{ display: "flex", gap: 6 }}>
+                <button className="btn btn-dark" onClick={() => exportToPDF(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+                <button className="btn btn-light" onClick={() => onDeletePlan("meal")} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+              </div>
+            )}
+          </div>
+          {mealPlan ? (
+            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 380, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+              {mealPlan.content}
+            </div>
+          ) : (
+            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
+              <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις ακόμα πρόγραμμα διατροφής. Ρώτα τον AI Coach "Εβδομαδιαίο πρόγραμμα διατροφής"!</div>
+            </div>
+          )}
+          {mealPlan && <div className="muted" style={{ fontSize: 11, marginTop: 4, textAlign: "right" }}>{mealPlan.date}</div>}
+        </div>
+
+        <div style={{ height: 1, background: "var(--border-soft)", margin: "12px 0" }} />
+
+        {/* Πρόγραμμα γυμναστικής */}
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>💪 Πρόγραμμα γυμναστικής</div>
+            {trainingPlan && (
+              <div style={{ display: "flex", gap: 6 }}>
+                <button className="btn btn-dark" onClick={() => exportToPDF(trainingPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+                <button className="btn btn-light" onClick={() => onDeletePlan("training")} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+              </div>
+            )}
+          </div>
+          {trainingPlan ? (
+            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 380, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+              {trainingPlan.content}
+            </div>
+          ) : (
+            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
+              <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις ακόμα πρόγραμμα γυμναστικής. Ρώτα τον AI Coach "Εβδομαδιαίο πρόγραμμα γυμναστικής"!</div>
+            </div>
+          )}
+          {trainingPlan && <div className="muted" style={{ fontSize: 11, marginTop: 4, textAlign: "right" }}>{trainingPlan.date}</div>}
+        </div>
+      </div>
+
+      {/* 6. ΠΡΟΟΔΟΣ */}
       <div className="card">
         <h2>Πρόοδος</h2>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginBottom: 16 }}>
