@@ -15,31 +15,32 @@ export async function handler(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
     }
 
-    // Κράτα μόνο τα τελευταία 6 messages για να μειώσεις tokens
-    const recentMessages = validMessages.slice(-6);
+    const recentMessages = validMessages.slice(-10);
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 2500,
-        system: systemPrompt,
-        messages: recentMessages
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 4000,
+        temperature: 0.7,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...recentMessages
+        ]
       })
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`API error ${response.status}: ${errText}`);
+      throw new Error(`Groq API error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.content?.[0]?.text;
+    const text = data.choices?.[0]?.message?.content;
     if (!text) throw new Error("Κενή απάντηση από το API");
 
     return {
