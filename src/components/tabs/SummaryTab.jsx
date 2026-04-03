@@ -40,10 +40,7 @@ function exportToPDF(plan) {
     .total { font-weight: bold; padding: 5px 12px; background: #f9fafb; border-radius: 4px; }
     .disclaimer { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 12px; color: #78350f; }
     hr { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
-    @media print {
-      .btn-group { display: none; }
-      body { padding: 16px; }
-    }
+    @media print { .btn-group { display: none; } body { padding: 16px; } }
   </style>
 </head>
 <body>
@@ -159,7 +156,7 @@ export default function SummaryTab({
     return (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <div style={{ fontWeight: 700, fontSize: 13 }}>{emoji} {title}</div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>{emoji} {title}</div>
           {plan && (
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>
@@ -197,6 +194,12 @@ export default function SummaryTab({
     <>
       {/* 1. HERO */}
       <div className="hero-card">
+
+        {/* Τίτλος hero */}
+        <div style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+          Σύνοψη ημέρας
+        </div>
+
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
             {formatDisplayDate(selectedDate)}
@@ -240,30 +243,26 @@ export default function SummaryTab({
 
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
 
-        {/* Info row κάτω από progress bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, flexWrap: "wrap", gap: 4 }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span className="hero-subtle" style={{ fontSize: 11 }}>{getGoalLabel()} · {getModeLabel()}</span>
+        {/* Στόχος + Mode — μεγάλο και εμφανές */}
+        <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(255,255,255,0.08)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)" }}>
+          <div style={{ color: "white", fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>
+            🎯 {getGoalLabel()} · {getModeLabel()}
           </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
-              Protein: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong>
+          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
+          <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>
+              Protein υπόλοιπο: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong>
             </span>
-            <span className="hero-subtle" style={{ fontSize: 11 }}>
+            <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
               {formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal
             </span>
           </div>
-        </div>
-
-        {/* Mode hint */}
-        <div style={{ marginTop: 4 }}>
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 10 }}>{getModeHint()}</span>
         </div>
       </div>
 
       {/* 2. MACROS */}
       <div className="card">
-        <h2>Macros</h2>
+        <h2>Macros σήμερα</h2>
         <div className="macro-bars">
           <div className="macro-bar-row">
             <div className="macro-bar-label"><span className="macro-bar-title">Πρωτεΐνη</span><span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
@@ -309,7 +308,7 @@ export default function SummaryTab({
       <div className="card">
         <h2>Πρόοδος</h2>
 
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>⚖️ Εισαγωγή βάρους</div>
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>⚖️ Εισαγωγή βάρους</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
           <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
           <input className="input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
@@ -338,6 +337,7 @@ export default function SummaryTab({
             {showWeightChart ? "Απόκρυψη γραφήματος ▲" : "Εμφάνιση γραφήματος ▼"}
           </button>
         )}
+
         {showWeightChart && chartData.length >= 2 && (
           <div style={{ marginBottom: 10, overflowX: "auto" }}>
             <svg viewBox={`0 0 ${chartW} ${chartH + 16}`} style={{ width: "100%", maxWidth: chartW }}>
