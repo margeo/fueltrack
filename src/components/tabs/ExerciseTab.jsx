@@ -46,11 +46,11 @@ export default function ExerciseTab({
   return (
     <>
       {/* ΑΣΚΗΣΗ ΗΜΕΡΑΣ */}
-      <div className="day-card">
-        <div className="day-card-total">
-          <h2 style={{ color: "white", margin: 0, fontSize: 16 }}>Άσκηση ημέρας</h2>
-          <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
-        </div>
+    <div className="day-card">
+      <div className="day-card-total">
+        <h2>🏋️ Άσκηση ημέρας</h2>
+        <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
+      </div>
         {exercises.length === 0 ? (
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει άσκηση ακόμα.</div>
         ) : (

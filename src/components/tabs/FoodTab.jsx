@@ -274,7 +274,7 @@ export default function FoodTab({
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2 style={{ color: "white", margin: 0, fontSize: 16 }}>Φαγητό ημέρας</h2>
+          <h2>🍽️ Φαγητό ημέρας</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
         {entries.length === 0 ? (

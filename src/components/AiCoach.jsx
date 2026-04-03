@@ -20,6 +20,7 @@ export default function AiCoach({
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
@@ -97,7 +98,7 @@ export default function AiCoach({
 Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
 ${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
 Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
-ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal — ΑΥΤΟΣ ΕΙΝΑΙ Ο ΣΤΟΧΟΣ
+ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal
 Πρωτεΐνη: ${proteinTarget}g/μέρα
 Streak: ${streak} μέρες
 
@@ -130,6 +131,7 @@ ${currentMode.aiRule}
    🌞 ΜΕΣΗΜΕΡΙΑΝΟ: κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
    🌙 ΒΡΑΔΙΝΟ: ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
    Ποικιλία κάθε μέρα. Εύκολα, νόστιμα γεύματα.
+   Λάβε υπόψη τα αγαπημένα φαγητά του χρήστη ΩΣ ΠΡΟΤΕΡΑΙΟΤΗΤΑ αλλά φιλτράρισέ τα βάσει ${currentMode.label}.
 
 4. ΣΥΜΒΑΤΟΤΗΤΑ ΔΙΑΙΤΑΣ: Αν ο χρήστης αναφέρει τρόφιμο που ΔΕΝ ταιριάζει με ${currentMode.label}, πες το ΑΜΕΣΩΣ και φιλικά.
    ΜΗΝ προτείνεις ποτέ ακατάλληλα τρόφιμα για τη δίαιτα.
@@ -138,12 +140,11 @@ ${currentMode.aiRule}
    ΚΡΙΤΙΚΟ: ΜΟΝΟ φαγητό — χωρίς ασκήσεις.
 
    ΘΕΡΜΙΔΕΣ: Κάθε μέρα ΠΡΕΠΕΙ να έχει ΑΚΡΙΒΩΣ ${targetCalories} kcal.
-   Άθροισε πριν γράψεις: Πρωινό + Σνακ + Μεσημεριανό + Σνακ + Βραδινό = ${targetCalories} kcal.
-   Κατανομή ανά γεύμα για ${targetCalories} kcal:
-   - Πρωινό: ${Math.round(targetCalories * 0.25)} kcal
-   - Σνακ x2: ${Math.round(targetCalories * 0.1)} kcal το καθένα
-   - Μεσημεριανό: ${Math.round(targetCalories * 0.35)} kcal
-   - Βραδινό: ${Math.round(targetCalories * 0.20)} kcal
+   Κατανομή για ${targetCalories} kcal:
+   Πρωινό: ${Math.round(targetCalories * 0.25)} kcal
+   Σνακ x2: ${Math.round(targetCalories * 0.1)} kcal το καθένα
+   Μεσημεριανό: ${Math.round(targetCalories * 0.35)} kcal
+   Βραδινό: ${Math.round(targetCalories * 0.20)} kcal
    ΠΟΤΕ λιγότερο από ${targetCalories - 50} ή περισσότερο από ${targetCalories + 50} kcal/μέρα.
 
 📅 ΔΕΥΤΕΡΑ
@@ -163,6 +164,7 @@ ${currentMode.aiRule}
 
 6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
    ΚΡΙΤΙΚΟ: ΜΟΝΟ ασκήσεις — χωρίς φαγητό.
+   Λάβε υπόψη τις αγαπημένες ασκήσεις του χρήστη.
 
 📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
 09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
@@ -201,7 +203,7 @@ ${currentMode.aiRule}
     if (isInitial) {
       effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
-      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΕΝΘΥΜΙΣΗ: ο ημερήσιος στόχος είναι ΑΚΡΙΒΩΣ ${targetCalories} kcal κάθε μέρα. Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)} kcal, κάθε Σνακ ${Math.round(targetCalories * 0.1)} kcal, Μεσημεριανό ${Math.round(targetCalories * 0.35)} kcal, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.`;
+      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΕΝΘΥΜΙΣΗ: ο ημερήσιος στόχος είναι ΑΚΡΙΒΩΣ ${targetCalories} kcal κάθε μέρα. Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)} kcal, κάθε Σνακ ${Math.round(targetCalories * 0.1)} kcal, Μεσημεριανό ${Math.round(targetCalories * 0.35)} kcal, Βραδινό ${Math.round(targetCalories * 0.20)} kcal. Λάβε υπόψη τα αγαπημένα μου φαγητά αλλά μόνο αν ταιριάζουν με ${currentMode.label}.`;
     } else {
       effectiveMessage = text;
     }
@@ -227,83 +229,96 @@ ${currentMode.aiRule}
 
   return (
     <div className="card">
-      <div style={{ marginBottom: 12 }}>
-        <h2 style={{ margin: 0, fontSize: 16 }}>🤖 AI Coach</h2>
-        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: collapsed ? 0 : 12 }}>
+        <div>
+          <h2 style={{ margin: 0 }}>🤖 AI Coach</h2>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
+        </div>
+        <button
+          className="btn btn-light"
+          onClick={() => setCollapsed(!collapsed)}
+          type="button"
+          style={{ fontSize: 13, padding: "5px 10px", flexShrink: 0 }}>
+          {collapsed ? "▼ Άνοιγμα" : "▲ Σύμπτυξη"}
+        </button>
       </div>
 
-      {!hasLoaded && !loading && messages.length === 0 && (
-        <div>
-          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {QUICK_QUESTIONS.map((q) => (
-              <button key={q} onClick={() => sendMessage(q)} type="button"
-                style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                {q}
+      {!collapsed && (
+        <>
+          {!hasLoaded && !loading && messages.length === 0 && (
+            <div>
+              <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                {QUICK_QUESTIONS.map((q) => (
+                  <button key={q} onClick={() => sendMessage(q)} type="button"
+                    style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+              <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
+                📊 Ανάλυσε τη μέρα μου
               </button>
-            ))}
-          </div>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
-            📊 Ανάλυσε τη μέρα μου
-          </button>
-        </div>
-      )}
-
-      {loading && messages.length === 0 && (
-        <div style={{ textAlign: "center", padding: "24px 0" }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
-          <div className="muted" style={{ fontSize: 13 }}>Αναλύω τα δεδομένα σου...</div>
-        </div>
-      )}
-
-      {messages.length > 0 && (
-        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
-          {messages.map((msg, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {loading && (
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
-                💭 Σκέφτομαι...
-              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {hasLoaded && !loading && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-          {QUICK_QUESTIONS.map((q) => (
-            <button key={q} onClick={() => sendMessage(q)} type="button"
-              style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
-              {q}
-            </button>
-          ))}
-        </div>
-      )}
+          {loading && messages.length === 0 && (
+            <div style={{ textAlign: "center", padding: "24px 0" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
+              <div className="muted" style={{ fontSize: 13 }}>Αναλύω τα δεδομένα σου...</div>
+            </div>
+          )}
 
-      {(hasLoaded || messages.length > 0) && (
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            ref={inputRef}
-            className="input"
-            placeholder="Ρώτα με κάτι..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            style={{ flex: 1 }}
-            disabled={loading}
-          />
-          <button onClick={() => inputRef.current?.focus()} type="button"
-            style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
-            disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
-        </div>
+          {messages.length > 0 && (
+            <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
+              {messages.map((msg, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                  <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
+                    💭 Σκέφτομαι...
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {hasLoaded && !loading && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+              {QUICK_QUESTIONS.map((q) => (
+                <button key={q} onClick={() => sendMessage(q)} type="button"
+                  style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {(hasLoaded || messages.length > 0) && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                ref={inputRef}
+                className="input"
+                placeholder="Ρώτα με κάτι..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+                style={{ flex: 1 }}
+                disabled={loading}
+              />
+              <button onClick={() => inputRef.current?.focus()} type="button"
+                style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
+              <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
+                disabled={loading || !input.trim()}
+                style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
