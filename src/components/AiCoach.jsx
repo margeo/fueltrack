@@ -45,41 +45,18 @@ export default function AiCoach({
   }, [messages, loading]);
 
   useEffect(() => {
-  if (!messages.length) return;
-  const last = messages[messages.length - 1];
-  if (last.role !== "assistant") return;
-  const text = last.text;
-
-  // Πιο αξιόπιστο detection
-  const hasMealPlan = text.includes("🌅") && text.includes("🌞") && text.includes("🌙") && text.includes("Σύνολο:");
-  const hasTrainingPlan = (text.includes("💪") || text.includes("🏃")) && text.includes("📅") && !text.includes("Σύνολο:");
-
-  if (hasMealPlan) {
-    onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
-  } else if (hasTrainingPlan) {
-    onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
-  }
-}, [messages]);
-
-  function getCompatibleFoods() {
-    if (!Array.isArray(foods)) return [];
-    const currentMode = MODES[mode];
-    const limit = currentMode?.carbLimit;
-    if (limit === null || limit === undefined) return foods;
-    return foods.filter((f) => Number(f.carbsPer100g || 0) <= limit);
-  }
-
-  function categorizeFavorites() {
-    const compatible = [], incompatible = [];
-    const currentMode = MODES[mode];
-    const limit = currentMode?.carbLimit;
-    (favoriteFoods || []).forEach(f => {
-      const carbs = Number(f.carbsPer100g || 0);
-      const ok = (limit === null || limit === undefined) ? true : carbs <= limit;
-      if (ok) compatible.push(f); else incompatible.push(f);
-    });
-    return { compatible, incompatible };
-  }
+    if (!messages.length) return;
+    const last = messages[messages.length - 1];
+    if (last.role !== "assistant") return;
+    const text = last.text;
+    const hasMealPlan = text.includes("🌅") && text.includes("🌞") && text.includes("🌙") && text.includes("Σύνολο:");
+    const hasTrainingPlan = (text.includes("💪") || text.includes("🏃")) && text.includes("📅") && !text.includes("Σύνολο:");
+    if (hasMealPlan) {
+      onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
+    } else if (hasTrainingPlan) {
+      onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
+    }
+  }, [messages]);
 
   function buildSystemPrompt() {
     const currentMode = MODES[mode] || MODES.balanced;
@@ -95,9 +72,7 @@ export default function AiCoach({
     const todayName = dayNames[today.getDay()];
     const todayDate = today.toLocaleDateString("el-GR");
 
-    // Ανάλυση άδειων ημερών
     const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
-    const partialDays = (last7Days || []).filter(d => d.eaten > 0 && d.eaten < targetCalories * 0.5);
 
     const weekSummary = (last7Days || []).map((d, i) => {
       const log = dailyLogs?.[d.date] || { entries: [], exercises: [] };
@@ -105,134 +80,122 @@ export default function AiCoach({
       const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
       const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
         ? log.exercises.map(e => e.name).join(", ") : "—";
-      return `  Μέρα ${i + 1} (${d.date}): ${d.eaten === 0 ? "⚠️ ΑΔΕΙΑ ΜΕΡΑ" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g, άσκηση ${d.exercise} kcal [${exNames}]`;
+      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g [${exNames}]`;
     }).join("\n");
 
-    const { compatible, incompatible } = categorizeFavorites();
-    const compatibleFoods = getCompatibleFoods();
+    const favFoodsList = (favoriteFoods || []).slice(0, 8)
+      .map(f => f.name).join(", ");
+    const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
-    const compatFavList = compatible.length > 0
-      ? compatible.map(f => `${f.name} (${f.caloriesPer100g}kcal, P${f.proteinPer100g}g, C${f.carbsPer100g}g)`).join(", ")
-      : "Κανένα";
-    const incompatFavList = incompatible.length > 0
-      ? incompatible.map(f => `${f.name} (${f.carbsPer100g}g carbs — εκτός ορίου)`).join(", ")
-      : "Κανένα";
-    const topCompatible = compatibleFoods
-      .sort((a, b) => Number(b.proteinPer100g || 0) - Number(a.proteinPer100g || 0))
-      .slice(0, 20)
-      .map(f => `${f.name} (${f.caloriesPer100g}kcal, P${f.proteinPer100g}g, C${f.carbsPer100g}g, F${f.fatPer100g}g)`)
-      .join(", ");
-    const favExList = (favoriteExercises || []).map(e => `${e.name} (${e.caloriesPerMinute}kcal/λεπτό)`).join(", ");
-
-    return `Είσαι ο προσωπικός διατροφολόγος και personal trainer στο FuelTrack. Μιλάς ΠΑΝΤΑ στα Ελληνικά και ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, επαγγελματικός, interactive.
+    return `Είσαι έμπειρος διατροφολόγος και personal trainer. Μιλάς ΠΑΝΤΑ στα Ελληνικά, ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, πρακτικός και δίνεις ρεαλιστικές, ελκυστικές προτάσεις — σαν να μιλάς με πελάτη σου.
 
 ΣΗΜΕΡΑ: ${todayName} ${todayDate}
-ΑΔΕΙΕΣ ΜΕΡΕΣ ΤΕΛΕΥΤΑΙΑΣ ΕΒΔΟΜΑΔΑΣ: ${emptyDays.length} (${emptyDays.map(d => d.date).join(", ") || "—"})
-ΜΕΡΕΣ ΜΕ ΕΛΛΙΠΗ ΚΑΤΑΓΡΑΦΗ: ${partialDays.length}
 
 ━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
 Ηλικία: ${age || "—"} | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
 Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
 ${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
 Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
-Θερμίδες: ${targetCalories} kcal | Πρωτεΐνη: ${proteinTarget}g/ημέρα
-Macro split: ${currentMode.proteinPercent}% P / ${currentMode.carbsPercent}% C / ${currentMode.fatPercent}% F
+Θερμίδες: ${targetCalories} kcal/μέρα | Πρωτεΐνη: ${proteinTarget}g/μέρα
 Streak: ${streak} μέρες
 
-━━━ ΚΑΝΟΝΕΣ ΔΙΑΤΡΟΦΗΣ (${currentMode.label}) ━━━
-${currentMode.aiRule}
-
-━━━ ΑΓΑΠΗΜΕΝΑ ━━━
-✅ Κατάλληλα: ${compatFavList}
-❌ Ακατάλληλα: ${incompatFavList}
-Δηλωμένα: ${favoriteFoodsText || "—"}
-
-━━━ ΚΑΤΑΛΛΗΛΑ ΤΡΟΦΙΜΑ ΑΠΟ ΤΗ ΒΑΣΗ ━━━
-${topCompatible || "—"}
-
-━━━ ΑΣΚΗΣΕΙΣ ━━━
-Αγαπημένες: ${favExList || "—"} | Δηλωμένες: ${favoriteExercisesText || "—"}
+━━━ ΓΟΥΣΤΑ ΧΡΗΣΤΗ ━━━
+Αγαπημένα φαγητά: ${favFoodsList || favoriteFoodsText || "Δεν έχει δηλώσει"}
+Αγαπημένες ασκήσεις: ${favExList || favoriteExercisesText || "Δεν έχει δηλώσει"}
 
 ━━━ ΣΗΜΕΡΑ ━━━
-Έφαγε: ${totalCalories || 0}/${targetCalories} kcal | Πρωτεΐνη: ${Math.round(totalProtein || 0)}/${proteinTarget}g
-Άσκηση: ${exerciseValue || 0} kcal | Υπόλοιπο: ${remainingCalories || targetCalories} kcal
+Έφαγε: ${totalCalories || 0}/${targetCalories} kcal
+Πρωτεΐνη: ${Math.round(totalProtein || 0)}/${proteinTarget}g
+Άσκηση: ${exerciseValue || 0} kcal
+Υπόλοιπο: ${remainingCalories || targetCalories} kcal
 
 ━━━ ΕΒΔΟΜΑΔΑ ━━━
 ${weekSummary || "Δεν υπάρχουν δεδομένα"}
+${emptyDays.length > 0 ? `\n⚠️ Μέρες χωρίς καταγραφή: ${emptyDays.length}` : ""}
 
-━━━ ΚΑΝΟΝΕΣ ━━━
+━━━ ΚΑΝΟΝΕΣ ΔΙΑΤΡΟΦΗΣ ━━━
+${currentMode.aiRule}
 
-1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
+━━━ ΟΔΗΓΙΕΣ ΣΥΜΠΕΡΙΦΟΡΑΣ ━━━
 
-2. ΑΔΕΙΕΣ ΜΕΡΕΣ: Αν υπάρχουν άδειες μέρες ή ελλιπής καταγραφή, να το επισημαίνεις φιλικά. Εξήγησε ότι η καταγραφή είναι το πιο σημαντικό εργαλείο — χωρίς δεδομένα δεν μπορείς να βοηθήσεις σωστά. Μην το κάνεις κάθε φορά, μόνο όταν είναι σχετικό.
+1. ΕΝΙΚΟΣ παντά.
 
-3. ΦΑΓΗΤΟ ΕΠΙΛΟΓΕΣ:
-   ΠΡΩΙΝΟ κατάλληλα τρόφιμα: αυγά, γιαούρτι, βρώμη, τυρί, φρούτα, ξηροί καρποί, whey.
-   ΣΝΑΚ κατάλληλα: φρούτο, ξηροί καρποί, γιαούρτι, τυρί, protein bar. ΟΧΙ ψάρια/κρέας ως σνακ.
-   ΜΕΣΗΜΕΡΙΑΝΟ/ΒΡΑΔΙΝΟ: κρέας, ψάρι, όσπρια, λαχανικά, ρύζι, ζυμαρικά (ανάλογα mode).
-   ΜΗΝ προτείνεις ακατάλληλα τρόφιμα για το mode (π.χ. παστίτσιο σε keto).
-   ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές/μέρα.
+2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά — η καταγραφή είναι το πιο σημαντικό εργαλείο για επιτυχία.
 
-4. MEAL PLAN — ΧΡΟΝΙΚΗ ΣΕΙΡΑ:
-   07:30 🌅 Πρωινό (20-25% θερμίδων)
-   11:00 🍎 Πρωινό σνακ (5-10%) — φρούτο, ξηροί καρποί, γιαούρτι
-   13:30 🌞 Μεσημεριανό (30-35%)
-   16:30 🍎 Απογευματινό σνακ (5-10%) — ελαφρύ
-   20:00 🌙 Βραδινό (25-30%)
+3. ΓΝΩΣΗ ΔΙΑΤΡΟΦΗΣ: Χρησιμοποίησε τις γνώσεις σου ως διατροφολόγος — όχι τυχαία τρόφιμα. Σκέψου τι είναι ρεαλιστικό, νόστιμο και κατάλληλο.
 
-5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
+4. ΑΓΑΠΗΜΕΝΑ: Λάβε υπόψη τα αγαπημένα φαγητά ΩΣ ΕΠΙΛΟΓΗ ΠΡΟΤΕΡΑΙΟΤΗΤΑΣ αλλά όχι αποκλειστικά. Αν κάποιο αγαπημένο δεν ταιριάζει στη δίαιτα, πρότεινε παρόμοιο κατάλληλο.
+
+5. ΓΕΥΜΑΤΑ — ΛΟΓΙΚΗ ΕΠΙΛΟΓΗ:
+   🌅 ΠΡΩΙΝΟ (07:00-09:00): Εύκολο, χορταστικό, ενεργειακό.
+      Ιδανικά: αυγά (scrambled/βραστά/ομελέτα), γιαούρτι με φρούτα/μέλι, βρώμη με μπανάνα, τοστ με αβοκάντο, κρουασάν, smoothie, φρυγανιές με τυρί.
+      ΠΟΤΕ: κρέας (αρνί, κοτόπουλο, ψάρι) ως κύριο πρωινό.
+
+   🍎 ΣΝΑΚ (11:00 και 16:30): Μικρό, εύκολο, γρήγορο.
+      Ιδανικά: φρούτο (μπανάνα, μήλο, πορτοκάλι), χούφτα ξηρούς καρπούς, γιαούρτι, protein bar, λίγη μαύρη σοκολάτα, rice cake.
+      ΠΟΤΕ: ψάρι, κρέας, μαγειρευτά ως σνακ.
+
+   🌞 ΜΕΣΗΜΕΡΙΑΝΟ (13:00-14:30): Κύριο γεύμα, πλήρες.
+      Ιδανικά: κοτόπουλο/ψάρι/κρέας + λαχανικά + υδατάνθρακας (ρύζι/ζυμαρικά/πατάτα), σαλάτα, σούπα, ελληνικά φαγητά (κοτόπουλο σχάρας, σολομός, μοσχάρι).
+
+   🌙 ΒΡΑΔΙΝΟ (19:00-21:00): Ελαφρύτερο από μεσημεριανό.
+      Ιδανικά: ψάρι, σαλάτα με πρωτεΐνη, αυγά, τυρί, λαχανικά, σούπα.
+
+6. ΡΕΑΛΙΣΜΟΣ: Τα γεύματα πρέπει να είναι:
+   - Εύκολα να φτιαχτούν (όχι σύνθετες συνταγές)
+   - Νόστιμα και ελκυστικά
+   - Προσβάσιμα (υλικά που βρίσκεις εύκολα)
+   - Ποικιλία κατά τη διάρκεια της εβδομάδας (μην επαναλαμβάνεις το ίδιο κάθε μέρα)
+
+7. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
 
 📅 ΔΕΥΤΕΡΑ
-07:30 🌅 Πρωινό — [τρόφιμο + ποσότητα] ([X] kcal)
-11:00 🍎 Σνακ — [τρόφιμο + ποσότητα] ([X] kcal)
-13:30 🌞 Μεσημεριανό — [τρόφιμο + ποσότητα] ([X] kcal)
-16:30 🍎 Σνακ — [τρόφιμο + ποσότητα] ([X] kcal)
-20:00 🌙 Βραδινό — [τρόφιμο + ποσότητα] ([X] kcal)
+07:30 🌅 Πρωινό — [γεύμα] ([X] kcal)
+11:00 🍎 Σνακ — [σνακ] ([X] kcal)
+13:30 🌞 Μεσημεριανό — [γεύμα] ([X] kcal)
+16:30 🍎 Σνακ — [σνακ] ([X] kcal)
+20:00 🌙 Βραδινό — [γεύμα] ([X] kcal)
 Σύνολο: [X] kcal
 ─────────────────
 
-ΚΑΝΟΝΕΣ FORMAT:
-- Κάνε το ίδιο για ΟΛΕΣ τις μέρες Δευτέρα έως Κυριακή — η Κυριακή ΠΡΕΠΕΙ να έχει πλήρες πρόγραμμα
-- Κυριακή: μπορεί να είναι πιο ελεύθερη αλλά ΝΑ ΕΧΕΙ γεύματα
-- Χωρίς αστερίσκους, χωρίς "-" bullets, χωρίς macros ανά γεύμα
-- Θερμίδες ΑΚΡΙΒΩΣ ${targetCalories} kcal/μέρα
-- Το πρόγραμμα να είναι ΠΛΗΡΕΣ και ΣΩΣΤΟ με τη μια — χωρίς "διορθώσεις" ή "σημειώσεις" μέσα στο κείμενο
-- ΑΝ ο χρήστης θέλει αλλαγές, δίνεις ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα, όχι διορθώσεις
-- ΣΤΟ ΤΕΛΟΣ του προγράμματος ΠΑΝΤΑ πρόσθεσε:
+   ΚΑΝΟΝΕΣ FORMAT:
+   - Όλες οι μέρες Δευτέρα-Κυριακή (η Κυριακή να έχει πιο χαλαρό/ελεύθερο πρόγραμμα)
+   - Ποικιλία — διαφορετικά γεύματα κάθε μέρα
+   - Θερμίδες ΑΚΡΙΒΩΣ ${targetCalories} kcal/μέρα
+   - Μόνο kcal ανά γεύμα, χωρίς macros breakdown
+   - Χωρίς αστερίσκους, χωρίς "-" bullets
+   - Πρόγραμμα ΠΛΗΡΕΣ και ΣΩΣΤΟ με τη μια — χωρίς "διορθώσεις" μέσα
+   - Αν ο χρήστης θέλει αλλαγές → ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα
+   - ΣΤΟ ΤΕΛΟΣ:
 
-⚠️ Σημαντική σημείωση: Αυτό το πρόγραμμα είναι γενική πρόταση βασισμένη στα δεδομένα σου. Δεν αντικαθιστά τη γνώμη ειδικού διατροφολόγου ή γιατρού. Αν έχεις αλλεργίες, παθήσεις ή ειδικές ανάγκες, συμβουλέψου ειδικό πριν ξεκινήσεις.
+⚠️ Αυτό το πρόγραμμα είναι γενική πρόταση βασισμένη στα δεδομένα σου. Δεν αντικαθιστά τη γνώμη ειδικού διατροφολόγου. Αν έχεις αλλεργίες ή παθήσεις, συμβουλέψου ειδικό.
 
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι; Πες μου ποια μέρα ή γεύμα δεν σου αρέσει."
+   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
+8. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
 
-📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
-09:00 💪 [Άσκηση]: [σετ × επαναλήψεις ή διάρκεια]
-09:15 💪 [Άσκηση]: [σετ × επαναλήψεις ή διάρκεια]
+📅 ΔΕΥΤΕΡΑ — [τύπος]
+09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
 Διάρκεια: ~[X] λεπτά
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
-Σήμερα ξεκουράζεσαι. Ελαφρύ περπάτημα ή stretching αν θέλεις.
+Ελαφρύ περπάτημα 20-30 λεπτά αν θέλεις.
 
-ΚΑΝΟΝΕΣ:
-- Κάνε για ΟΛΕΣ τις μέρες Δευτέρα-Κυριακή
-- Κυριακή = συνήθως Ανάπαυση με σύντομη περιγραφή
-- 2 rest days ελάχιστα
-- Το πρόγραμμα να είναι ΠΛΗΡΕΣ με τη μια, χωρίς διορθώσεις μέσα
-- ΑΝ ο χρήστης θέλει αλλαγές → ΟΛΟΚΑΙΝΟΥΡΓΙΟ πρόγραμμα
-- ΣΤΟ ΤΕΛΟΣ ΠΑΝΤΑ:
+   ΚΑΝΟΝΕΣ:
+   - Όλες οι μέρες Δευτέρα-Κυριακή
+   - 2 rest days τουλάχιστον (συνήθως Κυριακή + μία ακόμα)
+   - Βάσει αγαπημένων ασκήσεων
+   - ΣΤΟ ΤΕΛΟΣ:
 
-⚠️ Σημαντική σημείωση: Αυτό το πρόγραμμα είναι γενική πρόταση. Αν έχεις τραυματισμούς, παθήσεις ή δεν έχεις γυμναστεί ξανά, συμβουλέψου γιατρό ή γυμναστή πριν ξεκινήσεις. Ξεκίνα με χαμηλή ένταση και αύξησε σταδιακά.
+⚠️ Αν έχεις τραυματισμούς ή παθήσεις, συμβουλέψου γιατρό πριν ξεκινήσεις. Ξεκίνα με χαμηλή ένταση.
 
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι; Πες μου ποια μέρα ή άσκηση δεν σου ταιριάζει."
+   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-7. ΝΕΟΠΡΟΓΡΑΜΜΑ: Αν ο χρήστης ζητήσει νέο πρόγραμμα ενώ έχει ήδη ένα, ρώτα πρώτα: "Έχεις ήδη αποθηκευμένο πρόγραμμα. Θέλεις να το αντικαταστήσω με νέο ή να σου δώσω παραλλαγή;"
+9. ΝΕΟ ΠΡΟΓΡΑΜΜΑ: Αν ο χρήστης έχει ήδη αποθηκευμένο πρόγραμμα και ζητάει νέο, ρώτα: "Έχεις ήδη αποθηκευμένο πρόγραμμα. Θέλεις να το αντικαταστήσω ή να κάνω παραλλαγή;"
 
-8. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε βάσει απαντήσεων.
+10. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε. Πρότεινε εναλλακτικά.
 
-9. ΛΑΘΗ: Βάσει πραγματικών δεδομένων.
-
-10. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
+11. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
   }
 
   function buildMessages(chatMessage) {
@@ -250,7 +213,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const effectiveMessage = isInitial
-      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ΜΟΝΟ κατάλληλα για ${currentMode.label})\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα και τι ακριβώς\n4. Ένα συγκεκριμένο πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
+      ? `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά και νόστιμα γεύματα για ${currentMode.label})\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα και τι\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις καλύτερα`
       : text;
 
     try {
