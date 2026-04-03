@@ -45,18 +45,21 @@ export default function AiCoach({
   }, [messages, loading]);
 
   useEffect(() => {
-    if (!messages.length) return;
-    const last = messages[messages.length - 1];
-    if (last.role !== "assistant") return;
-    const text = last.text;
-    const hasMealPlan = text.includes("📅") && text.includes("🌅") && text.includes("🌞");
-    const hasTrainingPlan = text.includes("📅") && (text.includes("💪") || text.includes("🏃") || text.includes("🏋"));
-    if (hasMealPlan && !hasTrainingPlan) {
-      onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
-    } else if (hasTrainingPlan) {
-      onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
-    }
-  }, [messages]);
+  if (!messages.length) return;
+  const last = messages[messages.length - 1];
+  if (last.role !== "assistant") return;
+  const text = last.text;
+
+  // Πιο αξιόπιστο detection
+  const hasMealPlan = text.includes("🌅") && text.includes("🌞") && text.includes("🌙") && text.includes("Σύνολο:");
+  const hasTrainingPlan = (text.includes("💪") || text.includes("🏃")) && text.includes("📅") && !text.includes("Σύνολο:");
+
+  if (hasMealPlan) {
+    onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
+  } else if (hasTrainingPlan) {
+    onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
+  }
+}, [messages]);
 
   function getCompatibleFoods() {
     if (!Array.isArray(foods)) return [];
