@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
+import { MODE_GROUPS, MODES } from "../../data/modes";
 
 function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
-
   let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
-
   if (kilosPerWeek > 1.5) {
     color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
-    message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο κιλών. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
+    message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
   } else if (kilosPerWeek > 1) {
     color = "#92400e"; bg = "#fffbeb"; border = "#fde68a"; icon = "⚡";
-    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός. Είναι εφικτός αλλά απαιτεί αυστηρή τήρηση.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα για ασφάλεια." : ""}`;
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός αλλά εφικτός.${isCapped ? " Το έλλειμμα περιορίστηκε στις 1000 kcal/ημέρα." : ""}`;
   } else {
-    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός.${isCapped ? " Το έλλειμμα έχει περιοριστεί στις 1000 kcal/ημέρα." : ""}`;
+    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός.${isCapped ? " Το έλλειμμα περιορίστηκε στις 1000 kcal/ημέρα." : ""}`;
   }
-
   return (
     <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 14, padding: "12px 14px", marginBottom: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
       <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
@@ -46,20 +44,13 @@ export default function ProfileTab({
   useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
 
   const showGoalFields = goalType === "lose" || goalType === "gain";
+  const currentMode = MODES[mode] || MODES.balanced;
 
   function getGoalLabel() {
     if (goalType === "lose") return "Lose weight";
     if (goalType === "gain") return "Muscle gain";
     if (goalType === "fitness") return "Fitness & Cardio";
     return "Maintain";
-  }
-
-  function getModeLabel() {
-    if (mode === "low_carb") return "Low Carb";
-    if (mode === "keto") return "Keto";
-    if (mode === "fasting") return "Fasting 16:8";
-    if (mode === "high_protein") return "High Protein";
-    return "Balanced";
   }
 
   function getActivityLabel() {
@@ -140,13 +131,27 @@ export default function ProfileTab({
           <label className="profile-field">
             <div className="profile-label">Τρόπος διατροφής</div>
             <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="balanced">Balanced</option>
-              <option value="low_carb">Low Carb</option>
-              <option value="keto">Keto</option>
-              <option value="fasting">Fasting 16:8</option>
-              <option value="high_protein">High Protein</option>
+              {MODE_GROUPS.map((group) => (
+                <optgroup key={group.group} label={group.group}>
+                  {group.modes.map((modeKey) => {
+                    const m = MODES[modeKey];
+                    if (!m) return null;
+                    return <option key={m.key} value={m.key}>{m.label}</option>;
+                  })}
+                </optgroup>
+              ))}
             </select>
           </label>
+          {currentMode.description && (
+            <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "8px 12px", fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-soft)" }}>
+              {currentMode.description}
+              {currentMode.fastingHours && (
+                <span style={{ marginLeft: 6, fontWeight: 700, color: "var(--text-primary)" }}>
+                  · Νηστεία {currentMode.fastingHours}ω / Φαγητό {currentMode.eatingWindowHours}ω
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -156,14 +161,13 @@ export default function ProfileTab({
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
               <div className="profile-label">{goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}</div>
-              <input className="input" placeholder={goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}
-                inputMode="decimal" value={localTargetWeightLoss}
+              <input className="input" inputMode="decimal" value={localTargetWeightLoss}
                 onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
                 onBlur={() => setTargetWeightLoss(localTargetWeightLoss)} />
             </label>
             <label className="profile-field">
               <div className="profile-label">Εβδομάδες</div>
-              <input className="input" placeholder="Σε πόσες εβδομάδες" inputMode="numeric" value={localWeeks}
+              <input className="input" inputMode="numeric" value={localWeeks}
                 onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => setWeeks(localWeeks)} />
             </label>
           </div>
@@ -175,34 +179,25 @@ export default function ProfileTab({
       <div className="soft-box profile-section-box profile-highlight-box">
         <div className="profile-section-title">Υπολογισμοί</div>
         <div className="profile-stat-row">
-          <span>Maintenance / TDEE</span>
-          <strong>{formatNumber(tdee)} kcal</strong>
+          <span>Maintenance / TDEE</span><strong>{formatNumber(tdee)} kcal</strong>
         </div>
         <div className="profile-stat-row">
-          <span>Ημερήσιος στόχος</span>
-          <strong>{formatNumber(targetCalories)} kcal</strong>
+          <span>Ημερήσιος στόχος</span><strong>{formatNumber(targetCalories)} kcal</strong>
         </div>
         {goalType === "lose" && appliedDeficit > 0 && (
           <div className="profile-stat-row">
-            <span>Ημερήσιο έλλειμμα</span>
-            <strong>{formatNumber(appliedDeficit)} kcal</strong>
+            <span>Ημερήσιο έλλειμμα</span><strong>{formatNumber(appliedDeficit)} kcal</strong>
           </div>
         )}
         {goalType === "gain" && (
-          <div className="profile-stat-row">
-            <span>Ημερήσιο πλεόνασμα</span>
-            <strong>300 kcal</strong>
-          </div>
+          <div className="profile-stat-row"><span>Ημερήσιο πλεόνασμα</span><strong>300 kcal</strong></div>
         )}
-        {goalType === "fitness" && (
-          <div className="profile-stat-row">
-            <span>Focus</span>
-            <strong>Cardio & Aerobic</strong>
-          </div>
-        )}
+        <div className="profile-stat-row">
+          <span>Στόχος πρωτεΐνης</span><strong>{formatNumber(proteinTarget || 0)} g</strong>
+        </div>
         <div className="profile-stat-row profile-stat-row-last">
-          <span>Στόχος πρωτεΐνης</span>
-          <strong>{formatNumber(proteinTarget || 0)} g</strong>
+          <span>Macro split</span>
+          <strong>{currentMode.proteinPercent}P / {currentMode.carbsPercent}C / {currentMode.fatPercent}F %</strong>
         </div>
       </div>
 
@@ -210,21 +205,23 @@ export default function ProfileTab({
         <div className="profile-section-title">Σύνοψη</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Στόχος</span>
-            <strong>{getGoalLabel()}</strong>
+            <span className="muted">Στόχος</span><strong>{getGoalLabel()}</strong>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Διατροφή</span>
-            <strong>{getModeLabel()}</strong>
+            <span className="muted">Διατροφή</span><strong>{currentMode.label}</strong>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Δραστηριότητα</span>
-            <strong>{getActivityLabel()}</strong>
+            <span className="muted">Δραστηριότητα</span><strong>{getActivityLabel()}</strong>
           </div>
           {goalType === "lose" && kilosPerWeek > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span className="muted">Ρυθμός</span>
               <strong>{formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα</strong>
+            </div>
+          )}
+          {currentMode.fastingHours && (
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span className="muted">Eating window</span><strong>{currentMode.eatingWindowHours} ώρες</strong>
             </div>
           )}
         </div>

@@ -345,7 +345,9 @@ export default function App() {
     favoriteFoods,
     favoriteFoodsText,
     favoriteExercisesText,
-    favoriteExercises
+    favoriteExercises,
+    // Στοιχεία χρήστη για AI Coach
+    age, weight, height, gender
   };
 
   const foodProps = {
