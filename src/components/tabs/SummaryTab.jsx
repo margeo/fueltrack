@@ -4,39 +4,61 @@ import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
 function exportToPDF(plan) {
-  const title = plan.type === "meal" ? "Εβδομαδιαίο Πρόγραμμα Διατροφής" : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
-  const content = plan.content
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  const title = plan.type === "meal"
+    ? "Εβδομαδιαίο Πρόγραμμα Διατροφής"
+    : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
 
-  const html = `
-    <!DOCTYPE html>
-    <html lang="el">
-    <head>
-      <meta charset="UTF-8">
-      <title>${title}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 30px; color: #111; line-height: 1.7; }
-        h1 { font-size: 22px; margin-bottom: 4px; }
-        .date { color: #666; font-size: 13px; margin-bottom: 24px; }
-        pre { white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 14px; }
-        @media print { body { padding: 20px; } }
-      </style>
-    </head>
-    <body>
-      <h1>🥗 FuelTrack — ${title}</h1>
-      <div class="date">Δημιουργήθηκε: ${plan.date}</div>
-      <pre>${content}</pre>
-    </body>
-    </html>
-  `;
+  const lines = plan.content.split("\n").map(line => {
+    const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (line.startsWith("📅")) return `<div class="day-header">${escaped}</div>`;
+    if (line.startsWith("Σύνολο")) return `<div class="total">${escaped}</div>`;
+    if (line.startsWith("─")) return `<hr>`;
+    if (line.trim() === "") return `<div style="height:8px"></div>`;
+    return `<div class="line">${escaped}</div>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; padding: 32px; color: #111; line-height: 1.6; font-size: 14px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 2px solid #111; padding-bottom: 12px; }
+    .title { font-size: 20px; font-weight: bold; }
+    .subtitle { color: #555; font-size: 13px; margin-top: 4px; }
+    .close-btn { background: #111; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .day-header { font-weight: bold; font-size: 15px; margin-top: 16px; margin-bottom: 6px; background: #f5f5f5; padding: 6px 10px; border-radius: 6px; }
+    .line { padding: 2px 10px; }
+    .total { font-weight: bold; padding: 4px 10px; color: #333; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 8px 0; }
+    @media print {
+      .close-btn { display: none; }
+      body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">🥗 FuelTrack — ${title}</div>
+      <div class="subtitle">Δημιουργήθηκε: ${plan.date}</div>
+    </div>
+    <button class="close-btn" onclick="window.close()">✕ Κλείσιμο</button>
+  </div>
+  ${lines}
+  <div style="margin-top:24px; text-align:center;">
+    <button onclick="window.print()" style="background:#111;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;">🖨️ Εκτύπωση / Save PDF</button>
+  </div>
+</body>
+</html>`;
 
   const win = window.open("", "_blank");
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 500);
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  }
 }
 
 export default function SummaryTab({
@@ -55,6 +77,7 @@ export default function SummaryTab({
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAllWeight, setShowAllWeight] = useState(false);
+  const [expandedPlan, setExpandedPlan] = useState(null);
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
 
@@ -129,6 +152,45 @@ export default function SummaryTab({
 
   const mealPlan = savedPlans?.find(p => p.type === "meal");
   const trainingPlan = savedPlans?.find(p => p.type === "training");
+
+  function PlanCard({ plan, type, emoji, title }) {
+    const isExpanded = expandedPlan === type;
+    return (
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{emoji} {title}</div>
+          {plan && (
+            <div style={{ display: "flex", gap: 6 }}>
+              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>
+                {isExpanded ? "Σύμπτυξη ▲" : "Εμφάνιση ▼"}
+              </button>
+              <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+              <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+            </div>
+          )}
+        </div>
+        {!plan ? (
+          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
+            <div className="muted" style={{ fontSize: 12 }}>
+              Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}. Ρώτα τον AI Coach!
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
+              Τελευταία ενημέρωση: {plan.date}
+              {!isExpanded && <span style={{ marginLeft: 8, color: "var(--color-green)" }}>✓ Αποθηκευμένο</span>}
+            </div>
+            {isExpanded && (
+              <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 400, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+                {plan.content}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -223,56 +285,13 @@ export default function SummaryTab({
         </div>
       </div>
 
-      {/* 5. ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΡΟΓΡΑΜΜΑΤΑ — πάντα ορατά */}
+      {/* 5. ΠΡΟΓΡΑΜΜΑΤΑ — compact με expand */}
       <div className="card">
         <h2>📋 Τα προγράμματά μου</h2>
-
-        {/* Πρόγραμμα διατροφής */}
-        <div style={{ marginBottom: mealPlan ? 16 : 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ fontWeight: 700, fontSize: 13 }}>🥗 Πρόγραμμα διατροφής</div>
-            {mealPlan && (
-              <div style={{ display: "flex", gap: 6 }}>
-                <button className="btn btn-dark" onClick={() => exportToPDF(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
-                <button className="btn btn-light" onClick={() => onDeletePlan("meal")} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
-              </div>
-            )}
-          </div>
-          {mealPlan ? (
-            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 380, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
-              {mealPlan.content}
-            </div>
-          ) : (
-            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
-              <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις ακόμα πρόγραμμα διατροφής. Ρώτα τον AI Coach "Εβδομαδιαίο πρόγραμμα διατροφής"!</div>
-            </div>
-          )}
-          {mealPlan && <div className="muted" style={{ fontSize: 11, marginTop: 4, textAlign: "right" }}>{mealPlan.date}</div>}
-        </div>
-
-        <div style={{ height: 1, background: "var(--border-soft)", margin: "12px 0" }} />
-
-        {/* Πρόγραμμα γυμναστικής */}
-        <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ fontWeight: 700, fontSize: 13 }}>💪 Πρόγραμμα γυμναστικής</div>
-            {trainingPlan && (
-              <div style={{ display: "flex", gap: 6 }}>
-                <button className="btn btn-dark" onClick={() => exportToPDF(trainingPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
-                <button className="btn btn-light" onClick={() => onDeletePlan("training")} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
-              </div>
-            )}
-          </div>
-          {trainingPlan ? (
-            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 380, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
-              {trainingPlan.content}
-            </div>
-          ) : (
-            <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
-              <div className="muted" style={{ fontSize: 13 }}>Δεν έχεις ακόμα πρόγραμμα γυμναστικής. Ρώτα τον AI Coach "Εβδομαδιαίο πρόγραμμα γυμναστικής"!</div>
-            </div>
-          )}
-          {trainingPlan && <div className="muted" style={{ fontSize: 11, marginTop: 4, textAlign: "right" }}>{trainingPlan.date}</div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <PlanCard plan={mealPlan} type="meal" emoji="🥗" title="Πρόγραμμα διατροφής" />
+          <div style={{ height: 1, background: "var(--border-soft)" }} />
+          <PlanCard plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
         </div>
       </div>
 
@@ -345,7 +364,7 @@ export default function SummaryTab({
         )}
       </div>
 
-      {/* 7. ΙΣΤΟΡΙΚΟ 7 ΗΜΕΡΩΝ */}
+      {/* 7. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
         <h2>Τελευταίες 7 ημέρες</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

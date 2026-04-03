@@ -24,6 +24,7 @@ export default function AiCoach({
   const [hasLoaded, setHasLoaded] = useState(false);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+  const bottomRef = useRef(null);
 
   const lastWeight = weightLog?.length
     ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight
@@ -39,11 +40,9 @@ export default function AiCoach({
     return diff > 0 ? `+${diff}` : `${diff}`;
   })();
 
+  // Scroll to bottom always after new message or loading change
   useEffect(() => {
-    const el = chatRef.current;
-    if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    if (isNearBottom) el.scrollTop = el.scrollHeight;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   // Αυτόματη αποθήκευση plan
@@ -90,6 +89,11 @@ export default function AiCoach({
     const bmi = currentWeight && height
       ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
 
+    const today = new Date();
+    const dayNames = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
+    const todayName = dayNames[today.getDay()];
+    const todayDate = today.toLocaleDateString("el-GR");
+
     const weekSummary = (last7Days || []).map((d, i) => {
       const log = dailyLogs?.[d.date] || { entries: [], exercises: [] };
       const entries = Array.isArray(log.entries) ? log.entries : [];
@@ -115,7 +119,9 @@ export default function AiCoach({
       .join(", ");
     const favExList = (favoriteExercises || []).map(e => `${e.name} (${e.caloriesPerMinute}kcal/λεπτό)`).join(", ");
 
-    return `Είσαι ο προσωπικός διατροφολόγος και personal trainer στο FuelTrack. Μιλάς ΠΑΝΤΑ στα Ελληνικά και ΠΑΝΤΑ στον ΕΝΙΚΟ (εσύ/σου/σε — ΠΟΤΕ σας/εσάς). Είσαι φιλικός, συγκεκριμένος, interactive — σαν πραγματικός διατροφολόγος.
+    return `Είσαι ο προσωπικός διατροφολόγος και personal trainer στο FuelTrack. Μιλάς ΠΑΝΤΑ στα Ελληνικά και ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, συγκεκριμένος, interactive.
+
+ΣΗΜΕΡΑ: ${todayName} ${todayDate}
 
 ━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
 Ηλικία: ${age || "—"} χρονών | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
@@ -148,27 +154,22 @@ ${topCompatible || "—"}
 ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 
 ━━━ ΚΑΝΟΝΕΣ ━━━
-1. ΕΝΙΚΟΣ παντα — "τι έφαγες;" ποτέ "τι φάγατε;"
+1. ΕΝΙΚΟΣ παντά.
 
-2. ΦΑΓΗΤΟ: Πρώτα κατάλληλα αγαπημένα, αν δεν υπάρχουν από τη βάση. Αν αγαπημένο είναι ακατάλληλο → εξήγησε + δώσε εναλλακτικό.
+2. ΦΑΓΗΤΟ: Πρώτα κατάλληλα αγαπημένα, αν δεν υπάρχουν από τη βάση. Αν ακατάλληλο → εξήγησε + εναλλακτικό.
 
-3. MEAL PLAN — ΧΡΟΝΙΚΗ ΣΕΙΡΑ ΜΕΣΑ ΣΤΗΝ ΗΜΕΡΑ:
-   07:00-09:00 🌅 Πρωινό (20-25% θερμίδων)
-      Carnivore/Keto: αυγά 2-3, τυρί, βούτυρο. ΟΧΙ καφές ως γεύμα.
-      Balanced/Mediterranean: βρώμη, αυγά, γιαούρτι, φρούτο.
-      High Protein: αυγά + γιαούρτι 0% + whey.
-      Vegan/Vegetarian: βρώμη, φυτικό γάλα, ξηροί καρποί.
-   11:00-11:30 🍎 Πρωινό σνακ (5-10% θερμίδων) — μικρό, εύκολο
-   13:00-14:00 🌞 Μεσημεριανό (30-35% θερμίδων) — κύριο γεύμα
-   16:00-17:00 🍎 Απογευματινό σνακ (5-10% θερμίδων)
-   19:00-21:00 🌙 Βραδινό (25-30% θερμίδων) — ελαφρύτερο
+3. MEAL PLAN ΧΡΟΝΙΚΗ ΣΕΙΡΑ:
+   07:30 🌅 Πρωινό (20-25% θερμίδων)
+   11:00 🍎 Πρωινό σνακ (5-10%)
+   13:30 🌞 Μεσημεριανό (30-35%)
+   16:30 🍎 Απογευματινό σνακ (5-10%)
+   20:00 🌙 Βραδινό (25-30%)
 
-   ΚΑΝΟΝΕΣ:
-   - ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές/μέρα
-   - Συγκεκριμένες ποσότητες: "3 αυγά", "150g κοτόπουλο"
-   - Θερμίδες ΑΚΡΙΒΩΣ στον στόχο (${targetCalories} kcal)
-   - Χωρίς αστερίσκους, χωρίς bullet points με "-" — χρησιμοποίησε μόνο emojis και καθαρό κείμενο
-   - ΠΑΝΤΑ μετά από meal plan ρώτα: "Θέλεις να αλλάξω κάτι; Π.χ. δεν σου αρέσει κάποιο γεύμα;"
+   Carnivore/Keto πρωινό: αυγά, τυρί, βούτυρο. ΟΧΙ καφές ως γεύμα.
+   ΜΗΝ επαναλαμβάνεις το ίδιο τρόφιμο 2 φορές/μέρα.
+   Συγκεκριμένες ποσότητες. Θερμίδες ΑΚΡΙΒΩΣ ${targetCalories} kcal.
+   Χωρίς αστερίσκους ή "-" bullets.
+   ΠΑΝΤΑ μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
 4. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
 
@@ -179,25 +180,25 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
 16:30 🍎 Σνακ — [τρόφιμο + ποσότητα] ([X] kcal)
 20:00 🌙 Βραδινό — [τρόφιμο + ποσότητα] ([X] kcal)
 Σύνολο: [X] kcal
-
-(Χωρίς macros ανά γεύμα — μόνο ώρα, emoji, τρόφιμο, ποσότητα, kcal)
+─────────────────
+(Επανάλαβε για όλες τις μέρες Δευτέρα-Κυριακή)
+(Η ΚΥΡΙΑΚΗ μπορεί να είναι πιο ελεύθερη/cheat meal αν ταιριάζει στον στόχο)
 Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
 5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
 
 📅 ΔΕΥΤΕΡΑ — Strength
 09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
-09:15 💪 [Άσκηση]: [σετ × επαναλήψεις]
-Διάρκεια: ~45 λεπτά
+Διάρκεια: ~[X] λεπτά
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
 
-(Να περιλαμβάνει 2 rest days)
+(Να περιλαμβάνει 2 rest days. Κυριακή συνήθως rest.)
 Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-6. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε βάσει απαντήσεων.
+6. INTERACTIVE: Ρώτα τι αρέσει, τι δεν θέλει. Προσάρμοσε.
 
-7. ΛΑΘΗ: Επισήμαινε βάσει ΠΡΑΓΜΑΤΙΚΩΝ δεδομένων.
+7. ΛΑΘΗ: Βάσει πραγματικών δεδομένων.
 
 8. ΠΟΤΕ μην κόβεις απάντηση στη μέση.`;
   }
@@ -286,7 +287,10 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
       )}
 
       {messages.length > 0 && (
-        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
+        <div
+          ref={chatRef}
+          style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}
+        >
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
               <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
@@ -301,6 +305,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
               </div>
             </div>
           )}
+          <div ref={bottomRef} />
         </div>
       )}
 
@@ -332,9 +337,7 @@ ${weekSummary || "Δεν υπάρχουν δεδομένα"}
             type="button"
             style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
             title="Φωνητική εισαγωγή — πάτα το 🎤 στο keyboard"
-          >
-            🎤
-          </button>
+          >🎤</button>
           <button
             className="btn btn-dark"
             onClick={() => sendMessage(null)}
