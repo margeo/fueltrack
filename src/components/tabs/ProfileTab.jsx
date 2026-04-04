@@ -233,6 +233,13 @@ export default function ProfileTab({
           Αποθήκευση & συνέχεια
         </button>
       </div>
+
+      <div style={{ textAlign: "center", marginTop: 16 }}>
+        <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+          style={{ color: "var(--text-muted)", fontSize: 12 }}>
+          Privacy Policy
+        </a>
+      </div>
     </div>
   );
 }
