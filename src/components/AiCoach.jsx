@@ -9,10 +9,6 @@ const QUICK_QUESTIONS = [
   "Τι κάνω λάθος;"
 ];
 
-const DISCLAIMER = "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.";
-
-const BASE_PROMPT = `Ρόλος: διατροφολόγος + personal trainer. Απάντα πάντα στα Ελληνικά, στον ενικό, φιλικά και πρακτικά. Λαμβάνεις υπόψη στόχο, mode, θερμίδες, πρωτεΐνη και προτιμήσεις. Επισήμανε άμεσα ασύμβατα τρόφιμα με το mode. Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν ειδικό.`;
-
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, streak, weightLog, favoriteFoods,
@@ -55,7 +51,7 @@ export default function AiCoach({
     const text = last.text;
     const hasMealPlan = text.includes("Σύνολο:") && text.includes("🌅") && text.includes("🌞") && text.includes("🌙");
     const hasTrainingPlan = !hasMealPlan && text.includes("📅") && (
-      text.includes("σετ ×") || text.includes("σετ x") || (text.includes("λεπτά") && text.includes("💪"))
+      text.includes("σετ ×") || (text.includes("λεπτά") && text.includes("💪"))
     );
     if (hasMealPlan) {
       onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
@@ -64,7 +60,7 @@ export default function AiCoach({
     }
   }, [messages]);
 
-  function buildUserContext() {
+  function buildSystemPrompt() {
     const currentMode = MODES[mode] || MODES.balanced;
     const goalLabel = goalType === "lose" ? "Απώλεια βάρους" :
       goalType === "gain" ? "Μυϊκή ανάπτυξη" :
@@ -78,94 +74,103 @@ export default function AiCoach({
     const todayName = dayNames[today.getDay()];
     const todayDate = today.toLocaleDateString("el-GR");
 
-    const totalEaten = (last7Days || []).reduce((s, d) => s + (d.eaten || 0), 0);
-    const daysWithData = (last7Days || []).filter(d => d.eaten > 0).length;
-    const avgCalories = daysWithData > 0 ? Math.round(totalEaten / daysWithData) : 0;
-    const totalProtein7 = (last7Days || []).reduce((s, d) => {
-      const log = dailyLogs?.[d.date] || { entries: [] };
+    const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
+
+    const weekSummary = (last7Days || []).map((d) => {
+      const log = dailyLogs?.[d.date] || { entries: [], exercises: [] };
       const entries = Array.isArray(log.entries) ? log.entries : [];
-      return s + Math.round(entries.reduce((a, item) => a + Number(item.protein || 0), 0));
-    }, 0);
-    const avgProtein = daysWithData > 0 ? Math.round(totalProtein7 / daysWithData) : 0;
-    const emptyDays = (last7Days || []).filter(d => d.eaten === 0).length;
+      const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
+      const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
+        ? log.exercises.map(e => e.name).join(", ") : "—";
+      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g [${exNames}]`;
+    }).join("\n");
 
-    const favFoods = favoriteFoods?.length
-      ? favoriteFoods.slice(0, 6).map(f => f.name).join(", ")
-      : favoriteFoodsText || "";
-    const favEx = favoriteExercises?.length
-      ? favoriteExercises.slice(0, 5).map(e => e.name).join(", ")
-      : favoriteExercisesText || "";
+    const favFoodsList = (favoriteFoods || []).slice(0, 8).map(f => f.name).join(", ");
+    const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
-    const bmiText = bmi ? ` | BMI ${bmi}` : "";
-    const trendText = weightTrend ? ` | Τάση ${weightTrend}kg` : "";
-    const streakText = streak > 0 ? ` | Streak: ${streak}` : "";
-    const favFoodsLine = favFoods ? `\nΑγαπημένα φαγητά: ${favFoods}` : "";
-    const favExLine = favEx ? `\nΑγαπημένες ασκήσεις: ${favEx}` : "";
-    const emptyText = emptyDays > 0 ? ` | ${emptyDays} μέρες χωρίς καταγραφή` : "";
+    return `Είσαι έμπειρος διατροφολόγος και personal trainer. Μιλάς ΠΑΝΤΑ στα Ελληνικά, ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, πρακτικός και δίνεις ρεαλιστικές, ελκυστικές προτάσεις.
 
-    return `ΗΜΕΡΑ: ${todayName} ${todayDate}
-ΧΡΗΣΤΗΣ: ${age || "—"} ετών | ${gender === "male" ? "Άνδρας" : "Γυναίκα"} | ${height || "—"}cm | ${currentWeight || "—"}kg${bmiText}${trendText}
-ΣΤΟΧΟΣ: ${goalLabel} | Mode: ${currentMode.label} | ${targetCalories} kcal | ${proteinTarget}g πρωτ.${streakText}
-ΣΗΜΕΡΑ: ${totalCalories || 0}/${targetCalories} kcal | Πρωτ. ${Math.round(totalProtein || 0)}/${proteinTarget}g | Άσκηση ${exerciseValue || 0} kcal | Υπόλοιπο ${remainingCalories || targetCalories} kcal
-ΕΒΔΟΜΑΔΑ: Μέσος όρος ${avgCalories} kcal, ${avgProtein}g πρωτ.${emptyText}${favFoodsLine}${favExLine}
-MODE ΚΑΝΟΝΑΣ: ${currentMode.aiRule}`;
-  }
+ΣΗΜΕΡΑ: ${todayName} ${todayDate}
 
-  function buildSystemPrompt(taskType) {
-    const currentMode = MODES[mode] || MODES.balanced;
-    const userCtx = buildUserContext();
+━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
+Ηλικία: ${age || "—"} | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
+Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
+${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
+Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
+ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal
+Πρωτεΐνη: ${proteinTarget}g/μέρα
+Streak: ${streak} μέρες
 
-    if (taskType === "meal") {
-      return `${BASE_PROMPT}
+━━━ ΓΟΥΣΤΑ ΧΡΗΣΤΗ ━━━
+Αγαπημένα φαγητά: ${favFoodsList || favoriteFoodsText || "Δεν έχει δηλώσει"}
+Αγαπημένες ασκήσεις: ${favExList || favoriteExercisesText || "Δεν έχει δηλώσει"}
 
-${userCtx}
+━━━ ΣΗΜΕΡΑ ━━━
+Έφαγε: ${totalCalories || 0}/${targetCalories} kcal
+Πρωτεΐνη: ${Math.round(totalProtein || 0)}/${proteinTarget}g
+Άσκηση: ${exerciseValue || 0} kcal
+Υπόλοιπο: ${remainingCalories || targetCalories} kcal
 
-Φτιάξε εβδομαδιαίο πλάνο διατροφής 7 ημερών. Στόχος: ${targetCalories} kcal/μέρα ±5%.
-Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)}, Σνακ x2 ${Math.round(targetCalories * 0.1)}, Μεσημεριανό ${Math.round(targetCalories * 0.35)}, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.
-Χρησιμοποίησε αγαπημένα φαγητά όταν ταιριάζουν με ${currentMode.label}.
-Format:
-📅 ΗΜΕΡΑ
-07:30 🌅 Πρωινό — [γεύμα] ([X] kcal)
+━━━ ΕΒΔΟΜΑΔΑ ━━━
+${weekSummary || "Δεν υπάρχουν δεδομένα"}
+${emptyDays.length > 0 ? `\n⚠️ Μέρες χωρίς καταγραφή: ${emptyDays.length}` : ""}
+
+━━━ ΚΑΝΟΝΕΣ ΔΙΑΤΡΟΦΗΣ (${currentMode.label}) ━━━
+${currentMode.aiRule}
+
+━━━ ΟΔΗΓΙΕΣ ━━━
+
+1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
+
+2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά.
+
+3. ΓΕΥΜΑΤΑ — ΛΟΓΙΚΗ ΕΠΙΛΟΓΗ:
+   🌅 ΠΡΩΙΝΟ: αυγά, γιαούρτι με φρούτα, βρώμη, τοστ, smoothie. ΠΟΤΕ κρέας ή ψάρι.
+   🍎 ΣΝΑΚ: φρούτο, ξηροί καρποί, γιαούρτι, protein bar. ΠΟΤΕ κρέας/ψάρι.
+   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
+   🌙 ΒΡΑΔΙΝΟ: ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
+   Ποικιλία κάθε μέρα. Εύκολα, νόστιμα γεύματα.
+   Λάβε υπόψη τα αγαπημένα φαγητά ΩΣ ΠΡΟΤΕΡΑΙΟΤΗΤΑ αλλά φιλτράρισέ τα βάσει ${currentMode.label}.
+
+4. ΣΥΜΒΑΤΟΤΗΤΑ ΔΙΑΙΤΑΣ: Αν ο χρήστης αναφέρει τρόφιμο που ΔΕΝ ταιριάζει με ${currentMode.label}, πες το ΑΜΕΣΩΣ και φιλικά.
+
+5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
+   Στόχος ${targetCalories} kcal/μέρα (±5% αποδεκτό).
+   Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)}, Σνακ x2 ${Math.round(targetCalories * 0.1)}, Μεσημεριανό ${Math.round(targetCalories * 0.35)}, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.
+   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis, ΠΟΤΕ αστερίσκοι:
+
+📅 ΔΕΥΤΕΡΑ
+07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X] kcal)
 11:00 🍎 Σνακ — [σνακ] ([X] kcal)
-13:30 🌞 Μεσημεριανό — [γεύμα] ([X] kcal)
+13:30 🌞 Μεσημεριανό — [γεύμα + ποσότητα] ([X] kcal)
 16:30 🍎 Σνακ — [σνακ] ([X] kcal)
-20:00 🌙 Βραδινό — [γεύμα] ([X] kcal)
+20:00 🌙 Βραδινό — [γεύμα + ποσότητα] ([X] kcal)
 Σύνολο: [X] kcal
 ─────────────────
-Στο τέλος: "${DISCLAIMER}" και "Θέλεις να αλλάξω κάτι;"`;
-    }
 
-    if (taskType === "workout") {
-      return `${BASE_PROMPT}
+   Όλες οι μέρες Δευτέρα-Κυριακή.
+   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
+   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
 
-${userCtx}
+6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
+   Λάβε υπόψη τις αγαπημένες ασκήσεις. 2+ rest days.
+   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis:
 
-Φτιάξε εβδομαδιαίο πλάνο γυμναστικής 7 ημερών. Τουλάχιστον 2 rest days. Λάβε υπόψη αγαπημένες ασκήσεις.
-Format:
-📅 ΗΜΕΡΑ — [τύπος προπόνησης]
-09:00 💪 [άσκηση]: [σετ × επαναλήψεις]
+📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
+09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
 Διάρκεια: ~[X] λεπτά
-📅 ΗΜΕΡΑ — Ανάπαυση 😴
-Στο τέλος: "${DISCLAIMER}" και "Θέλεις να αλλάξω κάτι;"`;
-    }
 
-    return `${BASE_PROMPT}
+📅 ΤΡΙΤΗ — Ανάπαυση 😴
 
-${userCtx}
-
-Δώσε πρακτική καθοδήγηση με βάση τα παραπάνω. Εστίασε σε επόμενο βήμα και σύντομες προτάσεις.`;
+   Όλες οι μέρες Δευτέρα-Κυριακή.
+   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
+   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
   }
 
-  function detectTaskType(text) {
-    if (text.includes("Εβδομαδιαίο πρόγραμμα διατροφής") || text.includes("πλάνο διατροφής")) return "meal";
-    if (text.includes("Εβδομαδιαίο πρόγραμμα γυμναστικής") || text.includes("πλάνο γυμναστικής")) return "workout";
-    return "general";
-  }
-
-  function buildMessages(taskType, chatMessage) {
+  function buildMessages(chatMessage) {
     const history = messages.map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
-    return { systemPrompt: buildSystemPrompt(taskType), messages: history };
+    return history;
   }
 
   async function sendMessage(messageText) {
@@ -174,28 +179,28 @@ ${userCtx}
     if (loading) return;
     setLoading(true);
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
-
+    const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
-    let effectiveMessage;
 
+    let effectiveMessage;
     if (isInitial) {
-      effectiveMessage = `Κοίτα τα δεδομένα μου και δώσε μου: 1) τι να φάω για την υπόλοιπη μέρα 2) αν πρέπει να γυμναστώ 3) ένα πράγμα που κάνω λάθος 4) μια ερώτηση για να με γνωρίσεις καλύτερα`;
+      effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
-      effectiveMessage = "Φτιάξε μου εβδομαδιαίο πρόγραμμα διατροφής.";
+      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Στόχος ${targetCalories} kcal/μέρα ±5%. Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 🌅 🍎 🌞 🌙 emojis. ΠΟΤΕ αστερίσκοι.`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα γυμναστικής") {
-      effectiveMessage = "Φτιάξε μου εβδομαδιαίο πρόγραμμα γυμναστικής.";
+      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 💪 😴 emojis.`;
     } else {
       effectiveMessage = text;
     }
-
-    const taskType = isInitial ? "general" : detectTaskType(effectiveMessage);
-    const { systemPrompt, messages: msgs } = buildMessages(taskType, effectiveMessage);
 
     try {
       const response = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ systemPrompt, messages: msgs })
+        body: JSON.stringify({
+          systemPrompt: buildSystemPrompt(),
+          messages: buildMessages(effectiveMessage)
+        })
       });
       if (!response.ok) throw new Error(`Σφάλμα σύνδεσης (${response.status})`);
       const data = await response.json();
