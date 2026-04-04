@@ -17,14 +17,16 @@ export async function handler(event) {
 
     const recentMessages = validMessages.slice(-10);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://fueltrack.me",
+        "X-Title": "FuelTrack"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "meta-llama/llama-3.3-70b-instruct:free",
         max_tokens: 4000,
         temperature: 0.7,
         messages: [
@@ -36,7 +38,7 @@ export async function handler(event) {
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`OpenAI API error ${response.status}: ${errText}`);
+      throw new Error(`OpenRouter error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
