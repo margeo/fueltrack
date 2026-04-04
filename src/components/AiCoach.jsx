@@ -9,6 +9,11 @@ const QUICK_QUESTIONS = [
   "Τι κάνω λάθος;"
 ];
 
+const DAY_NAMES = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
+
+const PLAN_DISCLAIMER =
+  "⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.";
+
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, streak, weightLog, favoriteFoods,
@@ -58,86 +63,88 @@ export default function AiCoach({
     } else if (hasTrainingPlan) {
       onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
     }
-  }, [messages]);
+  }, [messages, onSavePlan]);
 
   function buildSystemPrompt() {
     const currentMode = MODES[mode] || MODES.balanced;
-    const goalLabel = goalType === "lose" ? "Απώλεια βάρους" :
+
+    const goalLabel =
+      goalType === "lose" ? "Απώλεια βάρους" :
       goalType === "gain" ? "Μυϊκή ανάπτυξη" :
-      goalType === "fitness" ? "Fitness & Cardio" : "Διατήρηση";
+      goalType === "fitness" ? "Fitness & Cardio" :
+      "Διατήρηση";
+
     const currentWeight = lastWeight || weight;
+
     const bmi = currentWeight && height
-      ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
+      ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10
+      : null;
 
     const today = new Date();
-    const dayNames = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
-    const todayName = dayNames[today.getDay()];
+    const todayName = DAY_NAMES[today.getDay()];
     const todayDate = today.toLocaleDateString("el-GR");
 
-    const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
+    const emptyDays = (last7Days || []).filter((d) => d.eaten === 0);
 
     const weekSummary = (last7Days || []).map((d) => {
       const log = dailyLogs?.[d.date] || { entries: [], exercises: [] };
       const entries = Array.isArray(log.entries) ? log.entries : [];
-      const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
+      const protein = Math.round(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
       const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
-        ? log.exercises.map(e => e.name).join(", ") : "—";
-      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g [${exNames}]`;
+        ? log.exercises.map((e) => e.name).join(", ")
+        : "—";
+
+      return `${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : `${d.eaten} kcal`}, πρωτεΐνη ${protein}g [${exNames}]`;
     }).join("\n");
 
-    const favFoodsList = (favoriteFoods || []).slice(0, 8).map(f => f.name).join(", ");
-    const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
+    const favFoodsList = (favoriteFoods || []).slice(0, 8).map((f) => f.name).join(", ");
+    const favExList = (favoriteExercises || []).map((e) => e.name).join(", ");
 
-    return `Είσαι έμπειρος διατροφολόγος και personal trainer. Μιλάς ΠΑΝΤΑ στα Ελληνικά, ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, πρακτικός και δίνεις ρεαλιστικές, ελκυστικές προτάσεις.
+    const breakfastKcal = Math.round(targetCalories * 0.25);
+    const snackKcal = Math.round(targetCalories * 0.1);
+    const lunchKcal = Math.round(targetCalories * 0.35);
+    const dinnerKcal = Math.round(targetCalories * 0.2);
 
-ΣΗΜΕΡΑ: ${todayName} ${todayDate}
+    return `Ρόλος: έμπειρος διατροφολόγος + personal trainer. Απάντα πάντα στα Ελληνικά, πάντα στον ενικό, φιλικά, πρακτικά και ρεαλιστικά.
 
-━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
-Ηλικία: ${age || "—"} | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
-Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
-${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
-Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
-ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal
+Σήμερα: ${todayName} ${todayDate}
+
+Χρήστης:
+${age || "—"} ετών | ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
+${height || "—"} cm | ${currentWeight || "—"} kg${bmi ? ` | BMI ${bmi}` : ""}${weightTrend ? ` | Τάση ${weightTrend} kg` : ""}
+Στόχος: ${goalLabel}
+Διατροφή: ${currentMode.label}
+Θερμίδες: ${targetCalories} kcal/μέρα
 Πρωτεΐνη: ${proteinTarget}g/μέρα
 Streak: ${streak} μέρες
 
-━━━ ΓΟΥΣΤΑ ΧΡΗΣΤΗ ━━━
-Αγαπημένα φαγητά: ${favFoodsList || favoriteFoodsText || "Δεν έχει δηλώσει"}
-Αγαπημένες ασκήσεις: ${favExList || favoriteExercisesText || "Δεν έχει δηλώσει"}
+Προτιμήσεις:
+Φαγητά: ${favFoodsList || favoriteFoodsText || "Δεν έχει δηλώσει"}
+Ασκήσεις: ${favExList || favoriteExercisesText || "Δεν έχει δηλώσει"}
 
-━━━ ΣΗΜΕΡΑ ━━━
-Έφαγε: ${totalCalories || 0}/${targetCalories} kcal
-Πρωτεΐνη: ${Math.round(totalProtein || 0)}/${proteinTarget}g
-Άσκηση: ${exerciseValue || 0} kcal
-Υπόλοιπο: ${remainingCalories || targetCalories} kcal
+Σήμερα:
+${totalCalories || 0}/${targetCalories} kcal
+Πρωτεΐνη ${Math.round(totalProtein || 0)}/${proteinTarget}g
+Άσκηση ${exerciseValue || 0} kcal
+Υπόλοιπο ${remainingCalories || targetCalories} kcal
 
-━━━ ΕΒΔΟΜΑΔΑ ━━━
-${weekSummary || "Δεν υπάρχουν δεδομένα"}
-${emptyDays.length > 0 ? `\n⚠️ Μέρες χωρίς καταγραφή: ${emptyDays.length}` : ""}
+Εβδομάδα:
+${weekSummary || "Δεν υπάρχουν δεδομένα"}${emptyDays.length > 0 ? `\nΜέρες χωρίς καταγραφή: ${emptyDays.length}` : ""}
 
-━━━ ΚΑΝΟΝΕΣ ΔΙΑΤΡΟΦΗΣ (${currentMode.label}) ━━━
+Κανόνας διατροφής (${currentMode.label}):
 ${currentMode.aiRule}
 
-━━━ ΟΔΗΓΙΕΣ ━━━
-
-1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
-
-2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά.
-
-3. ΓΕΥΜΑΤΑ — ΛΟΓΙΚΗ ΕΠΙΛΟΓΗ:
-   🌅 ΠΡΩΙΝΟ: αυγά, γιαούρτι με φρούτα, βρώμη, τοστ, smoothie. ΠΟΤΕ κρέας ή ψάρι.
-   🍎 ΣΝΑΚ: φρούτο, ξηροί καρποί, γιαούρτι, protein bar. ΠΟΤΕ κρέας/ψάρι.
-   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
-   🌙 ΒΡΑΔΙΝΟ: ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
-   Ποικιλία κάθε μέρα. Εύκολα, νόστιμα γεύματα.
-   Λάβε υπόψη τα αγαπημένα φαγητά ΩΣ ΠΡΟΤΕΡΑΙΟΤΗΤΑ αλλά φιλτράρισέ τα βάσει ${currentMode.label}.
-
-4. ΣΥΜΒΑΤΟΤΗΤΑ ΔΙΑΙΤΑΣ: Αν ο χρήστης αναφέρει τρόφιμο που ΔΕΝ ταιριάζει με ${currentMode.label}, πες το ΑΜΕΣΩΣ και φιλικά.
-
-5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
-   Στόχος ${targetCalories} kcal/μέρα (±5% αποδεκτό).
-   Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)}, Σνακ x2 ${Math.round(targetCalories * 0.1)}, Μεσημεριανό ${Math.round(targetCalories * 0.35)}, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.
-   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis, ΠΟΤΕ αστερίσκοι:
+Οδηγίες:
+1. Πάντα ενικός, ποτέ πληθυντικός.
+2. Αν υπάρχουν άδειες μέρες, ανέφερέ το φιλικά.
+3. Πρότεινε γεύματα με λογική:
+   - 🌅 Πρωινό: αυγά, γιαούρτι, φρούτα, βρώμη, τοστ, smoothie. Όχι κρέας/ψάρι.
+   - 🍎 Σνακ: φρούτο, ξηροί καρποί, γιαούρτι, protein bar. Όχι κρέας/ψάρι.
+   - 🌞 Μεσημεριανό: κύριο γεύμα με πρωτεΐνη + λαχανικά + υδατάνθρακα.
+   - 🌙 Βραδινό: πιο ελαφρύ, π.χ. ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
+4. Χρησιμοποίησε πρώτα αγαπημένα φαγητά, αλλά μόνο αν ταιριάζουν με ${currentMode.label}.
+5. Αν ο χρήστης αναφέρει τρόφιμο που δεν ταιριάζει με ${currentMode.label}, πες το άμεσα και φιλικά.
+6. Αν ζητηθεί εβδομαδιαίο πρόγραμμα διατροφής, δώσε 7 μέρες (Δευτέρα-Κυριακή) με αυτό το format, χωρίς αστερίσκους:
 
 📅 ΔΕΥΤΕΡΑ
 07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X] kcal)
@@ -148,13 +155,13 @@ ${currentMode.aiRule}
 Σύνολο: [X] kcal
 ─────────────────
 
-   Όλες οι μέρες Δευτέρα-Κυριακή.
-   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
+Στόχος: ${targetCalories} kcal/μέρα (±5%)
+Κατανομή: Πρωινό ${breakfastKcal}, Σνακ ${snackKcal} x2, Μεσημεριανό ${lunchKcal}, Βραδινό ${dinnerKcal} kcal
+Στο τέλος βάλε:
+${PLAN_DISCLAIMER}
+Θέλεις να αλλάξω κάτι;
 
-6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
-   Λάβε υπόψη τις αγαπημένες ασκήσεις. 2+ rest days.
-   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis:
+7. Αν ζητηθεί εβδομαδιαίο πρόγραμμα γυμναστικής, δώσε 7 μέρες (Δευτέρα-Κυριακή), λάβε υπόψη αγαπημένες ασκήσεις και βάλε τουλάχιστον 2 rest days, με αυτό το format:
 
 📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
 09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
@@ -162,13 +169,13 @@ ${currentMode.aiRule}
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
 
-   Όλες οι μέρες Δευτέρα-Κυριακή.
-   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
+Στο τέλος βάλε:
+${PLAN_DISCLAIMER}
+Θέλεις να αλλάξω κάτι;`;
   }
 
   function buildMessages(chatMessage) {
-    const history = messages.map(msg => ({ role: msg.role, content: msg.text }));
+    const history = messages.map((msg) => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
@@ -177,18 +184,30 @@ ${currentMode.aiRule}
     const text = (messageText || input).trim();
     if (!text && hasLoaded) return;
     if (loading) return;
+
     setLoading(true);
-    if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
+
+    if (text) {
+      setMessages((prev) => [...prev, { role: "user", text }]);
+      setInput("");
+    }
+
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
 
     let effectiveMessage;
+
     if (isInitial) {
-      effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
+      effectiveMessage = `Κοίτα τα δεδομένα μου και πες μου:
+1. τι να φάω για την υπόλοιπη μέρα, ρεαλιστικά για ${currentMode.label} με στόχο ${targetCalories} kcal
+2. αν υπάρχουν άδειες μέρες χωρίς καταγραφή
+3. αν πρέπει να γυμναστώ σήμερα
+4. ένα πράγμα που κάνω λάθος
+5. μία ερώτηση για να με γνωρίσεις καλύτερα`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
-      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Στόχος ${targetCalories} kcal/μέρα ±5%. Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 🌅 🍎 🌞 🌙 emojis. ΠΟΤΕ αστερίσκοι.`;
+      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή), στόχος ${targetCalories} kcal/μέρα ±5%, με format 📅 🌅 🍎 🌞 🌙 και χωρίς αστερίσκους.`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα γυμναστικής") {
-      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 💪 😴 emojis.`;
+      effectiveMessage = "Δώσε μου εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή) με format 📅 💪 😴.";
     } else {
       effectiveMessage = text;
     }
@@ -202,35 +221,72 @@ ${currentMode.aiRule}
           messages: buildMessages(effectiveMessage)
         })
       });
-      if (!response.ok) throw new Error(`Σφάλμα σύνδεσης (${response.status})`);
+
+      if (!response.ok) {
+        throw new Error(`Σφάλμα σύνδεσης (${response.status})`);
+      }
+
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
-      setMessages(prev => [...prev, { role: "assistant", text: data.advice }]);
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setMessages((prev) => [...prev, { role: "assistant", text: data.advice }]);
       setHasLoaded(true);
     } catch (err) {
-      setMessages(prev => [...prev, { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }]);
-    } finally { setLoading(false); }
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="card">
       <div style={{ marginBottom: 12 }}>
         <h2 style={{ margin: 0 }}>🤖 AI Coach</h2>
-        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+          Διατροφολόγος & Personal Trainer
+        </div>
       </div>
 
       {!hasLoaded && !loading && messages.length === 0 && (
         <div>
-          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:</div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
+            Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:
+          </div>
+
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {QUICK_QUESTIONS.map((q) => (
-              <button key={q} onClick={() => sendMessage(q)} type="button"
-                style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              <button
+                key={q}
+                onClick={() => sendMessage(q)}
+                type="button"
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: 20,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-soft)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
                 {q}
               </button>
             ))}
           </div>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
+
+          <button
+            className="btn btn-dark"
+            onClick={() => sendMessage(null)}
+            type="button"
+            style={{ width: "100%" }}
+          >
             📊 Ανάλυσε τη μέρα μου
           </button>
         </div>
@@ -244,17 +300,60 @@ ${currentMode.aiRule}
       )}
 
       {messages.length > 0 && (
-        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
+        <div
+          ref={chatRef}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            marginBottom: 12,
+            maxHeight: 500,
+            overflowY: "auto",
+            overflowX: "hidden",
+            paddingRight: 4,
+            scrollbarWidth: "thin",
+            scrollbarColor: "var(--border-color) transparent"
+          }}
+        >
           {messages.map((msg, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                justifyContent: msg.role === "user" ? "flex-end" : "flex-start"
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: "90%",
+                  padding: "10px 14px",
+                  borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                  background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)",
+                  color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)",
+                  fontSize: 13,
+                  lineHeight: 1.7,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none"
+                }}
+              >
                 {msg.text}
               </div>
             </div>
           ))}
+
           {loading && (
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "18px 18px 18px 4px",
+                  background: "var(--bg-soft)",
+                  border: "1px solid var(--border-soft)",
+                  fontSize: 13,
+                  color: "var(--text-muted)"
+                }}
+              >
                 💭 Σκέφτομαι...
               </div>
             </div>
@@ -265,8 +364,21 @@ ${currentMode.aiRule}
       {hasLoaded && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {QUICK_QUESTIONS.map((q) => (
-            <button key={q} onClick={() => sendMessage(q)} type="button"
-              style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+            <button
+              key={q}
+              onClick={() => sendMessage(q)}
+              type="button"
+              style={{
+                padding: "5px 10px",
+                borderRadius: 20,
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-soft)",
+                color: "var(--text-primary)",
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer"
+              }}
+            >
               {q}
             </button>
           ))}
@@ -281,15 +393,44 @@ ${currentMode.aiRule}
             placeholder="Ρώτα με κάτι..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !loading && input.trim()) sendMessage(null);
+            }}
             style={{ flex: 1 }}
             disabled={loading}
           />
-          <button onClick={() => inputRef.current?.focus()} type="button"
-            style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
+
+          <button
+            onClick={() => inputRef.current?.focus()}
+            type="button"
+            style={{
+              padding: "12px 14px",
+              flexShrink: 0,
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--bg-soft)",
+              color: "var(--text-primary)",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1
+            }}
+          >
+            🎤
+          </button>
+
+          <button
+            className="btn btn-dark"
+            onClick={() => sendMessage(null)}
+            type="button"
             disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
+            style={{
+              padding: "12px 16px",
+              flexShrink: 0,
+              opacity: loading || !input.trim() ? 0.4 : 1
+            }}
+          >
+            ↑
+          </button>
         </div>
       )}
     </div>
