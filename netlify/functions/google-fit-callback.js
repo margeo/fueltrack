@@ -1,11 +1,11 @@
 export async function handler(event) {
   const code = event.queryStringParameters?.code;
-  const redirectUri = "https://fueltrack-marios.netlify.app/.netlify/functions/google-fit-callback";
+  const redirectUri = "https://fueltrack.me/.netlify/functions/google-fit-callback";
 
   if (!code) {
     return {
       statusCode: 302,
-      headers: { Location: "https://fueltrack-marios.netlify.app/?fit_error=no_code" }
+      headers: { Location: "https://fueltrack.me/?fit_error=no_code" }
     };
   }
 
@@ -23,7 +23,6 @@ export async function handler(event) {
     });
 
     const data = await res.json();
-
     if (data.error) throw new Error(data.error);
 
     const accessToken = data.access_token;
@@ -32,13 +31,13 @@ export async function handler(event) {
     return {
       statusCode: 302,
       headers: {
-        Location: `https://fueltrack-marios.netlify.app/?fit_token=${encodeURIComponent(accessToken)}&fit_refresh=${encodeURIComponent(refreshToken)}`
+        Location: `https://fueltrack.me/?fit_token=${encodeURIComponent(accessToken)}&fit_refresh=${encodeURIComponent(refreshToken)}`
       }
     };
   } catch (err) {
     return {
       statusCode: 302,
-      headers: { Location: `https://fueltrack-marios.netlify.app/?fit_error=${encodeURIComponent(err.message)}` }
+      headers: { Location: `https://fueltrack.me/?fit_error=${encodeURIComponent(err.message)}` }
     };
   }
 }

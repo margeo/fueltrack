@@ -1,6 +1,6 @@
 export async function handler() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = "https://fueltrack-marios.netlify.app/.netlify/functions/google-fit-callback";
+  const redirectUri = "https://fueltrack.me/.netlify/functions/google-fit-callback";
 
   const scope = [
     "https://www.googleapis.com/auth/fitness.activity.read",
