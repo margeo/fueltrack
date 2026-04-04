@@ -26,7 +26,7 @@ export async function handler(event) {
         "X-Title": "FuelTrack"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-thinking-exp:free",
+        model: "nvidia/nemotron-3-super-120b-a12b:free",
         max_tokens: 4000,
         temperature: 0.7,
         messages: [
