@@ -17,14 +17,14 @@ export async function handler(event) {
 
     const recentMessages = validMessages.slice(-10);
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "gpt-4o-mini",
         max_tokens: 4000,
         temperature: 0.7,
         messages: [
@@ -36,7 +36,7 @@ export async function handler(event) {
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`Groq API error ${response.status}: ${errText}`);
+      throw new Error(`OpenAI API error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
