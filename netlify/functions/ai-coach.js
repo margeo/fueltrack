@@ -26,7 +26,7 @@ export async function handler(event) {
         "X-Title": "FuelTrack"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-v3.2",
+        model: "google/gemini-2.5-flash-lite",
         max_tokens: 4000,
         temperature: 0.7,
         messages: [
