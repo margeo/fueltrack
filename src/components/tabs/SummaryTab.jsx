@@ -1,14 +1,12 @@
+// src/components/tabs/SummaryTab.jsx
 import { useMemo, useState } from "react";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
 function exportToPDF(plan) {
-  const title = plan.type === "meal"
-    ? "Εβδομαδιαίο Πρόγραμμα Διατροφής"
-    : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
+  const title = plan.type === "meal" ? "Εβδομαδιαίο Πρόγραμμα Διατροφής" : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
   const emoji = plan.type === "meal" ? "🥗" : "💪";
-
   const lines = plan.content.split("\n").map(line => {
     const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if (line.startsWith("📅")) return `<div class="day-header">${escaped}</div>`;
@@ -18,47 +16,7 @@ function exportToPDF(plan) {
     if (line.trim() === "") return `<div style="height:6px"></div>`;
     return `<div class="line">${escaped}</div>`;
   }).join("");
-
-  const html = `<!DOCTYPE html>
-<html lang="el">
-<head>
-  <meta charset="UTF-8">
-  <title>${title}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; padding: 28px; color: #111; line-height: 1.65; font-size: 14px; }
-    .top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #111; padding-bottom: 14px; }
-    .title-block .main-title { font-size: 20px; font-weight: bold; }
-    .title-block .sub { color: #555; font-size: 13px; margin-top: 4px; }
-    .btn-group { display: flex; gap: 10px; flex-shrink: 0; }
-    .btn { padding: 12px 20px; border-radius: 10px; font-size: 15px; cursor: pointer; border: none; font-weight: bold; white-space: nowrap; }
-    .btn-save { background: #166534; color: white; }
-    .btn-print { background: #111; color: white; }
-    .btn-close { background: #e5e7eb; color: #111; }
-    .day-header { font-weight: bold; font-size: 15px; margin-top: 16px; margin-bottom: 6px; background: #f3f4f6; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #111; }
-    .line { padding: 3px 12px; }
-    .total { font-weight: bold; padding: 5px 12px; background: #f9fafb; border-radius: 4px; }
-    .disclaimer { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 12px; color: #78350f; }
-    hr { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
-    @media print { .btn-group { display: none; } body { padding: 16px; } }
-  </style>
-</head>
-<body>
-  <div class="top-bar">
-    <div class="title-block">
-      <div class="main-title">${emoji} FuelTrack — ${title}</div>
-      <div class="sub">Δημιουργήθηκε: ${plan.date}</div>
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-save" onclick="window.print()">💾 Αποθήκευση</button>
-      <button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button>
-      <button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button>
-    </div>
-  </div>
-  ${lines}
-</body>
-</html>`;
-
+  const html = `<!DOCTYPE html><html lang="el"><head><meta charset="UTF-8"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.title-block .main-title{font-size:20px;font-weight:bold}.title-block .sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px;flex-shrink:0}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold;white-space:nowrap}.btn-save{background:#166534;color:white}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.day-header{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px;border-left:4px solid #111}.line{padding:3px 12px}.total{font-weight:bold;padding:5px 12px;background:#f9fafb;border-radius:4px}.disclaimer{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-top:20px;font-size:12px;color:#78350f}hr{border:none;border-top:1px solid #e5e7eb;margin:8px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div class="title-block"><div class="main-title">${emoji} FuelTrack — ${title}</div><div class="sub">Δημιουργήθηκε: ${plan.date}</div></div><div class="btn-group"><button class="btn btn-save" onclick="window.print()">💾 Αποθήκευση</button><button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button><button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button></div></div>${lines}</body></html>`;
   const win = window.open("", "_blank");
   if (win) { win.document.write(html); win.document.close(); }
 }
@@ -77,6 +35,7 @@ export default function SummaryTab({
 }) {
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
+  const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
@@ -98,6 +57,7 @@ export default function SummaryTab({
     if (!w || w <= 0) return;
     onAddWeight({ date: weightDate, weight: w });
     setWeightInput("");
+    setShowWeightInput(false);
   }
 
   function getGoalLabel() {
@@ -108,13 +68,7 @@ export default function SummaryTab({
   }
 
   function getModeLabel() {
-    const labels = {
-      balanced: "Balanced", mediterranean: "Μεσογειακή", whole_foods: "Whole Foods",
-      high_protein: "High Protein", muscle_gain: "Muscle Gain",
-      low_carb: "Low Carb", keto: "Keto", carnivore: "Carnivore",
-      fasting_16_8: "Fasting 16:8", fasting_18_6: "Fasting 18:6", omad: "OMAD",
-      vegetarian: "Vegetarian", vegan: "Vegan"
-    };
+    const labels = { balanced: "Balanced", mediterranean: "Μεσογειακή", whole_foods: "Whole Foods", high_protein: "High Protein", muscle_gain: "Muscle Gain", low_carb: "Low Carb", keto: "Keto", carnivore: "Carnivore", fasting_16_8: "Fasting 16:8", fasting_18_6: "Fasting 18:6", omad: "OMAD", vegetarian: "Vegetarian", vegan: "Vegan" };
     return labels[mode] || "Balanced";
   }
 
@@ -125,21 +79,7 @@ export default function SummaryTab({
   }
 
   function getModeHint() {
-    const hints = {
-      balanced: "Ισορροπημένη διατροφή",
-      mediterranean: "Ελαιόλαδο, ψάρι, λαχανικά",
-      whole_foods: "Φυσικές, ανεπεξέργαστες τροφές",
-      high_protein: "Υψηλή πρωτεΐνη σε κάθε γεύμα",
-      muscle_gain: "Caloric surplus + πρωτεΐνη",
-      low_carb: "Χαμηλοί υδατάνθρακες",
-      keto: "Κετογονική — max 8g carbs/100g",
-      carnivore: "Μόνο ζωικά προϊόντα",
-      fasting_16_8: "Παράθυρο φαγητού 8 ωρών",
-      fasting_18_6: "Παράθυρο φαγητού 6 ωρών",
-      omad: "Ένα γεύμα την ημέρα",
-      vegetarian: "Χωρίς κρέας",
-      vegan: "Φυτική διατροφή"
-    };
+    const hints = { balanced: "Ισορροπημένη διατροφή", mediterranean: "Ελαιόλαδο, ψάρι, λαχανικά", whole_foods: "Φυσικές, ανεπεξέργαστες τροφές", high_protein: "Υψηλή πρωτεΐνη σε κάθε γεύμα", muscle_gain: "Caloric surplus + πρωτεΐνη", low_carb: "Χαμηλοί υδατάνθρακες", keto: "Κετογονική — max 8g carbs/100g", carnivore: "Μόνο ζωικά προϊόντα", fasting_16_8: "Παράθυρο φαγητού 8 ωρών", fasting_18_6: "Παράθυρο φαγητού 6 ωρών", omad: "Ένα γεύμα την ημέρα", vegetarian: "Χωρίς κρέας", vegan: "Φυτική διατροφή" };
     return hints[mode] || "";
   }
 
@@ -159,9 +99,7 @@ export default function SummaryTab({
           <div style={{ fontWeight: 700, fontSize: 15 }}>{emoji} {title}</div>
           {plan && (
             <div style={{ display: "flex", gap: 5 }}>
-              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>
-                {isExpanded ? "▲" : "▼"}
-              </button>
+              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
@@ -169,9 +107,7 @@ export default function SummaryTab({
         </div>
         {!plan ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
-            <div className="muted" style={{ fontSize: 12 }}>
-              Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}. Ρώτα τον AI Coach!
-            </div>
+            <div className="muted" style={{ fontSize: 12 }}>Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}. Ρώτα τον AI Coach!</div>
           </div>
         ) : (
           <>
@@ -194,28 +130,20 @@ export default function SummaryTab({
     <>
       {/* 1. HERO */}
       <div className="hero-card">
-
-        {/* Τίτλος hero */}
-        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>
-          Σύνοψη ημέρας
-        </div>
-
+        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>Σύνοψη ημέρας</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
             {formatDisplayDate(selectedDate)}
             {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· Σήμερα</span>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {!isToday && (
-              <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>
-            )}
+            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <button type="button" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, color: "white", lineHeight: 1, display: "block" }}>📅</button>
               <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
             </div>
           </div>
         </div>
-
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -240,22 +168,13 @@ export default function SummaryTab({
             </div>
           </div>
         </div>
-
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
-
-        {/* Στόχος + Mode — μεγάλο και εμφανές */}
         <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(255,255,255,0.08)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)" }}>
-          <div style={{ color: "white", fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>
-            🎯 {getGoalLabel()} · {getModeLabel()}
-          </div>
+          <div style={{ color: "white", fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
           <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>
-              Protein υπόλοιπο: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong>
-            </span>
-            <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
-              {formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal
-            </span>
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>Protein υπόλοιπο: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong></span>
+            <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>{formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal</span>
           </div>
         </div>
       </div>
@@ -308,13 +227,25 @@ export default function SummaryTab({
       <div className="card">
         <h2>Πρόοδος</h2>
 
-        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>⚖️ Εισαγωγή βάρους</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
-          <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
-          <input className="input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value)} style={{ flex: 1, padding: "10px 12px" }} />
-          <button className="btn btn-dark" onClick={handleAddWeight} type="button" style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
-        </div>
+        {/* Εισαγωγή βάρους — collapsible */}
+        <button className="btn btn-light" onClick={() => setShowWeightInput(!showWeightInput)} type="button"
+          style={{ width: "100%", marginBottom: showWeightInput ? 10 : 12, fontSize: 12 }}>
+          {showWeightInput ? "⚖️ Εισαγωγή βάρους ▲" : "⚖️ Εισαγωγή βάρους ▼"}
+        </button>
+        {showWeightInput && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+            <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal"
+              value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
+              style={{ flex: 1, padding: "10px 12px" }} />
+            <input className="input" type="date" value={weightDate}
+              onChange={(e) => setWeightDate(e.target.value)}
+              style={{ flex: 1, padding: "10px 12px" }} />
+            <button className="btn btn-dark" onClick={handleAddWeight} type="button"
+              style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
+          </div>
+        )}
 
+        {/* Τελευταίο βάρος */}
         {lastWeight && (
           <div style={{ display: "flex", gap: 12, marginBottom: 10, background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px solid var(--border-soft)" }}>
             <div>
@@ -332,12 +263,36 @@ export default function SummaryTab({
           </div>
         )}
 
+        {/* Ιστορικό βάρους */}
+        {sortedWeightLog.length > 0 && (
+          <>
+            <button className="btn btn-light" onClick={() => setShowWeightHistory(!showWeightHistory)} type="button"
+              style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12 }}>
+              {showWeightHistory ? "Απόκρυψη ιστορικού ▲" : `Ιστορικό βάρους (${sortedWeightLog.length}) ▼`}
+            </button>
+            {showWeightHistory && (
+              <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 8 }}>
+                {sortedWeightLog.slice(0, 10).map((entry) => (
+                  <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
+                    <span className="muted">{formatDisplayDate(entry.date)}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
+                      <button className="btn btn-light" style={{ padding: "2px 7px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Γράφημα — μετά το ιστορικό */}
         {chartData.length >= 2 && (
-          <button className="btn btn-light" onClick={() => setShowWeightChart(!showWeightChart)} type="button" style={{ width: "100%", marginBottom: showWeightChart ? 8 : 10, fontSize: 12 }}>
+          <button className="btn btn-light" onClick={() => setShowWeightChart(!showWeightChart)} type="button"
+            style={{ width: "100%", marginTop: 10, marginBottom: showWeightChart ? 8 : 0, fontSize: 12 }}>
             {showWeightChart ? "Απόκρυψη γραφήματος ▲" : "Εμφάνιση γραφήματος ▼"}
           </button>
         )}
-
         {showWeightChart && chartData.length >= 2 && (
           <div style={{ marginBottom: 10, overflowX: "auto" }}>
             <svg viewBox={`0 0 ${chartW} ${chartH + 16}`} style={{ width: "100%", maxWidth: chartW }}>
@@ -360,27 +315,7 @@ export default function SummaryTab({
           </div>
         )}
 
-        {sortedWeightLog.length > 0 && (
-          <>
-            <button className="btn btn-light" onClick={() => setShowWeightHistory(!showWeightHistory)} type="button" style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12 }}>
-              {showWeightHistory ? "Απόκρυψη ιστορικού ▲" : `Ιστορικό βάρους (${sortedWeightLog.length}) ▼`}
-            </button>
-            {showWeightHistory && (
-              <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 8 }}>
-                {sortedWeightLog.slice(0, 10).map((entry) => (
-                  <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
-                    <span className="muted">{formatDisplayDate(entry.date)}</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
-                      <button className="btn btn-light" style={{ padding: "2px 7px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
+        {/* Streak */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginTop: 14 }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
