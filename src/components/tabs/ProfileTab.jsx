@@ -96,7 +96,7 @@ export default function ProfileTab({
       {/* ΤΑ ΒΑΣΙΚΑ — dark hero card */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2>Προφίλ</h2>
+          <h2>👤 Προφίλ</h2>
         </div>
 
         {!profileComplete && (
