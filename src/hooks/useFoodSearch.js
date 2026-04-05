@@ -1,4 +1,6 @@
+// src/hooks/useFoodSearch.js
 import { useEffect, useState } from "react";
+import { getCached, setCache } from "../utils/foodCache";
 
 function removeAccents(str) {
   return str
@@ -11,42 +13,35 @@ function removeAccents(str) {
 }
 
 function addAccents(str) {
-  // Δοκιμάζει κοινές λέξεις χωρίς τόνο και επιστρέφει με τόνο
   const map = {
-    "φετα": "φέτα",
-    "γιαουρτι": "γιαούρτι",
-    "κοτοπουλο": "κοτόπουλο",
-    "ψωμι": "ψωμί",
-    "τυρι": "τυρί",
-    "γαλα": "γάλα",
-    "αυγα": "αυγά",
-    "ελαιολαδο": "ελαιόλαδο",
-    "μελι": "μέλι",
-    "ζαχαρη": "ζάχαρη",
-    "αλατι": "αλάτι",
-    "ρυζι": "ρύζι",
-    "μακαρονια": "μακαρόνια",
-    "πατατες": "πατάτες",
-    "ντοματες": "ντομάτες",
-    "κρεμμυδι": "κρεμμύδι",
-    "σκορδο": "σκόρδο",
-    "λαδι": "λάδι",
-    "βουτυρο": "βούτυρο",
-    "μοσχαρι": "μοσχάρι",
-    "αρνι": "αρνί",
-    "χοιρινο": "χοιρινό",
-    "ψαρι": "ψάρι",
-    "σολομος": "σολομός",
-    "τονος": "τόνος",
-    "σαρδελες": "σαρδέλες",
-    "καφες": "καφές",
-    "τσαι": "τσάι",
-    "χυμος": "χυμός",
-    "μπιρα": "μπύρα",
-    "κρασι": "κρασί",
-    "νερο": "νερό",
+    "φετα": "φέτα", "γιαουρτι": "γιαούρτι", "κοτοπουλο": "κοτόπουλο",
+    "ψωμι": "ψωμί", "τυρι": "τυρί", "γαλα": "γάλα", "αυγα": "αυγά",
+    "ελαιολαδο": "ελαιόλαδο", "μελι": "μέλι", "ζαχαρη": "ζάχαρη",
+    "αλατι": "αλάτι", "ρυζι": "ρύζι", "μακαρονια": "μακαρόνια",
+    "πατατες": "πατάτες", "ντοματες": "ντομάτες", "κρεμμυδι": "κρεμμύδι",
+    "σκορδο": "σκόρδο", "λαδι": "λάδι", "βουτυρο": "βούτυρο",
+    "μοσχαρι": "μοσχάρι", "αρνι": "αρνί", "χοιρινο": "χοιρινό",
+    "ψαρι": "ψάρι", "σολομος": "σολομός", "τονος": "τόνος",
+    "σαρδελες": "σαρδέλες", "καφες": "καφές", "τσαι": "τσάι",
+    "χυμος": "χυμός", "μπιρα": "μπύρα", "κρασι": "κρασί", "νερο": "νερό",
   };
   return map[str.toLowerCase()] || str;
+}
+
+async function fetchFromAPI(searchQ) {
+  const res = await fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+function mergeAndDedupe(arrays) {
+  const seen = new Set();
+  return arrays.flat().filter((food) => {
+    const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function useFoodSearch(query) {
@@ -70,28 +65,30 @@ export default function useFoodSearch(query) {
       try {
         const qNoAccents = removeAccents(q);
         const qWithAccents = addAccents(qNoAccents);
+        const cacheKey = q.toLowerCase();
 
-        // Στέλνουμε και τις δύο εκδοχές παράλληλα
-        const queries = new Set([q, qNoAccents, qWithAccents]);
-        
+        // 1. Έλεγχος cache — αν υπάρχει επιστρέφει instant
+        const cached = await getCached(cacheKey);
+        if (cached && !cancelled) {
+          setResults(cached);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Cache miss → API calls
+        const queries = [...new Set([q, qNoAccents, qWithAccents])];
         const allResults = await Promise.all(
-          [...queries].map((searchQ) =>
-            fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`)
-              .then((res) => res.ok ? res.json() : [])
-              .catch(() => [])
-          )
+          queries.map((searchQ) => fetchFromAPI(searchQ).catch(() => []))
         );
 
         if (cancelled) return;
 
-        // Merge και deduplicate
-        const seen = new Set();
-        const merged = allResults.flat().filter((food) => {
-          const key = `${String(food.name || "").trim().toLowerCase()}|${String(food.brand || "").trim().toLowerCase()}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
+        const merged = mergeAndDedupe(allResults);
+
+        // 3. Αποθήκευση στο cache για επόμενη φορά
+        if (merged.length > 0) {
+          setCache(cacheKey, merged);
+        }
 
         setResults(merged);
       } catch (err) {
