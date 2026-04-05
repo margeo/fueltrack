@@ -233,33 +233,33 @@ export default function SummaryTab({
           {showWeightInput ? "⚖️ Εισαγωγή βάρους ▲" : "⚖️ Εισαγωγή βάρους ▼"}
         </button>
         {showWeightInput && (
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
-            <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal"
-              value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
-              style={{ flex: 1, padding: "10px 12px" }} />
-            <input className="input" type="date" value={weightDate}
-              onChange={(e) => setWeightDate(e.target.value)}
-              style={{ flex: 1, padding: "10px 12px" }} />
-            <button className="btn btn-dark" onClick={handleAddWeight} type="button"
-              style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
-          </div>
-        )}
-
-        {/* Τελευταίο βάρος */}
-        {lastWeight && (
-          <div style={{ display: "flex", gap: 12, marginBottom: 10, background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px solid var(--border-soft)" }}>
-            <div>
-              <div className="muted" style={{ fontSize: 11 }}>Τελευταίο</div>
-              <div style={{ fontWeight: 800, fontSize: 20 }}>{lastWeight} kg</div>
-            </div>
-            {diff !== null && (
-              <div>
-                <div className="muted" style={{ fontSize: 11 }}>30 μέρες</div>
-                <div style={{ fontWeight: 700, fontSize: 18, color: diff <= 0 ? "#22c55e" : "#ef4444" }}>
-                  {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
+          <div style={{ marginBottom: 12 }}>
+            {lastWeight && (
+              <div style={{ display: "flex", gap: 12, marginBottom: 10, background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px solid var(--border-soft)" }}>
+                <div>
+                  <div className="muted" style={{ fontSize: 11 }}>Τελευταίο</div>
+                  <div style={{ fontWeight: 800, fontSize: 20 }}>{lastWeight} kg</div>
                 </div>
+                {diff !== null && (
+                  <div>
+                    <div className="muted" style={{ fontSize: 11 }}>30 μέρες</div>
+                    <div style={{ fontWeight: 700, fontSize: 18, color: diff <= 0 ? "#22c55e" : "#ef4444" }}>
+                      {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
+                    </div>
+                  </div>
+                )}
               </div>
             )}
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal"
+                value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
+                style={{ flex: 1, padding: "10px 12px" }} />
+              <input className="input" type="date" value={weightDate}
+                onChange={(e) => setWeightDate(e.target.value)}
+                style={{ flex: 1, padding: "10px 12px" }} />
+              <button className="btn btn-dark" onClick={handleAddWeight} type="button"
+                style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
+            </div>
           </div>
         )}
 
