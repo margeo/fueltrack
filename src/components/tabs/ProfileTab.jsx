@@ -24,36 +24,18 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
   );
 }
 
-function Section({ title, icon, children }) {
-  return (
-    <div style={{ background: "var(--bg-soft)", borderRadius: 16, padding: "16px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
-      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: "var(--text-primary)" }}>
-        {icon && <span style={{ marginRight: 6 }}>{icon}</span>}{title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
 function CollapsibleSection({ title, icon, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div style={{ background: "var(--bg-soft)", borderRadius: 16, marginBottom: 12, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-      >
+      <button type="button" onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
         <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>
           {icon && <span style={{ marginRight: 6 }}>{icon}</span>}{title}
         </span>
         <span style={{ color: "var(--text-muted)", fontSize: 18, transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
       </button>
-      {open && (
-        <div style={{ padding: "0 16px 16px 16px" }}>
-          {children}
-        </div>
-      )}
+      {open && <div style={{ padding: "0 16px 16px 16px" }}>{children}</div>}
     </div>
   );
 }
@@ -103,53 +85,66 @@ export default function ProfileTab({
   const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0 ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
 
+  const inputStyle = {
+    background: "rgba(255,255,255,0.15)",
+    border: "1px solid rgba(255,255,255,0.25)",
+    color: "white"
+  };
+
   return (
-    <div className="card">
-      <h2>Προφίλ</h2>
-
-      {!profileComplete && (
-        <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, border: "1px solid var(--border-soft)" }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Συμπλήρωσε το προφίλ σου</div>
-          <div className="muted" style={{ fontSize: 12 }}>Βάλε τα βασικά σου στοιχεία για να υπολογιστεί ο ημερήσιος στόχος θερμίδων.</div>
+    <>
+      {/* ΤΑ ΒΑΣΙΚΑ — dark hero card */}
+      <div className="day-card">
+        <div className="day-card-total">
+          <h2>Προφίλ</h2>
         </div>
-      )}
 
-      {/* ΤΑ ΒΑΣΙΚΑ */}
-      <Section title="Τα βασικά">
+        {!profileComplete && (
+          <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid rgba(255,255,255,0.2)" }}>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4, color: "white" }}>Συμπλήρωσε το προφίλ σου</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Βάλε τα βασικά σου στοιχεία για να υπολογιστεί ο ημερήσιος στόχος θερμίδων.</div>
+          </div>
+        )}
+
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
-            <div className="profile-label">Βάρος (kg)</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Βάρος (kg)</div>
             <input className="input" placeholder="kg" inputMode="decimal" value={localWeight}
-              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)} />
+              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)}
+              style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div className="profile-label">Ύψος (cm)</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Ύψος (cm)</div>
             <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)} />
+              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)}
+              style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div className="profile-label">Ηλικία</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Ηλικία</div>
             <input className="input" placeholder="Ηλικία" inputMode="numeric" value={localAge}
-              onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)} />
+              onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)}
+              style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div className="profile-label">Στόχος</div>
-            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Στόχος</div>
+            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}
+              style={inputStyle}>
               <option value="lose">Lose weight</option>
               <option value="maintain">Maintain</option>
               <option value="gain">Muscle gain</option>
-              <option value="fitness">Fitness & Cardio</option>
+              <option value="fitness">Fitness &amp; Cardio</option>
             </select>
           </label>
         </div>
-        <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+        <div style={{ fontSize: 12, marginTop: 10, color: "rgba(255,255,255,0.6)" }}>
           Το app προσαρμόζει αυτόματα τις θερμίδες σου
         </div>
-      </Section>
+      </div>
 
       {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
       {showGoalFields && (
-        <Section title="Ο στόχος σου">
+        <div style={{ background: "var(--bg-soft)", borderRadius: 16, padding: "16px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>Ο στόχος σου</div>
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
               <div className="profile-label">{goalType === "lose" ? "Θέλω να χάσω" : "Θέλω να πάρω"}</div>
@@ -170,7 +165,7 @@ export default function ProfileTab({
             </label>
           </div>
           <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
-        </Section>
+        </div>
       )}
 
       {/* ΠΕΡΙΣΣΟΤΕΡΑ */}
@@ -254,19 +249,20 @@ export default function ProfileTab({
         </div>
       </CollapsibleSection>
 
-      <div className="action-row" style={{ marginTop: 4 }}>
-        <button className="btn btn-dark" onClick={onContinue} disabled={!profileComplete}
-          style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}>
-          Αποθήκευση & συνέχεια
-        </button>
+      <div className="card">
+        <div className="action-row">
+          <button className="btn btn-dark" onClick={onContinue} disabled={!profileComplete}
+            style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}>
+            Αποθήκευση & συνέχεια
+          </button>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 14 }}>
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+            style={{ color: "var(--text-muted)", fontSize: 12 }}>
+            Privacy Policy
+          </a>
+        </div>
       </div>
-
-      <div style={{ textAlign: "center", marginTop: 14 }}>
-        <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
-          style={{ color: "var(--text-muted)", fontSize: 12 }}>
-          Privacy Policy
-        </a>
-      </div>
-    </div>
+    </>
   );
 }
