@@ -1,219 +1,465 @@
-// src/components/tabs/ExerciseTab.jsx
-import { useMemo, useState } from "react";
-import { EXERCISE_LIBRARY } from "../../data/constants";
-import { formatNumber, stripDiacritics } from "../../utils/helpers";
-import GoogleFitButton from "../GoogleFitButton";
+// src/App.jsx
+import { useEffect, useMemo, useState } from "react";
+import BottomNav from "./components/BottomNav";
+import EditEntryModal from "./components/EditEntryModal";
+import WelcomeScreen from "./components/WelcomeScreen";
+import SummaryTab from "./components/tabs/SummaryTab";
+import FoodTab from "./components/tabs/FoodTab";
+import ExerciseTab from "./components/tabs/ExerciseTab";
+import ProfileTab from "./components/tabs/ProfileTab";
+import foodsData from "./data/foods.json";
+import { EXERCISE_LIBRARY, MEALS, APP_TABS } from "./data/constants";
+import {
+  getTodayKey, normalizeDayLog, normalizeFood,
+  createFoodEntry, round1, shiftDate, entryBasePer100g
+} from "./utils/helpers";
+import {
+  calculateBMR, calculateTDEE, calculateDailyDeficit,
+  calculateTargetCalories, calculateProteinTarget, calculateMacroTargets
+} from "./utils/calorieLogic";
+import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
+import { getInitialTheme, applyTheme } from "./utils/theme";
 
-const CATEGORIES = [
-  { key: "Όλα", label: "Όλα" },
-  { key: "Cardio", label: "🏃 Cardio" },
-  { key: "Gym", label: "🏋️ Gym" },
-  { key: "Training", label: "🔥 Training" },
-  { key: "Sports", label: "⚽ Sports" },
-];
+export default function App() {
+  const [theme, setTheme] = useState(() => getInitialTheme());
+  const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
-export default function ExerciseTab({
-  exercises, exerciseValue, exerciseMinutes, setExerciseMinutes,
-  customExerciseName, setCustomExerciseName,
-  customExerciseMinutes, setCustomExerciseMinutes,
-  customExerciseRate, setCustomExerciseRate,
-  addExerciseByMinutes, addCustomExercise, deleteExercise,
-  selectedDate, updateCurrentDay,
-  favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise
-}) {
-  const [activeCategory, setActiveCategory] = useState("Όλα");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedExerciseName, setSelectedExerciseName] = useState("");
-  const [selectedMinutes, setSelectedMinutes] = useState("30");
+  const [age, setAge] = useState(() => loadValue("ft_age", ""));
+  const [gender, setGender] = useState(() => loadValue("ft_gender", "male"));
+  const [height, setHeight] = useState(() => loadValue("ft_height", ""));
+  const [weight, setWeight] = useState(() => loadValue("ft_weight", ""));
+  const [activity, setActivity] = useState(() => loadValue("ft_activity", "1.4"));
+  const [goalType, setGoalType] = useState(() => loadValue("ft_goalType", "lose"));
+  const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
+  const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
+  const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
+  const [favoriteFoodsText, setFavoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
+  const [favoriteExercisesText, setFavoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
-  const filteredExercises = useMemo(() => {
-    let list = activeCategory === "Όλα"
-      ? EXERCISE_LIBRARY
-      : EXERCISE_LIBRARY.filter((e) => e.category === activeCategory);
+  const [foods, setFoods] = useState(() => {
+    const saved = loadJSON("ft_foods", []);
+    const customOnly = saved.filter((f) => f.source !== "local");
+    return [...foodsData, ...customOnly];
+  });
+  const [customFoods, setCustomFoods] = useState(() => loadJSON("ft_customFoods", []));
+  const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
+  const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
+  const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() => loadJSON("ft_favoriteFoodKeys", []));
+  const [favoriteExerciseKeys, setFavoriteExerciseKeys] = useState(() => loadJSON("ft_favoriteExerciseKeys", []));
+  const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
+  const [savedPlans, setSavedPlans] = useState(() => loadJSON("ft_savedPlans", []));
+  const [recentExercises, setRecentExercises] = useState(() => loadJSON("ft_recentExercises", []));
 
-    if (searchQuery.trim().length >= 1) {
-      const q = stripDiacritics(searchQuery.toLowerCase().trim());
-      list = list.filter((e) =>
-        stripDiacritics(e.name.toLowerCase()).includes(q)
-      );
-    }
-    return list;
-  }, [activeCategory, searchQuery]);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editEntryGrams, setEditEntryGrams] = useState("100");
+  const [editEntryMeal, setEditEntryMeal] = useState("Πρωινό");
 
-  const selectedExercise = EXERCISE_LIBRARY.find((e) => e.name === selectedExerciseName) || null;
+  const [exerciseMinutes, setExerciseMinutes] = useState(() =>
+    EXERCISE_LIBRARY.reduce((acc, item) => { acc[item.name] = ""; return acc; }, {})
+  );
+  const [customExerciseName, setCustomExerciseName] = useState("");
+  const [customExerciseMinutes, setCustomExerciseMinutes] = useState("");
+  const [customExerciseRate, setCustomExerciseRate] = useState("");
 
-  const favoriteExercises = useMemo(() => {
-    return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise?.(e));
-  }, [favoriteExerciseKeys]);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(() =>
+    loadValue("ft_hasSeenWelcome", "false") === "true"
+  );
 
-  function handleAddExercise() {
-    if (!selectedExercise) return;
-    addExerciseByMinutes(selectedExercise, selectedMinutes);
-    setSelectedExerciseName("");
-    setSelectedMinutes("30");
+  useEffect(() => { applyTheme(theme); }, [theme]);
+  function toggleTheme() { setTheme((prev) => (prev === "dark" ? "light" : "dark")); }
+
+  const profileComplete = useMemo(() => {
+    return (
+      String(age).trim() !== "" && String(gender).trim() !== "" &&
+      String(height).trim() !== "" && String(weight).trim() !== "" &&
+      String(activity).trim() !== "" && String(goalType).trim() !== "" &&
+      String(mode).trim() !== ""
+    );
+  }, [age, gender, height, weight, activity, goalType, mode]);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedAge = loadValue("ft_age", "");
+    const savedHeight = loadValue("ft_height", "");
+    const savedWeight = loadValue("ft_weight", "");
+    const savedActivity = loadValue("ft_activity", "1.4");
+    const savedGoalType = loadValue("ft_goalType", "lose");
+    const savedMode = loadValue("ft_mode", "balanced");
+    const savedHasSeenWelcome = loadValue("ft_hasSeenWelcome", "false") === "true";
+    const savedTab = loadValue("ft_activeTab", "summary");
+
+    const savedProfileComplete =
+      String(savedAge).trim() !== "" && String(loadValue("ft_gender", "male")).trim() !== "" &&
+      String(savedHeight).trim() !== "" && String(savedWeight).trim() !== "" &&
+      String(savedActivity).trim() !== "" && String(savedGoalType).trim() !== "" &&
+      String(savedMode).trim() !== "";
+
+    if (!savedHasSeenWelcome) return "welcome";
+    if (!savedProfileComplete) return "profile";
+    if (!["summary", "food", "exercise", "profile"].includes(savedTab)) return "summary";
+    return savedTab;
+  });
+
+  useEffect(() => { setSelectedDate(getTodayKey()); }, []);
+
+  useEffect(() => saveValue("ft_age", age), [age]);
+  useEffect(() => saveValue("ft_gender", gender), [gender]);
+  useEffect(() => saveValue("ft_height", height), [height]);
+  useEffect(() => saveValue("ft_weight", weight), [weight]);
+  useEffect(() => saveValue("ft_activity", activity), [activity]);
+  useEffect(() => saveValue("ft_goalType", goalType), [goalType]);
+  useEffect(() => saveValue("ft_mode", mode), [mode]);
+  useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
+  useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
+  useEffect(() => saveValue("ft_favFoodsText", favoriteFoodsText), [favoriteFoodsText]);
+  useEffect(() => saveValue("ft_favExercisesText", favoriteExercisesText), [favoriteExercisesText]);
+  useEffect(() => saveJSON("ft_foods", foods), [foods]);
+  useEffect(() => saveJSON("ft_customFoods", customFoods), [customFoods]);
+  useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
+  useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
+  useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
+  useEffect(() => saveJSON("ft_favoriteExerciseKeys", favoriteExerciseKeys), [favoriteExerciseKeys]);
+  useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
+  useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
+  useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
+  useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
+
+  useEffect(() => {
+    if (!hasSeenWelcome && activeTab !== "welcome") { setActiveTab("welcome"); return; }
+    if (hasSeenWelcome && !profileComplete && activeTab !== "profile") { setActiveTab("profile"); return; }
+    if (hasSeenWelcome && profileComplete) { saveValue("ft_activeTab", activeTab); }
+  }, [activeTab, hasSeenWelcome, profileComplete]);
+
+  const currentDayLog = normalizeDayLog(dailyLogs[selectedDate]);
+  const entries = currentDayLog.entries;
+  const exercises = currentDayLog.exercises;
+
+  function updateCurrentDay(updater) {
+    setDailyLogs((prev) => {
+      const current = normalizeDayLog(prev[selectedDate]);
+      const nextDay = normalizeDayLog(updater(current));
+      return { ...prev, [selectedDate]: nextDay };
+    });
   }
 
-  function handleAddFromFit(exercise) {
+  function deleteEntry(id) {
     updateCurrentDay((current) => ({
       ...current,
-      exercises: [exercise, ...current.exercises]
+      entries: current.entries.filter((item) => item.id !== id)
     }));
   }
 
+  function openEditEntry(entry) {
+    setEditingEntry(entry);
+    setEditEntryGrams(String(entry.grams || 100));
+    setEditEntryMeal(entry.mealType || "Πρωινό");
+  }
+
+  function closeEditEntry() {
+    setEditingEntry(null);
+    setEditEntryGrams("100");
+    setEditEntryMeal("Πρωινό");
+  }
+
+  function saveEditedEntry() {
+    if (!editingEntry) return;
+    const grams = Math.max(Number(editEntryGrams) || 100, 1);
+    const meal = editEntryMeal || "Πρωινό";
+    const base = entryBasePer100g(editingEntry);
+    const factor = grams / 100;
+    const updated = {
+      ...editingEntry, grams, mealType: meal,
+      calories: Math.round(base.caloriesPer100g * factor),
+      protein: round1(base.proteinPer100g * factor),
+      carbs: round1(base.carbsPer100g * factor),
+      fat: round1(base.fatPer100g * factor),
+      baseCaloriesPer100g: base.caloriesPer100g,
+      baseProteinPer100g: base.proteinPer100g,
+      baseCarbsPer100g: base.carbsPer100g,
+      baseFatPer100g: base.fatPer100g
+    };
+    updateCurrentDay((current) => ({
+      ...current,
+      entries: current.entries.map((item) => (item.id === editingEntry.id ? updated : item))
+    }));
+    closeEditEntry();
+  }
+
+  function saveRecentExercise(exercise, minutes) {
+    setRecentExercises((prev) => {
+      const key = exercise.name.toLowerCase();
+      const filtered = prev.filter((item) => item.key !== key);
+      return [{ key, exercise, minutes, lastUsedAt: Date.now() }, ...filtered].slice(0, 8);
+    });
+  }
+
+  function addExerciseByMinutes(exercise, minutesValue) {
+    const minutes = Math.max(Number(minutesValue) || 0, 1);
+    const newExercise = {
+      id: Date.now() + Math.random(),
+      name: `${exercise.name} ${minutes} λεπτά`,
+      minutes, caloriesPerMinute: exercise.caloriesPerMinute,
+      calories: Math.round(exercise.caloriesPerMinute * minutes)
+    };
+    updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
+    setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: "" }));
+    saveRecentExercise(exercise, minutes);
+  }
+
+  function addCustomExercise() {
+    const minutes = Math.max(Number(customExerciseMinutes) || 0, 1);
+    const rate = Math.max(Number(customExerciseRate) || 0, 0.1);
+    if (!customExerciseName.trim()) return;
+    const newExercise = {
+      id: Date.now() + Math.random(),
+      name: `${customExerciseName.trim()} ${minutes} λεπτά`,
+      minutes, caloriesPerMinute: rate,
+      calories: Math.round(rate * minutes)
+    };
+    updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
+    setCustomExerciseName(""); setCustomExerciseMinutes(""); setCustomExerciseRate("");
+  }
+
+  function deleteExercise(id) {
+    updateCurrentDay((current) => ({
+      ...current,
+      exercises: current.exercises.filter((item) => item.id !== id)
+    }));
+  }
+
+  function quickAddRecentExercise(item) {
+    addExerciseByMinutes(item.exercise, item.minutes);
+  }
+
+  function saveRecentFood(food, gramsValue, meal) {
+    const normalized = normalizeFood(food);
+    setRecentFoods((prev) => {
+      const filtered = prev.filter(
+        (item) => !(
+          item.food.name.toLowerCase() === normalized.name.toLowerCase() &&
+          (item.food.brand || "").toLowerCase() === (normalized.brand || "").toLowerCase()
+        )
+      );
+      return [
+        {
+          key: `${normalized.name}-${normalized.brand || ""}`.toLowerCase(),
+          food: normalized,
+          grams: Math.max(Number(gramsValue) || 100, 1),
+          mealType: meal || "Πρωινό",
+          lastUsedAt: Date.now()
+        },
+        ...filtered
+      ].slice(0, 12);
+    });
+  }
+
+  function quickAddRecent(item) {
+    const entry = createFoodEntry(item.food, item.grams, item.mealType);
+    updateCurrentDay((current) => ({ ...current, entries: [entry, ...current.entries] }));
+    saveRecentFood(item.food, item.grams, item.mealType);
+  }
+
+  function quickAddFavorite(food) {
+    const entry = createFoodEntry(food, 100, "Σνακ");
+    updateCurrentDay((current) => ({ ...current, entries: [entry, ...current.entries] }));
+    saveRecentFood(food, 100, "Σνακ");
+  }
+
+  function toggleFavorite(food) {
+    const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
+    setFavoriteFoodKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
+    );
+  }
+
+  function isFavorite(food) {
+    const key = `${food.name.toLowerCase()}|${(food.brand || "").toLowerCase()}`;
+    return favoriteFoodKeys.includes(key);
+  }
+
+  function toggleFavoriteExercise(exercise) {
+    const key = exercise.name.toLowerCase();
+    setFavoriteExerciseKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [key, ...prev]
+    );
+  }
+
+  function isFavoriteExercise(exercise) {
+    return favoriteExerciseKeys.includes(exercise.name.toLowerCase());
+  }
+
+  function addWeight({ date, weight: w }) {
+    setWeightLog((prev) => {
+      const filtered = prev.filter((entry) => entry.date !== date);
+      return [...filtered, { date, weight: w }];
+    });
+  }
+
+  function deleteWeight(date) {
+    setWeightLog((prev) => prev.filter((entry) => entry.date !== date));
+  }
+
+  function handleSavePlan(plan) {
+    setSavedPlans((prev) => {
+      const filtered = prev.filter((p) => p.type !== plan.type);
+      return [...filtered, plan];
+    });
+  }
+
+  function deletePlan(type) {
+    setSavedPlans((prev) => prev.filter((p) => p.type !== type));
+  }
+
+  function startOnboarding() { setHasSeenWelcome(true); setActiveTab("profile"); }
+  function goToSummaryAfterProfile() { if (!profileComplete) return; setActiveTab("summary"); }
+
+  const bmr = useMemo(() => calculateBMR({ age, gender, height, weight }), [age, gender, height, weight]);
+  const tdee = useMemo(() => calculateTDEE({ bmr, activity }), [bmr, activity]);
+  const dailyDeficit = useMemo(() => calculateDailyDeficit({ kilos: targetWeightLoss, weeks }), [targetWeightLoss, weeks]);
+  const targetCalories = useMemo(() => calculateTargetCalories({ goalType, tdee, targetWeightChange: targetWeightLoss, weeks }), [goalType, tdee, targetWeightLoss, weeks]);
+  const proteinTarget = useMemo(() => calculateProteinTarget({ weight, goalType, modeKey: mode }), [weight, goalType, mode]);
+  const macroTargets = useMemo(() => calculateMacroTargets({ targetCalories, proteinTarget, modeKey: mode }), [targetCalories, proteinTarget, mode]);
+
+  const totalCalories = entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+  const totalProtein = round1(entries.reduce((sum, item) => sum + Number(item.protein || 0), 0));
+  const totalCarbs = round1(entries.reduce((sum, item) => sum + Number(item.carbs || 0), 0));
+  const totalFat = round1(entries.reduce((sum, item) => sum + Number(item.fat || 0), 0));
+  const exerciseValue = exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+  const remainingCalories = targetCalories - totalCalories + exerciseValue;
+  const progress = targetCalories ? Math.min((totalCalories / targetCalories) * 100, 100) : 0;
+
+  const groupedEntries = useMemo(() => {
+    return MEALS.reduce((acc, meal) => {
+      const items = entries.filter((item) => item.mealType === meal);
+      acc[meal] = {
+        items,
+        totalCalories: items.reduce((sum, item) => sum + Number(item.calories || 0), 0),
+        totalProtein: round1(items.reduce((sum, item) => sum + Number(item.protein || 0), 0)),
+        totalCarbs: round1(items.reduce((sum, item) => sum + Number(item.carbs || 0), 0)),
+        totalFat: round1(items.reduce((sum, item) => sum + Number(item.fat || 0), 0))
+      };
+      return acc;
+    }, {});
+  }, [entries]);
+
+  const last7Days = useMemo(() => {
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = shiftDate(selectedDate, -index);
+      const log = normalizeDayLog(dailyLogs[date]);
+      const eaten = log.entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+      const ex = log.exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+      const remaining = targetCalories - eaten + ex;
+      return { date, eaten, exercise: ex, remaining };
+    });
+  }, [selectedDate, dailyLogs, targetCalories]);
+
+  const isToday = selectedDate === getTodayKey();
+
+  const favoriteFoods = useMemo(() => {
+    return foods.filter((food) => isFavorite(food)).slice(0, 8);
+  }, [foods, favoriteFoodKeys]);
+
+  const favoriteExercises = useMemo(() => {
+    return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise(e));
+  }, [favoriteExerciseKeys]);
+
+  const summaryProps = {
+    selectedDate, setSelectedDate, isToday,
+    targetCalories, totalCalories, exerciseValue,
+    remainingCalories, progress, goalType,
+    proteinTarget, totalProtein, totalCarbs, totalFat,
+    last7Days, mode, macroTargets, foods,
+    dailyLogs, weightLog,
+    onAddWeight: addWeight,
+    onDeleteWeight: deleteWeight,
+    favoriteFoods,
+    favoriteFoodsText,
+    favoriteExercisesText,
+    favoriteExercises,
+    age, weight, height, gender,
+    savedPlans,
+    onSavePlan: handleSavePlan,
+    onDeletePlan: deletePlan
+  };
+
+  const foodProps = {
+    foods, customFoods,
+    onAddCustomFood: (food) => setCustomFoods((prev) => [normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" }), ...prev]),
+    onDeleteCustomFood: (id) => setCustomFoods((prev) => prev.filter((f) => f.id !== id)),
+    recentFoods, favoriteFoods,
+    isFavorite, toggleFavorite,
+    saveRecentFood, updateCurrentDay,
+    quickAddRecent, quickAddFavorite,
+    entries, groupedEntries, deleteEntry, openEditEntry
+  };
+
+  const exerciseProps = {
+    exercises, exerciseValue, exerciseMinutes,
+    setExerciseMinutes, customExerciseName,
+    setCustomExerciseName, customExerciseMinutes,
+    setCustomExerciseMinutes, customExerciseRate,
+    setCustomExerciseRate, addExerciseByMinutes,
+    addCustomExercise, deleteExercise,
+    selectedDate, updateCurrentDay,
+    favoriteExerciseKeys,
+    toggleFavoriteExercise,
+    isFavoriteExercise,
+    recentExercises,
+    quickAddRecentExercise
+  };
+
+  const profileProps = {
+    age, setAge, gender, setGender,
+    height, setHeight, weight, setWeight,
+    activity, setActivity, goalType, setGoalType,
+    mode, setMode, targetWeightLoss, setTargetWeightLoss,
+    weeks, setWeeks, tdee, targetCalories,
+    dailyDeficit, proteinTarget, profileComplete,
+    onContinue: goToSummaryAfterProfile
+  };
+
+  const showWelcome = !hasSeenWelcome;
+  const showProfile = hasSeenWelcome && !profileComplete;
+  const appReady = hasSeenWelcome && profileComplete;
+
   return (
-    <>
-      {/* ΑΣΚΗΣΗ ΗΜΕΡΑΣ */}
-      <div className="day-card">
-        <div className="day-card-total">
-          <h2>🏋️ Άσκηση ημέρας</h2>
-          <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
-        </div>
-        {exercises.length === 0 ? (
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει άσκηση ακόμα.</div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {exercises.map((item) => (
-              <div key={item.id} className="day-card-entry">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span className="day-card-entry-title">{item.name}</span>
-                  <span className="day-card-entry-meta">
-                    {item.minutes > 0 ? `${item.minutes} λεπτά · ` : ""}+{formatNumber(item.calories)} kcal
-                  </span>
-                </div>
-                <button className="day-card-btn" onClick={() => deleteExercise(item.id)} type="button">✕</button>
-              </div>
-            ))}
+    <div className="app-shell">
+      <div className="app-container">
+        <div className="app-header">
+          <div className="app-header-left">
+            <h1>FuelTrack</h1>
+            {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
           </div>
-        )}
-        <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
+          <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+        </div>
+
+        {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
+        {showProfile && <ProfileTab {...profileProps} />}
+
+        {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
+        {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
+        {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
+        {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
+
+        <div style={{ height: 110 }} />
       </div>
 
-      {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
-      <div className="card">
-        <h2 style={{ marginBottom: 12 }}>Προσθήκη άσκησης</h2>
+      {appReady && (
+        <BottomNav tabs={APP_TABS} activeTab={activeTab} onChange={(tab) => setActiveTab(tab)} />
+      )}
 
-        {/* Search */}
-        <input
-          className="input"
-          placeholder="🔍 Αναζήτηση άσκησης..."
-          value={searchQuery}
-          onChange={(e) => { setSearchQuery(e.target.value); setSelectedExerciseName(""); }}
-          style={{ marginBottom: 10 }}
+      {editingEntry && (
+        <EditEntryModal
+          entry={editingEntry}
+          grams={editEntryGrams}
+          setGrams={setEditEntryGrams}
+          meal={editEntryMeal}
+          setMeal={setEditEntryMeal}
+          onClose={closeEditEntry}
+          onSave={saveEditedEntry}
         />
-
-        {/* Φίλτρα κατηγορίας */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-          {CATEGORIES.map((cat) => (
-            <button key={cat.key} onClick={() => { setActiveCategory(cat.key); setSelectedExerciseName(""); setSearchQuery(""); }} type="button"
-              style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeCategory === cat.key ? "var(--color-accent)" : "var(--border-color)"}`, background: activeCategory === cat.key ? "var(--color-accent)" : "var(--bg-soft)", color: activeCategory === cat.key ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dropdown + Star */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
-          <select
-            className="input"
-            value={selectedExerciseName}
-            onChange={(e) => setSelectedExerciseName(e.target.value)}
-            style={{ flex: 1 }}
-          >
-            <option value="">— Επίλεξε άσκηση —</option>
-            {filteredExercises.map((e) => (
-              <option key={e.name} value={e.name}>
-                {e.icon} {e.name} · {e.caloriesPerMinute} kcal/λεπτό
-              </option>
-            ))}
-          </select>
-          {selectedExercise && (
-            <button
-              onClick={() => toggleFavoriteExercise?.(selectedExercise)}
-              type="button"
-              title={isFavoriteExercise?.(selectedExercise) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-              style={{ padding: "10px 12px", background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, cursor: "pointer", fontSize: 18, flexShrink: 0, color: isFavoriteExercise?.(selectedExercise) ? "#d97706" : "var(--text-muted)" }}>
-              {isFavoriteExercise?.(selectedExercise) ? "⭐" : "☆"}
-            </button>
-          )}
-        </div>
-
-        {/* Λεπτά + Preview + Add */}
-        {selectedExercise && (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 14, padding: 14, marginBottom: 10, border: "1px solid var(--border-color)" }}>
-            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
-              {selectedExercise.icon} {selectedExercise.name}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <button onClick={() => setSelectedMinutes((prev) => String(Math.max(5, Number(prev) - 5)))} type="button"
-                style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-card)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>−</button>
-              <input className="input" type="number" value={selectedMinutes} onChange={(e) => setSelectedMinutes(e.target.value)}
-                style={{ width: 70, textAlign: "center", padding: "6px 8px" }} />
-              <button onClick={() => setSelectedMinutes((prev) => String(Number(prev) + 5))} type="button"
-                style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-card)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>+</button>
-              <span className="muted" style={{ fontSize: 13 }}>λεπτά</span>
-            </div>
-            <div style={{ background: "var(--bg-card)", borderRadius: 10, padding: "8px 12px", marginBottom: 10, fontSize: 13 }}>
-              <span className="muted">Θερμίδες: </span>
-              <strong>{formatNumber(Math.round(selectedExercise.caloriesPerMinute * (Number(selectedMinutes) || 0)))} kcal</strong>
-              <span className="muted" style={{ marginLeft: 8 }}>· {selectedExercise.caloriesPerMinute} kcal/λεπτό</span>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn btn-dark" onClick={handleAddExercise} type="button" style={{ flex: 1 }}>Προσθήκη</button>
-              <button className="btn btn-light" onClick={() => setSelectedExerciseName("")} type="button">Άκυρο</button>
-            </div>
-          </div>
-        )}
-
-        {/* No results */}
-        {filteredExercises.length === 0 && (
-          <div className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>Δεν βρέθηκαν ασκήσεις.</div>
-        )}
-      </div>
-
-      {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
-      <div className="card">
-        <h2 style={{ marginBottom: 10 }}>⭐ Αγαπημένες ασκήσεις</h2>
-        {favoriteExercises.length === 0 ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Δεν έχεις αγαπημένες ασκήσεις ακόμα</div>
-            <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
-              Επίλεξε μια άσκηση από το dropdown και πάτα ☆ για να την προσθέσεις. Ο AI Coach θα προτείνει ασκήσεις από τα αγαπημένα σου!
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {favoriteExercises.map((exercise) => (
-              <div key={exercise.name}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                <button onClick={() => setSelectedExerciseName(exercise.name)} type="button"
-                  style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 12px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 8 }}>
-                  <div>
-                    <span style={{ fontSize: 16, marginRight: 6 }}>{exercise.icon}</span>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{exercise.name}</span>
-                    <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>{exercise.category}</span>
-                  </div>
-                  <span className="muted" style={{ fontSize: 12 }}>{exercise.caloriesPerMinute} kcal/λεπτό</span>
-                </button>
-                <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
-                  style={{ padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: "#d97706" }}>⭐</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* CUSTOM ΑΣΚΗΣΗ */}
-      <div className="card">
-        <h2>Custom άσκηση</h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <input className="input" placeholder="Όνομα άσκησης" value={customExerciseName} onChange={(e) => setCustomExerciseName(e.target.value)} />
-          <div style={{ display: "flex", gap: 8 }}>
-            <input className="input" placeholder="Λεπτά" inputMode="numeric" value={customExerciseMinutes} onChange={(e) => setCustomExerciseMinutes(e.target.value)} />
-            <input className="input" placeholder="kcal/λεπτό" inputMode="decimal" value={customExerciseRate} onChange={(e) => setCustomExerciseRate(e.target.value)} />
-          </div>
-          <button className="btn btn-dark" onClick={addCustomExercise} type="button">Προσθήκη</button>
-        </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
