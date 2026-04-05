@@ -44,11 +44,11 @@ export default function App() {
   const [customFoods, setCustomFoods] = useState(() => loadJSON("ft_customFoods", []));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
-  const [recentExercises, setRecentExercises] = useState(() => loadJSON("ft_recentExercises", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() => loadJSON("ft_favoriteFoodKeys", []));
   const [favoriteExerciseKeys, setFavoriteExerciseKeys] = useState(() => loadJSON("ft_favoriteExerciseKeys", []));
   const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
   const [savedPlans, setSavedPlans] = useState(() => loadJSON("ft_savedPlans", []));
+  const [recentExercises, setRecentExercises] = useState(() => loadJSON("ft_recentExercises", []));
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [editEntryGrams, setEditEntryGrams] = useState("100");
@@ -116,11 +116,11 @@ export default function App() {
   useEffect(() => saveJSON("ft_customFoods", customFoods), [customFoods]);
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
-  useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
   useEffect(() => saveJSON("ft_favoriteExerciseKeys", favoriteExerciseKeys), [favoriteExerciseKeys]);
   useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
   useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
+  useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
 
   useEffect(() => {
@@ -184,6 +184,14 @@ export default function App() {
     closeEditEntry();
   }
 
+  function saveRecentExercise(exercise, minutes) {
+    setRecentExercises((prev) => {
+      const key = exercise.name.toLowerCase();
+      const filtered = prev.filter((item) => item.key !== key);
+      return [{ key, exercise, minutes, lastUsedAt: Date.now() }, ...filtered].slice(0, 8);
+    });
+  }
+
   function addExerciseByMinutes(exercise, minutesValue) {
     const minutes = Math.max(Number(minutesValue) || 0, 1);
     const newExercise = {
@@ -195,28 +203,6 @@ export default function App() {
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
     setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: "" }));
     saveRecentExercise(exercise, minutes);
-  }
-
-  function saveRecentExercise(exercise, minutes) {
-    setRecentExercises((prev) => {
-      const filtered = prev.filter((item) => item.exercise.name !== exercise.name);
-      return [
-        { key: exercise.name.toLowerCase(), exercise, minutes, lastUsedAt: Date.now() },
-        ...filtered
-      ].slice(0, 6);
-    });
-  }
-
-  function quickAddRecentExercise(item) {
-    const minutes = Math.max(Number(item.minutes) || 0, 1);
-    const newExercise = {
-      id: Date.now() + Math.random(),
-      name: `${item.exercise.name} ${minutes} λεπτά`,
-      minutes, caloriesPerMinute: item.exercise.caloriesPerMinute,
-      calories: Math.round(item.exercise.caloriesPerMinute * minutes)
-    };
-    updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
-    saveRecentExercise(item.exercise, minutes);
   }
 
   function addCustomExercise() {
@@ -238,6 +224,10 @@ export default function App() {
       ...current,
       exercises: current.exercises.filter((item) => item.id !== id)
     }));
+  }
+
+  function quickAddRecentExercise(item) {
+    addExerciseByMinutes(item.exercise, item.minutes);
   }
 
   function saveRecentFood(food, gramsValue, meal) {
