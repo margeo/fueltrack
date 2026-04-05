@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
@@ -43,6 +44,7 @@ export default function App() {
   const [customFoods, setCustomFoods] = useState(() => loadJSON("ft_customFoods", []));
   const [dailyLogs, setDailyLogs] = useState(() => loadJSON("ft_dailyLogs", {}));
   const [recentFoods, setRecentFoods] = useState(() => loadJSON("ft_recentFoods", []));
+  const [recentExercises, setRecentExercises] = useState(() => loadJSON("ft_recentExercises", []));
   const [favoriteFoodKeys, setFavoriteFoodKeys] = useState(() => loadJSON("ft_favoriteFoodKeys", []));
   const [favoriteExerciseKeys, setFavoriteExerciseKeys] = useState(() => loadJSON("ft_favoriteExerciseKeys", []));
   const [weightLog, setWeightLog] = useState(() => loadJSON("ft_weightLog", []));
@@ -114,6 +116,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_customFoods", customFoods), [customFoods]);
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
   useEffect(() => saveJSON("ft_recentFoods", recentFoods), [recentFoods]);
+  useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveJSON("ft_favoriteFoodKeys", favoriteFoodKeys), [favoriteFoodKeys]);
   useEffect(() => saveJSON("ft_favoriteExerciseKeys", favoriteExerciseKeys), [favoriteExerciseKeys]);
   useEffect(() => saveJSON("ft_weightLog", weightLog), [weightLog]);
@@ -191,6 +194,29 @@ export default function App() {
     };
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
     setExerciseMinutes((prev) => ({ ...prev, [exercise.name]: "" }));
+    saveRecentExercise(exercise, minutes);
+  }
+
+  function saveRecentExercise(exercise, minutes) {
+    setRecentExercises((prev) => {
+      const filtered = prev.filter((item) => item.exercise.name !== exercise.name);
+      return [
+        { key: exercise.name.toLowerCase(), exercise, minutes, lastUsedAt: Date.now() },
+        ...filtered
+      ].slice(0, 6);
+    });
+  }
+
+  function quickAddRecentExercise(item) {
+    const minutes = Math.max(Number(item.minutes) || 0, 1);
+    const newExercise = {
+      id: Date.now() + Math.random(),
+      name: `${item.exercise.name} ${minutes} λεπτά`,
+      minutes, caloriesPerMinute: item.exercise.caloriesPerMinute,
+      calories: Math.round(item.exercise.caloriesPerMinute * minutes)
+    };
+    updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
+    saveRecentExercise(item.exercise, minutes);
   }
 
   function addCustomExercise() {
@@ -386,7 +412,9 @@ export default function App() {
     selectedDate, updateCurrentDay,
     favoriteExerciseKeys,
     toggleFavoriteExercise,
-    isFavoriteExercise
+    isFavoriteExercise,
+    recentExercises,
+    quickAddRecentExercise
   };
 
   const profileProps = {
