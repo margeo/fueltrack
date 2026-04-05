@@ -175,7 +175,8 @@ export default function FoodTab({
     if (!query.trim()) return foods;
     const q = stripDiacritics(query.toLowerCase().trim());
     return foods.filter((food) => {
-      const haystack = stripDiacritics(`${food.name} ${food.brand || ""}`).toLowerCase();
+      const aliases = Array.isArray(food.aliases) ? food.aliases.join(" ") : "";
+      const haystack = stripDiacritics(`${food.name} ${food.brand || ""} ${aliases}`).toLowerCase();
       return haystack.includes(q);
     });
   }, [foods, query]);
