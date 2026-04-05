@@ -1,3 +1,4 @@
+// src/components/tabs/AiCoach.jsx
 import { useState, useRef, useEffect } from "react";
 import { MODES } from "../data/modes";
 
@@ -8,6 +9,74 @@ const QUICK_QUESTIONS = [
   "Πώς πάω αυτή την εβδομάδα;",
   "Τι κάνω λάθος;"
 ];
+
+function parseEatNowCards(text) {
+  try {
+    const blocks = text.trim().split(/\n\n+/).filter((b) => b.trim().length > 0);
+    if (blocks.length < 2) return null;
+    const cards = blocks.slice(0, 3).map((block) => {
+      const lines = block.trim().split("\n").filter((l) => l.trim());
+      if (lines.length < 2) return null;
+      return {
+        title: lines[0].trim(),
+        stats: lines[1].trim(),
+        desc: lines[2]?.trim() || "",
+      };
+    }).filter(Boolean);
+    if (cards.length < 2) return null;
+    return cards;
+  } catch {
+    return null;
+  }
+}
+
+function EatNowCards({ text }) {
+  const cards = parseEatNowCards(text);
+  if (!cards) {
+    return (
+      <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        {text}
+      </span>
+    );
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>
+        🔥 Επιλογές για τώρα
+      </div>
+      {cards.map((card, i) => (
+        <div
+          key={i}
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: 12,
+            padding: "10px 12px",
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
+            {card.title}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--color-accent)",
+              fontWeight: 700,
+              marginBottom: card.desc ? 3 : 0,
+            }}
+          >
+            {card.stats}
+          </div>
+          {card.desc && (
+            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+              {card.desc}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
@@ -181,10 +250,35 @@ ${currentMode.aiRule}
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
+    const isEatNow = text === "Τι να φάω τώρα;";
 
     let effectiveMessage;
     if (isInitial) {
       effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
+    } else if (isEatNow) {
+      const hour = new Date().getHours();
+      const mealTime =
+        hour < 10 ? "πρωινό" :
+        hour < 12 ? "σνακ πρωί" :
+        hour < 15 ? "μεσημεριανό" :
+        hour < 18 ? "σνακ απόγευμα" : "βραδινό";
+      const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
+      effectiveMessage = `Δώσε 3 επιλογές για ${mealTime} ΤΩΡΑ.
+Υπόλοιπο: ${remainingCalories} kcal | Πρωτεΐνη που χρειάζομαι ακόμα: ${remProtein}g | Mode: ${currentMode.label}
+
+ΥΠΟΧΡΕΩΤΙΚΟ format — ΑΚΡΙΒΩΣ έτσι, με κενή γραμμή μεταξύ επιλογών, ΤΙΠΟΤΑ άλλο πριν ή μετά:
+
+[emoji] [Όνομα γεύματος]
+[X] kcal • [X]g πρωτεΐνη
+[Μια πρόταση γιατί ταιριάζει]
+
+[emoji] [Όνομα γεύματος 2]
+[X] kcal • [X]g πρωτεΐνη
+[Μια πρόταση]
+
+[emoji] [Όνομα γεύματος 3]
+[X] kcal • [X]g πρωτεΐνη
+[Μια πρόταση]`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
       effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Στόχος ${targetCalories} kcal/μέρα ±5%. Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 🌅 🍎 🌞 🌙 emojis. ΠΟΤΕ αστερίσκοι.`;
     } else if (text === "Εβδομαδιαίο πρόγραμμα γυμναστικής") {
@@ -205,7 +299,10 @@ ${currentMode.aiRule}
       if (!response.ok) throw new Error(`Σφάλμα σύνδεσης (${response.status})`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
-      setMessages(prev => [...prev, { role: "assistant", text: data.advice }]);
+      setMessages(prev => [
+        ...prev,
+        { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined }
+      ]);
       setHasLoaded(true);
     } catch (err) {
       setMessages(prev => [...prev, { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }]);
@@ -225,7 +322,16 @@ ${currentMode.aiRule}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {QUICK_QUESTIONS.map((q) => (
               <button key={q} onClick={() => sendMessage(q)} type="button"
-                style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                style={{
+                  padding: q === "Τι να φάω τώρα;" ? "8px 14px" : "7px 12px",
+                  borderRadius: 20,
+                  border: q === "Τι να φάω τώρα;" ? "2px solid var(--color-accent)" : "1px solid var(--border-color)",
+                  background: q === "Τι να φάω τώρα;" ? "var(--color-accent)" : "var(--bg-soft)",
+                  color: q === "Τι να φάω τώρα;" ? "var(--bg-card)" : "var(--text-primary)",
+                  fontSize: q === "Τι να φάω τώρα;" ? 13 : 12,
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}>
                 {q}
               </button>
             ))}
@@ -247,9 +353,15 @@ ${currentMode.aiRule}
         <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
-                {msg.text}
-              </div>
+              {msg.msgType === "eatnow" ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <EatNowCards text={msg.text} />
+                </div>
+              ) : (
+                <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
+                  {msg.text}
+                </div>
+              )}
             </div>
           ))}
           {loading && (
@@ -266,7 +378,16 @@ ${currentMode.aiRule}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {QUICK_QUESTIONS.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
-              style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+              style={{
+                padding: q === "Τι να φάω τώρα;" ? "6px 12px" : "5px 10px",
+                borderRadius: 20,
+                border: q === "Τι να φάω τώρα;" ? "2px solid var(--color-accent)" : "1px solid var(--border-color)",
+                background: q === "Τι να φάω τώρα;" ? "var(--color-accent)" : "var(--bg-soft)",
+                color: q === "Τι να φάω τώρα;" ? "var(--bg-card)" : "var(--text-primary)",
+                fontSize: q === "Τι να φάω τώρα;" ? 12 : 11,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}>
               {q}
             </button>
           ))}
