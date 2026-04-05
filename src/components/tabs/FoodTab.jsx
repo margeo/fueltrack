@@ -317,11 +317,11 @@ export default function FoodTab({
           {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
             <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button"
-              style={{ fontSize: 13, padding: "8px 14px", minWidth: 90 }}>
+              style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}>
               📸 Photo
             </button>
             <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button"
-              style={{ fontSize: 13, padding: "8px 14px", minWidth: 90 }}>
+              style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}>
               🔲 Barcode
             </button>
           </div>
@@ -425,13 +425,14 @@ export default function FoodTab({
               const cal = createFoodEntry(item.food, item.grams, item.mealType);
               return (
                 <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                  <div style={{ flex: 1, minWidth: 0, padding: "8px 0 8px 12px" }}>
+                  <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button"
+                    style={{ padding: "4px 10px", fontSize: 12, margin: "0 0 0 8px", flexShrink: 0 }}>+</button>
+                  <div style={{ flex: 1, minWidth: 0, padding: "8px 0" }}>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{item.food.name}</span>
                     <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{item.grams}g · {item.mealType} · {formatNumber(cal.calories)} kcal</span>
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
                     <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
-                    <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
                     <button onClick={() => toggleFavorite(item.food)} type="button"
                       title={isFavorite(item.food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
                       style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavorite(item.food) ? "#d97706" : "var(--text-muted)" }}>
