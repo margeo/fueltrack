@@ -90,10 +90,10 @@ export default function ProfileTab({
   }
 
   function getGoalLabel() {
-    if (goalType === "lose") return "Χάσω βάρος";
-    if (goalType === "gain") return "Μυϊκή ανάπτυξη";
+    if (goalType === "lose") return "Lose weight";
+    if (goalType === "gain") return "Muscle gain";
     if (goalType === "fitness") return "Fitness & Cardio";
-    return "Διατήρηση";
+    return "Maintain";
   }
 
   const rawDeficit = Number(dailyDeficit || 0);
@@ -135,9 +135,9 @@ export default function ProfileTab({
           <label className="profile-field">
             <div className="profile-label">Στόχος</div>
             <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
-              <option value="lose">Χάσω βάρος</option>
-              <option value="maintain">Διατήρηση</option>
-              <option value="gain">Μυϊκή ανάπτυξη</option>
+              <option value="lose">Lose weight</option>
+              <option value="maintain">Maintain</option>
+              <option value="gain">Muscle gain</option>
               <option value="fitness">Fitness & Cardio</option>
             </select>
           </label>
