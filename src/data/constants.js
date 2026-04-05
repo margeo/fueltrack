@@ -23,7 +23,6 @@ export const EXERCISE_LIBRARY = [
   { name: "Lower Body", category: "Gym", caloriesPerMinute: 7, icon: "🦵" },
   { name: "Full Body", category: "Gym", caloriesPerMinute: 6, icon: "🏋️" },
   // Training
-  { name: "Προπόνηση σώματος", category: "Training", caloriesPerMinute: 6, icon: "💪" },
   { name: "Full body workout", category: "Training", caloriesPerMinute: 6, icon: "🔥" },
   { name: "HIIT workout", category: "Training", caloriesPerMinute: 12, icon: "🔥" },
   { name: "TRX", category: "Training", caloriesPerMinute: 8, icon: "💪" },
