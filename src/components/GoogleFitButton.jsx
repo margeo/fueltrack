@@ -77,9 +77,10 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
           style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
           <span style={{ fontSize: 18 }}>🏃</span> Σύνδεση με Google Fit
+          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", borderRadius: 999, padding: "2px 6px", marginLeft: 4 }}>Beta</span>
         </button>
         <div className="muted" style={{ fontSize: 12, marginTop: 6, textAlign: "center" }}>
-          Διαβάζει βήματα, απόσταση και θερμίδες αυτόματα
+          Διαβάζει βήματα και θερμίδες αυτόματα · Σε δοκιμαστική φάση
         </div>
       </div>
     );
