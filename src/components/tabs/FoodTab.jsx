@@ -1,3 +1,4 @@
+// src/components/tabs/FoodTab.jsx
 import { useMemo, useState } from "react";
 import { MEALS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood, stripDiacritics } from "../../utils/helpers";
@@ -274,7 +275,7 @@ export default function FoodTab({
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2>🍽️ Φαγητό ημέρας</h2>
+          <h2>🥗 Φαγητό ημέρας</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
         {entries.length === 0 ? (
@@ -313,9 +314,16 @@ export default function FoodTab({
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>Προσθήκη φαγητού</h2>
+          {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
-            <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button" style={{ fontSize: 13, padding: "8px 12px" }}>📸 Photo</button>
-            <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button" style={{ fontSize: 13, padding: "8px 12px" }}>🔲 Barcode</button>
+            <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button"
+              style={{ fontSize: 13, padding: "8px 14px", minWidth: 90 }}>
+              📸 Photo
+            </button>
+            <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button"
+              style={{ fontSize: 13, padding: "8px 14px", minWidth: 90 }}>
+              🔲 Barcode
+            </button>
           </div>
         </div>
 
@@ -342,17 +350,9 @@ export default function FoodTab({
             {!databaseLoading && topSearchResults.map((food) => (
               <div key={`auto-${food.source || "local"}-${food.id}`}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-card)", borderRadius: 8, border: "1px solid var(--border-color)", overflow: "hidden" }}>
-                {/* Κουμπί αγαπημένου */}
-                <button
-                  onClick={() => toggleFavorite(food)}
-                  type="button"
-                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-                  style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: isFavorite(food) ? "#d97706" : "var(--text-muted)" }}>
-                  {isFavorite(food) ? "⭐" : "☆"}
-                </button>
-                {/* Κουμπί επιλογής */}
+                {/* Κουμπί επιλογής - ΑΡΙΣΤΕΡΑ */}
                 <button onClick={() => handleFoodSelect(food)} type="button"
-                  style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 0", background: "none", border: "none", cursor: "pointer", gap: 8, flexWrap: "wrap", textAlign: "left" }}>
+                  style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 12px", background: "none", border: "none", cursor: "pointer", gap: 8, flexWrap: "wrap", textAlign: "left" }}>
                   <div>
                     <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>
                       {food.name}{food.brand ? ` · ${food.brand}` : ""}
@@ -363,6 +363,14 @@ export default function FoodTab({
                   <span className="muted" style={{ fontSize: 12 }}>
                     {formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}
                   </span>
+                </button>
+                {/* Κουμπί αγαπημένου - ΔΕΞΙΑ */}
+                <button
+                  onClick={() => toggleFavorite(food)}
+                  type="button"
+                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                  style={{ padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: isFavorite(food) ? "#d97706" : "var(--text-muted)" }}>
+                  {isFavorite(food) ? "⭐" : "☆"}
                 </button>
               </div>
             ))}
@@ -391,21 +399,16 @@ export default function FoodTab({
             {favoriteFoods.map((food) => (
               <div key={`${food.source || "local"}-${food.id}`}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                <button
-                  onClick={() => toggleFavorite(food)}
-                  type="button"
-                  title="Αφαίρεση από αγαπημένα"
-                  style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: "#d97706" }}>
-                  ⭐
-                </button>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0, padding: "8px 0 8px 12px" }}>
                   <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
                   {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
                   <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}</span>
                 </div>
-                <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8 }}>
+                <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
                   <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                   <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
+                  <button onClick={() => toggleFavorite(food)} type="button" title="Αφαίρεση από αγαπημένα"
+                    style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#d97706" }}>⭐</button>
                 </div>
               </div>
             ))}
@@ -422,20 +425,18 @@ export default function FoodTab({
               const cal = createFoodEntry(item.food, item.grams, item.mealType);
               return (
                 <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                  <button
-                    onClick={() => toggleFavorite(item.food)}
-                    type="button"
-                    title={isFavorite(item.food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
-                    style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: isFavorite(item.food) ? "#d97706" : "var(--text-muted)" }}>
-                    {isFavorite(item.food) ? "⭐" : "☆"}
-                  </button>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, padding: "8px 0 8px 12px" }}>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{item.food.name}</span>
                     <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{item.grams}g · {item.mealType} · {formatNumber(cal.calories)} kcal</span>
                   </div>
-                  <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8 }}>
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
                     <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                     <button className="btn btn-dark" onClick={() => quickAddRecent(item)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
+                    <button onClick={() => toggleFavorite(item.food)} type="button"
+                      title={isFavorite(item.food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                      style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavorite(item.food) ? "#d97706" : "var(--text-muted)" }}>
+                      {isFavorite(item.food) ? "⭐" : "☆"}
+                    </button>
                   </div>
                 </div>
               );

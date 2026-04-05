@@ -1,4 +1,4 @@
-// src/components/AiCoach.jsx
+// src/components/tabs/AiCoach.jsx
 import { useState, useRef, useEffect } from "react";
 import { MODES } from "../data/modes";
 
@@ -45,10 +45,33 @@ function EatNowCards({ text }) {
         🔥 Επιλογές για τώρα
       </div>
       {cards.map((card, i) => (
-        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title}</div>
-          <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.desc ? 3 : 0 }}>{card.stats}</div>
-          {card.desc && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.desc}</div>}
+        <div
+          key={i}
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: 12,
+            padding: "10px 12px",
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
+            {card.title}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--color-accent)",
+              fontWeight: 700,
+              marginBottom: card.desc ? 3 : 0,
+            }}
+          >
+            {card.stats}
+          </div>
+          {card.desc && (
+            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+              {card.desc}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -300,12 +323,12 @@ ${currentMode.aiRule}
             {QUICK_QUESTIONS.map((q) => (
               <button key={q} onClick={() => sendMessage(q)} type="button"
                 style={{
-                  padding: q === "Τι να φάω τώρα;" ? "8px 14px" : "7px 12px",
+                  padding: "7px 12px",
                   borderRadius: 20,
-                  border: q === "Τι να φάω τώρα;" ? "2px solid var(--color-accent)" : "1px solid var(--border-color)",
-                  background: q === "Τι να φάω τώρα;" ? "var(--color-accent)" : "var(--bg-soft)",
-                  color: q === "Τι να φάω τώρα;" ? "var(--bg-card)" : "var(--text-primary)",
-                  fontSize: q === "Τι να φάω τώρα;" ? 13 : 12,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-soft)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
                   fontWeight: 700,
                   cursor: "pointer"
                 }}>
@@ -356,12 +379,12 @@ ${currentMode.aiRule}
           {QUICK_QUESTIONS.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
               style={{
-                padding: q === "Τι να φάω τώρα;" ? "6px 12px" : "5px 10px",
+                padding: "5px 10px",
                 borderRadius: 20,
-                border: q === "Τι να φάω τώρα;" ? "2px solid var(--color-accent)" : "1px solid var(--border-color)",
-                background: q === "Τι να φάω τώρα;" ? "var(--color-accent)" : "var(--bg-soft)",
-                color: q === "Τι να φάω τώρα;" ? "var(--bg-card)" : "var(--text-primary)",
-                fontSize: q === "Τι να φάω τώρα;" ? 12 : 11,
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-soft)",
+                color: "var(--text-primary)",
+                fontSize: 11,
                 fontWeight: 700,
                 cursor: "pointer"
               }}>
