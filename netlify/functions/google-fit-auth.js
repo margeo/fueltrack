@@ -3,8 +3,7 @@ export async function handler() {
   const redirectUri = "https://fueltrack.me/.netlify/functions/google-fit-callback";
 
   const scope = [
-    "https://www.googleapis.com/auth/fitness.activity.read",
-    "https://www.googleapis.com/auth/fitness.location.read"
+    "https://www.googleapis.com/auth/fitness.activity.read"
   ].join(" ");
 
   const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
