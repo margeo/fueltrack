@@ -1,3 +1,4 @@
+// src/components/tabs/ProfileTab.jsx
 import { useState, useEffect } from "react";
 import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
@@ -8,17 +9,51 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
   let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
   if (kilosPerWeek > 1.5) {
     color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
-    message = `Ο στόχος των ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι μη ρεαλιστικός. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο. Το ασφαλές όριο είναι 0.5-1 kg/εβδομάδα.`;
+    message = `Μη ρεαλιστικός στόχος. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο.`;
   } else if (kilosPerWeek > 1) {
     color = "#92400e"; bg = "#fffbeb"; border = "#fde68a"; icon = "⚡";
-    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι επιθετικός αλλά εφικτός.${isCapped ? " Το έλλειμμα περιορίστηκε στις 1000 kcal/ημέρα." : ""}`;
+    message = `Επιθετικός αλλά εφικτός ρυθμός (${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδ).`;
   } else {
-    message = `Ο ρυθμός ${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα είναι ρεαλιστικός και υγιεινός.${isCapped ? " Το έλλειμμα περιορίστηκε στις 1000 kcal/ημέρα." : ""}`;
+    message = `Ρεαλιστικός στόχος`;
   }
   return (
-    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 14, padding: "12px 14px", marginBottom: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
-      <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
-      <div style={{ color, fontSize: 13, lineHeight: 1.5 }}>{message}</div>
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", marginTop: 10, display: "flex", gap: 8, alignItems: "center" }}>
+      <span style={{ fontSize: 15 }}>{icon}</span>
+      <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>{message}</div>
+    </div>
+  );
+}
+
+function Section({ title, icon, children }) {
+  return (
+    <div style={{ background: "var(--bg-soft)", borderRadius: 16, padding: "16px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: "var(--text-primary)" }}>
+        {icon && <span style={{ marginRight: 6 }}>{icon}</span>}{title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function CollapsibleSection({ title, icon, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ background: "var(--bg-soft)", borderRadius: 16, marginBottom: 12, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+      >
+        <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>
+          {icon && <span style={{ marginRight: 6 }}>{icon}</span>}{title}
+        </span>
+        <span style={{ color: "var(--text-muted)", fontSize: 18, transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px 16px" }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -46,19 +81,19 @@ export default function ProfileTab({
   const showGoalFields = goalType === "lose" || goalType === "gain";
   const currentMode = MODES[mode] || MODES.balanced;
 
-  function getGoalLabel() {
-    if (goalType === "lose") return "Lose weight";
-    if (goalType === "gain") return "Muscle gain";
-    if (goalType === "fitness") return "Fitness & Cardio";
-    return "Maintain";
-  }
-
   function getActivityLabel() {
     if (activity === "1.2") return "Καθιστική";
     if (activity === "1.4") return "Light";
     if (activity === "1.6") return "Moderate";
     if (activity === "1.8") return "High";
     return "-";
+  }
+
+  function getGoalLabel() {
+    if (goalType === "lose") return "Χάσω βάρος";
+    if (goalType === "gain") return "Μυϊκή ανάπτυξη";
+    if (goalType === "fitness") return "Fitness & Cardio";
+    return "Διατήρηση";
   }
 
   const rawDeficit = Number(dailyDeficit || 0);
@@ -70,23 +105,77 @@ export default function ProfileTab({
 
   return (
     <div className="card">
-      <h2>Προφίλ & στόχος</h2>
+      <h2>Προφίλ</h2>
 
       {!profileComplete && (
-        <div className="soft-box profile-intro-box">
-          <div className="profile-section-title">Συμπλήρωσε πρώτα το προφίλ σου</div>
-          <div className="muted">Μόλις βάλεις τα βασικά στοιχεία σου, το app θα υπολογίσει σωστά τον ημερήσιο στόχο θερμίδων και πρωτεΐνης.</div>
+        <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, border: "1px solid var(--border-soft)" }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Συμπλήρωσε το προφίλ σου</div>
+          <div className="muted" style={{ fontSize: 12 }}>Βάλε τα βασικά σου στοιχεία για να υπολογιστεί ο ημερήσιος στόχος θερμίδων.</div>
         </div>
       )}
 
-      <div className="soft-box profile-section-box">
-        <div className="profile-section-title">Βασικά στοιχεία</div>
+      {/* ΤΑ ΒΑΣΙΚΑ */}
+      <Section title="Τα βασικά">
         <div className="grid-2 profile-grid-compact">
+          <label className="profile-field">
+            <div className="profile-label">Βάρος (kg)</div>
+            <input className="input" placeholder="kg" inputMode="decimal" value={localWeight}
+              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)} />
+          </label>
+          <label className="profile-field">
+            <div className="profile-label">Ύψος (cm)</div>
+            <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
+              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)} />
+          </label>
           <label className="profile-field">
             <div className="profile-label">Ηλικία</div>
             <input className="input" placeholder="Ηλικία" inputMode="numeric" value={localAge}
               onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)} />
           </label>
+          <label className="profile-field">
+            <div className="profile-label">Στόχος</div>
+            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
+              <option value="lose">Χάσω βάρος</option>
+              <option value="maintain">Διατήρηση</option>
+              <option value="gain">Μυϊκή ανάπτυξη</option>
+              <option value="fitness">Fitness & Cardio</option>
+            </select>
+          </label>
+        </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+          Το app προσαρμόζει αυτόματα τις θερμίδες σου
+        </div>
+      </Section>
+
+      {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
+      {showGoalFields && (
+        <Section title="Ο στόχος σου">
+          <div className="grid-2 profile-grid-compact">
+            <label className="profile-field">
+              <div className="profile-label">{goalType === "lose" ? "Θέλω να χάσω" : "Θέλω να πάρω"}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <input className="input" inputMode="decimal" value={localTargetWeightLoss}
+                  onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
+                  onBlur={() => setTargetWeightLoss(localTargetWeightLoss)} />
+                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>κιλά</span>
+              </div>
+            </label>
+            <label className="profile-field">
+              <div className="profile-label">Σε</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <input className="input" inputMode="numeric" value={localWeeks}
+                  onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => setWeeks(localWeeks)} />
+                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>εβδομάδες</span>
+              </div>
+            </label>
+          </div>
+          <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
+        </Section>
+      )}
+
+      {/* ΠΕΡΙΣΣΟΤΕΡΑ */}
+      <CollapsibleSection title="Περισσότερα" icon="⚙️">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <label className="profile-field">
             <div className="profile-label">Φύλο</div>
             <select className="input" value={gender} onChange={(e) => setGender(e.target.value)}>
@@ -95,37 +184,12 @@ export default function ProfileTab({
             </select>
           </label>
           <label className="profile-field">
-            <div className="profile-label">Ύψος (cm)</div>
-            <input className="input" placeholder="Ύψος (cm)" inputMode="numeric" value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)} />
-          </label>
-          <label className="profile-field">
-            <div className="profile-label">Βάρος (kg)</div>
-            <input className="input" placeholder="Βάρος (kg)" inputMode="decimal" value={localWeight}
-              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)} />
-          </label>
-        </div>
-      </div>
-
-      <div className="soft-box profile-section-box">
-        <div className="profile-section-title">Ρυθμίσεις στόχου</div>
-        <div className="stack-10">
-          <label className="profile-field">
             <div className="profile-label">Επίπεδο δραστηριότητας</div>
             <select className="input" value={activity} onChange={(e) => setActivity(e.target.value)}>
               <option value="1.2">Καθιστική</option>
               <option value="1.4">Light</option>
               <option value="1.6">Moderate</option>
               <option value="1.8">High</option>
-            </select>
-          </label>
-          <label className="profile-field">
-            <div className="profile-label">Στόχος</div>
-            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
-              <option value="lose">Lose weight</option>
-              <option value="maintain">Maintain</option>
-              <option value="gain">Muscle gain</option>
-              <option value="fitness">Fitness & Cardio</option>
             </select>
           </label>
           <label className="profile-field">
@@ -143,7 +207,7 @@ export default function ProfileTab({
             </select>
           </label>
           {currentMode.description && (
-            <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "8px 12px", fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-soft)" }}>
+            <div style={{ background: "var(--bg-card)", borderRadius: 10, padding: "8px 12px", fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-soft)" }}>
               {currentMode.description}
               {currentMode.fastingHours && (
                 <span style={{ marginLeft: 6, fontWeight: 700, color: "var(--text-primary)" }}>
@@ -153,88 +217,51 @@ export default function ProfileTab({
             </div>
           )}
         </div>
-      </div>
+      </CollapsibleSection>
 
-      {showGoalFields && (
-        <div className="soft-box profile-section-box">
-          <div className="profile-section-title">Στοιχεία στόχου</div>
-          <div className="grid-2 profile-grid-compact">
-            <label className="profile-field">
-              <div className="profile-label">{goalType === "lose" ? "Κιλά να χάσω" : "Κιλά να πάρω"}</div>
-              <input className="input" inputMode="decimal" value={localTargetWeightLoss}
-                onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                onBlur={() => setTargetWeightLoss(localTargetWeightLoss)} />
-            </label>
-            <label className="profile-field">
-              <div className="profile-label">Εβδομάδες</div>
-              <input className="input" inputMode="numeric" value={localWeeks}
-                onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => setWeeks(localWeeks)} />
-            </label>
-          </div>
-        </div>
-      )}
-
-      <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
-
-      <div className="soft-box profile-section-box profile-highlight-box">
-        <div className="profile-section-title">Υπολογισμοί</div>
-        <div className="profile-stat-row">
-          <span>Maintenance / TDEE</span><strong>{formatNumber(tdee)} kcal</strong>
-        </div>
-        <div className="profile-stat-row">
-          <span>Ημερήσιος στόχος</span><strong>{formatNumber(targetCalories)} kcal</strong>
-        </div>
-        {goalType === "lose" && appliedDeficit > 0 && (
-          <div className="profile-stat-row">
-            <span>Ημερήσιο έλλειμμα</span><strong>{formatNumber(appliedDeficit)} kcal</strong>
-          </div>
-        )}
-        {goalType === "gain" && (
-          <div className="profile-stat-row"><span>Ημερήσιο πλεόνασμα</span><strong>300 kcal</strong></div>
-        )}
-        <div className="profile-stat-row">
-          <span>Στόχος πρωτεΐνης</span><strong>{formatNumber(proteinTarget || 0)} g</strong>
-        </div>
-        <div className="profile-stat-row profile-stat-row-last">
-          <span>Macro split</span>
-          <strong>{currentMode.proteinPercent}P / {currentMode.carbsPercent}C / {currentMode.fatPercent}F %</strong>
-        </div>
-      </div>
-
-      <div className="soft-box profile-section-box">
-        <div className="profile-section-title">Σύνοψη</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Στόχος</span><strong>{getGoalLabel()}</strong>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Διατροφή</span><strong>{currentMode.label}</strong>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span className="muted">Δραστηριότητα</span><strong>{getActivityLabel()}</strong>
-          </div>
-          {goalType === "lose" && kilosPerWeek > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span className="muted">Ρυθμός</span>
-              <strong>{formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα</strong>
+      {/* ΑΝΑΛΥΣΗ */}
+      <CollapsibleSection title="Ανάλυση" icon="📊">
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {[
+            ["Maintenance / TDEE", `${formatNumber(tdee)} kcal`],
+            ["Ημερήσιος στόχος", `${formatNumber(targetCalories)} kcal`],
+            ...(goalType === "lose" && appliedDeficit > 0 ? [["Ημερήσιο έλλειμμα", `${formatNumber(appliedDeficit)} kcal`]] : []),
+            ...(goalType === "gain" ? [["Ημερήσιο πλεόνασμα", "300 kcal"]] : []),
+            ["Στόχος πρωτεΐνης", `${formatNumber(proteinTarget || 0)} g`],
+            ["Macro split", `${currentMode.proteinPercent}P / ${currentMode.carbsPercent}C / ${currentMode.fatPercent}F %`],
+          ].map(([label, value], i, arr) => (
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none", fontSize: 13 }}>
+              <span className="muted">{label}</span>
+              <strong>{value}</strong>
             </div>
-          )}
-          {currentMode.fastingHours && (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span className="muted">Eating window</span><strong>{currentMode.eatingWindowHours} ώρες</strong>
-            </div>
-          )}
-        </div>
-      </div>
+          ))}
 
-      <div className="action-row" style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-soft)" }}>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Σύνοψη</div>
+            {[
+              ["Στόχος", getGoalLabel()],
+              ["Διατροφή", currentMode.label],
+              ["Δραστηριότητα", getActivityLabel()],
+              ...(goalType === "lose" && kilosPerWeek > 0 ? [["Ρυθμός", `${formatNumber(Math.round(kilosPerWeek * 10) / 10)} kg/εβδομάδα`]] : []),
+              ...(currentMode.fastingHours ? [["Eating window", `${currentMode.eatingWindowHours} ώρες`]] : []),
+            ].map(([label, value], i, arr) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
+                <span className="muted">{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      <div className="action-row" style={{ marginTop: 4 }}>
         <button className="btn btn-dark" onClick={onContinue} disabled={!profileComplete}
           style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}>
           Αποθήκευση & συνέχεια
         </button>
       </div>
 
-      <div style={{ textAlign: "center", marginTop: 16 }}>
+      <div style={{ textAlign: "center", marginTop: 14 }}>
         <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
           style={{ color: "var(--text-muted)", fontSize: 12 }}>
           Privacy Policy
