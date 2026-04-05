@@ -1,4 +1,4 @@
-// src/components/tabs/AiCoach.jsx
+// src/components/AiCoach.jsx
 import { useState, useRef, useEffect } from "react";
 import { MODES } from "../data/modes";
 
@@ -45,33 +45,10 @@ function EatNowCards({ text }) {
         🔥 Επιλογές για τώρα
       </div>
       {cards.map((card, i) => (
-        <div
-          key={i}
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            padding: "10px 12px",
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
-            {card.title}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--color-accent)",
-              fontWeight: 700,
-              marginBottom: card.desc ? 3 : 0,
-            }}
-          >
-            {card.stats}
-          </div>
-          {card.desc && (
-            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
-              {card.desc}
-            </div>
-          )}
+        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title}</div>
+          <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.desc ? 3 : 0 }}>{card.stats}</div>
+          {card.desc && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.desc}</div>}
         </div>
       ))}
     </div>
