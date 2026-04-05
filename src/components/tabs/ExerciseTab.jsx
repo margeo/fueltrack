@@ -4,7 +4,13 @@ import { EXERCISE_LIBRARY } from "../../data/constants";
 import { formatNumber, stripDiacritics } from "../../utils/helpers";
 import GoogleFitButton from "../GoogleFitButton";
 
-const CATEGORIES = ["Όλα", "Cardio", "Gym", "Training", "Sports"];
+const CATEGORIES = [
+  { key: "Όλα", label: "Όλα" },
+  { key: "Cardio", label: "🏃 Cardio" },
+  { key: "Gym", label: "🏋️ Gym" },
+  { key: "Training", label: "🔥 Training" },
+  { key: "Sports", label: "⚽ Sports" },
+];
 
 export default function ExerciseTab({
   exercises, exerciseValue, exerciseMinutes, setExerciseMinutes,
@@ -98,9 +104,9 @@ export default function ExerciseTab({
         {/* Φίλτρα κατηγορίας */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => { setActiveCategory(cat); setSelectedExerciseName(""); setSearchQuery(""); }} type="button"
-              style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeCategory === cat ? "var(--color-accent)" : "var(--border-color)"}`, background: activeCategory === cat ? "var(--color-accent)" : "var(--bg-soft)", color: activeCategory === cat ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-              {cat}
+            <button key={cat.key} onClick={() => { setActiveCategory(cat.key); setSelectedExerciseName(""); setSearchQuery(""); }} type="button"
+              style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeCategory === cat.key ? "var(--color-accent)" : "var(--border-color)"}`, background: activeCategory === cat.key ? "var(--color-accent)" : "var(--bg-soft)", color: activeCategory === cat.key ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+              {cat.label}
             </button>
           ))}
         </div>
