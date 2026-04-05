@@ -128,11 +128,11 @@ export default function ProfileTab({
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Στόχος</div>
             <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}
-              style={inputStyle}>
-              <option value="lose">Lose weight</option>
-              <option value="maintain">Maintain</option>
-              <option value="gain">Muscle gain</option>
-              <option value="fitness">Fitness &amp; Cardio</option>
+              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "white" }}>
+              <option value="lose" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>Lose weight</option>
+              <option value="maintain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>Maintain</option>
+              <option value="gain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>Muscle gain</option>
+              <option value="fitness" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>Fitness & Cardio</option>
             </select>
           </label>
         </div>
