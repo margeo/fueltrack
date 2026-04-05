@@ -216,7 +216,7 @@ export default function ExerciseTab({
                   <span style={{ fontWeight: 700, fontSize: 13 }}>{item.exercise.icon} {item.exercise.name}</span>
                   <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{item.minutes} λεπτά · {Math.round(item.exercise.caloriesPerMinute * item.minutes)} kcal</span>
                 </div>
-                <button onClick={() => setSelectedExerciseName(item.exercise.name)} type="button"
+                <button onClick={() => { setSelectedExerciseName(item.exercise.name); setSelectedMinutes(String(item.minutes)); }} type="button"
                   style={{ padding: "4px 8px", fontSize: 11, margin: "0 8px 0 0", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", color: "var(--text-muted)" }}>✏️</button>
               </div>
             ))}
