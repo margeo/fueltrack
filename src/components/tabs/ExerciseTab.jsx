@@ -1,9 +1,10 @@
+// src/components/tabs/ExerciseTab.jsx
 import { useMemo, useState } from "react";
 import { EXERCISE_LIBRARY } from "../../data/constants";
 import { formatNumber, stripDiacritics } from "../../utils/helpers";
 import GoogleFitButton from "../GoogleFitButton";
 
-const CATEGORIES = ["Όλα", "Cardio", "Strength", "Flexibility"];
+const CATEGORIES = ["Όλα", "Cardio", "Gym", "Training", "Sports"];
 
 export default function ExerciseTab({
   exercises, exerciseValue, exerciseMinutes, setExerciseMinutes,
@@ -15,13 +16,23 @@ export default function ExerciseTab({
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise
 }) {
   const [activeCategory, setActiveCategory] = useState("Όλα");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
 
   const filteredExercises = useMemo(() => {
-    if (activeCategory === "Όλα") return EXERCISE_LIBRARY;
-    return EXERCISE_LIBRARY.filter((e) => e.category === activeCategory);
-  }, [activeCategory]);
+    let list = activeCategory === "Όλα"
+      ? EXERCISE_LIBRARY
+      : EXERCISE_LIBRARY.filter((e) => e.category === activeCategory);
+
+    if (searchQuery.trim().length >= 1) {
+      const q = stripDiacritics(searchQuery.toLowerCase().trim());
+      list = list.filter((e) =>
+        stripDiacritics(e.name.toLowerCase()).includes(q)
+      );
+    }
+    return list;
+  }, [activeCategory, searchQuery]);
 
   const selectedExercise = EXERCISE_LIBRARY.find((e) => e.name === selectedExerciseName) || null;
 
@@ -46,11 +57,11 @@ export default function ExerciseTab({
   return (
     <>
       {/* ΑΣΚΗΣΗ ΗΜΕΡΑΣ */}
-    <div className="day-card">
-      <div className="day-card-total">
-        <h2>🏋️ Άσκηση ημέρας</h2>
-        <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
-      </div>
+      <div className="day-card">
+        <div className="day-card-total">
+          <h2>🏋️ Άσκηση ημέρας</h2>
+          <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
+        </div>
         {exercises.length === 0 ? (
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει άσκηση ακόμα.</div>
         ) : (
@@ -75,10 +86,19 @@ export default function ExerciseTab({
       <div className="card">
         <h2 style={{ marginBottom: 12 }}>Προσθήκη άσκησης</h2>
 
+        {/* Search */}
+        <input
+          className="input"
+          placeholder="🔍 Αναζήτηση άσκησης..."
+          value={searchQuery}
+          onChange={(e) => { setSearchQuery(e.target.value); setSelectedExerciseName(""); }}
+          style={{ marginBottom: 10 }}
+        />
+
         {/* Φίλτρα κατηγορίας */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => { setActiveCategory(cat); setSelectedExerciseName(""); }} type="button"
+            <button key={cat} onClick={() => { setActiveCategory(cat); setSelectedExerciseName(""); setSearchQuery(""); }} type="button"
               style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeCategory === cat ? "var(--color-accent)" : "var(--border-color)"}`, background: activeCategory === cat ? "var(--color-accent)" : "var(--bg-soft)", color: activeCategory === cat ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
               {cat}
             </button>
@@ -137,6 +157,11 @@ export default function ExerciseTab({
             </div>
           </div>
         )}
+
+        {/* No results */}
+        {filteredExercises.length === 0 && (
+          <div className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>Δεν βρέθηκαν ασκήσεις.</div>
+        )}
       </div>
 
       {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
@@ -154,16 +179,17 @@ export default function ExerciseTab({
             {favoriteExercises.map((exercise) => (
               <div key={exercise.name}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
-                  style={{ padding: "10px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: "#d97706" }}>⭐</button>
                 <button onClick={() => setSelectedExerciseName(exercise.name)} type="button"
-                  style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 8 }}>
+                  style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px 8px 12px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 8 }}>
                   <div>
                     <span style={{ fontSize: 16, marginRight: 6 }}>{exercise.icon}</span>
                     <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{exercise.name}</span>
+                    <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>{exercise.category}</span>
                   </div>
                   <span className="muted" style={{ fontSize: 12 }}>{exercise.caloriesPerMinute} kcal/λεπτό</span>
                 </button>
+                <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
+                  style={{ padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: "#d97706" }}>⭐</button>
               </div>
             ))}
           </div>
