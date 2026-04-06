@@ -1,4 +1,4 @@
-// src/components/tabs/AiCoach.jsx
+// src/components/AiCoach.jsx
 import { useState, useRef, useEffect } from "react";
 import { MODES } from "../data/modes";
 
@@ -17,61 +17,24 @@ function parseEatNowCards(text) {
     const cards = blocks.slice(0, 3).map((block) => {
       const lines = block.trim().split("\n").filter((l) => l.trim());
       if (lines.length < 2) return null;
-      return {
-        title: lines[0].trim(),
-        stats: lines[1].trim(),
-        desc: lines[2]?.trim() || "",
-      };
+      return { title: lines[0].trim(), stats: lines[1].trim(), desc: lines[2]?.trim() || "" };
     }).filter(Boolean);
     if (cards.length < 2) return null;
     return cards;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function EatNowCards({ text }) {
   const cards = parseEatNowCards(text);
-  if (!cards) {
-    return (
-      <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-        {text}
-      </span>
-    );
-  }
+  if (!cards) return <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</span>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
-      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>
-        🔥 Επιλογές για τώρα
-      </div>
+      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 Επιλογές για τώρα</div>
       {cards.map((card, i) => (
-        <div
-          key={i}
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            padding: "10px 12px",
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
-            {card.title}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--color-accent)",
-              fontWeight: 700,
-              marginBottom: card.desc ? 3 : 0,
-            }}
-          >
-            {card.stats}
-          </div>
-          {card.desc && (
-            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
-              {card.desc}
-            </div>
-          )}
+        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title}</div>
+          <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.desc ? 3 : 0 }}>{card.stats}</div>
+          {card.desc && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.desc}</div>}
         </div>
       ))}
     </div>
@@ -94,8 +57,7 @@ export default function AiCoach({
   const inputRef = useRef(null);
 
   const lastWeight = weightLog?.length
-    ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight
-    : null;
+    ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight : null;
 
   const weightTrend = (() => {
     if (!weightLog || weightLog.length < 2) return null;
@@ -122,14 +84,11 @@ export default function AiCoach({
     const hasTrainingPlan = !hasMealPlan && text.includes("📅") && (
       text.includes("σετ ×") || (text.includes("λεπτά") && text.includes("💪"))
     );
-    if (hasMealPlan) {
-      onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
-    } else if (hasTrainingPlan) {
-      onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
-    }
+    if (hasMealPlan) onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
+    else if (hasTrainingPlan) onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
   }, [messages]);
 
-  function buildSystemPrompt() {
+  function buildSystemPrompt(taskType = "general") {
     const currentMode = MODES[mode] || MODES.balanced;
     const goalLabel = goalType === "lose" ? "Απώλεια βάρους" :
       goalType === "gain" ? "Μυϊκή ανάπτυξη" :
@@ -142,7 +101,6 @@ export default function AiCoach({
     const dayNames = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
     const todayName = dayNames[today.getDay()];
     const todayDate = today.toLocaleDateString("el-GR");
-
     const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
 
     const weekSummary = (last7Days || []).map((d) => {
@@ -151,89 +109,62 @@ export default function AiCoach({
       const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
       const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
         ? log.exercises.map(e => e.name).join(", ") : "—";
-      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + " kcal"}, πρωτεΐνη ${protein}g [${exNames}]`;
+      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + "kcal"} P:${protein}g [${exNames}]`;
     }).join("\n");
 
-    const favFoodsList = (favoriteFoods || []).slice(0, 8).map(f => f.name).join(", ");
+    const favFoodsList = (favoriteFoods || []).slice(0, 6).map(f => f.name).join(", ");
     const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
-    return `Είσαι έμπειρος διατροφολόγος και personal trainer. Μιλάς ΠΑΝΤΑ στα Ελληνικά, ΠΑΝΤΑ στον ΕΝΙΚΟ. Είσαι φιλικός, πρακτικός και δίνεις ρεαλιστικές, ελκυστικές προτάσεις.
-
+    // BASE — στέλνεται σε κάθε request
+    const base = `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.
 ΣΗΜΕΡΑ: ${todayName} ${todayDate}
+Ηλικία:${age||"—"} Φύλο:${gender==="male"?"Άνδρας":"Γυναίκα"} Ύψος:${height||"—"}cm Βάρος:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` Τάση:${weightTrend}kg`:""}
+Στόχος:${goalLabel} | Mode:${currentMode.label} | Θερμίδες:${targetCalories}kcal | Πρωτεΐνη:${proteinTarget}g/μέρα | Streak:${streak}μέρες
+Αγαπημένα:${favFoodsList||favoriteFoodsText||"—"} | Ασκήσεις:${favExList||favoriteExercisesText||"—"}
+Σήμερα: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | Άσκηση:${exerciseValue||0}kcal | Υπόλοιπο:${remainingCalories||targetCalories}kcal
+Εβδομάδα:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} μέρες χωρίς καταγραφή`:""}
+Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 
-━━━ ΣΤΟΙΧΕΙΑ ΧΡΗΣΤΗ ━━━
-Ηλικία: ${age || "—"} | Φύλο: ${gender === "male" ? "Άνδρας" : "Γυναίκα"}
-Ύψος: ${height || "—"} cm | Βάρος: ${currentWeight || "—"} kg${bmi ? ` | BMI: ${bmi}` : ""}
-${weightTrend ? `Τάση βάρους: ${weightTrend} kg` : ""}
-Στόχος: ${goalLabel} | Διατροφή: ${currentMode.label}
-ΗΜΕΡΗΣΙΟΣ ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: ${targetCalories} kcal
-Πρωτεΐνη: ${proteinTarget}g/μέρα
-Streak: ${streak} μέρες
+    // GENERAL — βασικές οδηγίες για chat/ανάλυση
+    const generalRules = `
+Κανόνες γευμάτων: 🌅Πρωινό=αυγά/γιαούρτι/βρώμη/τοστ (ποτέ κρέας) 🍎Σνακ=φρούτο/ξηροί καρποί 🌞Μεσημεριανό=κύριο γεύμα με πρωτεΐνη 🌙Βραδινό=ελαφρύ.
+Αν τρόφιμο δεν ταιριάζει με ${currentMode.label} πες το αμέσως.`;
 
-━━━ ΓΟΥΣΤΑ ΧΡΗΣΤΗ ━━━
-Αγαπημένα φαγητά: ${favFoodsList || favoriteFoodsText || "Δεν έχει δηλώσει"}
-Αγαπημένες ασκήσεις: ${favExList || favoriteExercisesText || "Δεν έχει δηλώσει"}
-
-━━━ ΣΗΜΕΡΑ ━━━
-Έφαγε: ${totalCalories || 0}/${targetCalories} kcal
-Πρωτεΐνη: ${Math.round(totalProtein || 0)}/${proteinTarget}g
-Άσκηση: ${exerciseValue || 0} kcal
-Υπόλοιπο: ${remainingCalories || targetCalories} kcal
-
-━━━ ΕΒΔΟΜΑΔΑ ━━━
-${weekSummary || "Δεν υπάρχουν δεδομένα"}
-${emptyDays.length > 0 ? `\n⚠️ Μέρες χωρίς καταγραφή: ${emptyDays.length}` : ""}
-
-━━━ ΚΑΝΟΝΕΣ ΔΙΑΤΡΟΦΗΣ (${currentMode.label}) ━━━
-${currentMode.aiRule}
-
-━━━ ΟΔΗΓΙΕΣ ━━━
-
-1. ΕΝΙΚΟΣ παντά. ΠΟΤΕ πληθυντικός.
-
-2. ΑΔΕΙΑ ΜΕΡΕΣ: Αν υπάρχουν μέρες χωρίς καταγραφή, αναφέρσε το φιλικά.
-
-3. ΓΕΥΜΑΤΑ — ΛΟΓΙΚΗ ΕΠΙΛΟΓΗ:
-   🌅 ΠΡΩΙΝΟ: αυγά, γιαούρτι με φρούτα, βρώμη, τοστ, smoothie. ΠΟΤΕ κρέας ή ψάρι.
-   🍎 ΣΝΑΚ: φρούτο, ξηροί καρποί, γιαούρτι, protein bar. ΠΟΤΕ κρέας/ψάρι.
-   🌞 ΜΕΣΗΜΕΡΙΑΝΟ: κοτόπουλο, ψάρι, κρέας + λαχανικά + υδατάνθρακας. Κύριο γεύμα.
-   🌙 ΒΡΑΔΙΝΟ: ελαφρύτερο — ψάρι, σαλάτα, αυγά, τυρί, λαχανικά.
-   Ποικιλία κάθε μέρα. Εύκολα, νόστιμα γεύματα.
-   Λάβε υπόψη τα αγαπημένα φαγητά ΩΣ ΠΡΟΤΕΡΑΙΟΤΗΤΑ αλλά φιλτράρισέ τα βάσει ${currentMode.label}.
-
-4. ΣΥΜΒΑΤΟΤΗΤΑ ΔΙΑΙΤΑΣ: Αν ο χρήστης αναφέρει τρόφιμο που ΔΕΝ ταιριάζει με ${currentMode.label}, πες το ΑΜΕΣΩΣ και φιλικά.
-
-5. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΔΙΑΤΡΟΦΗΣ:
-   Στόχος ${targetCalories} kcal/μέρα (±5% αποδεκτό).
-   Κατανομή: Πρωινό ${Math.round(targetCalories * 0.25)}, Σνακ x2 ${Math.round(targetCalories * 0.1)}, Μεσημεριανό ${Math.round(targetCalories * 0.35)}, Βραδινό ${Math.round(targetCalories * 0.20)} kcal.
-   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis, ΠΟΤΕ αστερίσκοι:
+    // MEAL PLAN — μόνο για εβδομαδιαίο διατροφής
+    const mealPlanFormat = `
+Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.
+ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
 
 📅 ΔΕΥΤΕΡΑ
-07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X] kcal)
-11:00 🍎 Σνακ — [σνακ] ([X] kcal)
-13:30 🌞 Μεσημεριανό — [γεύμα + ποσότητα] ([X] kcal)
-16:30 🍎 Σνακ — [σνακ] ([X] kcal)
-20:00 🌙 Βραδινό — [γεύμα + ποσότητα] ([X] kcal)
-Σύνολο: [X] kcal
+07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X]kcal)
+11:00 🍎 Σνακ — [σνακ] ([X]kcal)
+13:30 🌞 Μεσημεριανό — [γεύμα + ποσότητα] ([X]kcal)
+16:30 🍎 Σνακ — [σνακ] ([X]kcal)
+20:00 🌙 Βραδινό — [γεύμα + ποσότητα] ([X]kcal)
+Σύνολο: [X]kcal
 ─────────────────
+(Δευτέρα έως Κυριακή)
+ΣΤΟ ΤΕΛΟΣ: ⚠️ Ενημερωτικό. Συμβουλέψου γιατρό/διατροφολόγο.
+Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
 
-   Όλες οι μέρες Δευτέρα-Κυριακή.
-   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"
-
-6. FORMAT ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΓΥΜΝΑΣΤΙΚΗΣ:
-   Λάβε υπόψη τις αγαπημένες ασκήσεις. 2+ rest days.
-   ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ με emojis:
+    // TRAINING PLAN — μόνο για εβδομαδιαίο γυμναστικής
+    const trainingPlanFormat = `
+Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής. Λάβε υπόψη αγαπημένες ασκήσεις. 2+ rest days.
+ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
 
 📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]
 09:00 💪 [Άσκηση]: [σετ × επαναλήψεις]
-Διάρκεια: ~[X] λεπτά
+Διάρκεια: ~[X]λεπτά
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
+(Δευτέρα έως Κυριακή)
+ΣΤΟ ΤΕΛΟΣ: ⚠️ Ενημερωτικό. Συμβουλέψου γυμναστή/γιατρό.
+Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
 
-   Όλες οι μέρες Δευτέρα-Κυριακή.
-   ΣΤΟ ΤΕΛΟΣ: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-   Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
+    if (taskType === "meal_plan") return base + mealPlanFormat;
+    if (taskType === "training_plan") return base + trainingPlanFormat;
+    if (taskType === "eatnow") return base; // format ήδη στο effectiveMessage
+    return base + generalRules;
   }
 
   function buildMessages(chatMessage) {
@@ -248,41 +179,41 @@ ${currentMode.aiRule}
     if (loading) return;
     setLoading(true);
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
+
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const isEatNow = text === "Τι να φάω τώρα;";
+    const isMealPlan = text === "Εβδομαδιαίο πρόγραμμα διατροφής";
+    const isTrainingPlan = text === "Εβδομαδιαίο πρόγραμμα γυμναστικής";
+    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : "general";
 
     let effectiveMessage;
     if (isInitial) {
-      effectiveMessage = `Κοίτα τα δεδομένα μου και:\n1. Πες μου τι να φάω για την υπόλοιπη μέρα (ρεαλιστικά για ${currentMode.label}, στόχος ${targetCalories} kcal)\n2. Αν υπάρχουν άδειες μέρες χωρίς καταγραφή, επισήμανέ το φιλικά\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι για να με γνωρίσεις`;
+      effectiveMessage = `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
     } else if (isEatNow) {
       const hour = new Date().getHours();
-      const mealTime =
-        hour < 10 ? "πρωινό" :
-        hour < 12 ? "σνακ πρωί" :
-        hour < 15 ? "μεσημεριανό" :
-        hour < 18 ? "σνακ απόγευμα" : "βραδινό";
+      const mealTime = hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό";
       const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
       effectiveMessage = `Δώσε 3 επιλογές για ${mealTime} ΤΩΡΑ.
-Υπόλοιπο: ${remainingCalories} kcal | Πρωτεΐνη που χρειάζομαι ακόμα: ${remProtein}g | Mode: ${currentMode.label}
+Υπόλοιπο:${remainingCalories}kcal | Πρωτεΐνη:${remProtein}g | Mode:${currentMode.label}
 
-ΥΠΟΧΡΕΩΤΙΚΟ format — ΑΚΡΙΒΩΣ έτσι, με κενή γραμμή μεταξύ επιλογών, ΤΙΠΟΤΑ άλλο πριν ή μετά:
+Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):
 
-[emoji] [Όνομα γεύματος]
-[X] kcal • [X]g πρωτεΐνη
+[emoji] [Γεύμα]
+[X]kcal • [X]g πρωτεΐνη
 [Μια πρόταση γιατί ταιριάζει]
 
-[emoji] [Όνομα γεύματος 2]
-[X] kcal • [X]g πρωτεΐνη
+[emoji] [Γεύμα 2]
+[X]kcal • [X]g πρωτεΐνη
 [Μια πρόταση]
 
-[emoji] [Όνομα γεύματος 3]
-[X] kcal • [X]g πρωτεΐνη
+[emoji] [Γεύμα 3]
+[X]kcal • [X]g πρωτεΐνη
 [Μια πρόταση]`;
-    } else if (text === "Εβδομαδιαίο πρόγραμμα διατροφής") {
-      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Στόχος ${targetCalories} kcal/μέρα ±5%. Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 🌅 🍎 🌞 🌙 emojis. ΠΟΤΕ αστερίσκοι.`;
-    } else if (text === "Εβδομαδιαίο πρόγραμμα γυμναστικής") {
-      effectiveMessage = `Δώσε μου εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). Χρησιμοποίησε ΥΠΟΧΡΕΩΤΙΚΑ το format με 📅 💪 😴 emojis.`;
+    } else if (isMealPlan) {
+      effectiveMessage = `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 🌅 🍎 🌞 🌙. ΠΟΤΕ αστερίσκοι.`;
+    } else if (isTrainingPlan) {
+      effectiveMessage = `Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 💪 😴.`;
     } else {
       effectiveMessage = text;
     }
@@ -292,7 +223,7 @@ ${currentMode.aiRule}
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt: buildSystemPrompt(),
+          systemPrompt: buildSystemPrompt(taskType),
           messages: buildMessages(effectiveMessage)
         })
       });
@@ -322,16 +253,7 @@ ${currentMode.aiRule}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {QUICK_QUESTIONS.map((q) => (
               <button key={q} onClick={() => sendMessage(q)} type="button"
-                style={{
-                  padding: "7px 12px",
-                  borderRadius: 20,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--bg-soft)",
-                  color: "var(--text-primary)",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}>
+                style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                 {q}
               </button>
             ))}
@@ -378,41 +300,26 @@ ${currentMode.aiRule}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {QUICK_QUESTIONS.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
-              style={{
-                padding: "5px 10px",
-                borderRadius: 20,
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-soft)",
-                color: "var(--text-primary)",
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: "pointer"
-              }}>
+              style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
               {q}
             </button>
           ))}
         </div>
       )}
 
-      {(hasLoaded || messages.length > 0) && (
+      {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            ref={inputRef}
-            className="input"
-            placeholder="Ρώτα με κάτι..."
-            value={input}
+          <input ref={inputRef} className="input" placeholder="Ρώτα με κάτι..." value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            style={{ flex: 1 }}
-            disabled={loading}
-          />
+            style={{ flex: 1 }} disabled={loading} />
           <button onClick={() => inputRef.current?.focus()} type="button"
             style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
           <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
             disabled={loading || !input.trim()}
             style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
         </div>
-      )}
+      }
     </div>
   );
 }
