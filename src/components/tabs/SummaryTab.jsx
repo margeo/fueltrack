@@ -151,7 +151,7 @@ export default function SummaryTab({
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
               {type === "meal" && (
-                <button className="btn btn-dark" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒</button>
+                <button className="btn btn-light" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒</button>
               )}
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
