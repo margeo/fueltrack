@@ -133,7 +133,7 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
     // MEAL PLAN — μόνο για εβδομαδιαίο διατροφής
     const mealPlanFormat = `
 Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.
-ΣΚΛΗΡΟ ΟΡΙΟ: ΜΕΓΙΣΤΟ 25 διαφορετικά υλικά συνολικά σε όλη την εβδομάδα. Επανέλαβε τα ίδια υλικά σε διαφορετικούς συνδυασμούς. ΜΗΝ ξεπεράσεις τα 25 υλικά.
+ΣΚΛΗΡΟ ΟΡΙΟ: ΜΕΓΙΣΤΟ 25 διαφορετικά υλικά συνολικά σε όλη την εβδομάδα. Επανέλαβε τα ίδια υλικά σε διαφορετικούς συνδυασμούς. ΜΗΝ ξεπεράσεις τα 25 υλικά. ΜΗΝ απαριθμείς τα υλικά — ξεκίνα κατευθείαν με το πρόγραμμα.
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
 
 📅 ΔΕΥΤΕΡΑ
@@ -308,8 +308,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
           <input ref={inputRef} className="input" placeholder="Ρώτα με κάτι..." value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
@@ -319,8 +318,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
           <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
             disabled={loading || !input.trim()}
             style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
-        </div>
-      }
+      </div>
     </div>
   );
 }
