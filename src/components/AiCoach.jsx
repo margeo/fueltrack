@@ -133,6 +133,7 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
     // MEAL PLAN — μόνο για εβδομαδιαίο διατροφής
     const mealPlanFormat = `
 Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.
+ΣΚΛΗΡΟ ΟΡΙΟ: ΜΕΓΙΣΤΟ 25 διαφορετικά υλικά συνολικά σε όλη την εβδομάδα. Επανέλαβε τα ίδια υλικά σε διαφορετικούς συνδυασμούς. ΜΗΝ ξεπεράσεις τα 25 υλικά.
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
 
 📅 ΔΕΥΤΕΡΑ
