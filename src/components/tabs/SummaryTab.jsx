@@ -22,8 +22,7 @@ function exportToPDF(plan) {
 }
 
 function exportGroceryToPDF(groceryContent) {
-  const lines = groceryContent.split("
-").map(line => {
+  const lines = groceryContent.split("\n").map(line => {
     const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if (line.match(/^[🥩🥛🥦🌾🫙]/u)) return `<div class="category">${escaped}</div>`;
     if (line.startsWith("- ")) return `<div class="item">${escaped}</div>`;
