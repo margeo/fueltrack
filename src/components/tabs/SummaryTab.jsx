@@ -21,6 +21,20 @@ function exportToPDF(plan) {
   if (win) { win.document.write(html); win.document.close(); }
 }
 
+function exportGroceryToPDF(groceryContent) {
+  const lines = groceryContent.split("
+").map(line => {
+    const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (line.match(/^[🥩🥛🥦🌾🫙]/u)) return `<div class="category">${escaped}</div>`;
+    if (line.startsWith("- ")) return `<div class="item">${escaped}</div>`;
+    if (line.trim() === "") return `<div style="height:6px"></div>`;
+    return `<div class="line">${escaped}</div>`;
+  }).join("");
+  const html = `<!DOCTYPE html><html lang="el"><head><meta charset="UTF-8"><title>Λίστα Σούπερ Μάρκετ</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.main-title{font-size:20px;font-weight:bold}.sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.category{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px}.item{padding:4px 16px}.line{padding:3px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div><div class="main-title">🛒 Λίστα Σούπερ Μάρκετ — FuelTrack</div><div class="sub">Εκτυπώθηκε: ${new Date().toLocaleDateString("el-GR")}</div></div><div class="btn-group"><button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button><button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button></div></div>${lines}</body></html>`;
+  const win = window.open("", "_blank");
+  if (win) { win.document.write(html); win.document.close(); }
+}
+
 export default function SummaryTab({
   selectedDate, setSelectedDate, isToday,
   targetCalories, totalCalories, exerciseValue,
@@ -47,31 +61,7 @@ export default function SummaryTab({
     setGroceryLoading(true);
     setGroceryList(null);
     try {
-      const systemPrompt = `Είσαι βοηθός που εξάγει λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
-Διάβασε το πρόγραμμα, βρες όλα τα υλικά με ποσότητες, άθροισε ίδια υλικά, και ομαδοποίησε κατά κατηγορία.
-Απάντησε ΜΟΝΟ με τη λίστα σε αυτή τη μορφή:
-
-🥩 Κρέατα & Ψάρια
-- Κοτόπουλο στήθος: 650g
-- Σολομός: 300g
-
-🥛 Γαλακτοκομικά
-- Γιαούρτι στραγγιστό: 800g
-- Φέτα: 150g
-
-🥦 Λαχανικά & Φρούτα
-- Σπανάκι: 200g
-- Ντομάτες: 6 τεμ.
-
-🌾 Δημητριακά & Ψωμί
-- Ψωμί ολικής: 1 φραντζόλα
-- Βρώμη: 300g
-
-🫙 Άλλα
-- Ελαιόλαδο: 100ml
-- Αυγά: 10 τεμ.
-
-Μην προσθέσεις τίποτα άλλο, μόνο τη λίστα.`;
+      const systemPrompt = `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα. Άθροισε ίδια υλικά. Ομαδοποίησε: 🥩 Κρέατα & Ψάρια, 🥛 Γαλακτοκομικά, 🥦 Λαχανικά & Φρούτα, 🌾 Δημητριακά, 🫙 Άλλα. Απάντησε ΜΟΝΟ με τη λίστα, χωρίς άλλο κείμενο.`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
@@ -171,6 +161,24 @@ export default function SummaryTab({
             {isExpanded && (
               <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
                 {plan.content}
+              </div>
+            )}
+            {type === "meal" && (groceryLoading || groceryList) && (
+              <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px solid var(--border-soft)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 Λίστα σούπερ μάρκετ</div>
+                  {groceryList && (
+                    <div style={{ display: "flex", gap: 5 }}>
+                      <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+                      <button className="btn btn-light" onClick={() => setGroceryList(null)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+                    </div>
+                  )}
+                </div>
+                {groceryLoading ? (
+                  <div className="muted" style={{ fontSize: 13 }}>Δημιουργία λίστας... ⏳</div>
+                ) : (
+                  <div style={{ fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{groceryList}</div>
+                )}
               </div>
             )}
           </>
@@ -275,21 +283,6 @@ export default function SummaryTab({
           <PlanSection plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
         </div>
       </div>
-
-      {/* GROCERY LIST */}
-      {(groceryLoading || groceryList) && (
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <h2>🛒 Λίστα σούπερ μάρκετ</h2>
-            {groceryList && <button className="btn btn-light" onClick={() => setGroceryList(null)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>}
-          </div>
-          {groceryLoading ? (
-            <div className="muted" style={{ fontSize: 13 }}>Δημιουργία λίστας... ⏳</div>
-          ) : (
-            <div style={{ fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{groceryList}</div>
-          )}
-        </div>
-      )}
 
       {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
