@@ -55,6 +55,7 @@ export default function AiCoach({
   const [hasLoaded, setHasLoaded] = useState(false);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+  const lastAssistantRef = useRef(null);
 
   const lastWeight = weightLog?.length
     ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight : null;
@@ -70,9 +71,14 @@ export default function AiCoach({
   })();
 
   useEffect(() => {
-    const el = chatRef.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
+    if (!messages.length) return;
+    const last = messages[messages.length - 1];
+    if (last.role === "assistant" && lastAssistantRef.current) {
+      lastAssistantRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      const el = chatRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
   }, [messages, loading]);
 
   useEffect(() => {
@@ -275,7 +281,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
       {messages.length > 0 && (
         <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+            <div key={i} ref={msg.role === "assistant" && i === messages.length - 1 ? lastAssistantRef : null} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
               {msg.msgType === "eatnow" ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <EatNowCards text={msg.text} />
