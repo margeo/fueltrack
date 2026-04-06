@@ -39,6 +39,56 @@ export default function SummaryTab({
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
+  const [groceryList, setGroceryList] = useState(null);
+  const [groceryLoading, setGroceryLoading] = useState(false);
+
+  async function generateGroceryList(plan) {
+    if (!plan?.content) return;
+    setGroceryLoading(true);
+    setGroceryList(null);
+    try {
+      const systemPrompt = `Είσαι βοηθός που εξάγει λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+Διάβασε το πρόγραμμα, βρες όλα τα υλικά με ποσότητες, άθροισε ίδια υλικά, και ομαδοποίησε κατά κατηγορία.
+Απάντησε ΜΟΝΟ με τη λίστα σε αυτή τη μορφή:
+
+🥩 Κρέατα & Ψάρια
+- Κοτόπουλο στήθος: 650g
+- Σολομός: 300g
+
+🥛 Γαλακτοκομικά
+- Γιαούρτι στραγγιστό: 800g
+- Φέτα: 150g
+
+🥦 Λαχανικά & Φρούτα
+- Σπανάκι: 200g
+- Ντομάτες: 6 τεμ.
+
+🌾 Δημητριακά & Ψωμί
+- Ψωμί ολικής: 1 φραντζόλα
+- Βρώμη: 300g
+
+🫙 Άλλα
+- Ελαιόλαδο: 100ml
+- Αυγά: 10 τεμ.
+
+Μην προσθέσεις τίποτα άλλο, μόνο τη λίστα.`;
+
+      const res = await fetch("/.netlify/functions/ai-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: "user", content: plan.content }]
+        })
+      });
+      const data = await res.json();
+      setGroceryList(data.advice || "Σφάλμα δημιουργίας λίστας");
+    } catch (e) {
+      setGroceryList("Σφάλμα: " + e.message);
+    } finally {
+      setGroceryLoading(false);
+    }
+  }
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
   const sortedWeightLog = useMemo(() => [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)), [weightLog]);
@@ -100,6 +150,9 @@ export default function SummaryTab({
           {plan && (
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
+              {type === "meal" && (
+                <button className="btn btn-dark" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒</button>
+              )}
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
@@ -222,6 +275,21 @@ export default function SummaryTab({
           <PlanSection plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
         </div>
       </div>
+
+      {/* GROCERY LIST */}
+      {(groceryLoading || groceryList) && (
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <h2>🛒 Λίστα σούπερ μάρκετ</h2>
+            {groceryList && <button className="btn btn-light" onClick={() => setGroceryList(null)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>}
+          </div>
+          {groceryLoading ? (
+            <div className="muted" style={{ fontSize: 13 }}>Δημιουργία λίστας... ⏳</div>
+          ) : (
+            <div style={{ fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{groceryList}</div>
+          )}
+        </div>
+      )}
 
       {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
