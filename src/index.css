@@ -78,6 +78,12 @@ button,
 input,
 select {
   font: inherit;
+  font-size: 16px;
+}
+
+/* Prevent iOS zoom on focus */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px !important; }
 }
 
 .app-shell {
