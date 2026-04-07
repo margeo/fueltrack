@@ -363,6 +363,7 @@
     "loginLink": "Sign in",
     "loginError": "Wrong email or password.",
     "registerError": "Registration failed. Try again.",
+    "emailExists": "An account with this email already exists.",
     "checkEmail": "Check your email for confirmation!",
     "resetError": "Could not send email.",
     "resetSent": "Reset email sent!",

@@ -26,9 +26,11 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error, data } = await supabase.auth.signUp({ email, password });
     if (error) {
-      setError(t("auth.registerError"));
+      setError(error.message?.includes("already") ? t("auth.emailExists") : t("auth.registerError"));
+    } else if (data?.user?.identities?.length === 0) {
+      setError(t("auth.emailExists"));
     } else {
       setMessage(t("auth.checkEmail"));
     }

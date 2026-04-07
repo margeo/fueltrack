@@ -363,6 +363,7 @@
     "loginLink": "Σύνδεση",
     "loginError": "Λάθος email ή κωδικός.",
     "registerError": "Σφάλμα εγγραφής. Δοκίμασε ξανά.",
+    "emailExists": "Υπάρχει ήδη λογαριασμός με αυτό το email.",
     "checkEmail": "Ελέγξτε το email σας για επιβεβαίωση!",
     "resetError": "Δεν ήταν δυνατή η αποστολή email.",
     "resetSent": "Email επαναφοράς στάλθηκε!",
