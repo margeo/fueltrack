@@ -207,7 +207,7 @@ export default function ProfileTab({
           </label>
         </div>
         {currentMode.description && (
-          <div style={{ background: "var(--bg-input)", borderRadius: 10, padding: "8px 12px", marginTop: 10, fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "8px 12px", marginTop: 10, fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-soft)" }}>
             {t("modeDescriptions." + mode, { defaultValue: "" }) || currentMode.description}
             {currentMode.fastingHours && (
               <span style={{ marginLeft: 6, fontWeight: 700, color: "var(--text-primary)" }}>
