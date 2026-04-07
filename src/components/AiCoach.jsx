@@ -52,14 +52,18 @@ export default function AiCoach({
   const [isPaid, setIsPaid] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
-  const DAILY_LIMIT_FREE = 5;
-  const DAILY_LIMIT_PAID = 50;
+  const DAILY_LIMIT_FREE = 2;
+  const DAILY_LIMIT_PAID = 30;
+  const MONTHLY_LIMIT_PAID = 300;
+
+  const [monthlyCount, setMonthlyCount] = useState(0);
 
   useEffect(() => {
-    // Check daily usage from localStorage
     const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
     const today = new Date().toISOString().slice(0, 10);
+    const month = today.slice(0, 7);
     setDailyCount(stored.date === today ? (stored.count || 0) : 0);
+    setMonthlyCount(stored.month === month ? (stored.monthCount || 0) : 0);
 
     if (!session?.user?.id) return;
     supabase
@@ -75,13 +79,18 @@ export default function AiCoach({
 
   function incrementUsage() {
     const today = new Date().toISOString().slice(0, 10);
-    const newCount = dailyCount + 1;
-    setDailyCount(newCount);
-    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newCount }));
+    const month = today.slice(0, 7);
+    const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
+    const newDaily = dailyCount + 1;
+    const newMonthly = (stored.month === month ? (stored.monthCount || 0) : 0) + 1;
+    setDailyCount(newDaily);
+    setMonthlyCount(newMonthly);
+    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly }));
   }
 
   const dailyLimit = isPaid ? DAILY_LIMIT_PAID : DAILY_LIMIT_FREE;
-  const limitReached = dailyCount >= dailyLimit;
+  const monthlyLimitReached = isPaid && monthlyCount >= MONTHLY_LIMIT_PAID;
+  const limitReached = dailyCount >= dailyLimit || monthlyLimitReached;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -303,7 +312,11 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         <div style={{ textAlign: "center", padding: "20px 0" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.limitTitle")}</div>
-          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>{t("aiCoach.limitDesc", { limit: dailyLimit })}</div>
+          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
+            {monthlyLimitReached
+              ? t("aiCoach.monthlyLimitDesc", { limit: MONTHLY_LIMIT_PAID })
+              : t("aiCoach.limitDesc", { limit: dailyLimit })}
+          </div>
         </div>
       )}
 
