@@ -16,10 +16,6 @@ import {
   getFoodIdentityKey,
   normalizeFood,
   createFoodEntry,
-  calculateBmr,
-  calculateDailyDeficit,
-  calculateTargetCalories,
-  calculateProteinTarget,
   entryBasePer100g,
 } from "../helpers";
 
@@ -354,76 +350,3 @@ describe("entryBasePer100g", () => {
   });
 });
 
-describe("helpers.js calculateBmr (duplicate)", () => {
-  it("calculates BMR for male", () => {
-    expect(calculateBmr({ age: 30, gender: "male", height: 180, weight: 80 })).toBe(1780);
-  });
-
-  it("calculates BMR for female", () => {
-    expect(calculateBmr({ age: 25, gender: "female", height: 165, weight: 60 })).toBe(1345);
-  });
-
-  it("returns 0 for missing inputs", () => {
-    expect(calculateBmr({ age: 0, gender: "male", height: 180, weight: 80 })).toBe(0);
-  });
-});
-
-describe("helpers.js calculateDailyDeficit (duplicate)", () => {
-  it("returns 0 for non-lose goal", () => {
-    expect(calculateDailyDeficit({ goalType: "maintain", targetWeightLoss: 5, weeks: 10 })).toBe(0);
-  });
-
-  it("calculates deficit for lose goal", () => {
-    const result = calculateDailyDeficit({ goalType: "lose", targetWeightLoss: 5, weeks: 10 });
-    // 5 * 7700 / 70 = 550, clamped between 150-1000
-    expect(result).toBe(550);
-  });
-
-  it("clamps to minimum 150", () => {
-    const result = calculateDailyDeficit({ goalType: "lose", targetWeightLoss: 0.5, weeks: 52 });
-    // 0.5 * 7700 / 364 ≈ 10.6 → clamped to 150
-    expect(result).toBe(150);
-  });
-
-  it("clamps to maximum 1000", () => {
-    const result = calculateDailyDeficit({ goalType: "lose", targetWeightLoss: 20, weeks: 4 });
-    // 20 * 7700 / 28 = 5500 → clamped to 1000
-    expect(result).toBe(1000);
-  });
-
-  it("defaults to 300 when values are zero", () => {
-    expect(calculateDailyDeficit({ goalType: "lose", targetWeightLoss: 0, weeks: 0 })).toBe(300);
-  });
-});
-
-describe("helpers.js calculateTargetCalories (duplicate)", () => {
-  it("returns TDEE for maintain", () => {
-    expect(calculateTargetCalories({ tdee: 2200, goalType: "maintain", dailyDeficit: 0 })).toBe(2200);
-  });
-
-  it("subtracts deficit for lose", () => {
-    expect(calculateTargetCalories({ tdee: 2200, goalType: "lose", dailyDeficit: 500 })).toBe(1700);
-  });
-
-  it("floors lose at 1200", () => {
-    expect(calculateTargetCalories({ tdee: 1400, goalType: "lose", dailyDeficit: 1000 })).toBe(1200);
-  });
-
-  it("adds 300 for gain", () => {
-    expect(calculateTargetCalories({ tdee: 2200, goalType: "gain", dailyDeficit: 0 })).toBe(2500);
-  });
-});
-
-describe("helpers.js calculateProteinTarget (duplicate)", () => {
-  it("returns 1.8g/kg for lose", () => {
-    expect(calculateProteinTarget({ weight: 80, goalType: "lose" })).toBe(144);
-  });
-
-  it("returns 2.0g/kg for gain", () => {
-    expect(calculateProteinTarget({ weight: 80, goalType: "gain" })).toBe(160);
-  });
-
-  it("returns 1.4g/kg for maintain", () => {
-    expect(calculateProteinTarget({ weight: 80, goalType: "maintain" })).toBe(112);
-  });
-});
