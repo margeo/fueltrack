@@ -1,11 +1,21 @@
 // src/data/constants.js
+
+// Internal meal keys — stored in localStorage, do NOT change
 export const MEALS = ["Πρωινό", "Μεσημεριανό", "Βραδινό", "Σνακ"];
 
+// Translation key mapping for meals
+export const MEAL_KEYS = {
+  "Πρωινό": "meals.breakfast",
+  "Μεσημεριανό": "meals.lunch",
+  "Βραδινό": "meals.dinner",
+  "Σνακ": "meals.snack",
+};
+
 export const APP_TABS = [
-  { key: "summary", label: "Summary", icon: "📊" },
-  { key: "food", label: "Food", icon: "🍔" },
-  { key: "exercise", label: "Exercise", icon: "💪" },
-  { key: "profile", label: "Profile", icon: "👤" }
+  { key: "summary", labelKey: "tabs.summary", icon: "📊" },
+  { key: "food", labelKey: "tabs.food", icon: "🍔" },
+  { key: "exercise", labelKey: "tabs.exercise", icon: "💪" },
+  { key: "profile", labelKey: "tabs.profile", icon: "👤" }
 ];
 
 export const EXERCISE_LIBRARY = [

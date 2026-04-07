@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function BottomNav({ tabs, activeTab, onChange }) {
+  const { t } = useTranslation();
   return (
     <div className="bottom-nav">
       {tabs.map((tab) => (
@@ -8,7 +11,7 @@ export default function BottomNav({ tabs, activeTab, onChange }) {
           onClick={() => onChange(tab.key)}
         >
           <div className="nav-icon">{tab.icon}</div>
-          <div>{tab.label}</div>
+          <div>{t(tab.labelKey)}</div>
         </button>
       ))}
     </div>

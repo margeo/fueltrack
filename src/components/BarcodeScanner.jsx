@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BrowserMultiFormatReader } from "@zxing/library";
 
 export default function BarcodeScanner({ onResult, onClose }) {
+  const { t } = useTranslation();
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const [error, setError] = useState("");
@@ -16,7 +18,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
         onResult(result.getText());
       }
     }).catch(() => {
-      setError("Δεν επιτράπηκε η πρόσβαση στην κάμερα.");
+      setError(t("barcode.cameraError"));
     });
 
     return () => {
@@ -38,7 +40,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
       padding: 20
     }}>
       <div style={{ color: "white", fontWeight: 700, fontSize: 18 }}>
-        📷 Σκανάρισμα Barcode
+        📷 {t("barcode.title")}
       </div>
 
       {error ? (
@@ -73,7 +75,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
             }} />
           </div>
           <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
-            Στόχευσε το barcode του προϊόντος
+            {t("barcode.hint")}
           </div>
         </>
       )}
@@ -84,7 +86,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
         type="button"
         style={{ marginTop: 8 }}
       >
-        Κλείσιμο
+        {t("common.close")}
       </button>
     </div>
   );

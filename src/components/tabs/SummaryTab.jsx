@@ -1,5 +1,6 @@
 // src/components/tabs/SummaryTab.jsx
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
@@ -46,6 +47,7 @@ export default function SummaryTab({
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan
 }) {
+  const { t } = useTranslation();
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showWeightInput, setShowWeightInput] = useState(false);
@@ -112,15 +114,14 @@ export default function SummaryTab({
   }
 
   function getGoalLabel() {
-    if (goalType === "lose") return "Απώλεια βάρους";
-    if (goalType === "gain") return "Μυϊκή ανάπτυξη";
-    if (goalType === "fitness") return "Fitness & Cardio";
-    return "Διατήρηση";
+    if (goalType === "lose") return t("goals.lose");
+    if (goalType === "gain") return t("goals.gain");
+    if (goalType === "fitness") return t("goals.fitness");
+    return t("goals.maintain");
   }
 
   function getModeLabel() {
-    const labels = { balanced: "Balanced", mediterranean: "Μεσογειακή", whole_foods: "Whole Foods", high_protein: "High Protein", muscle_gain: "Muscle Gain", low_carb: "Low Carb", keto: "Keto", carnivore: "Carnivore", fasting_16_8: "Fasting 16:8", fasting_18_6: "Fasting 18:6", omad: "OMAD", vegetarian: "Vegetarian", vegan: "Vegan" };
-    return labels[mode] || "Balanced";
+    return t("modeLabels." + mode, { defaultValue: "Balanced" });
   }
 
   function getRemainingColor() {
@@ -130,8 +131,7 @@ export default function SummaryTab({
   }
 
   function getModeHint() {
-    const hints = { balanced: "Ισορροπημένη διατροφή", mediterranean: "Ελαιόλαδο, ψάρι, λαχανικά", whole_foods: "Φυσικές, ανεπεξέργαστες τροφές", high_protein: "Υψηλή πρωτεΐνη σε κάθε γεύμα", muscle_gain: "Caloric surplus + πρωτεΐνη", low_carb: "Χαμηλοί υδατάνθρακες", keto: "Κετογονική — max 8g carbs/100g", carnivore: "Μόνο ζωικά προϊόντα", fasting_16_8: "Παράθυρο φαγητού 8 ωρών", fasting_18_6: "Παράθυρο φαγητού 6 ωρών", omad: "Ένα γεύμα την ημέρα", vegetarian: "Χωρίς κρέας", vegan: "Φυτική διατροφή" };
-    return hints[mode] || "";
+    return t("modeHints." + mode, { defaultValue: "" });
   }
 
   const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
@@ -161,12 +161,12 @@ export default function SummaryTab({
         </div>
         {!plan ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
-            <div className="muted" style={{ fontSize: 12 }}>Δεν έχεις ακόμα {type === "meal" ? "πρόγραμμα διατροφής" : "πρόγραμμα γυμναστικής"}. Ρώτα τον AI Coach!</div>
+            <div className="muted" style={{ fontSize: 12 }}>{type === "meal" ? t("summary.noMealPlan") : t("summary.noTrainingPlan")}</div>
           </div>
         ) : (
           <>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, display: "flex", justifyContent: "space-between" }}>
-              <span>Αποθηκεύτηκε: {plan.date}</span>
+              <span>{t("summary.savedOn", { date: plan.date })}</span>
               {!isExpanded && <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span>}
             </div>
             {isExpanded && (
@@ -177,7 +177,7 @@ export default function SummaryTab({
             {type === "meal" && (groceryLoading || groceryList) && (
               <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px solid var(--border-soft)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 Λίστα σούπερ μάρκετ</div>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 {t("summary.groceryList")}</div>
                   {groceryList && (
                     <div style={{ display: "flex", gap: 5 }}>
                       <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
@@ -186,7 +186,7 @@ export default function SummaryTab({
                   )}
                 </div>
                 {groceryLoading ? (
-                  <div className="muted" style={{ fontSize: 13 }}>Δημιουργία λίστας... ⏳</div>
+                  <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
                 ) : (
                   <div style={{ fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{groceryList}</div>
                 )}
@@ -202,14 +202,14 @@ export default function SummaryTab({
     <>
       {/* 1. HERO */}
       <div className="hero-card">
-        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>Σύνοψη ημέρας</div>
+        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>{t("summary.title")}</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
             {formatDisplayDate(selectedDate)}
-            {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· Σήμερα</span>}
+            {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· {t("common.today")}</span>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>Σήμερα</button>}
+            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <button type="button" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, color: "white", lineHeight: 1, display: "block" }}>📅</button>
               <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
@@ -217,7 +217,7 @@ export default function SummaryTab({
           </div>
         </div>
         <div style={{ marginTop: 16, marginBottom: 12 }}>
-          <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>Υπόλοιπο ημέρας</div>
+          <div className="hero-subtle" style={{ fontSize: 12, marginBottom: 8 }}>{t("summary.remaining")}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <div className="hero-stat" style={{ padding: "10px 14px", minWidth: 100, textAlign: "center", flexShrink: 0 }}>
               <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: getRemainingColor() }}>{formatNumber(remainingCalories)}</div>
@@ -226,17 +226,17 @@ export default function SummaryTab({
             <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>=</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Στόχος</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.target")}</div>
             </div>
             <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>−</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Φαγητό</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.food")}</div>
             </div>
             <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>+</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
-              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>Άσκηση</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.exercise")}</div>
             </div>
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function SummaryTab({
           <div style={{ color: "white", fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
           <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>Protein υπόλοιπο: <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong></span>
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>{t("summary.proteinRemaining")} <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong></span>
             <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>{formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal</span>
           </div>
         </div>
@@ -253,18 +253,18 @@ export default function SummaryTab({
 
       {/* 2. MACROS */}
       <div className="card">
-        <h2>Macros σήμερα</h2>
+        <h2>{t("summary.macrosToday")}</h2>
         <div className="macro-bars">
           <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">Πρωτεΐνη</span><span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
+            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.proteinLabel")}</span><span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">Υδατάνθρακες</span><span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
+            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.carbsLabel")}</span><span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
           </div>
           <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">Λίπος</span><span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
+            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.fatLabel")}</span><span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
             <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
           </div>
         </div>
@@ -284,37 +284,37 @@ export default function SummaryTab({
 
       {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}
       <div className="card">
-        <h2>📋 Τα προγράμματά μου</h2>
+        <h2>📋 {t("summary.myPlans")}</h2>
         <div className="muted" style={{ fontSize: 12, marginBottom: 14 }}>
-          Γενικές προτάσεις — δεν αντικαθιστούν ειδικό. Συμβουλέψου γιατρό αν έχεις παθήσεις ή αλλεργίες.
+          {t("summary.plansDisclaimer")}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title="Πρόγραμμα διατροφής" />
+          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
           <div style={{ height: 1, background: "var(--border-soft)" }} />
-          <PlanSection plan={trainingPlan} type="training" emoji="💪" title="Πρόγραμμα γυμναστικής" />
+          <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
         </div>
       </div>
 
       {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
-        <h2>Πρόοδος</h2>
+        <h2>{t("summary.progress")}</h2>
 
         {/* Εισαγωγή βάρους — collapsible */}
         <button className="btn btn-light" onClick={() => setShowWeightInput(!showWeightInput)} type="button"
           style={{ width: "100%", marginBottom: showWeightInput ? 10 : 12, fontSize: 12 }}>
-          {showWeightInput ? "⚖️ Εισαγωγή βάρους ▲" : "⚖️ Εισαγωγή βάρους ▼"}
+          {showWeightInput ? `⚖️ ${t("summary.weightEntry")} ▲` : `⚖️ ${t("summary.weightEntry")} ▼`}
         </button>
         {showWeightInput && (
           <div style={{ marginBottom: 12 }}>
             {lastWeight && (
               <div style={{ display: "flex", gap: 12, marginBottom: 10, background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px solid var(--border-soft)" }}>
                 <div>
-                  <div className="muted" style={{ fontSize: 11 }}>Τελευταίο</div>
+                  <div className="muted" style={{ fontSize: 11 }}>{t("summary.lastWeight")}</div>
                   <div style={{ fontWeight: 800, fontSize: 20 }}>{lastWeight} kg</div>
                 </div>
                 {diff !== null && (
                   <div>
-                    <div className="muted" style={{ fontSize: 11 }}>30 μέρες</div>
+                    <div className="muted" style={{ fontSize: 11 }}>{t("summary.thirtyDays")}</div>
                     <div style={{ fontWeight: 700, fontSize: 18, color: diff <= 0 ? "#22c55e" : "#ef4444" }}>
                       {diff > 0 ? "+" : ""}{Math.round(diff * 10) / 10} kg
                     </div>
@@ -340,7 +340,7 @@ export default function SummaryTab({
           <>
             <button className="btn btn-light" onClick={() => setShowWeightHistory(!showWeightHistory)} type="button"
               style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12 }}>
-              {showWeightHistory ? "Απόκρυψη ιστορικού ▲" : `Ιστορικό βάρους (${sortedWeightLog.length}) ▼`}
+              {showWeightHistory ? t("summary.hideHistory") : t("summary.showHistory", { count: sortedWeightLog.length })}
             </button>
             {showWeightHistory && (
               <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 8 }}>
@@ -362,7 +362,7 @@ export default function SummaryTab({
         {chartData.length >= 2 && (
           <button className="btn btn-light" onClick={() => setShowWeightChart(!showWeightChart)} type="button"
             style={{ width: "100%", marginTop: 10, marginBottom: showWeightChart ? 8 : 0, fontSize: 12 }}>
-            {showWeightChart ? "Απόκρυψη γραφήματος ▲" : "Εμφάνιση γραφήματος ▼"}
+            {showWeightChart ? t("summary.hideChart") : t("summary.showChart")}
           </button>
         )}
         {showWeightChart && chartData.length >= 2 && (
@@ -390,18 +390,18 @@ export default function SummaryTab({
         {/* Streak */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--bg-soft)", borderRadius: 12, border: "1px solid var(--border-soft)", marginTop: 14 }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Streak {getStreakEmoji(streak)}</div>
-            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Συνεχόμενες μέρες στο στόχο</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{t("summary.streak", { emoji: getStreakEmoji(streak) })}</div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("summary.streakDesc")}</div>
           </div>
           <div style={{ fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
-            {streak}<span className="muted" style={{ fontSize: 14, fontWeight: 400, marginLeft: 4 }}>μέρες</span>
+            {streak}<span className="muted" style={{ fontSize: 14, fontWeight: 400, marginLeft: 4 }}>{t("common.days")}</span>
           </div>
         </div>
       </div>
 
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
-        <h2>Τελευταίες 7 ημέρες</h2>
+        <h2>{t("summary.last7")}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => (
             <button key={day.date} onClick={() => setSelectedDate(day.date)} type="button"
@@ -409,7 +409,7 @@ export default function SummaryTab({
               <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
               <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
                 className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
-                {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} υπόλοιπο
+                {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
               </span>
             </button>
           ))}

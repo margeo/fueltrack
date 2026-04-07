@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatNumber } from "../utils/helpers";
 
 export default function GoogleFitButton({ selectedDate, onAddExercise }) {
+  const { t } = useTranslation();
   const [token, setToken] = useState(() => localStorage.getItem("ft_gfit_token") || "");
   const [fitData, setFitData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
     }
 
     if (fitError) {
-      setError("Σφάλμα σύνδεσης με Google Fit.");
+      setError(t("googleFit.connectError"));
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
@@ -39,7 +41,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
       if (data.error) throw new Error(data.error);
       setFitData(data);
     } catch {
-      setError("Δεν ήταν δυνατή η φόρτωση δεδομένων.");
+      setError(t("googleFit.loadError"));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
     if (!fitData || !fitData.calories) return;
     onAddExercise({
       id: Date.now() + Math.random(),
-      name: `Google Fit — ${fitData.steps ? fitData.steps.toLocaleString("el-GR") + " βήματα" : ""} ${fitData.distanceKm ? fitData.distanceKm + " km" : ""}`.trim(),
+      name: `Google Fit — ${fitData.steps ? fitData.steps.toLocaleString("el-GR") + ` ${t("googleFit.steps")}` : ""} ${fitData.distanceKm ? fitData.distanceKm + " km" : ""}`.trim(),
       minutes: 0,
       caloriesPerMinute: 0,
       calories: fitData.calories
@@ -76,11 +78,11 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
           type="button"
           style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
-          <span style={{ fontSize: 18 }}>🏃</span> Σύνδεση με Google Fit
-          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", borderRadius: 999, padding: "2px 6px", marginLeft: 4 }}>Beta</span>
+          <span style={{ fontSize: 18 }}>🏃</span> {t("googleFit.connect")}
+          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", borderRadius: 999, padding: "2px 6px", marginLeft: 4 }}>{t("googleFit.beta")}</span>
         </button>
         <div className="muted" style={{ fontSize: 12, marginTop: 6, textAlign: "center" }}>
-          Διαβάζει βήματα και θερμίδες αυτόματα · Σε δοκιμαστική φάση
+          {t("googleFit.hint")}
         </div>
       </div>
     );
@@ -89,13 +91,13 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
   return (
     <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: 14, border: "1px solid var(--border-soft)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontWeight: 700, fontSize: 14 }}>🏃 Google Fit</span>
+        <span style={{ fontWeight: 700, fontSize: 14 }}>🏃 {t("googleFit.title")}</span>
         <button className="btn btn-light" onClick={handleDisconnect} type="button" style={{ fontSize: 12, padding: "4px 10px" }}>
-          Αποσύνδεση
+          {t("googleFit.disconnect")}
         </button>
       </div>
 
-      {loading && <div className="muted" style={{ fontSize: 13 }}>Φόρτωση δεδομένων...</div>}
+      {loading && <div className="muted" style={{ fontSize: 13 }}>{t("googleFit.loading")}</div>}
       {error && <div style={{ color: "#b91c1c", fontSize: 13 }}>{error}</div>}
 
       {fitData && !loading && (
@@ -103,7 +105,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
           <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
               <div style={{ fontWeight: 800, fontSize: 20 }}>{formatNumber(fitData.steps)}</div>
-              <div className="muted" style={{ fontSize: 12 }}>βήματα</div>
+              <div className="muted" style={{ fontSize: 12 }}>{t("googleFit.steps")}</div>
             </div>
             <div style={{ flex: 1, minWidth: 80, textAlign: "center" }}>
               <div style={{ fontWeight: 800, fontSize: 20 }}>{fitData.distanceKm}</div>
@@ -117,12 +119,12 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
 
           {fitData.calories > 0 && (
             <button className="btn btn-dark" onClick={handleAddToLog} type="button" style={{ width: "100%", fontSize: 13 }}>
-              + Προσθήκη στο log ({formatNumber(fitData.calories)} kcal)
+              {t("googleFit.addToLog", { calories: formatNumber(fitData.calories) })}
             </button>
           )}
 
           <button className="btn btn-light" onClick={fetchFitData} type="button" style={{ width: "100%", marginTop: 8, fontSize: 12 }}>
-            🔄 Ανανέωση
+            🔄 {t("googleFit.refresh")}
           </button>
         </>
       )}

@@ -1,6 +1,7 @@
 // src/components/tabs/FoodTab.jsx
 import { useMemo, useState } from "react";
-import { MEALS } from "../../data/constants";
+import { useTranslation } from "react-i18next";
+import { MEALS, MEAL_KEYS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood, stripDiacritics } from "../../utils/helpers";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
@@ -29,15 +30,16 @@ function getFoodSearchScore(food, query) {
   return score;
 }
 
-const FILTERS = [
-  { key: "all", label: "Όλα" },
-  { key: "high_protein", label: "💪 High Protein", check: (f) => Number(f.proteinPer100g || 0) >= 15 },
-  { key: "low_carb", label: "🥑 Low Carb", check: (f) => Number(f.carbsPer100g || 0) <= 15 },
-  { key: "low_cal", label: "🥗 Low Cal", check: (f) => Number(f.caloriesPer100g || 0) <= 200 },
-  { key: "keto", label: "⚡ Keto", check: (f) => Number(f.carbsPer100g || 0) <= 8 },
+const FILTER_DEFS = [
+  { key: "all", labelKey: "common.all" },
+  { key: "high_protein", labelKey: "food.highProtein", icon: "💪", check: (f) => Number(f.proteinPer100g || 0) >= 15 },
+  { key: "low_carb", labelKey: "food.lowCarb", icon: "🥑", check: (f) => Number(f.carbsPer100g || 0) <= 15 },
+  { key: "low_cal", labelKey: "food.lowCal", icon: "🥗", check: (f) => Number(f.caloriesPer100g || 0) <= 200 },
+  { key: "keto", labelKey: "food.keto", icon: "⚡", check: (f) => Number(f.carbsPer100g || 0) <= 8 },
 ];
 
 function FoodAddModal({ food, onAdd, onClose }) {
+  const { t } = useTranslation();
   const hasPotions = Array.isArray(food.portions) && food.portions.length > 0;
   const [mode, setMode] = useState(hasPotions ? "portion" : "grams");
   const [selectedPortion, setSelectedPortion] = useState(0);
@@ -69,18 +71,18 @@ function FoodAddModal({ food, onAdd, onClose }) {
           <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
             <button onClick={() => setMode("portion")} type="button"
               style={{ flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: mode === "portion" ? "var(--color-accent)" : "var(--bg-soft)", color: mode === "portion" ? "var(--bg-card)" : "var(--text-muted)" }}>
-              🥣 Μερίδα
+              🥣 {t("food.portion")}
             </button>
             <button onClick={() => setMode("grams")} type="button"
               style={{ flex: 1, padding: "8px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: mode === "grams" ? "var(--color-accent)" : "var(--bg-soft)", color: mode === "grams" ? "var(--bg-card)" : "var(--text-muted)" }}>
-              ⚖️ Γραμμάρια
+              ⚖️ {t("common.grams")}
             </button>
           </div>
         )}
 
         {mode === "portion" && hasPotions && (
           <div style={{ marginBottom: 14 }}>
-            <div className="profile-label" style={{ marginBottom: 6 }}>Μερίδα</div>
+            <div className="profile-label" style={{ marginBottom: 6 }}>{t("food.portion")}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
               {food.portions.map((portion, i) => (
                 <button key={i} onClick={() => setSelectedPortion(i)} type="button"
@@ -91,7 +93,7 @@ function FoodAddModal({ food, onAdd, onClose }) {
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div className="profile-label" style={{ margin: 0, whiteSpace: "nowrap" }}>Ποσότητα:</div>
+              <div className="profile-label" style={{ margin: 0, whiteSpace: "nowrap" }}>{t("food.quantity")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <button onClick={() => setPortionQty((prev) => String(Math.max(0.5, parseFloat(prev) - 0.5)))} type="button"
                   style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>−</button>
@@ -106,15 +108,15 @@ function FoodAddModal({ food, onAdd, onClose }) {
 
         {mode === "grams" && (
           <div style={{ marginBottom: 14 }}>
-            <div className="profile-label" style={{ marginBottom: 6 }}>Γραμμάρια</div>
+            <div className="profile-label" style={{ marginBottom: 6 }}>{t("common.grams")}</div>
             <input className="input" type="number" value={grams} onChange={(e) => setGrams(e.target.value)} inputMode="numeric" autoFocus={!hasPotions} />
           </div>
         )}
 
         <div style={{ marginBottom: 14 }}>
-          <div className="profile-label" style={{ marginBottom: 6 }}>Γεύμα</div>
+          <div className="profile-label" style={{ marginBottom: 6 }}>{t("food.meal")}</div>
           <select className="input" value={meal} onChange={(e) => setMeal(e.target.value)}>
-            {MEALS.map((m) => <option key={m} value={m}>{m}</option>)}
+            {MEALS.map((m) => <option key={m} value={m}>{t(MEAL_KEYS[m])}</option>)}
           </select>
         </div>
 
@@ -126,22 +128,22 @@ function FoodAddModal({ food, onAdd, onClose }) {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{formatNumber(protein)}g</div>
-              <div className="muted" style={{ fontSize: 11 }}>Protein</div>
+              <div className="muted" style={{ fontSize: 11 }}>{t("common.protein")}</div>
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{formatNumber(carbs)}g</div>
-              <div className="muted" style={{ fontSize: 11 }}>Carbs</div>
+              <div className="muted" style={{ fontSize: 11 }}>{t("common.carbs")}</div>
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{formatNumber(fat)}g</div>
-              <div className="muted" style={{ fontSize: 11 }}>Fat</div>
+              <div className="muted" style={{ fontSize: 11 }}>{t("common.fat")}</div>
             </div>
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-dark" onClick={() => onAdd(food, effectiveGrams, meal)} type="button" style={{ flex: 1 }}>Προσθήκη</button>
-          <button className="btn btn-light" onClick={onClose} type="button">Άκυρο</button>
+          <button className="btn btn-dark" onClick={() => onAdd(food, effectiveGrams, meal)} type="button" style={{ flex: 1 }}>{t("common.add")}</button>
+          <button className="btn btn-light" onClick={onClose} type="button">{t("common.cancel")}</button>
         </div>
       </div>
     </div>
@@ -154,6 +156,7 @@ export default function FoodTab({
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
   entries, groupedEntries, deleteEntry, openEditEntry
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedFood, setSelectedFood] = useState(null);
@@ -206,7 +209,7 @@ export default function FoodTab({
       seen.add(key);
       return true;
     });
-    const filter = FILTERS.find((f) => f.key === activeFilter);
+    const filter = FILTER_DEFS.find((f) => f.key === activeFilter);
     const afterFilter = filter?.check ? deduped.filter(filter.check) : deduped;
     if (!query.trim()) return afterFilter;
     return [...afterFilter].sort((a, b) => getFoodSearchScore(b, query) - getFoodSearchScore(a, query));
@@ -243,9 +246,9 @@ export default function FoodTab({
     try {
       const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
       const data = await res.json();
-      if (!data.found) { setBarcodeError(`Δεν βρέθηκε προϊόν για barcode: ${code}`); return; }
+      if (!data.found) { setBarcodeError(t("food.barcodeNotFound", { code })); return; }
       setSelectedFood(normalizeFood(data));
-    } catch { setBarcodeError("Σφάλμα κατά την αναζήτηση barcode."); }
+    } catch { setBarcodeError(t("food.barcodeError")); }
     finally { setBarcodeLoading(false); }
   }
 
@@ -276,11 +279,11 @@ export default function FoodTab({
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2>🥗 Φαγητό ημέρας</h2>
+          <h2>🥗 {t("food.dayTitle")}</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
         {entries.length === 0 ? (
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Δεν έχεις βάλει φαγητό ακόμα.</div>
+          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("food.empty")}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {MEALS.map((meal) => {
@@ -289,7 +292,7 @@ export default function FoodTab({
               return (
                 <div key={meal}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 2px" }}>
-                    <span style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{meal}</span>
+                    <span style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{t(MEAL_KEYS[meal])}</span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{formatNumber(group.totalCalories)} kcal</span>
                   </div>
                   {group.items.map((item) => (
@@ -314,39 +317,39 @@ export default function FoodTab({
       {/* ΠΡΟΣΘΗΚΗ ΦΑΓΗΤΟΥ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
-          <h2 style={{ margin: 0 }}>Προσθήκη φαγητού</h2>
+          <h2 style={{ margin: 0 }}>{t("food.addTitle")}</h2>
           {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
             <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}>
-              📸 Photo
+              📸 {t("food.photo")}
             </button>
             <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}>
-              🔲 Barcode
+              🔲 {t("food.barcode")}
             </button>
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-          {FILTERS.map((f) => (
+          {FILTER_DEFS.map((f) => (
             <button key={f.key} onClick={() => setActiveFilter(f.key)} type="button"
               style={{ padding: "5px 10px", borderRadius: 999, border: `1px solid ${activeFilter === f.key ? "var(--color-accent)" : "var(--border-color)"}`, background: activeFilter === f.key ? "var(--color-accent)" : "var(--bg-soft)", color: activeFilter === f.key ? "var(--bg-card)" : "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-              {f.label}
+              {f.icon ? `${f.icon} ${t(f.labelKey)}` : t(f.labelKey)}
             </button>
           ))}
         </div>
 
-        {barcodeLoading && <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 Αναζήτηση barcode...</div>}
+        {barcodeLoading && <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 {t("food.barcodeSearching")}</div>}
         {barcodeError && <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>}
 
-        <input className="input" placeholder="Γράψε φαγητό..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input className="input" placeholder={t("food.searchPlaceholder")} value={query} onChange={(e) => setQuery(e.target.value)} />
 
         {showAutocomplete && (
           <div style={{ marginTop: 6, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: 6, display: "flex", flexDirection: "column", gap: 4 }}>
-            {databaseLoading && <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>Αναζήτηση...</div>}
+            {databaseLoading && <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>{t("food.searching")}</div>}
             {!databaseLoading && topSearchResults.length === 0 && (
-              <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>Δεν βρέθηκαν αποτελέσματα.</div>
+              <div className="muted" style={{ padding: "6px 8px", fontSize: 13 }}>{t("common.noResults")}</div>
             )}
             {!databaseLoading && topSearchResults.map((food) => (
               <div key={`auto-${food.source || "local"}-${food.id}`}
@@ -369,7 +372,7 @@ export default function FoodTab({
                 <button
                   onClick={() => toggleFavorite(food)}
                   type="button"
-                  title={isFavorite(food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                  title={isFavorite(food) ? t("food.removeFavorite") : t("food.addFavorite")}
                   style={{ padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0, color: isFavorite(food) ? "#d97706" : "var(--text-muted)" }}>
                   {isFavorite(food) ? "⭐" : "☆"}
                 </button>
@@ -382,17 +385,17 @@ export default function FoodTab({
       {/* ΑΓΑΠΗΜΕΝΑ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <h2 style={{ margin: 0 }}>⭐ Αγαπημένα</h2>
+          <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")}</h2>
           {favoriteFoods.length > 0 && (
-            <span className="muted" style={{ fontSize: 12 }}>{favoriteFoods.length} φαγητά</span>
+            <span className="muted" style={{ fontSize: 12 }}>{t("food.foodsCount", { count: favoriteFoods.length })}</span>
           )}
         </div>
 
         {favoriteFoods.length === 0 ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Δεν έχεις αγαπημένα ακόμα</div>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t("food.noFavorites")}</div>
             <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
-              Ψάξε ένα φαγητό παραπάνω και πάτα ☆ για να το προσθέσεις. Ο AI Coach θα χρησιμοποιεί τα αγαπημένα σου για πιο στοχευμένες προτάσεις!
+              {t("food.noFavoritesHint")}
             </div>
           </div>
         ) : (
@@ -408,7 +411,7 @@ export default function FoodTab({
                 <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
                   <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                   <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
-                  <button onClick={() => toggleFavorite(food)} type="button" title="Αφαίρεση από αγαπημένα"
+                  <button onClick={() => toggleFavorite(food)} type="button" title={t("food.removeFavorite")}
                     style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#d97706" }}>⭐</button>
                 </div>
               </div>
@@ -420,7 +423,7 @@ export default function FoodTab({
       {/* ΠΡΟΣΦΑΤΑ */}
       {recentFoods.length > 0 && (
         <div className="card">
-          <h2>Πρόσφατα</h2>
+          <h2>{t("common.recent")}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {recentFoods.slice(0, 6).map((item) => {
               const cal = createFoodEntry(item.food, item.grams, item.mealType);
@@ -435,7 +438,7 @@ export default function FoodTab({
                   <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
                     <button className="btn btn-light" onClick={() => handleFoodSelect(item.food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                     <button onClick={() => toggleFavorite(item.food)} type="button"
-                      title={isFavorite(item.food) ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
+                      title={isFavorite(item.food) ? t("food.removeFavorite") : t("food.addFavorite")}
                       style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavorite(item.food) ? "#d97706" : "var(--text-muted)" }}>
                       {isFavorite(item.food) ? "⭐" : "☆"}
                     </button>
@@ -449,25 +452,25 @@ export default function FoodTab({
 
       {/* CUSTOM ΦΑΓΗΤΟ */}
       <div className="card">
-        <h2>Custom φαγητό</h2>
+        <h2>{t("food.customFood")}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <input className="input" placeholder="Όνομα" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <input className="input" placeholder={t("food.name")} value={newName} onChange={(e) => setNewName(e.target.value)} />
           <div style={{ display: "flex", gap: 8 }}>
-            <input className="input" placeholder="kcal/100g" inputMode="numeric" value={newCalories} onChange={(e) => setNewCalories(e.target.value)} />
-            <input className="input" placeholder="Protein" inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} />
+            <input className="input" placeholder={t("food.kcalPer100g")} inputMode="numeric" value={newCalories} onChange={(e) => setNewCalories(e.target.value)} />
+            <input className="input" placeholder={t("common.protein")} inputMode="decimal" value={newProtein} onChange={(e) => setNewProtein(e.target.value)} />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input className="input" placeholder="Carbs" inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} />
-            <input className="input" placeholder="Fat" inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} />
+            <input className="input" placeholder={t("common.carbs")} inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} />
+            <input className="input" placeholder={t("common.fat")} inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} />
           </div>
           <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">
-            {savedFeedback ? "✅ Αποθηκεύτηκε!" : "Αποθήκευση"}
+            {savedFeedback ? `✅ ${t("common.saved")}` : t("common.save")}
           </button>
         </div>
 
         {customFoods.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--text-muted)" }}>Τα custom φαγητά μου</div>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--text-muted)" }}>{t("food.myCustomFoods")}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {customFoods.map((food) => (
                 <div key={food.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
