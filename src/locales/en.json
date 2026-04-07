@@ -295,6 +295,7 @@
     "proFeature3": "Real-time food suggestions",
     "proFeature4": "Daily progress analysis",
     "createAccount": "Create free account",
+    "freeNote": "Free accounts include limited AI queries. Upgrade to Pro for full access.",
     "needsAccountTitle": "Create a free account",
     "needsAccountDesc": "Sign up to use the AI Coach — it's free!",
     "limitTitle": "Daily limit reached",

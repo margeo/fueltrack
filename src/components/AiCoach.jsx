@@ -44,7 +44,7 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, onShowAuth
+  onSavePlan, session, onShowAuth, onShowRegister
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
@@ -333,10 +333,25 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
               : t("aiCoach.limitDesc", { limit: dailyLimit })}
           </div>
           {needsAccount && onShowAuth && (
-            <button className="btn btn-dark" onClick={onShowAuth} type="button"
-              style={{ padding: "12px 28px", fontSize: 14, marginTop: 16 }}>
-              {t("aiCoach.createAccount")}
-            </button>
+            <div>
+              <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8, margin: "16px 0" }}>
+                <div>✅ {t("aiCoach.proFeature1")}</div>
+                <div>✅ {t("aiCoach.proFeature2")}</div>
+                <div>✅ {t("aiCoach.proFeature3")}</div>
+                <div>✅ {t("aiCoach.proFeature4")}</div>
+              </div>
+              <div className="muted" style={{ fontSize: 11, marginBottom: 14 }}>{t("aiCoach.freeNote")}</div>
+              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                <button className="btn btn-dark" onClick={onShowAuth} type="button"
+                  style={{ padding: "12px 24px", fontSize: 14 }}>
+                  {t("auth.loginBtn")}
+                </button>
+                <button className="btn btn-light" onClick={onShowRegister} type="button"
+                  style={{ padding: "12px 24px", fontSize: 14 }}>
+                  {t("auth.registerBtn")}
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

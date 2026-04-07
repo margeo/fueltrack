@@ -401,7 +401,8 @@ export default function App() {
     onSavePlan: handleSavePlan,
     onDeletePlan: deletePlan,
     session,
-    onShowAuth: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
+    onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
+    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
 
   const foodProps = {
