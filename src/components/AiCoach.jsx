@@ -52,7 +52,8 @@ export default function AiCoach({
   const [isPaid, setIsPaid] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
-  const DAILY_LIMIT_FREE = 20;
+  const DAILY_LIMIT_FREE = 5;
+  const DAILY_LIMIT_PAID = 50;
 
   useEffect(() => {
     // Check daily usage from localStorage
@@ -79,7 +80,8 @@ export default function AiCoach({
     localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newCount }));
   }
 
-  const limitReached = !isPaid && dailyCount >= DAILY_LIMIT_FREE;
+  const dailyLimit = isPaid ? DAILY_LIMIT_PAID : DAILY_LIMIT_FREE;
+  const limitReached = dailyCount >= dailyLimit;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -301,7 +303,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         <div style={{ textAlign: "center", padding: "20px 0" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.limitTitle")}</div>
-          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>{t("aiCoach.limitDesc", { limit: DAILY_LIMIT_FREE })}</div>
+          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>{t("aiCoach.limitDesc", { limit: dailyLimit })}</div>
         </div>
       )}
 
