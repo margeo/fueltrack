@@ -47,7 +47,8 @@ export default function SummaryTab({
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
   const [weightInput, setWeightInput] = useState("");
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showWeightInput, setShowWeightInput] = useState(false);
@@ -205,7 +206,7 @@ export default function SummaryTab({
         <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>{t("summary.title")}</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
-            {formatDisplayDate(selectedDate)}
+            {formatDisplayDate(selectedDate, dateLocale)}
             {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· {t("common.today")}</span>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -346,7 +347,7 @@ export default function SummaryTab({
               <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 8 }}>
                 {sortedWeightLog.slice(0, 10).map((entry) => (
                   <div key={entry.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-soft)", fontSize: 13 }}>
-                    <span className="muted">{formatDisplayDate(entry.date)}</span>
+                    <span className="muted">{formatDisplayDate(entry.date, dateLocale)}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontWeight: 700 }}>{entry.weight} kg</span>
                       <button className="btn btn-light" style={{ padding: "2px 7px", fontSize: 11 }} onClick={() => onDeleteWeight(entry.date)} type="button">✕</button>
@@ -406,7 +407,7 @@ export default function SummaryTab({
           {last7Days.map((day) => (
             <button key={day.date} onClick={() => setSelectedDate(day.date)} type="button"
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, cursor: "pointer", textAlign: "left", flexWrap: "wrap", gap: 6 }}>
-              <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date)}</span>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date, dateLocale)}</span>
               <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
                 className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
                 {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
