@@ -35,6 +35,25 @@ function exportGroceryToPDF(groceryContent) {
   if (win) { win.document.write(html); win.document.close(); }
 }
 
+function GroceryListView({ content }) {
+  if (!content) return null;
+  const lines = content.split("\n").filter(l => l.trim());
+  return (
+    <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (trimmed.match(/^[🥩🥛🥦🌾🫙]/u)) {
+          return <div key={i} style={{ fontWeight: 700, fontSize: 13, marginTop: i > 0 ? 12 : 0, marginBottom: 4, paddingBottom: 3, borderBottom: "1px solid var(--border-soft)" }}>{trimmed}</div>;
+        }
+        if (trimmed.startsWith("- ")) {
+          return <div key={i} style={{ padding: "2px 0 2px 8px" }}>{trimmed}</div>;
+        }
+        return <div key={i} style={{ padding: "2px 0" }}>{trimmed}</div>;
+      })}
+    </div>
+  );
+}
+
 export default function SummaryTab({
   selectedDate, setSelectedDate, isToday,
   targetCalories, totalCalories, exerciseValue,
@@ -55,7 +74,8 @@ export default function SummaryTab({
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
-  const [groceryList, setGroceryList] = useState(null);
+  const savedGrocery = savedPlans?.find(p => p.type === "grocery");
+  const [groceryList, setGroceryList] = useState(savedGrocery?.content || null);
   const [groceryLoading, setGroceryLoading] = useState(false);
 
   async function generateGroceryList(plan) {
@@ -73,9 +93,27 @@ export default function SummaryTab({
   • ντομάτα και ντοματίνια → "Ντομάτα"
 - ΜΗΝ κρατάς διαφορετικές ονομασίες για το ίδιο βασικό υλικό
 - ΜΗΝ αναλύεις ανά μέρα — μόνο το σύνολο
-- Ομαδοποίησε σε: 🥩 Κρέατα & Ψάρια, 🥛 Γαλακτοκομικά, 🥦 Λαχανικά & Φρούτα, 🌾 Δημητριακά, 🫙 Άλλα
+- ΥΠΟΧΡΕΩΤΙΚΑ ομαδοποίησε σε κατηγορίες. Γράψε κάθε κατηγορία σε δική της γραμμή:
+
+🥩 Κρέατα & Ψάρια
+- Κοτόπουλο: 900g
+- Σολομός: 400g
+
+🥛 Γαλακτοκομικά & Αυγά
+- Γιαούρτι: 1kg
+- Αυγά: 12
+
+🥦 Λαχανικά & Φρούτα
+- Ντομάτα: 500g
+
+🌾 Δημητριακά & Όσπρια
+- Ρύζι: 500g
+
+🫙 Άλλα
+- Ελαιόλαδο: 200ml
+
 - Χρησιμοποίησε "-" για κάθε υλικό
-- Απάντησε ΜΟΝΟ με τη λίστα, χωρίς άλλο κείμενο, χωρίς σύνολα ανά κατηγορία`;
+- Απάντησε ΜΟΝΟ με τη λίστα, χωρίς εισαγωγή, χωρίς σύνολα ανά κατηγορία`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
@@ -86,7 +124,9 @@ export default function SummaryTab({
         })
       });
       const data = await res.json();
-      setGroceryList(data.advice || "Σφάλμα δημιουργίας λίστας");
+      const content = data.advice || "Σφάλμα δημιουργίας λίστας";
+      setGroceryList(content);
+      if (data.advice) onSavePlan?.({ type: "grocery", content, date: new Date().toLocaleDateString("el-GR") });
     } catch (e) {
       setGroceryList("Σφάλμα: " + e.message);
     } finally {
@@ -182,14 +222,14 @@ export default function SummaryTab({
                   {groceryList && (
                     <div style={{ display: "flex", gap: 5 }}>
                       <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
-                      <button className="btn btn-light" onClick={() => setGroceryList(null)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+                      <button className="btn btn-light" onClick={() => { setGroceryList(null); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
                     </div>
                   )}
                 </div>
                 {groceryLoading ? (
                   <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
                 ) : (
-                  <div style={{ fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{groceryList}</div>
+                  <GroceryListView content={groceryList} />
                 )}
               </div>
             )}
