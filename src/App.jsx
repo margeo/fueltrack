@@ -28,6 +28,7 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -397,7 +398,8 @@ export default function App() {
     age, weight, height, gender,
     savedPlans,
     onSavePlan: handleSavePlan,
-    onDeletePlan: deletePlan
+    onDeletePlan: deletePlan,
+    session
   };
 
   const foodProps = {
@@ -435,24 +437,13 @@ export default function App() {
     dailyDeficit, proteinTarget, profileComplete,
     onContinue: goToSummaryAfterProfile,
     onLogout: () => supabase.auth.signOut(),
-    userEmail: session?.user?.email
+    userEmail: session?.user?.email,
+    onShowAuth: () => setShowAuthModal(true)
   };
 
   const showWelcome = !hasSeenWelcome;
   const showProfile = hasSeenWelcome && !profileComplete;
   const appReady = hasSeenWelcome && profileComplete;
-
-  if (authLoading) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontSize: 48 }}>🥗💪</div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return <AuthScreen />;
-  }
 
   return (
     <div className="app-shell">
@@ -513,6 +504,19 @@ export default function App() {
           onClose={closeEditEntry}
           onSave={saveEditedEntry}
         />
+      )}
+
+      {showAuthModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
+          <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16 }}>
+            <button onClick={() => setShowAuthModal(false)} type="button"
+              style={{ position: "absolute", top: 12, right: 12, zIndex: 1, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              ✕
+            </button>
+            <AuthScreen onSuccess={() => setShowAuthModal(false)} />
+          </div>
+        </div>
       )}
     </div>
   );

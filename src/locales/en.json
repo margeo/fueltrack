@@ -64,7 +64,7 @@
     "retry": "Try again"
   },
   "welcome": {
-    "hero": "Your personal nutritionist & trainer",
+    "hero": "Track. Plan. Achieve.",
     "heroSub": "Tell me your goal and I'll take it from here — what to eat, what exercise to do, how to get where you want.",
     "goalFirst": "Goal-first approach",
     "goalFirstDesc": "Pick a goal — weight loss, muscle gain or maintenance — and the app auto-adjusts calories, macros and suggestions.",
@@ -241,7 +241,8 @@
     "unrealisticGoal": "Unrealistic goal. Try more weeks or a smaller target.",
     "aggressiveGoal": "Aggressive but achievable rate ({{rate}} kg/wk).",
     "realisticGoal": "Realistic goal",
-    "language": "Language"
+    "language": "Language",
+    "loginHint": "Sign in to back up your data and unlock Pro features"
   },
   "editEntry": {
     "title": "Edit entry",
@@ -287,6 +288,12 @@
   "aiCoach": {
     "title": "AI Coach",
     "subtitle": "Nutritionist & Personal Trainer",
+    "proTitle": "Pro Feature",
+    "proDesc": "The AI Coach is available with a Pro account. Upgrade to get personalized nutrition and training advice.",
+    "proFeature1": "Personalized meal plans",
+    "proFeature2": "Weekly training programs",
+    "proFeature3": "Real-time food suggestions",
+    "proFeature4": "Daily progress analysis",
     "askAnything": "Ask me anything or tap for a quick analysis:",
     "analyzeDay": "Analyze my day",
     "analyzing": "Analyzing your data...",
@@ -337,7 +344,7 @@
     "vegan": "Exclusively plant-based diet"
   },
   "auth": {
-    "subtitle": "Your personal nutritionist",
+    "subtitle": "Track. Plan. Achieve.",
     "login": "Sign in",
     "loginBtn": "Sign in",
     "register": "Sign up",

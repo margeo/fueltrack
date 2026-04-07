@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
+import { supabase } from "../supabaseClient";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
@@ -43,11 +44,27 @@ export default function AiCoach({
   foods, totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  savedPlans, onSavePlan
+  savedPlans, onSavePlan, session
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
+  const [isPaid, setIsPaid] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+
+  useEffect(() => {
+    if (!session?.user?.id) { setAccessChecked(true); return; }
+    supabase
+      .from("profiles")
+      .select("is_paid")
+      .eq("id", session.user.id)
+      .single()
+      .then(({ data }) => {
+        setIsPaid(data?.is_paid === true);
+        setAccessChecked(true);
+      })
+      .catch(() => setAccessChecked(true));
+  }, [session]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -263,7 +280,21 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
       </div>
 
-      {!hasLoaded && !loading && messages.length === 0 && (
+      {accessChecked && !isPaid && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.proTitle")}</div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>{t("aiCoach.proDesc")}</div>
+          <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8 }}>
+            <div>✅ {t("aiCoach.proFeature1")}</div>
+            <div>✅ {t("aiCoach.proFeature2")}</div>
+            <div>✅ {t("aiCoach.proFeature3")}</div>
+            <div>✅ {t("aiCoach.proFeature4")}</div>
+          </div>
+        </div>
+      )}
+
+      {accessChecked && isPaid && !hasLoaded && !loading && messages.length === 0 && (
         <div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
@@ -280,14 +311,14 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {loading && messages.length === 0 && (
+      {isPaid && loading && messages.length === 0 && (
         <div style={{ textAlign: "center", padding: "24px 0" }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
           <div className="muted" style={{ fontSize: 13 }}>{t("aiCoach.analyzing")}</div>
         </div>
       )}
 
-      {messages.length > 0 && (
+      {isPaid && messages.length > 0 && (
         <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
             <div key={i} ref={msg.role === "assistant" && i === messages.length - 1 ? lastAssistantRef : null} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
@@ -312,7 +343,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {hasLoaded && !loading && (
+      {isPaid && hasLoaded && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {quickQuestions.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
@@ -323,17 +354,19 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
-          <input ref={inputRef} className="input" placeholder={t("aiCoach.placeholder")} value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            style={{ flex: 1 }} disabled={loading} />
-          <button onClick={() => inputRef.current?.focus()} type="button"
-            style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
-            disabled={loading || !input.trim()}
-            style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
-      </div>
+      {isPaid && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
+            <input ref={inputRef} className="input" placeholder={t("aiCoach.placeholder")} value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+              style={{ flex: 1 }} disabled={loading} />
+            <button onClick={() => inputRef.current?.focus()} type="button"
+              style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
+            <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
+              disabled={loading || !input.trim()}
+              style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
+        </div>
+      )}
     </div>
   );
 }

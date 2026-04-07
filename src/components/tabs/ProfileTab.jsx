@@ -57,7 +57,7 @@ export default function ProfileTab({
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
   dailyDeficit, proteinTarget, profileComplete, onContinue,
-  onLogout, userEmail
+  onLogout, userEmail, onShowAuth
 }) {
   const { t, i18n } = useTranslation();
   const [localAge, setLocalAge] = useState(age);
@@ -275,12 +275,20 @@ export default function ProfileTab({
             <option value="en">English</option>
           </select>
         </div>
-        {userEmail && (
+        {userEmail ? (
           <div style={{ marginTop: 14, textAlign: "center" }}>
             <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{userEmail}</div>
             <button className="btn btn-light" onClick={onLogout} type="button"
               style={{ fontSize: 13, padding: "8px 20px" }}>
               {t("auth.logout")}
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginTop: 14, textAlign: "center" }}>
+            <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t("profile.loginHint")}</div>
+            <button className="btn btn-dark" onClick={onShowAuth} type="button"
+              style={{ fontSize: 13, padding: "10px 24px" }}>
+              {t("auth.loginBtn")}
             </button>
           </div>
         )}

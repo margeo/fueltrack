@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 
-export default function AuthScreen() {
+export default function AuthScreen({ onSuccess }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState("login"); // login | register | forgot
   const [email, setEmail] = useState("");
@@ -16,7 +16,8 @@ export default function AuthScreen() {
     setLoading(true);
     setError("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(t("auth.loginError"));
+    if (error) { setError(t("auth.loginError")); }
+    else { onSuccess?.(); }
     setLoading(false);
   }
 
