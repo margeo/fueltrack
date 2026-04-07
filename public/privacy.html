@@ -19,19 +19,19 @@
   <button class="close-btn" onclick="window.history.length > 1 ? window.history.back() : window.close()">✕</button>
 
   <h1>Privacy Policy</h1>
-  <p class="muted">Last updated: April 5, 2026</p>
+  <p class="muted">Last updated: April 7, 2026</p>
 
   <p>FuelTrack ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our application at <a href="https://fueltrack.me">https://fueltrack.me</a>.</p>
 
   <h2>1. Information We Collect</h2>
-  <p>FuelTrack stores data locally on your device (via browser localStorage). We do not have servers that store your personal data.</p>
-  <p>If you choose to connect Google Fit, we access the following data from your Google account:</p>
+  <p>FuelTrack stores data locally on your device (via browser localStorage) by default.</p>
+  <p>If you create an account, we additionally collect:</p>
   <ul>
-    <li>Step count</li>
-    <li>Distance traveled</li>
-    <li>Calories burned</li>
+    <li>Your name and email address</li>
+    <li>Profile data (age, gender, height, weight, fitness goals)</li>
+    <li>Food logs, exercise logs, and weight history (for backup/sync purposes)</li>
   </ul>
-  <p>This data is used solely to display your activity information within the app and is never stored on our servers or shared with third parties.</p>
+  <p>If you choose to connect Google Fit, we access step count, distance traveled, and calories burned from your Google account. This data is used solely within the app.</p>
 
   <h2>2. How We Use Your Information</h2>
   <p>We use the information collected to:</p>
@@ -39,18 +39,23 @@
     <li>Display your daily fitness and nutrition data within the app</li>
     <li>Calculate your calorie goals and nutritional targets</li>
     <li>Provide AI-powered coaching recommendations</li>
+    <li>Sync your data across devices (if you have an account)</li>
+    <li>Manage your subscription (Pro accounts)</li>
   </ul>
 
   <h2>3. Data Storage</h2>
-  <p>All personal data (profile information, food logs, exercise logs, weight logs) is stored locally on your device using browser localStorage. We do not transmit or store this data on external servers.</p>
+  <p>Without an account, all data is stored locally on your device using browser localStorage.</p>
+  <p>With an account, your data is also stored securely on our database hosted by <a href="https://supabase.com/privacy">Supabase</a> (servers located in the EU). Data is protected by Row-Level Security — only you can access your own data.</p>
 
   <h2>4. Third-Party Services</h2>
   <p>FuelTrack uses the following third-party services:</p>
   <ul>
+    <li><strong>Supabase</strong> — authentication and database (for account holders)</li>
     <li><strong>Google Fit API</strong> — to read fitness activity data (optional, requires your explicit authorization)</li>
     <li><strong>USDA FoodData Central API</strong> — to search for food nutritional information</li>
     <li><strong>Open Food Facts API</strong> — to search for food products</li>
     <li><strong>OpenRouter AI API</strong> — to provide AI coaching recommendations</li>
+    <li><strong>Stripe</strong> — to process payments for Pro subscriptions (we do not store your card details)</li>
   </ul>
   <p>Each of these services has its own privacy policy. We encourage you to review them.</p>
 
@@ -69,13 +74,13 @@
   <p>FuelTrack is not intended for children under 13 years of age. We do not knowingly collect personal information from children.</p>
 
   <h2>8. Your Rights</h2>
-  <p>You can clear all locally stored data at any time by clearing your browser's localStorage. To disconnect Google Fit, use the "Αποσύνδεση" button within the app or revoke access from your Google Account.</p>
+  <p>You can clear all locally stored data at any time by clearing your browser's localStorage. If you have an account, you can request deletion of your data by contacting us at <a href="mailto:info@fueltrack.me">info@fueltrack.me</a>. To disconnect Google Fit, use the disconnect button within the app or revoke access from your Google Account.</p>
 
   <h2>9. Changes to This Policy</h2>
   <p>We may update this Privacy Policy from time to time. We will notify you of any changes by updating the date at the top of this page.</p>
 
   <h2>10. Contact</h2>
-  <p>If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:support@fueltrack.me">support@fueltrack.me</a></p>
+  <p>If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:info@fueltrack.me">info@fueltrack.me</a></p>
 
   <p style="margin-top: 40px;" class="muted">© 2026 FuelTrack. All rights reserved.</p>
 </body>
