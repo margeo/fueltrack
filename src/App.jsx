@@ -29,6 +29,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [, setAuthLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState("login");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -438,7 +439,8 @@ export default function App() {
     onContinue: goToSummaryAfterProfile,
     onLogout: () => supabase.auth.signOut(),
     userEmail: session?.user?.email,
-    onShowAuth: () => setShowAuthModal(true)
+    onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
+    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
 
   const showWelcome = !hasSeenWelcome;
@@ -514,7 +516,7 @@ export default function App() {
               style={{ position: "absolute", top: 12, right: 12, zIndex: 1, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
               ✕
             </button>
-            <AuthScreen onSuccess={() => setShowAuthModal(false)} />
+            <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} />
           </div>
         </div>
       )}

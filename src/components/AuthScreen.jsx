@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 
-export default function AuthScreen({ onSuccess }) {
+export default function AuthScreen({ onSuccess, initialMode = "login" }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState("login"); // login | register | forgot
+  const [mode, setMode] = useState(initialMode); // login | register | forgot
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

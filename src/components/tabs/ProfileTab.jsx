@@ -57,7 +57,7 @@ export default function ProfileTab({
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
   dailyDeficit, proteinTarget, profileComplete, onContinue,
-  onLogout, userEmail, onShowAuth
+  onLogout, userEmail, onShowAuth, onShowRegister
 }) {
   const { t, i18n } = useTranslation();
   const [localAge, setLocalAge] = useState(age);
@@ -286,10 +286,16 @@ export default function ProfileTab({
         ) : (
           <div style={{ marginTop: 14, textAlign: "center" }}>
             <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t("profile.loginHint")}</div>
-            <button className="btn btn-dark" onClick={onShowAuth} type="button"
-              style={{ fontSize: 13, padding: "10px 24px" }}>
-              {t("auth.loginBtn")}
-            </button>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button className="btn btn-dark" onClick={onShowAuth} type="button"
+                style={{ fontSize: 13, padding: "10px 24px" }}>
+                {t("auth.loginBtn")}
+              </button>
+              <button className="btn btn-light" onClick={onShowRegister} type="button"
+                style={{ fontSize: 13, padding: "10px 24px" }}>
+                {t("auth.registerBtn")}
+              </button>
+            </div>
           </div>
         )}
         <div style={{ textAlign: "center", marginTop: 14 }}>
