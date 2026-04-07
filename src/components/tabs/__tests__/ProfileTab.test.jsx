@@ -113,25 +113,18 @@ describe("ProfileTab", () => {
     expect(screen.getByText(/Μη ρεαλιστικός στόχος/)).toBeTruthy();
   });
 
-  it("expands 'Περισσότερα' section when clicked", () => {
+  it("shows gender, activity, and diet mode in main card", () => {
     renderProfile();
-    // Section is collapsed by default
-    expect(screen.queryByText("Άνδρας")).toBeNull();
-
-    // Click to expand
-    fireEvent.click(screen.getByText("Περισσότερα"));
     expect(screen.getByText("Άνδρας")).toBeTruthy();
   });
 
-  it("shows diet mode description when Περισσότερα is expanded", () => {
+  it("shows diet mode description", () => {
     renderProfile({ mode: "keto" });
-    fireEvent.click(screen.getByText("Περισσότερα"));
     expect(screen.getByText(/Κετογονική/)).toBeTruthy();
   });
 
   it("shows fasting info for fasting modes", () => {
     renderProfile({ mode: "fasting_16_8" });
-    fireEvent.click(screen.getByText("Περισσότερα"));
     const matches = screen.getAllByText(/Νηστεία 16ω/);
     expect(matches.length).toBeGreaterThanOrEqual(1);
   });

@@ -167,6 +167,13 @@ export default function ProfileTab({
               style={inputStyle} />
           </label>
           <label className="profile-field">
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.gender")}</div>
+            <select className="input" value={gender} onChange={(e) => { setGender(e.target.value); flashSaved(); }}>
+              <option value="male">{t("profile.male")}</option>
+              <option value="female">{t("profile.female")}</option>
+            </select>
+          </label>
+          <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.goal")}</div>
             <select className="input" value={goalType} onChange={(e) => { setGoalType(e.target.value); flashSaved(); }}>
               <option value="lose" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.loseShort")}</option>
@@ -175,7 +182,40 @@ export default function ProfileTab({
               <option value="fitness" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.fitnessShort")}</option>
             </select>
           </label>
+          <label className="profile-field">
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.activityLevel")}</div>
+            <select className="input" value={activity} onChange={(e) => { setActivity(e.target.value); flashSaved(); }}>
+              <option value="1.2">{t("profile.sedentary")}</option>
+              <option value="1.4">{t("profile.light")}</option>
+              <option value="1.6">{t("profile.moderate")}</option>
+              <option value="1.8">{t("profile.high")}</option>
+            </select>
+          </label>
+          <label className="profile-field" style={{ gridColumn: "1 / -1" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.dietMode")}</div>
+            <select className="input" value={mode} onChange={(e) => { setMode(e.target.value); flashSaved(); }}>
+              {MODE_GROUPS.map((group) => (
+                <optgroup key={group.group} label={t(MODE_GROUP_KEYS[group.group])}>
+                  {group.modes.map((modeKey) => {
+                    const m = MODES[modeKey];
+                    if (!m) return null;
+                    return <option key={m.key} value={m.key}>{t("modeLabels." + m.key)}</option>;
+                  })}
+                </optgroup>
+              ))}
+            </select>
+          </label>
         </div>
+        {currentMode.description && (
+          <div style={{ background: "var(--bg-input)", borderRadius: 10, padding: "8px 12px", marginTop: 10, fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+            {t("modeDescriptions." + mode, { defaultValue: "" }) || currentMode.description}
+            {currentMode.fastingHours && (
+              <span style={{ marginLeft: 6, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("profile.fasting", { fasting: currentMode.fastingHours, eating: currentMode.eatingWindowHours })}
+              </span>
+            )}
+          </div>
+        )}
         <div style={{ fontSize: 12, marginTop: 10, color: "var(--text-muted)" }}>
           {t("profile.autoAdjust")}
         </div>
@@ -208,51 +248,6 @@ export default function ProfileTab({
         </div>
       )}
 
-      {/* ΠΕΡΙΣΣΟΤΕΡΑ */}
-      <CollapsibleSection title={t("common.more")} icon="⚙️">
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <label className="profile-field">
-            <div className="profile-label">{t("profile.gender")}</div>
-            <select className="input" value={gender} onChange={(e) => { setGender(e.target.value); flashSaved(); }}>
-              <option value="male">{t("profile.male")}</option>
-              <option value="female">{t("profile.female")}</option>
-            </select>
-          </label>
-          <label className="profile-field">
-            <div className="profile-label">{t("profile.activityLevel")}</div>
-            <select className="input" value={activity} onChange={(e) => { setActivity(e.target.value); flashSaved(); }}>
-              <option value="1.2">{t("profile.sedentary")}</option>
-              <option value="1.4">{t("profile.light")}</option>
-              <option value="1.6">{t("profile.moderate")}</option>
-              <option value="1.8">{t("profile.high")}</option>
-            </select>
-          </label>
-          <label className="profile-field">
-            <div className="profile-label">{t("profile.dietMode")}</div>
-            <select className="input" value={mode} onChange={(e) => { setMode(e.target.value); flashSaved(); }}>
-              {MODE_GROUPS.map((group) => (
-                <optgroup key={group.group} label={t(MODE_GROUP_KEYS[group.group])}>
-                  {group.modes.map((modeKey) => {
-                    const m = MODES[modeKey];
-                    if (!m) return null;
-                    return <option key={m.key} value={m.key}>{t("modeLabels." + m.key)}</option>;
-                  })}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-          {currentMode.description && (
-            <div style={{ background: "var(--bg-card)", borderRadius: 10, padding: "8px 12px", fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border-soft)" }}>
-              {t("modeDescriptions." + mode, { defaultValue: "" }) || currentMode.description}
-              {currentMode.fastingHours && (
-                <span style={{ marginLeft: 6, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {t("profile.fasting", { fasting: currentMode.fastingHours, eating: currentMode.eatingWindowHours })}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </CollapsibleSection>
 
       {/* ΑΝΑΛΥΣΗ */}
       <CollapsibleSection title={t("common.analysis")} icon="📊">
