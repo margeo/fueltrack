@@ -295,6 +295,8 @@
     "proFeature3": "Real-time food suggestions",
     "proFeature4": "Daily progress analysis",
     "createAccount": "Create free account",
+    "limitTitle": "Daily limit reached",
+    "limitDesc": "You've used all {{limit}} AI queries for today. Try again tomorrow or upgrade to Pro for unlimited access.",
     "askAnything": "Ask me anything or tap for a quick analysis:",
     "analyzeDay": "Analyze my day",
     "analyzing": "Analyzing your data...",

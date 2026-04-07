@@ -459,8 +459,12 @@ export default function App() {
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
-              style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
-              {i18n.language === "el" ? "EN" : "EL"}
+              style={{ padding: "4px 6px", lineHeight: 1 }}>
+              {i18n.language === "el" ? (
+                <svg width="22" height="16" viewBox="0 0 60 30"><clipPath id="gb"><rect width="60" height="30"/></clipPath><g clipPath="url(#gb)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4" clipPath="url(#gb)"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
+              ) : (
+                <svg width="22" height="16" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
+              )}
             </button>
             <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
               {theme === "dark" ? "☀️" : "🌙"}

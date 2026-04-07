@@ -44,16 +44,23 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, onShowAuth
+  onSavePlan, session
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
   const [isPaid, setIsPaid] = useState(false);
-  const [accessChecked, setAccessChecked] = useState(false);
+  const [dailyCount, setDailyCount] = useState(0);
+
+  const DAILY_LIMIT_FREE = 20;
 
   useEffect(() => {
-    if (!session?.user?.id) { setAccessChecked(true); return; }
+    // Check daily usage from localStorage
+    const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
+    const today = new Date().toISOString().slice(0, 10);
+    setDailyCount(stored.date === today ? (stored.count || 0) : 0);
+
+    if (!session?.user?.id) return;
     supabase
       .from("profiles")
       .select("is_paid")
@@ -61,10 +68,18 @@ export default function AiCoach({
       .single()
       .then(({ data }) => {
         setIsPaid(data?.is_paid === true);
-        setAccessChecked(true);
       })
-      .catch(() => setAccessChecked(true));
+      .catch(() => {});
   }, [session]);
+
+  function incrementUsage() {
+    const today = new Date().toISOString().slice(0, 10);
+    const newCount = dailyCount + 1;
+    setDailyCount(newCount);
+    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newCount }));
+  }
+
+  const limitReached = !isPaid && dailyCount >= DAILY_LIMIT_FREE;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -210,7 +225,9 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
     const text = (messageText || input).trim();
     if (!text && hasLoaded) return;
     if (loading) return;
+    if (limitReached) return;
     setLoading(true);
+    incrementUsage();
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
 
     const currentMode = MODES[mode] || MODES.balanced;
@@ -280,27 +297,15 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
       </div>
 
-      {accessChecked && !isPaid && (
+      {limitReached && (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.proTitle")}</div>
-          <div className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>{t("aiCoach.proDesc")}</div>
-          <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8, marginBottom: 16 }}>
-            <div>✅ {t("aiCoach.proFeature1")}</div>
-            <div>✅ {t("aiCoach.proFeature2")}</div>
-            <div>✅ {t("aiCoach.proFeature3")}</div>
-            <div>✅ {t("aiCoach.proFeature4")}</div>
-          </div>
-          {!session && onShowAuth && (
-            <button className="btn btn-dark" onClick={onShowAuth} type="button"
-              style={{ padding: "12px 28px", fontSize: 14 }}>
-              {t("aiCoach.createAccount")}
-            </button>
-          )}
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.limitTitle")}</div>
+          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>{t("aiCoach.limitDesc", { limit: DAILY_LIMIT_FREE })}</div>
         </div>
       )}
 
-      {accessChecked && isPaid && !hasLoaded && !loading && messages.length === 0 && (
+      {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
@@ -317,14 +322,14 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {isPaid && loading && messages.length === 0 && (
+      {loading && messages.length === 0 && (
         <div style={{ textAlign: "center", padding: "24px 0" }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
           <div className="muted" style={{ fontSize: 13 }}>{t("aiCoach.analyzing")}</div>
         </div>
       )}
 
-      {isPaid && messages.length > 0 && (
+      {messages.length > 0 && (
         <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
           {messages.map((msg, i) => (
             <div key={i} ref={msg.role === "assistant" && i === messages.length - 1 ? lastAssistantRef : null} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
@@ -349,7 +354,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {isPaid && hasLoaded && !loading && (
+      {hasLoaded && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {quickQuestions.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
@@ -360,7 +365,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
         </div>
       )}
 
-      {isPaid && (
+      {!limitReached && (
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
             <input ref={inputRef} className="input" placeholder={t("aiCoach.placeholder")} value={input}
               onChange={(e) => setInput(e.target.value)}
