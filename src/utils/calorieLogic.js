@@ -64,6 +64,12 @@ export function calculateTargetCalories({
   return base;
 }
 
+export function calculateSuggestedExercise(rawDeficit) {
+  const deficit = Number(rawDeficit || 0);
+  if (deficit <= 1000) return 0;
+  return deficit - 1000;
+}
+
 export function calculateProteinTarget({ weight, goalType, modeKey }) {
   const w = Number(weight || 0);
   if (!w) return 0;

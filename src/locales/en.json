@@ -242,6 +242,7 @@
     "unrealisticGoal": "Unrealistic goal. Try more weeks or a smaller target.",
     "aggressiveGoal": "Aggressive but achievable rate ({{rate}} kg/wk).",
     "realisticGoal": "Realistic goal",
+    "exerciseSuggestion": "To reach your goal, add ~{{calories}} kcal/day of exercise (e.g. 30-40 min cardio).",
     "language": "Language",
     "loginHint": "Sign in to back up your data and unlock Pro features"
   },

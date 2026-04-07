@@ -1,7 +1,7 @@
 // src/components/tabs/ProfileTab.jsx
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { calculateAppliedDailyDeficit } from "../../utils/calorieLogic";
+import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 import { MODE_GROUPS, MODES } from "../../data/modes";
 
@@ -13,9 +13,10 @@ const MODE_GROUP_KEYS = {
   "🌱 Φυτικές": "modeGroups.plant"
 };
 
-function GoalWarning({ goalType, kilosPerWeek }) {
+function GoalWarning({ goalType, kilosPerWeek, rawDeficit }) {
   const { t } = useTranslation();
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
+  const suggestedExercise = calculateSuggestedExercise(rawDeficit);
   let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
   if (kilosPerWeek > 1.5) {
     color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
@@ -27,9 +28,19 @@ function GoalWarning({ goalType, kilosPerWeek }) {
     message = t("profile.realisticGoal");
   }
   return (
-    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", marginTop: 10, display: "flex", gap: 8, alignItems: "center" }}>
-      <span style={{ fontSize: 15 }}>{icon}</span>
-      <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>{message}</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+      <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+        <span style={{ fontSize: 15 }}>{icon}</span>
+        <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>{message}</div>
+      </div>
+      {suggestedExercise > 0 && (
+        <div style={{ background: "#eff6ff", border: "1px solid #93c5fd", borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 15 }}>🏃</span>
+          <div style={{ color: "#1e40af", fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>
+            {t("profile.exerciseSuggestion", { calories: formatNumber(suggestedExercise) })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
