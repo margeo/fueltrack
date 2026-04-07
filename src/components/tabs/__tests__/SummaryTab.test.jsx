@@ -1,0 +1,172 @@
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import SummaryTab from "../SummaryTab";
+
+// Mock AiCoach
+vi.mock("../../AiCoach", () => ({
+  default: () => <div data-testid="ai-coach" />,
+}));
+
+const defaultProps = {
+  selectedDate: "2024-06-15",
+  setSelectedDate: vi.fn(),
+  isToday: true,
+  targetCalories: 2000,
+  totalCalories: 1200,
+  exerciseValue: 200,
+  remainingCalories: 1000,
+  progress: 60,
+  goalType: "lose",
+  last7Days: [],
+  proteinTarget: 144,
+  totalProtein: 80,
+  totalCarbs: 120,
+  totalFat: 40,
+  mode: "balanced",
+  macroTargets: { proteinGrams: 144, carbsGrams: 200, fatGrams: 67 },
+  foods: [],
+  dailyLogs: {},
+  weightLog: [],
+  onAddWeight: vi.fn(),
+  onDeleteWeight: vi.fn(),
+  favoriteFoods: [],
+  favoriteFoodsText: "",
+  favoriteExercisesText: "",
+  favoriteExercises: [],
+  age: "30",
+  weight: "80",
+  height: "180",
+  gender: "male",
+  savedPlans: [],
+  onSavePlan: vi.fn(),
+  onDeletePlan: vi.fn(),
+};
+
+function renderSummary(overrides = {}) {
+  const props = { ...defaultProps, ...overrides };
+  return { ...render(<SummaryTab {...props} />), props };
+}
+
+describe("SummaryTab", () => {
+  it("renders the summary heading", () => {
+    renderSummary();
+    expect(screen.getByText("Σύνοψη ημέρας")).toBeTruthy();
+  });
+
+  it("displays remaining calories", () => {
+    renderSummary({ remainingCalories: 1000 });
+    expect(screen.getByText("1.000")).toBeTruthy();
+  });
+
+  it("displays target calories", () => {
+    renderSummary({ targetCalories: 2000 });
+    expect(screen.getByText("2.000")).toBeTruthy();
+  });
+
+  it("displays food calories", () => {
+    renderSummary({ totalCalories: 1200 });
+    expect(screen.getByText("1.200")).toBeTruthy();
+  });
+
+  it("displays exercise calories", () => {
+    renderSummary({ exerciseValue: 200 });
+    expect(screen.getByText("200")).toBeTruthy();
+  });
+
+  it("shows Σήμερα label when isToday", () => {
+    renderSummary({ isToday: true });
+    expect(screen.getByText(/Σήμερα/)).toBeTruthy();
+  });
+
+  it("shows Σήμερα button when not today", () => {
+    renderSummary({ isToday: false });
+    expect(screen.getByText("Σήμερα")).toBeTruthy();
+  });
+
+  it("shows goal label for lose", () => {
+    renderSummary({ goalType: "lose" });
+    expect(screen.getByText(/Απώλεια βάρους/)).toBeTruthy();
+  });
+
+  it("shows goal label for gain", () => {
+    renderSummary({ goalType: "gain" });
+    expect(screen.getByText(/Μυϊκή ανάπτυξη/)).toBeTruthy();
+  });
+
+  it("shows goal label for maintain", () => {
+    renderSummary({ goalType: "maintain" });
+    expect(screen.getByText(/Διατήρηση/)).toBeTruthy();
+  });
+
+  it("shows goal label for fitness", () => {
+    renderSummary({ goalType: "fitness" });
+    expect(screen.getByText(/Fitness & Cardio/)).toBeTruthy();
+  });
+
+  it("shows mode label", () => {
+    renderSummary({ mode: "keto" });
+    expect(screen.getByText(/Keto/)).toBeTruthy();
+  });
+
+  it("renders macro bars section", () => {
+    renderSummary();
+    expect(screen.getByText("Macros σήμερα")).toBeTruthy();
+    expect(screen.getByText("Πρωτεΐνη")).toBeTruthy();
+    expect(screen.getByText("Υδατάνθρακες")).toBeTruthy();
+    expect(screen.getByText("Λίπος")).toBeTruthy();
+  });
+
+  it("shows macro values with targets", () => {
+    renderSummary({
+      totalProtein: 80,
+      macroTargets: { proteinGrams: 144, carbsGrams: 200, fatGrams: 67 },
+    });
+    expect(screen.getByText(/80.*144/)).toBeTruthy();
+  });
+
+  it("shows remaining protein", () => {
+    renderSummary({ proteinTarget: 144, totalProtein: 80 });
+    expect(screen.getByText(/64/)).toBeTruthy(); // 144 - 80
+  });
+
+  it("renders plans section", () => {
+    renderSummary();
+    expect(screen.getByText(/Τα προγράμματά μου/)).toBeTruthy();
+    expect(screen.getByText(/Πρόγραμμα διατροφής/)).toBeTruthy();
+    expect(screen.getByText(/Πρόγραμμα γυμναστικής/)).toBeTruthy();
+  });
+
+  it("shows empty plan message when no plans", () => {
+    renderSummary({ savedPlans: [] });
+    expect(screen.getByText(/Δεν έχεις ακόμα πρόγραμμα διατροφής/)).toBeTruthy();
+  });
+
+  it("renders AI Coach component", () => {
+    renderSummary();
+    expect(document.querySelector("[data-testid='ai-coach']")).toBeTruthy();
+  });
+
+  it("remaining color is green when above 100", () => {
+    renderSummary({ remainingCalories: 500 });
+    const remainingEl = screen.getByText("500");
+    expect(remainingEl.style.color).toBe("rgb(134, 239, 172)"); // #86efac
+  });
+
+  it("remaining color is red when below -150", () => {
+    renderSummary({ remainingCalories: -200 });
+    const remainingEl = screen.getByText("-200");
+    expect(remainingEl.style.color).toBe("rgb(252, 165, 165)"); // #fca5a5
+  });
+
+  it("remaining color is yellow when near zero", () => {
+    renderSummary({ remainingCalories: 50 });
+    const remainingEl = screen.getByText("50");
+    expect(remainingEl.style.color).toBe("rgb(253, 230, 138)"); // #fde68a
+  });
+
+  it("renders progress bar", () => {
+    renderSummary({ progress: 60 });
+    const inner = document.querySelector(".progress-inner");
+    expect(inner.style.width).toBe("60%");
+  });
+});
