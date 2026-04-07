@@ -1,28 +1,16 @@
 import nodemailer from "nodemailer";
 
 export async function handler(event) {
-  // Only accept POST from Supabase webhook
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  // Verify webhook secret
-  const secret = event.headers["x-webhook-secret"] || event.headers["X-Webhook-Secret"];
-  if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
-    return { statusCode: 401, body: "Unauthorized" };
-  }
-
   try {
-    const payload = JSON.parse(event.body || "{}");
-    const { record } = payload;
+    const { name, email } = JSON.parse(event.body || "{}");
 
-    if (!record) {
-      return { statusCode: 400, body: "No record in payload" };
+    if (!email) {
+      return { statusCode: 400, body: "Missing email" };
     }
-
-    const email = record.email || "Unknown";
-    const name = record.raw_user_meta_data?.full_name || "No name";
-    const createdAt = record.created_at || new Date().toISOString();
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -37,7 +25,7 @@ export async function handler(event) {
     await transporter.sendMail({
       from: `"FuelTrack" <${process.env.SMTP_USER}>`,
       to: "info@fueltrack.me",
-      subject: `🆕 Νέος χρήστης: ${name}`,
+      subject: `Νέος χρήστης: ${name || "Unknown"}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
           <div style="background:#863bff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
@@ -47,7 +35,7 @@ export async function handler(event) {
             <table style="width:100%;font-size:14px;border-collapse:collapse">
               <tr>
                 <td style="padding:8px 0;font-weight:bold;color:#374151">Όνομα:</td>
-                <td style="padding:8px 0;color:#111">${name}</td>
+                <td style="padding:8px 0;color:#111">${name || "—"}</td>
               </tr>
               <tr>
                 <td style="padding:8px 0;font-weight:bold;color:#374151">Email:</td>
@@ -55,7 +43,7 @@ export async function handler(event) {
               </tr>
               <tr>
                 <td style="padding:8px 0;font-weight:bold;color:#374151">Ημερομηνία:</td>
-                <td style="padding:8px 0;color:#111">${new Date(createdAt).toLocaleString("el-GR", { timeZone: "Europe/Athens" })}</td>
+                <td style="padding:8px 0;color:#111">${new Date().toLocaleString("el-GR", { timeZone: "Europe/Athens" })}</td>
               </tr>
             </table>
           </div>

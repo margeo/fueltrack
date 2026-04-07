@@ -37,6 +37,12 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
       setError(t("auth.emailExists"));
     } else {
       setMessage(t("auth.checkEmail"));
+      // Notify admin of new signup (fire and forget)
+      fetch("/.netlify/functions/new-user-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), email })
+      }).catch(() => {});
     }
     setLoading(false);
   }
