@@ -17,6 +17,7 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit }) {
   const { t } = useTranslation();
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
   const suggestedExercise = calculateSuggestedExercise(rawDeficit);
+  const showExerciseTip = suggestedExercise > 0 && suggestedExercise <= 500;
   let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
   if (kilosPerWeek > 1.5) {
     color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
@@ -27,17 +28,25 @@ function GoalWarning({ goalType, kilosPerWeek, rawDeficit }) {
   } else {
     message = t("profile.realisticGoal");
   }
+
+  // Dynamic exercise example based on calories
+  const exerciseExample = suggestedExercise <= 150
+    ? t("profile.exerciseExample.light")      // ~20-30 min walking
+    : suggestedExercise <= 300
+    ? t("profile.exerciseExample.moderate")    // ~30-40 min jogging
+    : t("profile.exerciseExample.intense");    // ~40-50 min running
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
       <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
         <span style={{ fontSize: 15 }}>{icon}</span>
         <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>{message}</div>
       </div>
-      {suggestedExercise > 0 && (
+      {showExerciseTip && (
         <div style={{ background: "#eff6ff", border: "1px solid #93c5fd", borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
           <span style={{ fontSize: 15 }}>🏃</span>
           <div style={{ color: "#1e40af", fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>
-            {t("profile.exerciseSuggestion", { calories: formatNumber(suggestedExercise) })}
+            {t("profile.exerciseSuggestion", { calories: formatNumber(suggestedExercise), example: exerciseExample })}
           </div>
         </div>
       )}
