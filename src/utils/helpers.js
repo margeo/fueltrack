@@ -222,69 +222,6 @@ export function createFoodEntry(food, gramsValue, meal) {
   };
 }
 
-export function calculateBmr({ age, height, weight, gender }) {
-  const a = Number(age);
-  const h = Number(height);
-  const w = Number(weight);
-
-  if (!a || !h || !w) return 0;
-
-  if (gender === "male") {
-    return Math.round(10 * w + 6.25 * h - 5 * a + 5);
-  }
-
-  return Math.round(10 * w + 6.25 * h - 5 * a - 161);
-}
-
-export function calculateDailyDeficit({ goalType, targetWeightLoss, weeks }) {
-  if (goalType !== "lose") return 0;
-
-  const kg = Number(targetWeightLoss) || 0;
-  const wks = Number(weeks) || 0;
-
-  if (kg <= 0 || wks <= 0) return 300;
-
-  const deficit = (kg * 7700) / (wks * 7);
-
-  return Math.max(150, Math.min(Math.round(deficit), 1000));
-}
-
-export function calculateTargetCalories({ tdee, goalType, dailyDeficit }) {
-  const safeTdee = Number(tdee) || 0;
-  if (!safeTdee) return 0;
-
-  switch (goalType) {
-    case "maintain":
-      return Math.round(safeTdee);
-
-    case "lose":
-      return Math.max(1200, Math.round(safeTdee - (Number(dailyDeficit) || 0)));
-
-    case "gain":
-      return Math.round(safeTdee + 300);
-
-    default:
-      return Math.round(safeTdee);
-  }
-}
-
-export function calculateProteinTarget({ goalType, weight }) {
-  const weightKg = Number(weight) || 0;
-  if (!weightKg) return 0;
-
-  switch (goalType) {
-    case "lose":
-      return Math.round(weightKg * 1.8);
-
-    case "gain":
-      return Math.round(weightKg * 2.0);
-
-    case "maintain":
-    default:
-      return Math.round(weightKg * 1.4);
-  }
-}
-
 export function entryBasePer100g(entry) {
   const grams = Math.max(Number(entry?.grams) || 100, 1);
 
