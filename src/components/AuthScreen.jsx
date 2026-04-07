@@ -8,6 +8,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -90,8 +91,14 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <input className="input" type="email" placeholder="Email" value={email}
                   onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-                <input className="input" type="password" placeholder={t("auth.password")} value={password}
-                  onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                <div style={{ position: "relative" }}>
+                  <input className="input" type={showPassword ? "text" : "password"} placeholder={t("auth.password")} value={password}
+                    onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" style={{ paddingRight: 40 }} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 18, padding: 4, color: "var(--text-muted)" }}>
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
                 <button className="btn btn-dark" type="submit" disabled={loading}
                   style={{ width: "100%", padding: "14px", opacity: loading ? 0.6 : 1 }}>
                   {loading ? "..." : t("auth.loginBtn")}
@@ -136,8 +143,14 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <input className="input" type="email" placeholder="Email" value={email}
                   onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-                <input className="input" type="password" placeholder={t("auth.password")} value={password}
-                  onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="new-password" />
+                <div style={{ position: "relative" }}>
+                  <input className="input" type={showPassword ? "text" : "password"} placeholder={t("auth.password")} value={password}
+                    onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="new-password" style={{ paddingRight: 40 }} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 18, padding: 4, color: "var(--text-muted)" }}>
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
                 <div className="muted" style={{ fontSize: 12 }}>{t("auth.passwordHint")}</div>
                 <button className="btn btn-dark" type="submit" disabled={loading}
                   style={{ width: "100%", padding: "14px", opacity: loading ? 0.6 : 1 }}>
