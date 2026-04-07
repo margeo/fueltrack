@@ -276,17 +276,6 @@ export default function ProfileTab({
         </div>
       </CollapsibleSection>
 
-      {/* ΑΠΟΘΗΚΕΥΣΗ — μόνο αν δεν είναι complete */}
-      {!profileComplete && (
-        <div className="card" style={{ textAlign: "center" }}>
-          <button className="btn btn-dark" onClick={onContinue} disabled
-            style={{ opacity: 0.5, cursor: "not-allowed", width: "100%" }}>
-            {t("profile.saveContinue")}
-          </button>
-          <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>{t("profile.fillProfileDesc")}</div>
-        </div>
-      )}
-
       {/* ΓΛΩΣΣΑ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
