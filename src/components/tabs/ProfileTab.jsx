@@ -97,11 +97,7 @@ export default function ProfileTab({
   const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0 ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
 
-  const inputStyle = {
-    background: "rgba(255,255,255,0.15)",
-    border: "1px solid rgba(255,255,255,0.25)",
-    color: "white"
-  };
+  const inputStyle = {};
 
   return (
     <>
@@ -112,35 +108,34 @@ export default function ProfileTab({
         </div>
 
         {!profileComplete && (
-          <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid rgba(255,255,255,0.2)" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4, color: "white" }}>{t("profile.fillProfile")}</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{t("profile.fillProfileDesc")}</div>
+          <div style={{ background: "var(--bg-input)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid var(--border-color)" }}>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t("profile.fillProfile")}</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{t("profile.fillProfileDesc")}</div>
           </div>
         )}
 
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>{t("profile.weight")}</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.weight")}</div>
             <input className="input" placeholder="kg" inputMode="decimal" value={localWeight}
               onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)}
               style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>{t("profile.height")}</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.height")}</div>
             <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
               onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)}
               style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>{t("profile.age")}</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.age")}</div>
             <input className="input" placeholder={t("profile.age")} inputMode="numeric" value={localAge}
               onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)}
               style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>{t("profile.goal")}</div>
-            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}
-              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "white" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.goal")}</div>
+            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
               <option value="lose" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.loseShort")}</option>
               <option value="maintain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.maintainShort")}</option>
               <option value="gain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.gainShort")}</option>
@@ -148,7 +143,7 @@ export default function ProfileTab({
             </select>
           </label>
         </div>
-        <div style={{ fontSize: 12, marginTop: 10, color: "rgba(255,255,255,0.6)" }}>
+        <div style={{ fontSize: 12, marginTop: 10, color: "var(--text-muted)" }}>
           {t("profile.autoAdjust")}
         </div>
       </div>

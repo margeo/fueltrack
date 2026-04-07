@@ -203,7 +203,7 @@ export default function SummaryTab({
     <>
       {/* 1. HERO */}
       <div className="hero-card">
-        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>
+        <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 10 }}>
           {userName ? t("summary.titleName", { name: userName }) : t("summary.title")}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -214,7 +214,7 @@ export default function SummaryTab({
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <button type="button" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, color: "white", lineHeight: 1, display: "block" }}>📅</button>
+              <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, display: "block" }}>📅</button>
               <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
             </div>
           </div>
@@ -226,17 +226,17 @@ export default function SummaryTab({
               <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: getRemainingColor() }}>{formatNumber(remainingCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 11, marginTop: 3 }}>kcal</div>
             </div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>=</div>
+            <div className="hero-subtle" style={{ fontSize: 18, fontWeight: 700, flexShrink: 0 }}>=</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(targetCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.target")}</div>
             </div>
-            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>−</div>
+            <div style={{ fontSize: 16, flexShrink: 0, opacity: 0.5 }}>−</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(totalCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.food")}</div>
             </div>
-            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, flexShrink: 0 }}>+</div>
+            <div style={{ fontSize: 16, flexShrink: 0, opacity: 0.5 }}>+</div>
             <div className="hero-stat" style={{ flex: 1, minWidth: 60, textAlign: "center", padding: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{formatNumber(exerciseValue)}</div>
               <div className="hero-subtle" style={{ fontSize: 10, marginTop: 2 }}>{t("summary.exercise")}</div>
@@ -244,12 +244,12 @@ export default function SummaryTab({
           </div>
         </div>
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
-        <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(255,255,255,0.08)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)" }}>
-          <div style={{ color: "white", fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
+        <div className="hero-stat" style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
+          <div className="hero-subtle" style={{ fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
           <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>{t("summary.proteinRemaining")} <strong style={{ color: "white" }}>{formatNumber(remainingProtein)}g</strong></span>
-            <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>{formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal</span>
+            <span className="hero-subtle" style={{ fontSize: 12 }}>{t("summary.proteinRemaining")} <strong>{formatNumber(remainingProtein)}g</strong></span>
+            <span className="hero-subtle" style={{ fontSize: 12, opacity: 0.7 }}>{formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal</span>
           </div>
         </div>
       </div>

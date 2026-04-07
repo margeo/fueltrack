@@ -280,10 +280,10 @@ export default function FoodTab({
       <div className="day-card">
         <div className="day-card-total">
           <h2>🥗 {t("food.dayTitle")}</h2>
-          <span style={{ fontWeight: 800, fontSize: 18, color: "white" }}>{formatNumber(totalFoodCalories)} kcal</span>
+          <span style={{ fontWeight: 800, fontSize: 18 }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
         {entries.length === 0 ? (
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("food.empty")}</div>
+          <div className="muted" style={{ fontSize: 13 }}>{t("food.empty")}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {MEALS.map((meal) => {
@@ -292,8 +292,8 @@ export default function FoodTab({
               return (
                 <div key={meal}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 2px" }}>
-                    <span style={{ fontWeight: 700, fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{t(MEAL_KEYS[meal])}</span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{formatNumber(group.totalCalories)} kcal</span>
+                    <span style={{ fontWeight: 700, fontSize: 12 }}>{t(MEAL_KEYS[meal])}</span>
+                    <span className="muted" style={{ fontSize: 12 }}>{formatNumber(group.totalCalories)} kcal</span>
                   </div>
                   {group.items.map((item) => (
                     <div key={item.id} className="day-card-entry">

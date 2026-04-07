@@ -72,7 +72,7 @@ export default function ExerciseTab({
           <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
         </div>
         {exercises.length === 0 ? (
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("exercise.empty")}</div>
+          <div className="muted" style={{ fontSize: 13 }}>{t("exercise.empty")}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {exercises.map((item) => (
