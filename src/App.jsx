@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
+import ErrorBoundary from "./components/ErrorBoundary";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
@@ -437,10 +438,26 @@ export default function App() {
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
         {showProfile && <ProfileTab {...profileProps} />}
 
-        {appReady && activeTab === "summary" && <SummaryTab {...summaryProps} />}
-        {appReady && activeTab === "food" && <FoodTab {...foodProps} />}
-        {appReady && activeTab === "exercise" && <ExerciseTab {...exerciseProps} />}
-        {appReady && activeTab === "profile" && <ProfileTab {...profileProps} />}
+        {appReady && activeTab === "summary" && (
+          <ErrorBoundary name="Σύνοψη" key="summary">
+            <SummaryTab {...summaryProps} />
+          </ErrorBoundary>
+        )}
+        {appReady && activeTab === "food" && (
+          <ErrorBoundary name="Φαγητό" key="food">
+            <FoodTab {...foodProps} />
+          </ErrorBoundary>
+        )}
+        {appReady && activeTab === "exercise" && (
+          <ErrorBoundary name="Άσκηση" key="exercise">
+            <ExerciseTab {...exerciseProps} />
+          </ErrorBoundary>
+        )}
+        {appReady && activeTab === "profile" && (
+          <ErrorBoundary name="Προφίλ" key="profile">
+            <ProfileTab {...profileProps} />
+          </ErrorBoundary>
+        )}
 
         <div style={{ height: 110 }} />
       </div>
