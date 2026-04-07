@@ -63,7 +63,8 @@ export default function AiCoach({
   const [lifetimeCount, setLifetimeCount] = useState(0);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
+    const uid = session?.user?.id || "anon";
+    const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
     const today = new Date().toISOString().slice(0, 10);
     const month = today.slice(0, 7);
     setDailyCount(stored.date === today ? (stored.count || 0) : 0);
@@ -83,16 +84,17 @@ export default function AiCoach({
   }, [session]);
 
   function incrementUsage() {
+    const uid = session?.user?.id || "anon";
     const today = new Date().toISOString().slice(0, 10);
     const month = today.slice(0, 7);
-    const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
+    const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
     const newDaily = dailyCount + 1;
     const newMonthly = (stored.month === month ? (stored.monthCount || 0) : 0) + 1;
     const newLifetime = (stored.lifetime || 0) + 1;
     setDailyCount(newDaily);
     setMonthlyCount(newMonthly);
     setLifetimeCount(newLifetime);
-    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly, lifetime: newLifetime }));
+    localStorage.setItem("ft_ai_usage_" + uid, JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly, lifetime: newLifetime }));
   }
 
   const needsAccount = !session;
