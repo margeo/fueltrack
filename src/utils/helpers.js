@@ -15,9 +15,9 @@ export function shiftDate(dateStr, days) {
   return `${y}-${m}-${d}`;
 }
 
-export function formatDisplayDate(dateStr) {
+export function formatDisplayDate(dateStr, locale = "el-GR") {
   const date = new Date(`${dateStr}T12:00:00`);
-  return date.toLocaleDateString("el-GR", {
+  return date.toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short"

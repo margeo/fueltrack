@@ -23,7 +23,7 @@ import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
 
 export default function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [theme, setTheme] = useState(() => getInitialTheme());
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
@@ -432,9 +432,14 @@ export default function App() {
             <h1>FuelTrack</h1>
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
-          <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
-            {theme === "dark" ? "☀️" : "🌙"}
-          </button>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button">
+              {i18n.language === "el" ? "🇬🇧" : "🇬🇷"}
+            </button>
+            <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
+          </div>
         </div>
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
