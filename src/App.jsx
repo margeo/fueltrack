@@ -1,5 +1,6 @@
 // src/App.jsx
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -22,6 +23,7 @@ import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
 
 export default function App() {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState(() => getInitialTheme());
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
@@ -428,7 +430,7 @@ export default function App() {
         <div className="app-header">
           <div className="app-header-left">
             <h1>FuelTrack</h1>
-            {showProfile && <p>Ξεκίνα συμπληρώνοντας το προφίλ σου</p>}
+            {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
             {theme === "dark" ? "☀️" : "🌙"}
@@ -439,22 +441,22 @@ export default function App() {
         {showProfile && <ProfileTab {...profileProps} />}
 
         {appReady && activeTab === "summary" && (
-          <ErrorBoundary name="Σύνοψη" key="summary">
+          <ErrorBoundary name={t("tabs.summary")} key="summary">
             <SummaryTab {...summaryProps} />
           </ErrorBoundary>
         )}
         {appReady && activeTab === "food" && (
-          <ErrorBoundary name="Φαγητό" key="food">
+          <ErrorBoundary name={t("tabs.food")} key="food">
             <FoodTab {...foodProps} />
           </ErrorBoundary>
         )}
         {appReady && activeTab === "exercise" && (
-          <ErrorBoundary name="Άσκηση" key="exercise">
+          <ErrorBoundary name={t("tabs.exercise")} key="exercise">
             <ExerciseTab {...exerciseProps} />
           </ErrorBoundary>
         )}
         {appReady && activeTab === "profile" && (
-          <ErrorBoundary name="Προφίλ" key="profile">
+          <ErrorBoundary name={t("tabs.profile")} key="profile">
             <ProfileTab {...profileProps} />
           </ErrorBoundary>
         )}

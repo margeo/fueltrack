@@ -1,4 +1,5 @@
-import { MEALS } from "../data/constants";
+import { useTranslation } from "react-i18next";
+import { MEALS, MEAL_KEYS } from "../data/constants";
 import { entryBasePer100g, formatNumber, round1 } from "../utils/helpers";
 
 export default function EditEntryModal({
@@ -10,6 +11,7 @@ export default function EditEntryModal({
   onClose,
   onSave
 }) {
+  const { t } = useTranslation();
   const base = entryBasePer100g(entry);
   const safeGrams = Math.max(Number(grams) || 100, 1);
   const factor = safeGrams / 100;
@@ -24,7 +26,7 @@ export default function EditEntryModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-        <h3>Επεξεργασία entry</h3>
+        <h3>{t("editEntry.title")}</h3>
 
         <div className="muted" style={{ marginBottom: 12 }}>
           {entry.name}
@@ -34,7 +36,7 @@ export default function EditEntryModal({
         <div className="grid-2">
           <div>
             <div className="muted" style={{ marginBottom: 6 }}>
-              Γραμμάρια
+              {t("editEntry.grams")}
             </div>
             <input
               className="input"
@@ -47,11 +49,11 @@ export default function EditEntryModal({
 
           <div>
             <div className="muted" style={{ marginBottom: 6 }}>
-              Γεύμα
+              {t("editEntry.meal")}
             </div>
             <select className="input" value={meal} onChange={(e) => setMeal(e.target.value)}>
               {MEALS.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item} value={item}>{t(MEAL_KEYS[item])}</option>
               ))}
             </select>
           </div>
@@ -59,29 +61,29 @@ export default function EditEntryModal({
 
         <div className="grid-2" style={{ marginTop: 10 }}>
           <div className="soft-box">
-            <div className="muted">Θερμίδες</div>
+            <div className="muted">{t("editEntry.calories")}</div>
             <div>{formatNumber(preview.calories)}</div>
           </div>
           <div className="soft-box">
-            <div className="muted">Protein</div>
+            <div className="muted">{t("common.protein")}</div>
             <div>{formatNumber(preview.protein)}g</div>
           </div>
           <div className="soft-box">
-            <div className="muted">Carbs</div>
+            <div className="muted">{t("common.carbs")}</div>
             <div>{formatNumber(preview.carbs)}g</div>
           </div>
           <div className="soft-box">
-            <div className="muted">Fat</div>
+            <div className="muted">{t("common.fat")}</div>
             <div>{formatNumber(preview.fat)}g</div>
           </div>
         </div>
 
         <div className="action-row" style={{ marginTop: 14 }}>
           <button className="btn btn-light" onClick={onClose}>
-            Άκυρο
+            {t("common.cancel")}
           </button>
           <button className="btn btn-dark" onClick={onSave}>
-            Αποθήκευση
+            {t("common.save")}
           </button>
         </div>
       </div>

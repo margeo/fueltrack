@@ -1,4 +1,5 @@
 import { Component } from "react";
+import i18n from "../i18n";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -24,6 +25,8 @@ class ErrorBoundary extends Component {
         return this.props.fallback;
       }
 
+      const t = i18n.t.bind(i18n);
+
       return (
         <div className="error-boundary-fallback" style={{
           padding: "2rem",
@@ -31,11 +34,11 @@ class ErrorBoundary extends Component {
           color: "var(--text, #e5e5e5)",
         }}>
           <p style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>😵</p>
-          <h3 style={{ marginBottom: "0.5rem" }}>Κάτι πήγε στραβά</h3>
+          <h3 style={{ marginBottom: "0.5rem" }}>{t("errorBoundary.title")}</h3>
           <p style={{ fontSize: "0.9rem", opacity: 0.7, marginBottom: "1rem" }}>
             {this.props.name
-              ? `Σφάλμα στο ${this.props.name}`
-              : "Παρουσιάστηκε σφάλμα"}
+              ? t("errorBoundary.errorIn", { name: this.props.name })
+              : t("errorBoundary.genericError")}
           </p>
           <button
             onClick={this.handleRetry}
@@ -49,7 +52,7 @@ class ErrorBoundary extends Component {
               fontSize: "1rem",
             }}
           >
-            Δοκίμασε ξανά
+            {t("errorBoundary.retry")}
           </button>
         </div>
       );

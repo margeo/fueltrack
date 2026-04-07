@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
@@ -44,7 +46,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
 
       setResult(data);
     } catch (err) {
-      setError("Δεν ήταν δυνατή η ανάλυση. Δοκίμασε ξανά.");
+      setError(t("photo.analyzeError"));
     } finally {
       setLoading(false);
     }
@@ -78,9 +80,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
   }
 
   function getConfidenceLabel(confidence) {
-    if (confidence === "high") return "✅ Υψηλή βεβαιότητα";
-    if (confidence === "medium") return "⚡ Μέτρια βεβαιότητα";
-    return "⚠️ Χαμηλή βεβαιότητα — έλεγξε τις τιμές";
+    if (confidence === "high") return `✅ ${t("photo.highConfidence")}`;
+    if (confidence === "medium") return `⚡ ${t("photo.mediumConfidence")}`;
+    return `⚠️ ${t("photo.lowConfidence")}`;
   }
 
   return (
@@ -111,7 +113,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>
-          📸 Ανάλυση φαγητού
+          📸 {t("photo.title")}
         </div>
 
         {/* Upload area */}
@@ -128,9 +130,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>Επέλεξε φωτογραφία</div>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("photo.selectPhoto")}</div>
             <div className="muted" style={{ fontSize: 13 }}>
-              ή τράβηξε από την κάμερα
+              {t("photo.orCamera")}
             </div>
           </div>
         )}
@@ -158,7 +160,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
                 type="button"
                 style={{ marginTop: 8, width: "100%", fontSize: 13 }}
               >
-                Άλλη φωτογραφία
+                {t("photo.anotherPhoto")}
               </button>
             )}
           </div>
@@ -169,7 +171,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
           <div style={{ textAlign: "center", padding: "16px 0" }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
             <div className="muted" style={{ fontSize: 13 }}>
-              Αναλύω το φαγητό...
+              {t("photo.analyzing")}
             </div>
           </div>
         )}
@@ -213,23 +215,23 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
               fontSize: 13
             }}>
               <div>
-                <span className="muted">Θερμίδες/100g: </span>
+                <span className="muted">{t("photo.caloriesPer100g")} </span>
                 <strong>{result.caloriesPer100g} kcal</strong>
               </div>
               <div>
-                <span className="muted">Πρωτεΐνη: </span>
+                <span className="muted">{t("photo.proteinLabel")} </span>
                 <strong>{result.proteinPer100g}g</strong>
               </div>
               <div>
-                <span className="muted">Υδατ.: </span>
+                <span className="muted">{t("photo.carbsLabel")} </span>
                 <strong>{result.carbsPer100g}g</strong>
               </div>
               <div>
-                <span className="muted">Λίπος: </span>
+                <span className="muted">{t("photo.fatLabel")} </span>
                 <strong>{result.fatPer100g}g</strong>
               </div>
               <div style={{ gridColumn: "1/-1" }}>
-                <span className="muted">Εκτιμ. ποσότητα: </span>
+                <span className="muted">{t("photo.estimatedAmount")} </span>
                 <strong>{result.estimatedGrams}g</strong>
               </div>
             </div>
@@ -244,7 +246,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
               type="button"
               style={{ flex: 1 }}
             >
-              Προσθήκη
+              {t("common.add")}
             </button>
           )}
           {!preview && !loading && (
@@ -254,7 +256,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
               type="button"
               style={{ flex: 1 }}
             >
-              📷 Επέλεξε φωτογραφία
+              📷 {t("photo.selectPhotoBtn")}
             </button>
           )}
           <button
@@ -262,7 +264,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
             onClick={onClose}
             type="button"
           >
-            Άκυρο
+            {t("common.cancel")}
           </button>
         </div>
       </div>

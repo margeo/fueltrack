@@ -1,14 +1,9 @@
 // src/components/AiCoach.jsx
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 
-const QUICK_QUESTIONS = [
-  "Τι να φάω τώρα;",
-  "Εβδομαδιαίο πρόγραμμα διατροφής",
-  "Εβδομαδιαίο πρόγραμμα γυμναστικής",
-  "Πώς πάω αυτή την εβδομάδα;",
-  "Τι κάνω λάθος;"
-];
+const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
 function parseEatNowCards(text) {
   try {
@@ -25,11 +20,12 @@ function parseEatNowCards(text) {
 }
 
 function EatNowCards({ text }) {
+  const { t } = useTranslation();
   const cards = parseEatNowCards(text);
   if (!cards) return <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</span>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
-      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 Επιλογές για τώρα</div>
+      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 {t("aiCoach.optionsNow")}</div>
       {cards.map((card, i) => (
         <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title}</div>
@@ -49,6 +45,8 @@ export default function AiCoach({
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan
 }) {
+  const { t } = useTranslation();
+  const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -200,9 +198,9 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
-    const isEatNow = text === "Τι να φάω τώρα;";
-    const isMealPlan = text === "Εβδομαδιαίο πρόγραμμα διατροφής";
-    const isTrainingPlan = text === "Εβδομαδιαίο πρόγραμμα γυμναστικής";
+    const isEatNow = text === t("aiCoach.q1");
+    const isMealPlan = text === t("aiCoach.q2");
+    const isTrainingPlan = text === t("aiCoach.q3");
     const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : "general";
 
     let effectiveMessage;
@@ -261,15 +259,15 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
   return (
     <div className="card">
       <div style={{ marginBottom: 12 }}>
-        <h2 style={{ margin: 0 }}>🤖 AI Coach</h2>
-        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Διατροφολόγος & Personal Trainer</div>
+        <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
+        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
       </div>
 
       {!hasLoaded && !loading && messages.length === 0 && (
         <div>
-          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:</div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {QUICK_QUESTIONS.map((q) => (
+            {quickQuestions.map((q) => (
               <button key={q} onClick={() => sendMessage(q)} type="button"
                 style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                 {q}
@@ -277,7 +275,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
             ))}
           </div>
           <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
-            📊 Ανάλυσε τη μέρα μου
+            📊 {t("aiCoach.analyzeDay")}
           </button>
         </div>
       )}
@@ -285,7 +283,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
       {loading && messages.length === 0 && (
         <div style={{ textAlign: "center", padding: "24px 0" }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>🤔</div>
-          <div className="muted" style={{ fontSize: 13 }}>Αναλύω τα δεδομένα σου...</div>
+          <div className="muted" style={{ fontSize: 13 }}>{t("aiCoach.analyzing")}</div>
         </div>
       )}
 
@@ -307,7 +305,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
           {loading && (
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
               <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
-                💭 Σκέφτομαι...
+                💭 {t("aiCoach.thinking")}
               </div>
             </div>
           )}
@@ -316,7 +314,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
 
       {hasLoaded && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-          {QUICK_QUESTIONS.map((q) => (
+          {quickQuestions.map((q) => (
             <button key={q} onClick={() => sendMessage(q)} type="button"
               style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
               {q}
@@ -326,7 +324,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
       )}
 
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
-          <input ref={inputRef} className="input" placeholder="Ρώτα με κάτι..." value={input}
+          <input ref={inputRef} className="input" placeholder={t("aiCoach.placeholder")} value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
             style={{ flex: 1 }} disabled={loading} />
