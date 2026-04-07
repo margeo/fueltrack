@@ -33,20 +33,20 @@
 
 [data-theme="dark"] {
   color: #f1f5f9;
-  background: #121212;
+  background: #1b1b1f;
 
-  --bg-body: #121212;
-  --bg-card: #1e1e1e;
-  --bg-soft: #252525;
-  --bg-nav: #121212;
-  --bg-input: #1e1e1e;
-  --bg-btn-light: #2a2a2a;
-  --bg-modal: #1e1e1e;
-  --bg-hero-from: #1a1a1a;
-  --bg-hero-to: #2a2a2a;
+  --bg-body: #1b1b1f;
+  --bg-card: #2a2a30;
+  --bg-soft: #2f2f36;
+  --bg-nav: #1b1b1f;
+  --bg-input: #2f2f36;
+  --bg-btn-light: #353540;
+  --bg-modal: #2a2a30;
+  --bg-hero-from: #2a2a30;
+  --bg-hero-to: #353540;
 
-  --border-color: #333333;
-  --border-soft: #1e1e1e;
+  --border-color: #404048;
+  --border-soft: #2f2f36;
 
   --text-primary: #f1f5f9;
   --text-muted: #94a3b8;
