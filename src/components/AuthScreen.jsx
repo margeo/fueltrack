@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 
-export default function AuthScreen({ onSuccess, initialMode = "login" }) {
+export default function AuthScreen({ onSuccess, initialMode = "login", isModal = false }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState(initialMode); // login | register | forgot
   const [name, setName] = useState("");
@@ -56,16 +56,18 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
 
 
   return (
-    <div style={{ minHeight: onSuccess ? "auto" : "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ minHeight: isModal ? "auto" : "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: isModal ? 0 : 20 }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: onSuccess ? 16 : 32 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🥗💪</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0 }}>FuelTrack</h1>
-          <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-            {t("auth.subtitle")}
+        {!isModal && (
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🥗💪</div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0 }}>FuelTrack</h1>
+            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+              {t("auth.subtitle")}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Error / Message */}
         {error && (
@@ -82,7 +84,13 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
         {/* Login Form */}
         {mode === "login" && (
           <form onSubmit={handleLogin}>
-            <div className="card" style={{ margin: 0 }}>
+            <div className="card" style={{ margin: 0, position: "relative" }}>
+              {isModal && (
+                <button type="button" onClick={onSuccess}
+                  style={{ position: "absolute", top: 10, right: 10, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  ✕
+                </button>
+              )}
               <h2 style={{ marginBottom: 16 }}>{t("auth.login")}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <input className="input" type="email" placeholder="Email" value={email}
@@ -122,7 +130,13 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
         {/* Register Form */}
         {mode === "register" && (
           <form onSubmit={handleRegister}>
-            <div className="card" style={{ margin: 0 }}>
+            <div className="card" style={{ margin: 0, position: "relative" }}>
+              {isModal && (
+                <button type="button" onClick={onSuccess}
+                  style={{ position: "absolute", top: 10, right: 10, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  ✕
+                </button>
+              )}
               <h2 style={{ marginBottom: 16 }}>{t("auth.register")}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <input className="input" type="text" placeholder={t("auth.name")} value={name}
@@ -158,7 +172,13 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
         {/* Forgot Password */}
         {mode === "forgot" && (
           <form onSubmit={handleForgotPassword}>
-            <div className="card" style={{ margin: 0 }}>
+            <div className="card" style={{ margin: 0, position: "relative" }}>
+              {isModal && (
+                <button type="button" onClick={onSuccess}
+                  style={{ position: "absolute", top: 10, right: 10, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  ✕
+                </button>
+              )}
               <h2 style={{ marginBottom: 16 }}>{t("auth.resetPassword")}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <input className="input" type="email" placeholder="Email" value={email}

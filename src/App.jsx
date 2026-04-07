@@ -522,16 +522,8 @@ export default function App() {
     {showAuthModal && (
       <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
-        <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, width: "100%", maxWidth: 420, background: "var(--bg-primary)" }}>
-          <div style={{ position: "sticky", top: 0, zIndex: 1, display: "flex", justifyContent: "flex-end", padding: "8px 8px 0 0" }}>
-            <button onClick={() => setShowAuthModal(false)} type="button"
-              style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              ✕
-            </button>
-          </div>
-          <div style={{ marginTop: -32 }}>
-            <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} />
-          </div>
+        <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, width: "100%", maxWidth: 400 }}>
+          <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} isModal />
         </div>
       </div>
     )}
