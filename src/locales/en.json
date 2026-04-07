@@ -357,6 +357,7 @@
     "loginBtn": "Sign in",
     "register": "Sign up",
     "registerBtn": "Create account",
+    "name": "Your name",
     "password": "Password",
     "passwordHint": "At least 6 characters",
     "or": "or",

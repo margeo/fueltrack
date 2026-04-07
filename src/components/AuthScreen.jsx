@@ -5,6 +5,7 @@ import { supabase } from "../supabaseClient";
 export default function AuthScreen({ onSuccess, initialMode = "login" }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState(initialMode); // login | register | forgot
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,10 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error, data } = await supabase.auth.signUp({ email, password });
+    const { error, data } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { full_name: name.trim() } }
+    });
     if (error) {
       setError(error.message?.includes("already") ? t("auth.emailExists") : t("auth.registerError"));
     } else if (data?.user?.identities?.length === 0) {
@@ -143,6 +147,8 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
             <div className="card" style={{ margin: 0 }}>
               <h2 style={{ marginBottom: 16 }}>{t("auth.register")}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input className="input" type="text" placeholder={t("auth.name")} value={name}
+                  onChange={(e) => setName(e.target.value)} required autoComplete="name" />
                 <input className="input" type="email" placeholder="Email" value={email}
                   onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
                 <div style={{ position: "relative" }}>

@@ -440,6 +440,7 @@ export default function App() {
     onContinue: goToSummaryAfterProfile,
     onLogout: () => supabase.auth.signOut(),
     userEmail: session?.user?.email,
+    userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
