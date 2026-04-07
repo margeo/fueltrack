@@ -276,50 +276,61 @@ export default function ProfileTab({
         </div>
       </CollapsibleSection>
 
-      <div className="card">
-        <div className="action-row">
-          <button className="btn btn-dark" onClick={onContinue} disabled={!profileComplete}
-            style={{ opacity: profileComplete ? 1 : 0.5, cursor: profileComplete ? "pointer" : "not-allowed" }}>
+      {/* ΑΠΟΘΗΚΕΥΣΗ — μόνο αν δεν είναι complete */}
+      {!profileComplete && (
+        <div className="card" style={{ textAlign: "center" }}>
+          <button className="btn btn-dark" onClick={onContinue} disabled
+            style={{ opacity: 0.5, cursor: "not-allowed", width: "100%" }}>
             {t("profile.saveContinue")}
           </button>
+          <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>{t("profile.fillProfileDesc")}</div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+      )}
+
+      {/* ΓΛΩΣΣΑ */}
+      <div className="card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontWeight: 700, fontSize: 14 }}>{t("profile.language")}</span>
           <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto" }}>
             <option value="el">Ελληνικά</option>
             <option value="en">English</option>
           </select>
         </div>
-        {userEmail ? (
-          <div style={{ marginTop: 14, textAlign: "center" }}>
-            {userName && <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{userName}</div>}
-            <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{userEmail}</div>
-            <button className="btn btn-light" onClick={onLogout} type="button"
-              style={{ fontSize: 13, padding: "8px 20px" }}>
-              {t("auth.logout")}
+      </div>
+
+      {/* ACCOUNT */}
+      {userEmail ? (
+        <div className="card" style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
+          {userName && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 2 }}>{userName}</div>}
+          <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{userEmail}</div>
+          <button className="btn btn-light" onClick={onLogout} type="button"
+            style={{ fontSize: 13, padding: "10px 24px" }}>
+            {t("auth.logout")}
+          </button>
+        </div>
+      ) : (
+        <div className="card" style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{t("profile.loginHint")}</div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button className="btn btn-dark" onClick={onShowAuth} type="button"
+              style={{ fontSize: 13, padding: "10px 24px" }}>
+              {t("auth.loginBtn")}
+            </button>
+            <button className="btn btn-light" onClick={onShowRegister} type="button"
+              style={{ fontSize: 13, padding: "10px 24px" }}>
+              {t("auth.registerBtn")}
             </button>
           </div>
-        ) : (
-          <div style={{ marginTop: 14, textAlign: "center" }}>
-            <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t("profile.loginHint")}</div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <button className="btn btn-dark" onClick={onShowAuth} type="button"
-                style={{ fontSize: 13, padding: "10px 24px" }}>
-                {t("auth.loginBtn")}
-              </button>
-              <button className="btn btn-light" onClick={onShowRegister} type="button"
-                style={{ fontSize: 13, padding: "10px 24px" }}>
-                {t("auth.registerBtn")}
-              </button>
-            </div>
-          </div>
-        )}
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
-            style={{ color: "var(--text-muted)", fontSize: 12 }}>
-            {t("common.privacyPolicy")}
-          </a>
         </div>
+      )}
+
+      <div style={{ textAlign: "center", marginTop: 4, marginBottom: 16 }}>
+        <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+          style={{ color: "var(--text-muted)", fontSize: 12 }}>
+          {t("common.privacyPolicy")}
+        </a>
       </div>
     </>
   );
