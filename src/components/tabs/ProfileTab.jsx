@@ -1,5 +1,5 @@
 // src/components/tabs/ProfileTab.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
@@ -85,12 +85,20 @@ export default function ProfileTab({
   const [localWeight, setLocalWeight] = useState(weight);
   const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(targetWeightLoss);
   const [localWeeks, setLocalWeeks] = useState(weeks);
+  const [showSaved, setShowSaved] = useState(false);
+  const savedTimer = useRef(null);
 
   useEffect(() => { setLocalAge(age); }, [age]);
   useEffect(() => { setLocalHeight(height); }, [height]);
   useEffect(() => { setLocalWeight(weight); }, [weight]);
   useEffect(() => { setLocalTargetWeightLoss(targetWeightLoss); }, [targetWeightLoss]);
   useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
+
+  function flashSaved() {
+    setShowSaved(true);
+    clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setShowSaved(false), 2000);
+  }
 
   const showGoalFields = goalType === "lose" || goalType === "gain";
   const currentMode = MODES[mode] || MODES.balanced;
@@ -125,6 +133,11 @@ export default function ProfileTab({
       <div className="day-card">
         <div className="day-card-total">
           <h2>{`👤 ${t("profile.title")}`}</h2>
+          {showSaved && (
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-green)", transition: "opacity 0.3s" }}>
+              ✓ {t("profile.saved")}
+            </span>
+          )}
         </div>
 
         {!profileComplete && (
@@ -138,24 +151,24 @@ export default function ProfileTab({
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.weight")}</div>
             <input className="input" placeholder="kg" inputMode="decimal" value={localWeight}
-              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => setWeight(localWeight)}
+              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => { setWeight(localWeight); flashSaved(); }}
               style={inputStyle} />
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.height")}</div>
             <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => setHeight(localHeight)}
+              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => { setHeight(localHeight); flashSaved(); }}
               style={inputStyle} />
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.age")}</div>
             <input className="input" placeholder={t("profile.age")} inputMode="numeric" value={localAge}
-              onChange={(e) => setLocalAge(e.target.value)} onBlur={() => setAge(localAge)}
+              onChange={(e) => setLocalAge(e.target.value)} onBlur={() => { setAge(localAge); flashSaved(); }}
               style={inputStyle} />
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.goal")}</div>
-            <select className="input" value={goalType} onChange={(e) => setGoalType(e.target.value)}>
+            <select className="input" value={goalType} onChange={(e) => { setGoalType(e.target.value); flashSaved(); }}>
               <option value="lose" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.loseShort")}</option>
               <option value="maintain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.maintainShort")}</option>
               <option value="gain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.gainShort")}</option>
@@ -178,7 +191,7 @@ export default function ProfileTab({
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input className="input" inputMode="decimal" value={localTargetWeightLoss}
                   onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                  onBlur={() => setTargetWeightLoss(localTargetWeightLoss)} />
+                  onBlur={() => { setTargetWeightLoss(localTargetWeightLoss); flashSaved(); }} />
                 <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.kilos")}</span>
               </div>
             </label>
@@ -186,7 +199,7 @@ export default function ProfileTab({
               <div className="profile-label">{t("profile.inWeeks")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input className="input" inputMode="numeric" value={localWeeks}
-                  onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => setWeeks(localWeeks)} />
+                  onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => { setWeeks(localWeeks); flashSaved(); }} />
                 <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.weeks")}</span>
               </div>
             </label>
@@ -200,14 +213,14 @@ export default function ProfileTab({
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <label className="profile-field">
             <div className="profile-label">{t("profile.gender")}</div>
-            <select className="input" value={gender} onChange={(e) => setGender(e.target.value)}>
+            <select className="input" value={gender} onChange={(e) => { setGender(e.target.value); flashSaved(); }}>
               <option value="male">{t("profile.male")}</option>
               <option value="female">{t("profile.female")}</option>
             </select>
           </label>
           <label className="profile-field">
             <div className="profile-label">{t("profile.activityLevel")}</div>
-            <select className="input" value={activity} onChange={(e) => setActivity(e.target.value)}>
+            <select className="input" value={activity} onChange={(e) => { setActivity(e.target.value); flashSaved(); }}>
               <option value="1.2">{t("profile.sedentary")}</option>
               <option value="1.4">{t("profile.light")}</option>
               <option value="1.6">{t("profile.moderate")}</option>
@@ -216,7 +229,7 @@ export default function ProfileTab({
           </label>
           <label className="profile-field">
             <div className="profile-label">{t("profile.dietMode")}</div>
-            <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
+            <select className="input" value={mode} onChange={(e) => { setMode(e.target.value); flashSaved(); }}>
               {MODE_GROUPS.map((group) => (
                 <optgroup key={group.group} label={t(MODE_GROUP_KEYS[group.group])}>
                   {group.modes.map((modeKey) => {

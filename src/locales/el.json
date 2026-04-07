@@ -239,6 +239,7 @@
     "kgPerWeek": "kg/εβδομάδα",
     "eatingWindow": "Eating window",
     "saveContinue": "Αποθήκευση & συνέχεια",
+    "saved": "Αποθηκεύτηκε",
     "unrealisticGoal": "Μη ρεαλιστικός στόχος. Δοκίμασε περισσότερες εβδομάδες ή μικρότερο στόχο.",
     "aggressiveGoal": "Επιθετικός αλλά εφικτός ρυθμός ({{rate}} kg/εβδ).",
     "realisticGoal": "Ρεαλιστικός στόχος",

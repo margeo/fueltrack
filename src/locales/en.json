@@ -239,6 +239,7 @@
     "kgPerWeek": "kg/week",
     "eatingWindow": "Eating window",
     "saveContinue": "Save & continue",
+    "saved": "Saved",
     "unrealisticGoal": "Unrealistic goal. Try more weeks or a smaller target.",
     "aggressiveGoal": "Aggressive but achievable rate ({{rate}} kg/wk).",
     "realisticGoal": "Realistic goal",

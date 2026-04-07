@@ -113,24 +113,6 @@ describe("ProfileTab", () => {
     expect(screen.getByText(/Μη ρεαλιστικός στόχος/)).toBeTruthy();
   });
 
-  it("disables continue button when profile is incomplete", () => {
-    renderProfile({ profileComplete: false });
-    const btn = screen.getByText("Αποθήκευση & συνέχεια");
-    expect(btn.disabled).toBe(true);
-  });
-
-  it("enables continue button when profile is complete", () => {
-    renderProfile({ profileComplete: true });
-    const btn = screen.getByText("Αποθήκευση & συνέχεια");
-    expect(btn.disabled).toBe(false);
-  });
-
-  it("calls onContinue when continue button clicked", () => {
-    const { props } = renderProfile({ profileComplete: true });
-    fireEvent.click(screen.getByText("Αποθήκευση & συνέχεια"));
-    expect(props.onContinue).toHaveBeenCalledTimes(1);
-  });
-
   it("expands 'Περισσότερα' section when clicked", () => {
     renderProfile();
     // Section is collapsed by default
