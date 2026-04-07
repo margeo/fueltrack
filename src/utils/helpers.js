@@ -51,7 +51,7 @@ export function stripDiacritics(value) {
 
 export function normalizeSearchText(value) {
   return stripDiacritics(String(value || "").toLowerCase())
-    .replace(/[\/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
+    .replace(/[/_,;:+()[\]{}|'"`~.!?@#$%^&*=<>-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }

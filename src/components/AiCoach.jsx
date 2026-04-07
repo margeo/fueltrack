@@ -41,10 +41,10 @@ function EatNowCards({ text }) {
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, streak, weightLog, favoriteFoods,
-  foods, totalCalories, totalProtein, exerciseValue,
+  totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  savedPlans, onSavePlan, session
+  onSavePlan, session
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));

@@ -45,7 +45,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
       if (data.error) throw new Error(data.error);
 
       setResult(data);
-    } catch (err) {
+    } catch {
       setError(t("photo.analyzeError"));
     } finally {
       setLoading(false);

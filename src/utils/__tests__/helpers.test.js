@@ -12,7 +12,7 @@ import {
   simplifyLatinGreeklish,
   buildSearchVariants,
   getFoodAliases,
-  getFoodSearchTexts,
+  // getFoodSearchTexts,
   getFoodIdentityKey,
   normalizeFood,
   createFoodEntry,

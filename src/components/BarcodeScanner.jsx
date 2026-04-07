@@ -12,7 +12,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
     const reader = new BrowserMultiFormatReader();
     readerRef.current = reader;
 
-    reader.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
+    reader.decodeFromVideoDevice(null, videoRef.current, (result) => {
       if (result) {
         reader.reset();
         onResult(result.getText());

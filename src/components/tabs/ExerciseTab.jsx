@@ -14,7 +14,7 @@ const CATEGORIES = [
 ];
 
 export default function ExerciseTab({
-  exercises, exerciseValue, exerciseMinutes, setExerciseMinutes,
+  exercises, exerciseValue,
   customExerciseName, setCustomExerciseName,
   customExerciseMinutes, setCustomExerciseMinutes,
   customExerciseRate, setCustomExerciseRate,

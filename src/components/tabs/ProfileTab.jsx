@@ -13,7 +13,7 @@ const MODE_GROUP_KEYS = {
   "🌱 Φυτικές": "modeGroups.plant"
 };
 
-function GoalWarning({ goalType, kilosPerWeek, rawDeficit, isCapped }) {
+function GoalWarning({ goalType, kilosPerWeek }) {
   const { t } = useTranslation();
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
   let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";

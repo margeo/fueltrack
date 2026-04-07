@@ -12,7 +12,7 @@ import { getCached, setCache } from "../../utils/foodCache";
 
 // Mock global fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 function createFetchResponse(data) {
   return Promise.resolve({

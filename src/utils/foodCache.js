@@ -64,5 +64,5 @@ export async function clearCache() {
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
     });
-  } catch {}
+  } catch { /* ignore cache errors */ }
 }

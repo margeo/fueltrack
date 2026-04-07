@@ -27,7 +27,7 @@ import { getInitialTheme, applyTheme } from "./utils/theme";
 export default function App() {
   const { t, i18n } = useTranslation();
   const [session, setSession] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [, setAuthLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
@@ -53,10 +53,10 @@ export default function App() {
   const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
-  const [favoriteFoodsText, setFavoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
-  const [favoriteExercisesText, setFavoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
+  const [favoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
+  const [favoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
-  const [foods, setFoods] = useState(() => {
+  const [foods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
     const customOnly = saved.filter((f) => f.source !== "local");
     return [...foodsData, ...customOnly];
