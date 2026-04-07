@@ -76,7 +76,7 @@ export default function ProfileTab({
   activity, setActivity, goalType, setGoalType,
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
-  dailyDeficit, proteinTarget, profileComplete, onContinue,
+  dailyDeficit, proteinTarget, profileComplete,
   onLogout, userEmail, userName, onShowAuth, onShowRegister
 }) {
   const { t, i18n } = useTranslation();
