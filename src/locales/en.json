@@ -82,6 +82,7 @@
   },
   "summary": {
     "title": "Daily summary",
+    "titleName": "Hey {{name}}!",
     "remaining": "Remaining today",
     "target": "Target",
     "food": "Food",

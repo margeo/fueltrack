@@ -44,7 +44,7 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, onShowAuth, onShowRegister
+  onSavePlan, session, userName, onShowAuth, onShowRegister
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
@@ -172,7 +172,7 @@ export default function AiCoach({
     const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
     // BASE — στέλνεται σε κάθε request
-    const base = `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.
+    const base = `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}
 ΣΗΜΕΡΑ: ${todayName} ${todayDate}
 Ηλικία:${age||"—"} Φύλο:${gender==="male"?"Άνδρας":"Γυναίκα"} Ύψος:${height||"—"}cm Βάρος:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` Τάση:${weightTrend}kg`:""}
 Στόχος:${goalLabel} | Mode:${currentMode.label} | Θερμίδες:${targetCalories}kcal | Πρωτεΐνη:${proteinTarget}g/μέρα | Streak:${streak}μέρες

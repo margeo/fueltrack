@@ -45,7 +45,7 @@ export default function SummaryTab({
   onAddWeight, onDeleteWeight,
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  savedPlans, onSavePlan, onDeletePlan, session, onShowAuth, onShowRegister
+  savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister
 }) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
@@ -203,7 +203,9 @@ export default function SummaryTab({
     <>
       {/* 1. HERO */}
       <div className="hero-card">
-        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>{t("summary.title")}</div>
+        <div style={{ fontWeight: 700, fontSize: 22, color: "white", marginBottom: 10 }}>
+          {userName ? t("summary.titleName", { name: userName }) : t("summary.title")}
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>
             {formatDisplayDate(selectedDate, dateLocale)}
@@ -281,7 +283,7 @@ export default function SummaryTab({
         favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
         age={age} weight={weight} height={height} gender={gender}
         savedPlans={savedPlans} onSavePlan={onSavePlan}
-        session={session} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
+        session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
       />
 
       {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}

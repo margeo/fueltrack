@@ -82,6 +82,7 @@
   },
   "summary": {
     "title": "Σύνοψη ημέρας",
+    "titleName": "Γεια σου {{name}}!",
     "remaining": "Υπόλοιπο ημέρας",
     "target": "Στόχος",
     "food": "Φαγητό",

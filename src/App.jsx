@@ -401,6 +401,7 @@ export default function App() {
     onSavePlan: handleSavePlan,
     onDeletePlan: deletePlan,
     session,
+    userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
