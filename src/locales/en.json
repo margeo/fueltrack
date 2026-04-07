@@ -313,6 +313,8 @@
     "monthlyLimitDesc": "You've reached the monthly limit of {{limit}} queries. Resets next month.",
     "lifetimeLimitTitle": "Free trial ended",
     "lifetimeLimitDesc": "You've used all {{limit}} free AI queries. Upgrade to Pro for continued access.",
+    "simpleMode": "Simple groceries",
+    "simpleModeDesc": "Repeat meals, short grocery list",
     "askAnything": "Ask me anything or tap for a quick analysis:",
     "analyzeDay": "Analyze my day",
     "analyzing": "Analyzing your data...",

@@ -49,6 +49,7 @@ export default function AiCoach({
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
+  const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem("ft_simple_meals") === "true");
   const [isPaid, setIsPaid] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
@@ -187,10 +188,15 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 Αν τρόφιμο δεν ταιριάζει με ${currentMode.label} πες το αμέσως.`;
 
     // MEAL PLAN — μόνο για εβδομαδιαίο διατροφής
+    const simpleRules = simpleMode ? `
+ΣΗΜΑΝΤΙΚΟ — ΛΙΓΑ ΨΩΝΙΑ:
+- Μέγιστο 15-18 υλικά για ΟΛΗ την εβδομάδα.
+- Επανάλαβε γεύματα: ίδιο πρωινό 4-5 μέρες, 2-3 μεσημεριανά που εναλλάσσονται, 2-3 βραδινά που εναλλάσσονται.
+- Ο χρήστης θέλει μικρή λίστα σούπερ μάρκετ και εύκολη οργάνωση.` : "";
     const mealPlanFormat = `
-Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.
+Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.${simpleRules}
 ΚΑΝΟΝΕΣ ΥΛΙΚΩΝ (μην τους αναφέρεις στην απάντηση):
-- Πριν γράψεις το πρόγραμμα, επέλεξε μέγιστο 28 διαφορετικά υλικά συνολικά για όλη την εβδομάδα. Μην ξεπερνάς τα 30.
+- Πριν γράψεις το πρόγραμμα, επέλεξε μέγιστο ${simpleMode ? "18" : "28"} διαφορετικά υλικά συνολικά για όλη την εβδομάδα. Μην ξεπερνάς τα ${simpleMode ? "18" : "30"}.
 - Χρησιμοποίησε ΤΑ ΙΔΙΑ βασικά υλικά κάθε μέρα με διαφορετικούς συνδυασμούς — ΜΗΝ προσθέτεις νέα υλικά καθώς γράφεις.
 - Το πρόγραμμα πρέπει να έχει ποικιλία, αλλά ελεγχόμενη και πρακτική για σούπερ μάρκετ.
 - ΜΗΝ βάζεις το ίδιο ακριβώς μεσημεριανό ή το ίδιο ακριβώς βραδινό κάθε μέρα.
@@ -198,7 +204,7 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 - Η ποικιλία πρέπει να είναι μοιρασμένη ισορροπημένα σε κύριες πρωτεΐνες, συνοδευτικά και λαχανικά.
 - Βάλε λίγες βασικές πρωτεΐνες που επαναλαμβάνονται λογικά μέσα στην εβδομάδα, λίγα βασικά συνοδευτικά και λίγα βασικά λαχανικά/φρούτα.
 - ΜΗΝ αναφέρεις τα υλικά ή τον αριθμό τους στην απάντησή σου.
-- ΠΡΙΝ δώσεις την τελική απάντηση, μέτρα τα μοναδικά υλικά της εβδομάδας και αν είναι πάνω από 25, αφαίρεσε ή συγχώνευσε υλικά μέχρι να γίνουν 25 ή λιγότερα.
+- ΠΡΙΝ δώσεις την τελική απάντηση, μέτρα τα μοναδικά υλικά της εβδομάδας και αν είναι πάνω από ${simpleMode ? "18" : "25"}, αφαίρεσε ή συγχώνευσε υλικά μέχρι να γίνουν ${simpleMode ? "18" : "25"} ή λιγότερα.
 - Θεώρησε παρόμοια υλικά ως ένα όπου γίνεται (π.χ. ντομάτα και ντοματίνια, ίδια κατηγορία ψαριού, ίδιο είδος ψωμιού/ρυζιού/γιαουρτιού) ώστε η λίστα σούπερ μάρκετ να μένει σύντομη και πρακτική.
 - Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
@@ -358,6 +364,18 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
 
       {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)" }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 {t("aiCoach.simpleMode")}</div>
+              <div className="muted" style={{ fontSize: 11 }}>{t("aiCoach.simpleModeDesc")}</div>
+            </div>
+            <button type="button" onClick={() => { const next = !simpleMode; setSimpleMode(next); localStorage.setItem("ft_simple_meals", String(next)); }}
+              style={{ width: 44, height: 26, borderRadius: 13, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
+                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: "white",
+                transform: simpleMode ? "translateX(18px)" : "translateX(0)", transition: "transform 0.2s" }} />
+            </button>
+          </div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {quickQuestions.map((q) => (
