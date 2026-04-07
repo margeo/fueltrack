@@ -5,7 +5,7 @@ import WelcomeScreen from "../WelcomeScreen";
 describe("WelcomeScreen", () => {
   it("renders the main heading", () => {
     render(<WelcomeScreen onStart={vi.fn()} />);
-    expect(screen.getByText(/Καταγραφή\. Σχέδιο\. Αποτέλεσμα\./)).toBeTruthy();
+    expect(screen.getByText(/Καταγραφή → Πλάνο → Αποτέλεσμα/)).toBeTruthy();
   });
 
   it("renders all 4 feature cards", () => {
