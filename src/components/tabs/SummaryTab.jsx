@@ -45,7 +45,7 @@ export default function SummaryTab({
   onAddWeight, onDeleteWeight,
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  savedPlans, onSavePlan, onDeletePlan, session
+  savedPlans, onSavePlan, onDeletePlan, session, onShowAuth
 }) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
@@ -281,7 +281,7 @@ export default function SummaryTab({
         favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
         age={age} weight={weight} height={height} gender={gender}
         savedPlans={savedPlans} onSavePlan={onSavePlan}
-        session={session}
+        session={session} onShowAuth={onShowAuth}
       />
 
       {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}

@@ -400,7 +400,8 @@ export default function App() {
     savedPlans,
     onSavePlan: handleSavePlan,
     onDeletePlan: deletePlan,
-    session
+    session,
+    onShowAuth: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
 
   const foodProps = {
@@ -457,8 +458,9 @@ export default function App() {
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button">
-              {i18n.language === "el" ? "🇬🇧" : "🇬🇷"}
+            <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
+              style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
+              {i18n.language === "el" ? "EN" : "EL"}
             </button>
             <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
               {theme === "dark" ? "☀️" : "🌙"}

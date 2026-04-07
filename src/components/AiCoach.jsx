@@ -44,7 +44,7 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session
+  onSavePlan, session, onShowAuth
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
@@ -285,12 +285,18 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.proTitle")}</div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>{t("aiCoach.proDesc")}</div>
-          <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8 }}>
+          <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8, marginBottom: 16 }}>
             <div>✅ {t("aiCoach.proFeature1")}</div>
             <div>✅ {t("aiCoach.proFeature2")}</div>
             <div>✅ {t("aiCoach.proFeature3")}</div>
             <div>✅ {t("aiCoach.proFeature4")}</div>
           </div>
+          {!session && onShowAuth && (
+            <button className="btn btn-dark" onClick={onShowAuth} type="button"
+              style={{ padding: "12px 28px", fontSize: 14 }}>
+              {t("aiCoach.createAccount")}
+            </button>
+          )}
         </div>
       )}
 
