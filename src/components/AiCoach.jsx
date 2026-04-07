@@ -44,7 +44,7 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session
+  onSavePlan, session, onShowAuth
 }) {
   const { t } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
@@ -53,11 +53,13 @@ export default function AiCoach({
   const [dailyCount, setDailyCount] = useState(0);
 
   const DAILY_LIMIT_FREE = 2;
-  const MONTHLY_LIMIT_FREE = 20;
+  const MONTHLY_LIMIT_FREE = 10;
+  const LIFETIME_LIMIT_FREE = 20;
   const DAILY_LIMIT_PAID = 30;
   const MONTHLY_LIMIT_PAID = 300;
 
   const [monthlyCount, setMonthlyCount] = useState(0);
+  const [lifetimeCount, setLifetimeCount] = useState(0);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
@@ -65,6 +67,7 @@ export default function AiCoach({
     const month = today.slice(0, 7);
     setDailyCount(stored.date === today ? (stored.count || 0) : 0);
     setMonthlyCount(stored.month === month ? (stored.monthCount || 0) : 0);
+    setLifetimeCount(stored.lifetime || 0);
 
     if (!session?.user?.id) return;
     supabase
@@ -84,15 +87,19 @@ export default function AiCoach({
     const stored = JSON.parse(localStorage.getItem("ft_ai_usage") || "{}");
     const newDaily = dailyCount + 1;
     const newMonthly = (stored.month === month ? (stored.monthCount || 0) : 0) + 1;
+    const newLifetime = (stored.lifetime || 0) + 1;
     setDailyCount(newDaily);
     setMonthlyCount(newMonthly);
-    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly }));
+    setLifetimeCount(newLifetime);
+    localStorage.setItem("ft_ai_usage", JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly, lifetime: newLifetime }));
   }
 
+  const needsAccount = !session;
   const dailyLimit = isPaid ? DAILY_LIMIT_PAID : DAILY_LIMIT_FREE;
   const monthlyLimit = isPaid ? MONTHLY_LIMIT_PAID : MONTHLY_LIMIT_FREE;
   const monthlyLimitReached = monthlyCount >= monthlyLimit;
-  const limitReached = dailyCount >= dailyLimit || monthlyLimitReached;
+  const lifetimeLimitReached = !isPaid && lifetimeCount >= LIFETIME_LIMIT_FREE;
+  const limitReached = needsAccount || dailyCount >= dailyLimit || monthlyLimitReached || lifetimeLimitReached;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -312,13 +319,25 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
 
       {limitReached && (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.limitTitle")}</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>{needsAccount ? "🔒" : lifetimeLimitReached ? "🚀" : "⏳"}</div>
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
+            {needsAccount ? t("aiCoach.needsAccountTitle") : lifetimeLimitReached ? t("aiCoach.lifetimeLimitTitle") : t("aiCoach.limitTitle")}
+          </div>
           <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
-            {monthlyLimitReached
+            {needsAccount
+              ? t("aiCoach.needsAccountDesc")
+              : lifetimeLimitReached
+              ? t("aiCoach.lifetimeLimitDesc", { limit: LIFETIME_LIMIT_FREE })
+              : monthlyLimitReached
               ? t("aiCoach.monthlyLimitDesc", { limit: monthlyLimit })
               : t("aiCoach.limitDesc", { limit: dailyLimit })}
           </div>
+          {needsAccount && onShowAuth && (
+            <button className="btn btn-dark" onClick={onShowAuth} type="button"
+              style={{ padding: "12px 28px", fontSize: 14, marginTop: 16 }}>
+              {t("aiCoach.createAccount")}
+            </button>
+          )}
         </div>
       )}
 
