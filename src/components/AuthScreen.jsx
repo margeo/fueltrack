@@ -62,7 +62,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login" }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ minHeight: onSuccess ? "auto" : "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>

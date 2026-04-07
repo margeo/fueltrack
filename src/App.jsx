@@ -448,6 +448,7 @@ export default function App() {
   const appReady = hasSeenWelcome && profileComplete;
 
   return (
+    <>
     <div className="app-shell">
       <div className="app-container">
         <div className="app-header">
@@ -508,18 +509,20 @@ export default function App() {
         />
       )}
 
-      {showAuthModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
-          <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16 }}>
-            <button onClick={() => setShowAuthModal(false)} type="button"
-              style={{ position: "absolute", top: 12, right: 12, zIndex: 1, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              ✕
-            </button>
-            <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} />
-          </div>
-        </div>
-      )}
     </div>
+
+    {showAuthModal && (
+      <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
+        <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, width: "100%", maxWidth: 420 }}>
+          <button onClick={() => setShowAuthModal(false)} type="button"
+            style={{ position: "absolute", top: 12, right: 12, zIndex: 1, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ✕
+          </button>
+          <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} />
+        </div>
+      </div>
+    )}
+    </>
   );
 }
