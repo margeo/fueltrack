@@ -364,18 +364,6 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
 
       {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "8px 12px", background: "var(--bg-soft)", borderRadius: 10, border: "1px solid var(--border-soft)" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 {t("aiCoach.simpleMode")}</div>
-              <div className="muted" style={{ fontSize: 11 }}>{t("aiCoach.simpleModeDesc")}</div>
-            </div>
-            <button type="button" onClick={() => { const next = !simpleMode; setSimpleMode(next); localStorage.setItem("ft_simple_meals", String(next)); }}
-              style={{ width: 44, height: 26, borderRadius: 13, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
-                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
-              <div style={{ width: 22, height: 22, borderRadius: 11, background: "white",
-                transform: simpleMode ? "translateX(18px)" : "translateX(0)", transition: "transform 0.2s" }} />
-            </button>
-          </div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {quickQuestions.map((q) => (
@@ -388,6 +376,15 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
           <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
             📊 {t("aiCoach.analyzeDay")}
           </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14 }}>
+            <button type="button" onClick={() => { const next = !simpleMode; setSimpleMode(next); localStorage.setItem("ft_simple_meals", String(next)); }}
+              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
+                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
+                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
+            </button>
+            <span className="muted" style={{ fontSize: 11 }}>🛒 {t("aiCoach.simpleMode")} — {t("aiCoach.simpleModeDesc")}</span>
+          </div>
         </div>
       )}
 
