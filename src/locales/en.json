@@ -335,5 +335,31 @@
     "omad": "One Meal A Day",
     "vegetarian": "No meat — with eggs and dairy",
     "vegan": "Exclusively plant-based diet"
+  },
+  "auth": {
+    "subtitle": "Your personal nutritionist",
+    "login": "Sign in",
+    "loginBtn": "Sign in",
+    "register": "Sign up",
+    "registerBtn": "Create account",
+    "password": "Password",
+    "passwordHint": "At least 6 characters",
+    "or": "or",
+    "google": "Continue with Google",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "resetBtn": "Send email",
+    "backToLogin": "← Back to sign in",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "loginError": "Wrong email or password.",
+    "registerError": "Registration failed. Try again.",
+    "checkEmail": "Check your email for confirmation!",
+    "resetError": "Could not send email.",
+    "resetSent": "Reset email sent!",
+    "googleError": "Error connecting with Google.",
+    "logout": "Sign out"
   }
 }

@@ -1,6 +1,8 @@
 // src/App.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { supabase } from "./supabaseClient";
+import AuthScreen from "./components/AuthScreen";
 import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -24,6 +26,20 @@ import { getInitialTheme, applyTheme } from "./utils/theme";
 
 export default function App() {
   const { t, i18n } = useTranslation();
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   const [theme, setTheme] = useState(() => getInitialTheme());
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
@@ -417,12 +433,26 @@ export default function App() {
     mode, setMode, targetWeightLoss, setTargetWeightLoss,
     weeks, setWeeks, tdee, targetCalories,
     dailyDeficit, proteinTarget, profileComplete,
-    onContinue: goToSummaryAfterProfile
+    onContinue: goToSummaryAfterProfile,
+    onLogout: () => supabase.auth.signOut(),
+    userEmail: session?.user?.email
   };
 
   const showWelcome = !hasSeenWelcome;
   const showProfile = hasSeenWelcome && !profileComplete;
   const appReady = hasSeenWelcome && profileComplete;
+
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 48 }}>🥗💪</div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <AuthScreen />;
+  }
 
   return (
     <div className="app-shell">

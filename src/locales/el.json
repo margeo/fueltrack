@@ -335,5 +335,31 @@
     "omad": "One Meal A Day — ένα γεύμα την ημέρα",
     "vegetarian": "Χωρίς κρέας — με αυγά και γαλακτοκομικά",
     "vegan": "Αποκλειστικά φυτική διατροφή"
+  },
+  "auth": {
+    "subtitle": "Ο προσωπικός σου διατροφολόγος",
+    "login": "Σύνδεση",
+    "loginBtn": "Σύνδεση",
+    "register": "Εγγραφή",
+    "registerBtn": "Δημιουργία λογαριασμού",
+    "password": "Κωδικός",
+    "passwordHint": "Τουλάχιστον 6 χαρακτήρες",
+    "or": "ή",
+    "google": "Συνέχεια με Google",
+    "forgotPassword": "Ξέχασες τον κωδικό;",
+    "resetPassword": "Επαναφορά κωδικού",
+    "resetBtn": "Αποστολή email",
+    "backToLogin": "← Πίσω στη σύνδεση",
+    "noAccount": "Δεν έχεις λογαριασμό;",
+    "registerLink": "Εγγραφή",
+    "hasAccount": "Έχεις ήδη λογαριασμό;",
+    "loginLink": "Σύνδεση",
+    "loginError": "Λάθος email ή κωδικός.",
+    "registerError": "Σφάλμα εγγραφής. Δοκίμασε ξανά.",
+    "checkEmail": "Ελέγξτε το email σας για επιβεβαίωση!",
+    "resetError": "Δεν ήταν δυνατή η αποστολή email.",
+    "resetSent": "Email επαναφοράς στάλθηκε!",
+    "googleError": "Σφάλμα σύνδεσης με Google.",
+    "logout": "Αποσύνδεση"
   }
 }
