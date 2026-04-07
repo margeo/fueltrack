@@ -53,6 +53,7 @@ export default function AiCoach({
   const [dailyCount, setDailyCount] = useState(0);
 
   const DAILY_LIMIT_FREE = 2;
+  const MONTHLY_LIMIT_FREE = 20;
   const DAILY_LIMIT_PAID = 30;
   const MONTHLY_LIMIT_PAID = 300;
 
@@ -89,7 +90,8 @@ export default function AiCoach({
   }
 
   const dailyLimit = isPaid ? DAILY_LIMIT_PAID : DAILY_LIMIT_FREE;
-  const monthlyLimitReached = isPaid && monthlyCount >= MONTHLY_LIMIT_PAID;
+  const monthlyLimit = isPaid ? MONTHLY_LIMIT_PAID : MONTHLY_LIMIT_FREE;
+  const monthlyLimitReached = monthlyCount >= monthlyLimit;
   const limitReached = dailyCount >= dailyLimit || monthlyLimitReached;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -314,7 +316,7 @@ Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟ
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{t("aiCoach.limitTitle")}</div>
           <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
             {monthlyLimitReached
-              ? t("aiCoach.monthlyLimitDesc", { limit: MONTHLY_LIMIT_PAID })
+              ? t("aiCoach.monthlyLimitDesc", { limit: monthlyLimit })
               : t("aiCoach.limitDesc", { limit: dailyLimit })}
           </div>
         </div>
