@@ -15,35 +15,31 @@ export async function handler(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
     }
 
-    const recentMessages = validMessages.slice(-2);
+    const recentMessages = validMessages.slice(-6);
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://fueltrack.me",
-        "X-Title": "FuelTrack"
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 8000,
-        temperature: 0.7,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...recentMessages
-        ]
+        system: systemPrompt,
+        messages: recentMessages
       })
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`OpenRouter error ${response.status}: ${errText}`);
+      throw new Error(`API error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (!text) throw new Error("Κενή απάντηση από το API");
+    const text = data.content?.[0]?.text;
+    if (!text) throw new Error("Empty response from API");
 
     return {
       statusCode: 200,
