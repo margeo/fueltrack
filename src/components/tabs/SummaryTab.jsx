@@ -238,6 +238,9 @@ RULES:
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan && !isExpanded ? 0 : 8, minHeight: 36 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{emoji} {title}</span>
+            {plan && (
+              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px", flexShrink: 0 }}>{isExpanded ? "▲" : "▼"}</button>
+            )}
             {plan && !isExpanded && (
               <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                 <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {plan.date}
@@ -246,7 +249,6 @@ RULES:
           </div>
           {plan && (
             <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>📄</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
