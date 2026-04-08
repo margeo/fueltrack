@@ -16,12 +16,17 @@ export async function handler(event) {
     }
 
     const recentMessages = validMessages.slice(-6);
-
     const aiModel = process.env.AI_MODEL || "haiku";
 
     let responseData;
-    if (aiModel === "gemini" || aiModel === "haiku-openrouter") {
-      const orModel = aiModel === "gemini" ? "google/gemini-2.5-flash-lite" : "anthropic/claude-3.5-haiku";
+
+    // OpenRouter models (gemini, gemini-flash, haiku-openrouter)
+    if (["gemini", "gemini-flash", "haiku-openrouter"].includes(aiModel)) {
+      const modelMap = {
+        "gemini": "google/gemini-2.5-flash-lite",
+        "gemini-flash": "google/gemini-2.5-flash",
+        "haiku-openrouter": "anthropic/claude-3.5-haiku"
+      };
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -31,7 +36,7 @@ export async function handler(event) {
           "X-Title": "FuelTrack"
         },
         body: JSON.stringify({
-          model: orModel,
+          model: modelMap[aiModel],
           max_tokens: 8000,
           temperature: 0.7,
           messages: [
@@ -45,7 +50,31 @@ export async function handler(event) {
       const txt = d.choices?.[0]?.message?.content;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
-      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: aiModel === "gemini" ? "gemini-flash-lite" : "haiku-openrouter" } };
+      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: aiModel } };
+
+    // Google AI direct (gemini-direct)
+    } else if (aiModel === "gemini-direct") {
+      const geminiMessages = recentMessages.map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }]
+      }));
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: geminiMessages,
+          generationConfig: { maxOutputTokens: 8000, temperature: 0.7 }
+        })
+      });
+      if (!resp.ok) throw new Error(`API error ${resp.status}: ${await resp.text()}`);
+      const d = await resp.json();
+      const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!txt) throw new Error("Empty response from API");
+      const u = d.usageMetadata || {};
+      responseData = { advice: txt, usage: { inputTokens: u.promptTokenCount || 0, outputTokens: u.candidatesTokenCount || 0, costUsd: 0, model: "gemini-direct" } };
+
+    // Anthropic direct (default: haiku)
     } else {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
