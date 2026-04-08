@@ -28,24 +28,30 @@ export async function handler(event) {
       subject: `Νέος χρήστης: ${name || "Unknown"}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
-          <div style="background:#863bff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
-            <h2 style="color:white;margin:0">⚡ FuelTrack — Νέος Χρήστης</h2>
+          <div style="background:#1a1a2e;padding:24px;border-radius:12px 12px 0 0;text-align:center">
+            <div style="font-size:32px;margin-bottom:8px">🔥</div>
+            <h2 style="color:#4ade80;margin:0;font-size:20px">FuelTrack</h2>
+            <div style="color:#94a3b8;font-size:12px;margin-top:4px;letter-spacing:1px">TRAIN · EAT · EVOLVE</div>
           </div>
-          <div style="background:#f9fafb;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+          <div style="background:#111827;padding:24px;border:1px solid #374151;border-top:none">
+            <div style="color:#4ade80;font-weight:bold;font-size:14px;margin-bottom:16px">📬 Νέος Χρήστης</div>
             <table style="width:100%;font-size:14px;border-collapse:collapse">
               <tr>
-                <td style="padding:8px 0;font-weight:bold;color:#374151">Όνομα:</td>
-                <td style="padding:8px 0;color:#111">${name || "—"}</td>
+                <td style="padding:8px 0;font-weight:bold;color:#94a3b8">Όνομα:</td>
+                <td style="padding:8px 0;color:#f1f5f9">${name || "—"}</td>
               </tr>
               <tr>
-                <td style="padding:8px 0;font-weight:bold;color:#374151">Email:</td>
-                <td style="padding:8px 0;color:#111">${email}</td>
+                <td style="padding:8px 0;font-weight:bold;color:#94a3b8">Email:</td>
+                <td style="padding:8px 0;color:#f1f5f9">${email}</td>
               </tr>
               <tr>
-                <td style="padding:8px 0;font-weight:bold;color:#374151">Ημερομηνία:</td>
-                <td style="padding:8px 0;color:#111">${new Date().toLocaleString("el-GR", { timeZone: "Europe/Athens" })}</td>
+                <td style="padding:8px 0;font-weight:bold;color:#94a3b8">Ημερομηνία:</td>
+                <td style="padding:8px 0;color:#f1f5f9">${new Date().toLocaleString("el-GR", { timeZone: "Europe/Athens" })}</td>
               </tr>
             </table>
+          </div>
+          <div style="background:#1a1a2e;padding:12px;border-radius:0 0 12px 12px;text-align:center;border:1px solid #374151;border-top:none">
+            <span style="color:#64748b;font-size:11px">fueltrack.me</span>
           </div>
         </div>
       `,

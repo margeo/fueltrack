@@ -77,11 +77,13 @@ export default function SummaryTab({
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
   const [groceryList, setGroceryList] = useState(savedGrocery?.content || null);
   const [groceryLoading, setGroceryLoading] = useState(false);
+  const [groceryExpanded, setGroceryExpanded] = useState(false);
 
   async function generateGroceryList(plan) {
     if (!plan?.content) return;
     setGroceryLoading(true);
     setGroceryList(null);
+    setGroceryExpanded(true);
     try {
       const systemPrompt = `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
 ΚΑΝΟΝΕΣ:
@@ -217,20 +219,21 @@ export default function SummaryTab({
             )}
             {type === "meal" && (groceryLoading || groceryList) && (
               <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px solid var(--border-soft)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groceryExpanded ? 8 : 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 {t("summary.groceryList")}</div>
                   {groceryList && (
                     <div style={{ display: "flex", gap: 5 }}>
+                      <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
                       <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
-                      <button className="btn btn-light" onClick={() => { setGroceryList(null); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+                      <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
                     </div>
                   )}
                 </div>
                 {groceryLoading ? (
                   <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
-                ) : (
+                ) : groceryExpanded ? (
                   <GroceryListView content={groceryList} />
-                )}
+                ) : null}
               </div>
             )}
           </>

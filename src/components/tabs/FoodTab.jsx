@@ -279,7 +279,7 @@ export default function FoodTab({
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2>🥗 {t("food.dayTitle")}</h2>
+          <h2>🍔 {t("food.dayTitle")}</h2>
           <span style={{ fontWeight: 800, fontSize: 18 }}>{formatNumber(totalFoodCalories)} kcal</span>
         </div>
         {entries.length === 0 ? (

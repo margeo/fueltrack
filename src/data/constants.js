@@ -15,7 +15,7 @@ export const APP_TABS = [
   { key: "summary", labelKey: "tabs.summary", icon: "📊" },
   { key: "food", labelKey: "tabs.food", icon: "🍔" },
   { key: "exercise", labelKey: "tabs.exercise", icon: "💪" },
-  { key: "profile", labelKey: "tabs.profile", icon: "👤" }
+  { key: "profile", labelKey: "tabs.profile", icon: "🧑" }
 ];
 
 export const EXERCISE_LIBRARY = [
