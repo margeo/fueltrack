@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>FuelTrack — Pricing Model</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  h2 { font-size: 18px; margin-top: 32px; color: #333; border-bottom: 2px solid #e5e5e5; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+  th { background: #1a1a1a; color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e5e5e5; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .yes { color: #16a34a; font-weight: 700; }
+  .no { color: #dc2626; font-weight: 700; }
+  .trial { color: #d97706; font-weight: 700; }
+  .unlimited { color: #16a34a; font-weight: 700; }
+  .note { background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 12px 16px; font-size: 13px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+  .logic { background: #f9fafb; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .logic ol { margin: 8px 0; padding-left: 20px; }
+  .logic li { margin-bottom: 6px; font-size: 14px; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e5e5; color: #999; font-size: 12px; }
+  @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+
+<h1>FuelTrack — Pricing Model</h1>
+<div class="subtitle">fueltrack.me &bull; Fitness &amp; Nutrition PWA &bull; Updated April 2026</div>
+
+<h2>Features ανά Plan</h2>
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>Χωρίς account</th>
+    <th>Free account</th>
+    <th>Paid ($2.99/μο)</th>
+    <th>Demo</th>
+  </tr>
+  <tr>
+    <td>Food tracking</td>
+    <td class="yes">✅ localStorage</td>
+    <td class="yes">✅ Supabase sync</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+  </tr>
+  <tr>
+    <td>Exercise, macros</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+  </tr>
+  <tr>
+    <td>Barcode scan</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+  </tr>
+  <tr>
+    <td>Data backup/sync</td>
+    <td class="no">❌</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+  </tr>
+  <tr>
+    <td>Multi-device</td>
+    <td class="no">❌</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+    <td class="yes">✅</td>
+  </tr>
+  <tr>
+    <td>AI Coach</td>
+    <td class="no">❌</td>
+    <td class="trial">🟡 Trial (20 requests)</td>
+    <td class="yes">✅</td>
+    <td class="unlimited">✅ Unlimited</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>AI Coach</strong> περιλαμβάνει: Meal plans, Training plans, Grocery lists, Αναλύσεις, Ερωτήσεις — όλα μετράνε από τον ίδιο μετρητή requests.
+</div>
+
+<h2>AI Limits (ένας μετρητής για όλα)</h2>
+<table>
+  <tr>
+    <th>Limit</th>
+    <th>Χωρίς account</th>
+    <th>Free</th>
+    <th>Paid</th>
+    <th>Demo</th>
+  </tr>
+  <tr>
+    <td>Daily</td>
+    <td class="no">❌</td>
+    <td>5</td>
+    <td>500</td>
+    <td class="unlimited">∞</td>
+  </tr>
+  <tr>
+    <td>Monthly</td>
+    <td class="no">❌</td>
+    <td>20</td>
+    <td>500</td>
+    <td class="unlimited">∞</td>
+  </tr>
+  <tr>
+    <td>Lifetime</td>
+    <td class="no">❌</td>
+    <td><strong>20</strong></td>
+    <td class="unlimited">∞</td>
+    <td class="unlimited">∞</td>
+  </tr>
+  <tr>
+    <td>Extra pack</td>
+    <td>—</td>
+    <td>—</td>
+    <td>+500 για $2.99</td>
+    <td>—</td>
+  </tr>
+</table>
+
+<h2>Λογική</h2>
+<div class="logic">
+  <ol>
+    <li><strong>Χωρίς account</strong> → Χρησιμοποιείς το app κανονικά (food tracking, exercise, barcode), αλλά χωρίς AI και χωρίς backup</li>
+    <li><strong>Free account</strong> → Backup/sync + <strong>20 δοκιμαστικά AI requests</strong> (lifetime). Κίνητρο: backup = ασφάλεια</li>
+    <li><strong>Paid $2.99/μο</strong> → AI Coach πλήρως, <strong>500 requests total/μήνα</strong>. Θέλει παραπάνω; +500 με $2.99 extra</li>
+    <li><strong>Demo</strong> → Unlimited AI, δίνεται χειροκίνητα από admin panel</li>
+  </ol>
+</div>
+
+<div class="note">
+  <strong>500 requests</strong> = meal plans + training plans + grocery lists + ερωτήσεις + αναλύσεις. Όλα μαζί, ένας μετρητής. Δεν είναι 500 ανά τύπο.
+</div>
+
+<div class="footer">
+  FuelTrack &copy; 2026 &bull; Internal document
+</div>
+
+</body>
+</html>
