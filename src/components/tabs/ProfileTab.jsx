@@ -168,7 +168,7 @@ export default function ProfileTab({
   const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0 ? kilosNum / weeksNum : 0;
   const isCapped = goalType === "lose" && rawDeficit > 1000;
 
-  const inputStyle = {};
+  const inputStyle = { padding: "10px 12px", fontSize: 13 };
 
   return (
     <>
@@ -233,14 +233,14 @@ export default function ProfileTab({
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.gender")}</div>
-            <select className="input" value={gender} onChange={(e) => { setGender(e.target.value); flashSaved(); }}>
+            <select className="input" style={inputStyle} value={gender} onChange={(e) => { setGender(e.target.value); flashSaved(); }}>
               <option value="male">{t("profile.male")}</option>
               <option value="female">{t("profile.female")}</option>
             </select>
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.goal")}</div>
-            <select className="input" value={goalType} onChange={(e) => { setGoalType(e.target.value); flashSaved(); }}>
+            <select className="input" style={inputStyle} value={goalType} onChange={(e) => { setGoalType(e.target.value); flashSaved(); }}>
               <option value="lose" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.loseShort")}</option>
               <option value="maintain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.maintainShort")}</option>
               <option value="gain" style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{t("goals.gainShort")}</option>
@@ -249,7 +249,7 @@ export default function ProfileTab({
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.activityLevel")}</div>
-            <select className="input" value={activity} onChange={(e) => { setActivity(e.target.value); flashSaved(); }}>
+            <select className="input" style={inputStyle} value={activity} onChange={(e) => { setActivity(e.target.value); flashSaved(); }}>
               <option value="1.2">{t("profile.sedentary")}</option>
               <option value="1.4">{t("profile.light")}</option>
               <option value="1.6">{t("profile.moderate")}</option>
@@ -258,7 +258,7 @@ export default function ProfileTab({
           </label>
           <label className="profile-field" style={{ gridColumn: "1 / -1" }}>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.dietMode")}</div>
-            <select className="input" value={mode} onChange={(e) => { setMode(e.target.value); flashSaved(); }}>
+            <select className="input" style={inputStyle} value={mode} onChange={(e) => { setMode(e.target.value); flashSaved(); }}>
               {MODE_GROUPS.map((group) => (
                 <optgroup key={group.group} label={t(MODE_GROUP_KEYS[group.group])}>
                   {group.modes.map((modeKey) => {
@@ -288,8 +288,8 @@ export default function ProfileTab({
 
       {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
       {showGoalFields && (
-        <div style={{ background: "var(--bg-soft)", borderRadius: 16, padding: "16px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>{t("profile.yourGoal")}</div>
+        <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>{t("profile.yourGoal")}</div>
           <div className="grid-2 profile-grid-compact">
             <label className="profile-field">
               <div className="profile-label">{goalType === "lose" ? t("profile.wantToLose") : t("profile.wantToGain")}</div>
