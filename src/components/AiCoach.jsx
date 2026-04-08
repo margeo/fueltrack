@@ -53,8 +53,8 @@ export default function AiCoach({
   const [isPaid, setIsPaid] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
-  const DAILY_LIMIT_FREE = 2;
-  const MONTHLY_LIMIT_FREE = 10;
+  const DAILY_LIMIT_FREE = 5;
+  const MONTHLY_LIMIT_FREE = 20;
   const LIFETIME_LIMIT_FREE = 20;
   const DAILY_LIMIT_PAID = 30;
   const MONTHLY_LIMIT_PAID = 300;
