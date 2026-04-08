@@ -32,6 +32,14 @@ const defaultProps = {
   isFavoriteExercise: vi.fn(() => false),
   recentExercises: [],
   quickAddRecentExercise: vi.fn(),
+  fitnessLevel: "",
+  setFitnessLevel: vi.fn(),
+  workoutLocation: "",
+  setWorkoutLocation: vi.fn(),
+  equipment: [],
+  setEquipment: vi.fn(),
+  limitations: "",
+  setLimitations: vi.fn(),
 };
 
 function renderExerciseTab(overrides = {}) {

@@ -42,6 +42,14 @@ const defaultProps = {
   groupedEntries: {},
   deleteEntry: vi.fn(),
   openEditEntry: vi.fn(),
+  dietType: "",
+  setDietType: vi.fn(),
+  allergies: [],
+  setAllergies: vi.fn(),
+  cookingLevel: "",
+  setCookingLevel: vi.fn(),
+  cookingTime: "",
+  setCookingTime: vi.fn(),
 };
 
 function renderFoodTab(overrides = {}) {
@@ -87,7 +95,7 @@ describe("FoodTab", () => {
     expect(screen.getByText(/High Protein/)).toBeTruthy();
     expect(screen.getByText(/Low Carb/)).toBeTruthy();
     expect(screen.getByText(/Low Cal/)).toBeTruthy();
-    expect(screen.getByText(/Keto/)).toBeTruthy();
+    expect(screen.getByText(/⚡ Keto/)).toBeTruthy();
   });
 
   it("renders Photo and Barcode buttons", () => {
