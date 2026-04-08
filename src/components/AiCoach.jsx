@@ -143,12 +143,14 @@ export default function AiCoach({
     const last = messages[messages.length - 1];
     if (last.role !== "assistant") return;
     const text = last.text;
-    const hasMealPlan = text.includes("Σύνολο:") && text.includes("🌅") && text.includes("🌞") && text.includes("🌙");
+    const hasMealPlan = (text.includes("Σύνολο:") || text.includes("Total:")) && text.includes("🌅") && text.includes("🌞") && text.includes("🌙");
     const hasTrainingPlan = !hasMealPlan && text.includes("📅") && (
-      text.includes("σετ ×") || (text.includes("λεπτά") && text.includes("💪"))
+      text.includes("σετ ×") || text.includes("sets ×") || text.includes("sets x") ||
+      (text.includes("💪") && (text.includes("λεπτά") || text.includes("min") || text.includes("😴")))
     );
-    if (hasMealPlan) onSavePlan?.({ type: "meal", content: text, date: new Date().toLocaleDateString("el-GR") });
-    else if (hasTrainingPlan) onSavePlan?.({ type: "training", content: text, date: new Date().toLocaleDateString("el-GR") });
+    const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
+    if (hasMealPlan) onSavePlan?.({ type: "meal", content: text, date: dateStr });
+    else if (hasTrainingPlan) onSavePlan?.({ type: "training", content: text, date: dateStr });
   }, [messages]);
 
   function buildSystemPrompt(taskType = "general") {
