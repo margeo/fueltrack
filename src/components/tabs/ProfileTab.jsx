@@ -5,6 +5,17 @@ import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../
 import { formatNumber } from "../../utils/helpers";
 import { MODE_GROUPS, MODES } from "../../data/modes";
 
+// Unit conversion helpers
+const kgToLbs = (kg) => (Number(kg) * 2.20462).toFixed(1);
+const lbsToKg = (lbs) => (Number(lbs) / 2.20462).toFixed(1);
+const cmToFeetInches = (cm) => {
+  const totalInches = Number(cm) / 2.54;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches % 12);
+  return { feet, inches };
+};
+const feetInchesToCm = (feet, inches) => Math.round((Number(feet) * 12 + Number(inches)) * 2.54);
+
 const MODE_GROUP_KEYS = {
   "🥗 Ισορροπημένες": "modeGroups.balanced",
   "🥩 High Protein": "modeGroups.highProtein",
@@ -80,19 +91,34 @@ export default function ProfileTab({
   onLogout, userEmail, userName, onShowAuth, onShowRegister
 }) {
   const { t, i18n } = useTranslation();
+  const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
+  const isImperial = units === "imperial";
+
   const [localAge, setLocalAge] = useState(age);
+  const [localWeight, setLocalWeight] = useState(() => isImperial && weight ? kgToLbs(weight) : weight);
+  const [localFeet, setLocalFeet] = useState(() => height ? cmToFeetInches(height).feet : "");
+  const [localInches, setLocalInches] = useState(() => height ? cmToFeetInches(height).inches : "");
   const [localHeight, setLocalHeight] = useState(height);
-  const [localWeight, setLocalWeight] = useState(weight);
-  const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(targetWeightLoss);
+  const [localTargetWeightLoss, setLocalTargetWeightLoss] = useState(() => isImperial && targetWeightLoss ? kgToLbs(targetWeightLoss) : targetWeightLoss);
   const [localWeeks, setLocalWeeks] = useState(weeks);
   const [showSaved, setShowSaved] = useState(false);
   const savedTimer = useRef(null);
 
   useEffect(() => { setLocalAge(age); }, [age]);
-  useEffect(() => { setLocalHeight(height); }, [height]);
-  useEffect(() => { setLocalWeight(weight); }, [weight]);
-  useEffect(() => { setLocalTargetWeightLoss(targetWeightLoss); }, [targetWeightLoss]);
+  useEffect(() => {
+    setLocalHeight(height);
+    if (height) { const fi = cmToFeetInches(height); setLocalFeet(fi.feet); setLocalInches(fi.inches); }
+  }, [height]);
+  useEffect(() => { setLocalWeight(isImperial && weight ? kgToLbs(weight) : weight); }, [weight, isImperial]);
+  useEffect(() => { setLocalTargetWeightLoss(isImperial && targetWeightLoss ? kgToLbs(targetWeightLoss) : targetWeightLoss); }, [targetWeightLoss, isImperial]);
   useEffect(() => { setLocalWeeks(weeks); }, [weeks]);
+
+  function toggleUnits() {
+    const next = isImperial ? "metric" : "imperial";
+    setUnits(next);
+    localStorage.setItem("ft_units", next);
+    flashSaved();
+  }
 
   function flashSaved() {
     setShowSaved(true);
@@ -133,11 +159,17 @@ export default function ProfileTab({
       <div className="day-card">
         <div className="day-card-total">
           <h2><span style={{ filter: "sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)" }}>👤</span> {t("profile.title")}</h2>
-          {showSaved && (
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-green)", transition: "opacity 0.3s" }}>
-              ✓ {t("profile.saved")}
-            </span>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {showSaved && (
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-green)", transition: "opacity 0.3s" }}>
+                ✓ {t("profile.saved")}
+              </span>
+            )}
+            <button type="button" onClick={toggleUnits}
+              className="btn btn-light" style={{ fontSize: 11, padding: "4px 8px", whiteSpace: "nowrap" }}>
+              {isImperial ? "lb/ft" : "kg/cm"}
+            </button>
+          </div>
         </div>
 
         {!profileComplete && (
@@ -149,16 +181,32 @@ export default function ProfileTab({
 
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.weight")}</div>
-            <input className="input" placeholder="kg" inputMode="decimal" value={localWeight}
-              onChange={(e) => setLocalWeight(e.target.value)} onBlur={() => { setWeight(localWeight); flashSaved(); }}
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{isImperial ? t("profile.weightLbs") : t("profile.weight")}</div>
+            <input className="input" placeholder={isImperial ? "lbs" : "kg"} inputMode="decimal" value={localWeight}
+              onChange={(e) => setLocalWeight(e.target.value)}
+              onBlur={() => { const kg = isImperial ? lbsToKg(localWeight) : localWeight; setWeight(kg); flashSaved(); }}
               style={inputStyle} />
           </label>
           <label className="profile-field">
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.height")}</div>
-            <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => { setHeight(localHeight); flashSaved(); }}
-              style={inputStyle} />
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{isImperial ? t("profile.heightFt") : t("profile.height")}</div>
+            {isImperial ? (
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input className="input" placeholder="ft" inputMode="numeric" value={localFeet}
+                  onChange={(e) => setLocalFeet(e.target.value)}
+                  onBlur={() => { setHeight(feetInchesToCm(localFeet, localInches)); flashSaved(); }}
+                  style={{ ...inputStyle, flex: 1 }} />
+                <span className="muted" style={{ fontSize: 11 }}>ft</span>
+                <input className="input" placeholder="in" inputMode="numeric" value={localInches}
+                  onChange={(e) => setLocalInches(e.target.value)}
+                  onBlur={() => { setHeight(feetInchesToCm(localFeet, localInches)); flashSaved(); }}
+                  style={{ ...inputStyle, flex: 1 }} />
+                <span className="muted" style={{ fontSize: 11 }}>in</span>
+              </div>
+            ) : (
+              <input className="input" placeholder="cm" inputMode="numeric" value={localHeight}
+                onChange={(e) => setLocalHeight(e.target.value)} onBlur={() => { setHeight(localHeight); flashSaved(); }}
+                style={inputStyle} />
+            )}
           </label>
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{t("profile.age")}</div>
@@ -231,8 +279,8 @@ export default function ProfileTab({
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input className="input" inputMode="decimal" value={localTargetWeightLoss}
                   onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                  onBlur={() => { setTargetWeightLoss(localTargetWeightLoss); flashSaved(); }} />
-                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.kilos")}</span>
+                  onBlur={() => { const kg = isImperial ? lbsToKg(localTargetWeightLoss) : localTargetWeightLoss; setTargetWeightLoss(kg); flashSaved(); }} />
+                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{isImperial ? "lbs" : t("common.kilos")}</span>
               </div>
             </label>
             <label className="profile-field">
