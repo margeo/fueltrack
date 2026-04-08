@@ -132,7 +132,7 @@ export default function ProfileTab({
       {/* ΤΑ ΒΑΣΙΚΑ — dark hero card */}
       <div className="day-card">
         <div className="day-card-total">
-          <h2>{`👤 ${t("profile.title")}`}</h2>
+          <h2><span style={{ filter: "sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)" }}>👤</span> {t("profile.title")}</h2>
           {showSaved && (
             <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-green)", transition: "opacity 0.3s" }}>
               ✓ {t("profile.saved")}
