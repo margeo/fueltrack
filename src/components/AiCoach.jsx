@@ -57,6 +57,7 @@ export default function AiCoach({
   const DAILY_LIMIT_FREE = 5;
   const MONTHLY_LIMIT_FREE = 20;
   const LIFETIME_LIMIT_FREE = 20;
+  const MONTHLY_LIMIT_PAID = 500;
 
   const [monthlyCount, setMonthlyCount] = useState(0);
   const [lifetimeCount, setLifetimeCount] = useState(0);
@@ -98,11 +99,12 @@ export default function AiCoach({
   }
 
   const needsAccount = !session;
-  const unlimited = isPaid || isDemo;
-  const dailyLimit = unlimited ? 50 : DAILY_LIMIT_FREE;
-  const monthlyLimitReached = !unlimited && monthlyCount >= MONTHLY_LIMIT_FREE;
-  const lifetimeLimitReached = !unlimited && lifetimeCount >= LIFETIME_LIMIT_FREE;
-  const limitReached = needsAccount || dailyCount >= dailyLimit || monthlyLimitReached || lifetimeLimitReached;
+  const unlimited = isDemo;
+  const dailyLimitReached = !unlimited && !isPaid && dailyCount >= DAILY_LIMIT_FREE;
+  const monthlyLimitReached = !unlimited && (isPaid ? monthlyCount >= MONTHLY_LIMIT_PAID : monthlyCount >= MONTHLY_LIMIT_FREE);
+  const lifetimeLimitReached = !unlimited && !isPaid && lifetimeCount >= LIFETIME_LIMIT_FREE;
+  const paidMonthlyLimitReached = isPaid && !unlimited && monthlyCount >= MONTHLY_LIMIT_PAID;
+  const limitReached = needsAccount || dailyLimitReached || monthlyLimitReached || lifetimeLimitReached;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -372,19 +374,34 @@ ${askChange}`;
 
       {limitReached && (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>{needsAccount ? "🔒" : lifetimeLimitReached ? "🚀" : "⏳"}</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>{needsAccount ? "🔒" : paidMonthlyLimitReached ? "📊" : lifetimeLimitReached ? "🚀" : "⏳"}</div>
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
-            {needsAccount ? t("aiCoach.needsAccountTitle") : lifetimeLimitReached ? t("aiCoach.lifetimeLimitTitle") : t("aiCoach.limitTitle")}
+            {needsAccount ? t("aiCoach.needsAccountTitle")
+              : paidMonthlyLimitReached ? t("aiCoach.paidLimitTitle")
+              : lifetimeLimitReached ? t("aiCoach.lifetimeLimitTitle")
+              : t("aiCoach.limitTitle")}
           </div>
           <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
             {needsAccount
               ? t("aiCoach.needsAccountDesc")
+              : paidMonthlyLimitReached
+              ? t("aiCoach.paidLimitDesc", { limit: MONTHLY_LIMIT_PAID })
               : lifetimeLimitReached
               ? t("aiCoach.lifetimeLimitDesc", { limit: LIFETIME_LIMIT_FREE })
               : monthlyLimitReached
               ? t("aiCoach.monthlyLimitDesc", { limit: MONTHLY_LIMIT_FREE })
-              : t("aiCoach.limitDesc", { limit: dailyLimit })}
+              : t("aiCoach.limitDesc", { limit: DAILY_LIMIT_FREE })}
           </div>
+          {paidMonthlyLimitReached && (
+            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
+              {t("aiCoach.paidLimitExtra")}
+            </div>
+          )}
+          {!needsAccount && !isPaid && (lifetimeLimitReached || monthlyLimitReached) && (
+            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
+              {t("aiCoach.upgradeHint")}
+            </div>
+          )}
           {needsAccount && onShowAuth && (
             <div>
               <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8, margin: "16px 0" }}>
