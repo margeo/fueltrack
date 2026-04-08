@@ -110,6 +110,7 @@ export default function AiCoach({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(true);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
   const lastAssistantRef = useRef(null);
@@ -502,8 +503,9 @@ ${askChange}`;
       )}
 
       {messages.length > 0 && (
-        <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12, maxHeight: 500, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
-          {messages.map((msg, i) => (
+        <div>
+          <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 8, maxHeight: chatExpanded ? 500 : 150, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent", transition: "max-height 0.3s ease", position: "relative" }}>
+            {messages.map((msg, i) => (
             <div key={i} ref={msg.role === "assistant" && i === messages.length - 1 ? lastAssistantRef : null} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
               {msg.msgType === "eatnow" ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
@@ -516,12 +518,19 @@ ${askChange}`;
               )}
             </div>
           ))}
-          {loading && (
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
-                💭 {t("aiCoach.thinking")}
+            {loading && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, color: "var(--text-muted)" }}>
+                  💭 {t("aiCoach.thinking")}
+                </div>
               </div>
-            </div>
+            )}
+          </div>
+          {!loading && (
+            <button type="button" onClick={() => setChatExpanded(prev => !prev)}
+              style={{ width: "100%", padding: "6px 0", border: "none", background: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
+              {chatExpanded ? "▲ Collapse" : "▼ Expand"}
+            </button>
           )}
         </div>
       )}
