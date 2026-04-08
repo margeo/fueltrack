@@ -319,7 +319,7 @@ RULES:
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <div style={{ flex: 2, textAlign: "center" }}>
               <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1, color: getRemainingColor() }}>{formatNumber(remainingCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 4 }}>{t("summary.remaining")}</div>
+              <div className="hero-subtle" style={{ fontSize: 10, marginTop: 4 }}>kcal {t("summary.remaining").toLowerCase()}</div>
             </div>
             <div className="hero-subtle" style={{ fontSize: 16, fontWeight: 700 }}>=</div>
             <div style={{ flex: 1, textAlign: "center" }}>
