@@ -268,7 +268,7 @@ RULES:
 
   function GrocerySection() {
     return (
-      <div className="card">
+      <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (groceryExpanded || groceryLoading || (!groceryList && mealPlan)) ? 8 : 0 }}>
           <div style={{ fontWeight: 700, fontSize: 15 }}>🛒 {t("summary.groceryList")}</div>
           {groceryList ? (
@@ -368,31 +368,37 @@ RULES:
         </div>
       </div>
 
-      {/* 3. AI COACH */}
-      <AiCoach
-        last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
-        proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
-        weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
-        totalCalories={totalCalories} totalProtein={totalProtein} exerciseValue={exerciseValue}
-        remainingCalories={remainingCalories} favoriteFoodsText={favoriteFoodsText}
-        favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
-        age={age} weight={weight} height={height} gender={gender}
-        savedPlans={savedPlans} onSavePlan={onSavePlan}
-        session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
-        foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime} simpleMode={simpleMode}
-        fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
-        workoutFrequency={workoutFrequency} sessionDuration={sessionDuration} fitnessGoals={fitnessGoals} exerciseCategories={exerciseCategories}
-      />
+      {/* 3. AI COACH + PLANS (connected) */}
+      <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, overflow: "hidden" }}>
+        <div style={{ padding: 16 }}>
+          <AiCoach
+            last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
+            proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
+            weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
+            totalCalories={totalCalories} totalProtein={totalProtein} exerciseValue={exerciseValue}
+            remainingCalories={remainingCalories} favoriteFoodsText={favoriteFoodsText}
+            favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
+            age={age} weight={weight} height={height} gender={gender}
+            savedPlans={savedPlans} onSavePlan={onSavePlan}
+            session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
+            foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime} simpleMode={simpleMode}
+            fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
+            workoutFrequency={workoutFrequency} sessionDuration={sessionDuration} fitnessGoals={fitnessGoals} exerciseCategories={exerciseCategories}
+          />
+        </div>
 
-      {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}
-      <div className="card">
-        <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
-      </div>
+        {/* PLANS — connected under AI Coach */}
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
+        </div>
 
-      <GrocerySection />
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+          <GrocerySection />
+        </div>
 
-      <div className="card">
-        <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+          <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
+        </div>
       </div>
 
       {/* 5. ΠΡΟΟΔΟΣ */}

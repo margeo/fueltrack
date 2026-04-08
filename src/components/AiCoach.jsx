@@ -410,7 +410,7 @@ ${askChange}`;
   }
 
   return (
-    <div className="card">
+    <div>
       <div style={{ marginBottom: 12 }}>
         <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
         <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
