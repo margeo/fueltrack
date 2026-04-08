@@ -472,10 +472,9 @@ ${askChange}`;
 
       {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
-          {(!foodCategories?.length && !fitnessLevel) && (
-            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.5 }}>
-              💡 <strong>{t("aiCoach.prefsHintTitle")}</strong><br />
-              {t("aiCoach.prefsHintDesc")}
+          {(!foodCategories?.length || !fitnessLevel) && (
+            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-line" }}>
+              💡 <strong>{t("aiCoach.prefsHintTitle")}</strong>{"\n"}{t("aiCoach.prefsHintDesc")}
             </div>
           )}
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
