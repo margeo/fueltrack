@@ -27,7 +27,7 @@ export async function handler(event) {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
-        max_tokens: 4000,
+        max_tokens: 8000,
         temperature: 0.7,
         messages: [
           { role: "system", content: systemPrompt },
