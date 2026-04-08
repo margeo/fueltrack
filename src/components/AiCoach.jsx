@@ -133,14 +133,12 @@ export default function AiCoach({
     if (!messages.length) return;
     const last = messages[messages.length - 1];
     if (last.role === "assistant") {
-      coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       setTimeout(() => {
+        coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         if (lastAssistantRef.current && chatRef.current) {
-          const container = chatRef.current;
-          const msg = lastAssistantRef.current;
-          container.scrollTop = msg.offsetTop;
+          chatRef.current.scrollTop = lastAssistantRef.current.offsetTop;
         }
-      }, 150);
+      }, 200);
     } else {
       const el = chatRef.current;
       if (el) el.scrollTop = el.scrollHeight;

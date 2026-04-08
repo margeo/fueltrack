@@ -372,7 +372,7 @@ RULES:
       </div>
 
       {/* 2. AI COACH + PLANS (connected) */}
-      <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, overflow: "hidden" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16 }}>
         <div style={{ padding: 16 }}>
           <AiCoach
             last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
