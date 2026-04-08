@@ -110,9 +110,9 @@ describe("SummaryTab", () => {
 
   it("renders macro bars section", () => {
     renderSummary();
-    expect(screen.getByText("Πρωτεΐνη")).toBeTruthy();
-    expect(screen.getByText("Υδατάνθρακες")).toBeTruthy();
-    expect(screen.getByText("Λίπος")).toBeTruthy();
+    expect(screen.getByText("Protein")).toBeTruthy();
+    expect(screen.getByText("Carbs")).toBeTruthy();
+    expect(screen.getByText("Fat")).toBeTruthy();
   });
 
   it("shows macro values with targets", () => {
