@@ -102,6 +102,7 @@
     "noTrainingPlan": "Δεν έχεις ακόμα πρόγραμμα γυμναστικής. Ρώτα τον AI Coach!",
     "savedOn": "Αποθηκεύτηκε: {{date}}",
     "groceryList": "Λίστα σούπερ μάρκετ",
+    "groceryBtn": "Λίστα",
     "groceryLoading": "Δημιουργία λίστας... ⏳",
     "groceryError": "Σφάλμα δημιουργίας λίστας",
     "progress": "Πρόοδος",

@@ -195,7 +195,7 @@ export default function SummaryTab({
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
               {type === "meal" && (
-                <button className="btn btn-dark" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 Λίστα</button>
+                <button className="btn btn-dark" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
               )}
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
@@ -217,27 +217,31 @@ export default function SummaryTab({
                 {plan.content}
               </div>
             )}
-            {type === "meal" && (groceryLoading || groceryList) && (
-              <div style={{ marginTop: 12, background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", border: "1px solid var(--border-soft)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groceryExpanded ? 8 : 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13 }}>🛒 {t("summary.groceryList")}</div>
-                  {groceryList && (
-                    <div style={{ display: "flex", gap: 5 }}>
-                      <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
-                      <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
-                      <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
-                    </div>
-                  )}
-                </div>
-                {groceryLoading ? (
-                  <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
-                ) : groceryExpanded ? (
-                  <GroceryListView content={groceryList} />
-                ) : null}
-              </div>
-            )}
           </>
         )}
+      </div>
+    );
+  }
+
+  function GrocerySection() {
+    if (!groceryLoading && !groceryList) return null;
+    return (
+      <div className="card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groceryExpanded ? 8 : 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>🛒 {t("summary.groceryList")}</div>
+          {groceryList && (
+            <div style={{ display: "flex", gap: 5 }}>
+              <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
+              <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+              <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+            </div>
+          )}
+        </div>
+        {groceryLoading ? (
+          <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
+        ) : groceryExpanded ? (
+          <GroceryListView content={groceryList} />
+        ) : null}
       </div>
     );
   }
@@ -331,15 +335,13 @@ export default function SummaryTab({
 
       {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}
       <div className="card">
-        <h2>📋 {t("summary.myPlans")}</h2>
-        <div className="muted" style={{ fontSize: 12, marginBottom: 14 }}>
-          {t("summary.plansDisclaimer")}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
-          <div style={{ height: 1, background: "var(--border-soft)" }} />
-          <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
-        </div>
+        <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
+      </div>
+
+      <GrocerySection />
+
+      <div className="card">
+        <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
       </div>
 
       {/* 5. ΠΡΟΟΔΟΣ */}

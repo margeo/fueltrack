@@ -131,7 +131,6 @@ describe("SummaryTab", () => {
 
   it("renders plans section", () => {
     renderSummary();
-    expect(screen.getByText(/Τα προγράμματά μου/)).toBeTruthy();
     expect(screen.getByText(/Πρόγραμμα διατροφής/)).toBeTruthy();
     expect(screen.getByText(/Πρόγραμμα γυμναστικής/)).toBeTruthy();
   });
