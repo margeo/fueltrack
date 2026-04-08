@@ -559,15 +559,18 @@ export default function FoodTab({
             );
           })()}
 
-          {/* Simple groceries toggle */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
-            <button type="button" onClick={() => setSimpleMode(!simpleMode)}
-              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
-                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
-              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
-                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
-            </button>
-            <span className="muted" style={{ fontSize: 12 }}>🛒 {t("aiCoach.simpleMode")} — {t("aiCoach.simpleModeDesc")}</span>
+          {/* Simple groceries */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>🛒 {t("aiCoach.simpleMode")}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="muted" style={{ fontSize: 11 }}>{t("aiCoach.simpleModeDesc")}</span>
+              <button type="button" onClick={() => setSimpleMode(!simpleMode)}
+                style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
+                  background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+                <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
+                  transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
