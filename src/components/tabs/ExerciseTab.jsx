@@ -32,7 +32,8 @@ export default function ExerciseTab({
   fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
   equipment, setEquipment, limitations, setLimitations,
   workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
-  fitnessGoals, setFitnessGoals
+  fitnessGoals, setFitnessGoals,
+  exerciseCategories, setExerciseCategories
 }) {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("Όλα");
@@ -396,6 +397,46 @@ export default function ExerciseTab({
               </div>
             );
           })()}
+
+          {/* Exercise categories from library */}
+          {["Cardio", "Gym", "Training", "Sports"].map((cat) => {
+            const catKey = "excat_" + cat;
+            const isOpen = expandedSections[catKey];
+            const catExercises = EXERCISE_LIBRARY.filter(e => e.category === cat);
+            const selectedCount = catExercises.filter(e => (exerciseCategories || []).includes(e.name)).length;
+            const catIcons = { Cardio: "🏃", Gym: "🏋️", Training: "🔥", Sports: "⚽" };
+            return (
+              <div key={cat}>
+                <button type="button" onClick={() => setExpandedSections(prev => ({ ...prev, [catKey]: !prev[catKey] }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{catIcons[cat]} {t("exercise.categories." + cat.toLowerCase())}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {selectedCount > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{selectedCount}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                    {catExercises.map((ex) => {
+                      const active = (exerciseCategories || []).includes(ex.name);
+                      return (
+                        <button key={ex.name} type="button"
+                          onClick={() => setExerciseCategories(prev => {
+                            const list = prev || [];
+                            return active ? list.filter(x => x !== ex.name) : [...list, ex.name];
+                          })}
+                          style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                            color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {ex.icon} {t("exerciseNames." + ex.name, { defaultValue: ex.name })}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {/* Limitations */}
           {(() => {

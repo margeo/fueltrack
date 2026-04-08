@@ -46,6 +46,8 @@ const defaultProps = {
   setSessionDuration: vi.fn(),
   fitnessGoals: [],
   setFitnessGoals: vi.fn(),
+  exerciseCategories: [],
+  setExerciseCategories: vi.fn(),
 };
 
 function renderExerciseTab(overrides = {}) {
@@ -74,10 +76,10 @@ describe("ExerciseTab", () => {
   it("renders category filter buttons", () => {
     renderExerciseTab();
     expect(screen.getByText("Όλα")).toBeTruthy();
-    expect(screen.getByText("🏃 Cardio")).toBeTruthy();
-    expect(screen.getByText("🏋️ Gym")).toBeTruthy();
-    expect(screen.getByText("🔥 Training")).toBeTruthy();
-    expect(screen.getByText("⚽ Sports")).toBeTruthy();
+    expect(screen.getAllByText("🏃 Cardio").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("🏋️ Gym").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("🔥 Training").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("⚽ Sports").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders exercise search input", () => {
@@ -129,7 +131,7 @@ describe("ExerciseTab", () => {
 
   it("filters exercises by category", () => {
     renderExerciseTab();
-    fireEvent.click(screen.getByText(/Sports/));
+    fireEvent.click(screen.getAllByText(/Sports/)[0]);
     const select = screen.getByDisplayValue("— Επίλεξε άσκηση —");
     // After filtering to Sports, gym exercises should not appear
     const options = select.querySelectorAll("option");

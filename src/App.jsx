@@ -78,6 +78,7 @@ export default function App() {
   const [workoutFrequency, setWorkoutFrequency] = useState(() => loadValue("ft_workoutFrequency", ""));
   const [sessionDuration, setSessionDuration] = useState(() => loadValue("ft_sessionDuration", ""));
   const [fitnessGoals, setFitnessGoals] = useState(() => loadJSON("ft_fitnessGoals", []));
+  const [exerciseCategories, setExerciseCategories] = useState(() => loadJSON("ft_exerciseCategories", []));
 
   const [foods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
@@ -177,6 +178,7 @@ export default function App() {
   useEffect(() => saveValue("ft_workoutFrequency", workoutFrequency), [workoutFrequency]);
   useEffect(() => saveValue("ft_sessionDuration", sessionDuration), [sessionDuration]);
   useEffect(() => saveJSON("ft_fitnessGoals", fitnessGoals), [fitnessGoals]);
+  useEffect(() => saveJSON("ft_exerciseCategories", exerciseCategories), [exerciseCategories]);
 
   useEffect(() => {
     if (!hasSeenWelcome && activeTab !== "welcome") { setActiveTab("welcome"); return; }
@@ -440,7 +442,7 @@ export default function App() {
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
     foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
     fitnessLevel, workoutLocation, equipment, limitations,
-    workoutFrequency, sessionDuration, fitnessGoals
+    workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
   };
 
   const foodProps = {
@@ -473,7 +475,8 @@ export default function App() {
     fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
     equipment, setEquipment, limitations, setLimitations,
     workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
-    fitnessGoals, setFitnessGoals
+    fitnessGoals, setFitnessGoals,
+    exerciseCategories, setExerciseCategories
   };
 
   const profileProps = {
