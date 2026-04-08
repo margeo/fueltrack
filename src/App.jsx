@@ -38,6 +38,12 @@ export default function App() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user) {
+        supabase.from("profiles").upsert({
+          id: session.user.id,
+          email: session.user.email
+        }, { onConflict: "id" }).then(() => {});
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
