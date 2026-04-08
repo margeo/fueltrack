@@ -17,10 +17,11 @@ export async function handler(event) {
 
     const recentMessages = validMessages.slice(-6);
 
-    const useGemini = process.env.AI_MODEL === "gemini";
+    const aiModel = process.env.AI_MODEL || "haiku";
 
     let responseData;
-    if (useGemini) {
+    if (aiModel === "gemini" || aiModel === "haiku-openrouter") {
+      const orModel = aiModel === "gemini" ? "google/gemini-2.5-flash-lite" : "anthropic/claude-3.5-haiku";
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -30,7 +31,7 @@ export async function handler(event) {
           "X-Title": "FuelTrack"
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: orModel,
           max_tokens: 8000,
           temperature: 0.7,
           messages: [
@@ -44,7 +45,7 @@ export async function handler(event) {
       const txt = d.choices?.[0]?.message?.content;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
-      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: "gemini-flash-lite" } };
+      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: aiModel === "gemini" ? "gemini-flash-lite" : "haiku-openrouter" } };
     } else {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
