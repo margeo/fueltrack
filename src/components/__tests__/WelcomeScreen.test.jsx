@@ -11,7 +11,7 @@ describe("WelcomeScreen", () => {
   it("renders all 4 feature cards", () => {
     render(<WelcomeScreen onStart={vi.fn()} />);
     expect(screen.getByText("Goal-first προσέγγιση")).toBeTruthy();
-    expect(screen.getByText("AI Coach που σε ξέρει")).toBeTruthy();
+    expect(screen.getByText("Personal Coach που σε ξέρει")).toBeTruthy();
     expect(screen.getByText("Ελληνικά φαγητά & μερίδες")).toBeTruthy();
     expect(screen.getByText("Γρήγορο & απλό")).toBeTruthy();
   });

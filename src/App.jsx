@@ -453,10 +453,7 @@ export default function App() {
     isFavorite, toggleFavorite,
     saveRecentFood, updateCurrentDay,
     quickAddRecent, quickAddFavorite,
-    entries, groupedEntries, deleteEntry, openEditEntry,
-    foodCategories, setFoodCategories, allergies, setAllergies,
-    cookingLevel, setCookingLevel, cookingTime, setCookingTime,
-    simpleMode, setSimpleMode
+    entries, groupedEntries, deleteEntry, openEditEntry
   };
 
   const exerciseProps = {
@@ -471,12 +468,7 @@ export default function App() {
     toggleFavoriteExercise,
     isFavoriteExercise,
     recentExercises,
-    quickAddRecentExercise,
-    fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
-    equipment, setEquipment, limitations, setLimitations,
-    workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
-    fitnessGoals, setFitnessGoals,
-    exerciseCategories, setExerciseCategories
+    quickAddRecentExercise
   };
 
   const profileProps = {
@@ -491,7 +483,13 @@ export default function App() {
     userEmail: session?.user?.email,
     userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
-    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
+    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
+    foodCategories, setFoodCategories, allergies, setAllergies,
+    cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
+    fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
+    equipment, setEquipment, limitations, setLimitations,
+    workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
+    fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories
   };
 
   const showWelcome = !hasSeenWelcome;
@@ -508,6 +506,10 @@ export default function App() {
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {session && (
+              <button className="theme-toggle-btn" onClick={() => supabase.auth.signOut()} type="button"
+                style={{ padding: "4px 6px", fontSize: 13, lineHeight: 1 }} title={t("auth.logout")}>🚪</button>
+            )}
             <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
               style={{ padding: "4px 6px", lineHeight: 1 }}>
               {i18n.language === "el" ? (

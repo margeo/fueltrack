@@ -18,6 +18,19 @@ const defaultProps = {
   proteinTarget: 144,
   profileComplete: true,
   onContinue: vi.fn(),
+  foodCategories: [], setFoodCategories: vi.fn(),
+  allergies: [], setAllergies: vi.fn(),
+  cookingLevel: "", setCookingLevel: vi.fn(),
+  cookingTime: "", setCookingTime: vi.fn(),
+  simpleMode: false, setSimpleMode: vi.fn(),
+  fitnessLevel: "", setFitnessLevel: vi.fn(),
+  workoutLocation: "", setWorkoutLocation: vi.fn(),
+  equipment: [], setEquipment: vi.fn(),
+  limitations: "", setLimitations: vi.fn(),
+  workoutFrequency: "", setWorkoutFrequency: vi.fn(),
+  sessionDuration: "", setSessionDuration: vi.fn(),
+  fitnessGoals: [], setFitnessGoals: vi.fn(),
+  exerciseCategories: [], setExerciseCategories: vi.fn(),
 };
 
 function renderProfile(overrides = {}) {
@@ -34,7 +47,7 @@ function renderProfile(overrides = {}) {
 describe("ProfileTab", () => {
   it("renders the profile heading", () => {
     renderProfile();
-    expect(screen.getByText(/Προφίλ/)).toBeTruthy();
+    expect(screen.getAllByText(/Προφίλ/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows incomplete profile message when not complete", () => {

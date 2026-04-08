@@ -42,16 +42,6 @@ const defaultProps = {
   groupedEntries: {},
   deleteEntry: vi.fn(),
   openEditEntry: vi.fn(),
-  foodCategories: [],
-  setFoodCategories: vi.fn(),
-  allergies: [],
-  setAllergies: vi.fn(),
-  cookingLevel: "",
-  setCookingLevel: vi.fn(),
-  cookingTime: "",
-  setCookingTime: vi.fn(),
-  simpleMode: false,
-  setSimpleMode: vi.fn(),
 };
 
 function renderFoodTab(overrides = {}) {

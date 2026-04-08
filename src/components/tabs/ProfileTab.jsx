@@ -3,6 +3,25 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
+import { EXERCISE_LIBRARY } from "../../data/constants";
+
+const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
+const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
+const COOKING_TIMES = ["quick", "normal", "elaborate"];
+const FOOD_CATEGORIES = [
+  { key: "proteins", emoji: "🥩", items: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"] },
+  { key: "veggies", emoji: "🥗", items: ["salads", "cooked_veggies", "soups"] },
+  { key: "carbs", emoji: "🍚", items: ["rice", "pasta", "bread", "potatoes", "oats"] },
+  { key: "dairy", emoji: "🧀", items: ["yogurt", "cheese", "milk"] },
+  { key: "snacks", emoji: "🍎", items: ["fruits", "nuts_snack", "smoothies"] },
+  { key: "cooking", emoji: "🔥", items: ["grilled", "oven", "boiled", "fried", "raw"] },
+];
+const FITNESS_LEVELS = ["beginner", "intermediate", "advanced"];
+const WORKOUT_LOCATIONS = ["home", "gym", "outdoor"];
+const EQUIPMENT_OPTIONS = ["none", "dumbbells", "bands", "full_gym", "pull_up_bar", "kettlebell"];
+const WORKOUT_FREQUENCIES = ["2", "3", "4", "5", "6"];
+const SESSION_DURATIONS = ["15", "30", "45", "60"];
+const FITNESS_GOALS = ["strength", "endurance", "flexibility", "weight_loss", "muscle", "general"];
 import { MODE_GROUPS, MODES } from "../../data/modes";
 import AdminPanel from "../AdminPanel";
 import { supabase } from "../../supabaseClient";
@@ -90,12 +109,19 @@ export default function ProfileTab({
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
   dailyDeficit, proteinTarget, profileComplete,
-  onLogout, userEmail, userName, onShowAuth, onShowRegister
+  onLogout, userEmail, userName, onShowAuth, onShowRegister,
+  foodCategories, setFoodCategories, allergies, setAllergies,
+  cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
+  fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
+  equipment, setEquipment, limitations, setLimitations,
+  workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
+  fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories
 }) {
   const { t, i18n } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
+  const [expandedPrefs, setExpandedPrefs] = useState({});
 
   // Check admin status once
   useEffect(() => {
@@ -349,6 +375,293 @@ export default function ProfileTab({
         </div>
       </CollapsibleSection>
 
+      {/* ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ */}
+      <div className="card">
+        <h2 style={{ marginBottom: 10 }}>🥗 {t("foodPrefs.title")}</h2>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("foodPrefs.subtitle")}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {FOOD_CATEGORIES.map((cat) => {
+            const isOpen = expandedPrefs["food_" + cat.key];
+            const selectedCount = cat.items.filter(item => (foodCategories || []).includes(item)).length;
+            return (
+              <div key={cat.key}>
+                <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ["food_" + cat.key]: !prev["food_" + cat.key] }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{cat.emoji} {t("foodPrefs.cat." + cat.key)}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {selectedCount > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{selectedCount}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                    {cat.items.map((item) => {
+                      const active = (foodCategories || []).includes(item);
+                      return (
+                        <button key={item} type="button"
+                          onClick={() => setFoodCategories(prev => { const list = prev || []; return active ? list.filter(x => x !== item) : [...list, item]; })}
+                          style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {t("foodPrefs.item." + item)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Allergies */}
+          {(() => { const isOpen = expandedPrefs.allergies; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, allergies: !prev.allergies }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: allergies.length > 0 ? "#fef2f2" : "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>{t("foodPrefs.allergies")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {allergies.length > 0 && <span style={{ background: "#dc2626", color: "white", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{allergies.length}</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                  {ALLERGY_OPTIONS.map((a) => { const active = allergies.includes(a); return (
+                    <button key={a} type="button" onClick={() => setAllergies(prev => active ? prev.filter(x => x !== a) : [...prev, a])}
+                      style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        background: active ? "#dc2626" : "var(--bg-soft)", color: active ? "white" : "var(--text-primary)" }}>
+                      {active ? "⚠️ " : ""}{t("foodPrefs.allergy." + a)}
+                    </button>
+                  ); })}
+                </div>
+              )}
+            </div>
+          ); })()}
+          {/* Cooking */}
+          {(() => { const isOpen = expandedPrefs.cooking_prefs; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, cooking_prefs: !prev.cooking_prefs }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>👨‍🍳 {t("foodPrefs.cookingPrefs")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {(cookingLevel || cookingTime) && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>✓</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.cookingLevel")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {COOKING_LEVELS.map((l) => (
+                        <button key={l} type="button" onClick={() => setCookingLevel(cookingLevel === l ? "" : l)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: cookingLevel === l ? "var(--color-accent)" : "var(--bg-soft)", color: cookingLevel === l ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {t("foodPrefs.cooking." + l)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.cookingTime")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {COOKING_TIMES.map((ct) => (
+                        <button key={ct} type="button" onClick={() => setCookingTime(cookingTime === ct ? "" : ct)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: cookingTime === ct ? "var(--color-accent)" : "var(--bg-soft)", color: cookingTime === ct ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {t("foodPrefs.time." + ct)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ); })()}
+          {/* Simple groceries */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>🛒 {t("aiCoach.simpleMode")}</span>
+            <button type="button" onClick={() => setSimpleMode(!simpleMode)}
+              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
+                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
+                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ */}
+      <div className="card">
+        <h2 style={{ marginBottom: 10 }}>💪 {t("exercisePrefs.title")}</h2>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("exercisePrefs.subtitle")}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {[
+            { key: "level", label: t("exercisePrefs.fitnessLevel"), items: FITNESS_LEVELS, value: fitnessLevel, setter: setFitnessLevel, renderItem: (l) => t("exercisePrefs.level." + l), badge: fitnessLevel ? t("exercisePrefs.level." + fitnessLevel) : null },
+            { key: "location", label: "🏠 " + t("exercisePrefs.workoutLocation"), items: WORKOUT_LOCATIONS, value: workoutLocation, setter: setWorkoutLocation, renderItem: (l) => t("exercisePrefs.location." + l), badge: workoutLocation ? t("exercisePrefs.location." + workoutLocation) : null },
+          ].map(({ key, label, items, value, setter, renderItem, badge }) => {
+            const isOpen = expandedPrefs["ex_" + key];
+            return (
+              <div key={key}>
+                <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ["ex_" + key]: !prev["ex_" + key] }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{label}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {badge && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{badge}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ display: "flex", gap: 6, padding: "8px 4px 4px" }}>
+                    {items.map((l) => (
+                      <button key={l} type="button" onClick={() => setter(value === l ? "" : l)}
+                        style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                          background: value === l ? "var(--color-accent)" : "var(--bg-soft)", color: value === l ? "var(--bg-card)" : "var(--text-primary)" }}>
+                        {renderItem(l)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Equipment */}
+          {(() => { const isOpen = expandedPrefs.ex_equipment; const count = equipment.length; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ex_equipment: !prev.ex_equipment }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🏋️ {t("exercisePrefs.equipment")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {count > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{count}</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                  {EQUIPMENT_OPTIONS.map((eq) => { const active = equipment.includes(eq); return (
+                    <button key={eq} type="button" onClick={() => setEquipment(prev => active ? prev.filter(x => x !== eq) : [...prev, eq])}
+                      style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                      {t("exercisePrefs.equip." + eq)}
+                    </button>
+                  ); })}
+                </div>
+              )}
+            </div>
+          ); })()}
+          {/* Schedule */}
+          {(() => { const isOpen = expandedPrefs.ex_schedule; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ex_schedule: !prev.ex_schedule }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🗓️ {t("exercisePrefs.schedule")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {(workoutFrequency || sessionDuration) && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{workoutFrequency ? workoutFrequency + "x" : ""}{workoutFrequency && sessionDuration ? " · " : ""}{sessionDuration ? sessionDuration + t("exercisePrefs.min") : ""}</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("exercisePrefs.frequency")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {WORKOUT_FREQUENCIES.map((f) => (
+                        <button key={f} type="button" onClick={() => setWorkoutFrequency(workoutFrequency === f ? "" : f)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: workoutFrequency === f ? "var(--color-accent)" : "var(--bg-soft)", color: workoutFrequency === f ? "var(--bg-card)" : "var(--text-primary)" }}>{f}x</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("exercisePrefs.sessionDuration")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {SESSION_DURATIONS.map((d) => (
+                        <button key={d} type="button" onClick={() => setSessionDuration(sessionDuration === d ? "" : d)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: sessionDuration === d ? "var(--color-accent)" : "var(--bg-soft)", color: sessionDuration === d ? "var(--bg-card)" : "var(--text-primary)" }}>{d}{t("exercisePrefs.min")}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ); })()}
+          {/* Goals */}
+          {(() => { const isOpen = expandedPrefs.ex_goals; const count = (fitnessGoals || []).length; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ex_goals: !prev.ex_goals }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🎯 {t("exercisePrefs.fitnessGoals")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {count > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{count}</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                  {FITNESS_GOALS.map((g) => { const active = (fitnessGoals || []).includes(g); return (
+                    <button key={g} type="button" onClick={() => setFitnessGoals(prev => { const list = prev || []; return active ? list.filter(x => x !== g) : [...list, g]; })}
+                      style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                      {t("exercisePrefs.goal." + g)}
+                    </button>
+                  ); })}
+                </div>
+              )}
+            </div>
+          ); })()}
+          {/* Exercise categories */}
+          {["Cardio", "Gym", "Training", "Sports"].map((cat) => {
+            const catKey = "ex_cat_" + cat;
+            const isOpen = expandedPrefs[catKey];
+            const catExercises = EXERCISE_LIBRARY.filter(e => e.category === cat);
+            const selectedCount = catExercises.filter(e => (exerciseCategories || []).includes(e.name)).length;
+            const catIcons = { Cardio: "🏃", Gym: "🏋️", Training: "🔥", Sports: "⚽" };
+            return (
+              <div key={cat}>
+                <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, [catKey]: !prev[catKey] }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{catIcons[cat]} {t("exercise.categories." + cat.toLowerCase())}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {selectedCount > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{selectedCount}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                    {catExercises.map((ex) => { const active = (exerciseCategories || []).includes(ex.name); return (
+                      <button key={ex.name} type="button"
+                        onClick={() => setExerciseCategories(prev => { const list = prev || []; return active ? list.filter(x => x !== ex.name) : [...list, ex.name]; })}
+                        style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                          background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                        {ex.icon} {t("exerciseNames." + ex.name, { defaultValue: ex.name })}
+                      </button>
+                    ); })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Limitations */}
+          {(() => { const isOpen = expandedPrefs.ex_limitations; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, ex_limitations: !prev.ex_limitations }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: limitations ? "#fef2f2" : "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🩹 {t("exercisePrefs.limitations")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {limitations && <span style={{ background: "#dc2626", color: "white", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>!</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px" }}>
+                  <input className="input" value={limitations} onChange={(e) => setLimitations(e.target.value)}
+                    placeholder={t("exercisePrefs.limitationsPlaceholder")} style={{ fontSize: 13, ...inputStyle }} />
+                </div>
+              )}
+            </div>
+          ); })()}
+        </div>
+      </div>
+
       {/* ΓΛΩΣΣΑ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -366,18 +679,12 @@ export default function ProfileTab({
           <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
           {userName && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 2 }}>{userName}</div>}
           <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{userEmail}</div>
-          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-            <button className="btn btn-light" onClick={onLogout} type="button"
+          {isAdmin && (
+            <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
               style={{ fontSize: 13, padding: "10px 24px" }}>
-              {t("auth.logout")}
+              🛡️ Admin
             </button>
-            {isAdmin && (
-              <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
-                style={{ fontSize: 13, padding: "10px 24px" }}>
-                🛡️ Admin
-              </button>
-            )}
-          </div>
+          )}
         </div>
       ) : (
         <div className="card" style={{ textAlign: "center" }}>
