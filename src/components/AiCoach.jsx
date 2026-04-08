@@ -114,6 +114,7 @@ export default function AiCoach({
   const chatRef = useRef(null);
   const inputRef = useRef(null);
   const lastAssistantRef = useRef(null);
+  const coachTopRef = useRef(null);
 
   const lastWeight = weightLog?.length
     ? [...weightLog].sort((a, b) => b.date.localeCompare(a.date))[0]?.weight : null;
@@ -353,6 +354,8 @@ ${askChange}`;
     if (loading) return;
     if (limitReached) return;
     setLoading(true);
+    setChatExpanded(true);
+    coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     incrementUsage();
     if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
 
@@ -413,7 +416,7 @@ ${askChange}`;
   }
 
   return (
-    <div>
+    <div ref={coachTopRef}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
