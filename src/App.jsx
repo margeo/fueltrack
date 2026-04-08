@@ -505,10 +505,6 @@ export default function App() {
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {session && (
-              <button className="theme-toggle-btn" onClick={() => supabase.auth.signOut()} type="button"
-                style={{ padding: "4px 6px", fontSize: 13, lineHeight: 1 }} title={t("auth.logout")}>🚪</button>
-            )}
             <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
               style={{ padding: "4px 6px", lineHeight: 1 }}>
               {i18n.language === "el" ? (
