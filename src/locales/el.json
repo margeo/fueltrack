@@ -322,6 +322,8 @@
     "upgradeHint": "Αναβάθμισε σε Pro (2,99€/μήνα) για 500 AI ερωτήματα τον μήνα!",
     "simpleMode": "Λίγα ψώνια",
     "simpleModeDesc": "Επαναλήψεις γευμάτων, μικρή λίστα σούπερ μάρκετ",
+    "prefsHintTitle": "Βελτίωσε τις προτάσεις!",
+    "prefsHintDesc": "Συμπλήρωσε το Διατροφικό Προφίλ (Food tab) και το Προφίλ Γυμναστικής (Exercise tab) για πιο εξατομικευμένες απαντήσεις.",
     "askAnything": "Ρώτα με οτιδήποτε ή πάτα για γρήγορη ανάλυση:",
     "analyzeDay": "Ανάλυσε τη μέρα μου",
     "analyzing": "Αναλύω τα δεδομένα σου...",
@@ -398,5 +400,67 @@
     "resetSent": "Email επαναφοράς στάλθηκε!",
     "googleError": "Σφάλμα σύνδεσης με Google.",
     "logout": "Αποσύνδεση"
+  },
+  "foodPrefs": {
+    "title": "Διατροφικό Προφίλ",
+    "subtitle": "Βοηθά τον AI Coach να σου δίνει σωστές προτάσεις φαγητού",
+    "dietType": "Τύπος διατροφής",
+    "diet": {
+      "omnivore": "Κανονική",
+      "vegetarian": "Χορτοφαγική",
+      "vegan": "Vegan",
+      "pescatarian": "Pescatarian",
+      "keto": "Keto",
+      "gluten_free": "Χωρίς γλουτένη"
+    },
+    "allergies": "⚠️ Αλλεργίες / Δυσανεξίες",
+    "allergy": {
+      "dairy": "Γαλακτοκομικά",
+      "gluten": "Γλουτένη",
+      "nuts": "Ξηροί καρποί",
+      "eggs": "Αυγά",
+      "soy": "Σόγια",
+      "shellfish": "Οστρακοειδή",
+      "fish": "Ψάρι"
+    },
+    "cookingLevel": "Επίπεδο μαγειρικής",
+    "cooking": {
+      "beginner": "Αρχάριος",
+      "intermediate": "Μέτριος",
+      "advanced": "Προχωρημένος"
+    },
+    "cookingTime": "Χρόνος μαγειρέματος",
+    "time": {
+      "quick": "Γρήγορα (15λ)",
+      "normal": "Κανονικά (30λ)",
+      "elaborate": "Αναλυτικά (60λ+)"
+    }
+  },
+  "exercisePrefs": {
+    "title": "Προφίλ Γυμναστικής",
+    "subtitle": "Βοηθά τον AI Coach να προτείνει ασκήσεις κατάλληλες για σένα",
+    "fitnessLevel": "Επίπεδο φυσικής κατάστασης",
+    "level": {
+      "beginner": "Αρχάριος",
+      "intermediate": "Μέτριος",
+      "advanced": "Προχωρημένος"
+    },
+    "workoutLocation": "Πού γυμνάζομαι",
+    "location": {
+      "home": "🏠 Σπίτι",
+      "gym": "🏋️ Γυμναστήριο",
+      "outdoor": "🌳 Εξωτερικά"
+    },
+    "equipment": "Διαθέσιμος εξοπλισμός",
+    "equip": {
+      "none": "Τίποτα",
+      "dumbbells": "Αλτήρες",
+      "bands": "Λάστιχα",
+      "full_gym": "Πλήρες gym",
+      "pull_up_bar": "Μονόζυγο",
+      "kettlebell": "Kettlebell"
+    },
+    "limitations": "Περιορισμοί / Τραυματισμοί",
+    "limitationsPlaceholder": "π.χ. πρόβλημα στη μέση, πόνος στο γόνατο..."
   }
 }

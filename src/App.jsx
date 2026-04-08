@@ -63,6 +63,18 @@ export default function App() {
   const [favoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
   const [favoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
+  // Food preferences
+  const [dietType, setDietType] = useState(() => loadValue("ft_dietType", ""));
+  const [allergies, setAllergies] = useState(() => loadJSON("ft_allergies", []));
+  const [cookingLevel, setCookingLevel] = useState(() => loadValue("ft_cookingLevel", ""));
+  const [cookingTime, setCookingTime] = useState(() => loadValue("ft_cookingTime", ""));
+
+  // Exercise preferences
+  const [fitnessLevel, setFitnessLevel] = useState(() => loadValue("ft_fitnessLevel", ""));
+  const [workoutLocation, setWorkoutLocation] = useState(() => loadValue("ft_workoutLocation", ""));
+  const [equipment, setEquipment] = useState(() => loadJSON("ft_equipment", []));
+  const [limitations, setLimitations] = useState(() => loadValue("ft_limitations", ""));
+
   const [foods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
     const customOnly = saved.filter((f) => f.source !== "local");
@@ -149,6 +161,14 @@ export default function App() {
   useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
   useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
+  useEffect(() => saveValue("ft_dietType", dietType), [dietType]);
+  useEffect(() => saveJSON("ft_allergies", allergies), [allergies]);
+  useEffect(() => saveValue("ft_cookingLevel", cookingLevel), [cookingLevel]);
+  useEffect(() => saveValue("ft_cookingTime", cookingTime), [cookingTime]);
+  useEffect(() => saveValue("ft_fitnessLevel", fitnessLevel), [fitnessLevel]);
+  useEffect(() => saveValue("ft_workoutLocation", workoutLocation), [workoutLocation]);
+  useEffect(() => saveJSON("ft_equipment", equipment), [equipment]);
+  useEffect(() => saveValue("ft_limitations", limitations), [limitations]);
 
   useEffect(() => {
     if (!hasSeenWelcome && activeTab !== "welcome") { setActiveTab("welcome"); return; }
@@ -409,7 +429,9 @@ export default function App() {
     session,
     userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
-    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
+    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
+    dietType, allergies, cookingLevel, cookingTime,
+    fitnessLevel, workoutLocation, equipment, limitations
   };
 
   const foodProps = {
@@ -420,7 +442,9 @@ export default function App() {
     isFavorite, toggleFavorite,
     saveRecentFood, updateCurrentDay,
     quickAddRecent, quickAddFavorite,
-    entries, groupedEntries, deleteEntry, openEditEntry
+    entries, groupedEntries, deleteEntry, openEditEntry,
+    dietType, setDietType, allergies, setAllergies,
+    cookingLevel, setCookingLevel, cookingTime, setCookingTime
   };
 
   const exerciseProps = {
@@ -435,7 +459,9 @@ export default function App() {
     toggleFavoriteExercise,
     isFavoriteExercise,
     recentExercises,
-    quickAddRecentExercise
+    quickAddRecentExercise,
+    fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
+    equipment, setEquipment, limitations, setLimitations
   };
 
   const profileProps = {

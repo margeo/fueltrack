@@ -150,11 +150,18 @@ function FoodAddModal({ food, onAdd, onClose }) {
   );
 }
 
+const DIET_TYPES = ["omnivore", "vegetarian", "vegan", "pescatarian", "keto", "gluten_free"];
+const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
+const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
+const COOKING_TIMES = ["quick", "normal", "elaborate"];
+
 export default function FoodTab({
   foods, customFoods, onAddCustomFood, onDeleteCustomFood,
   recentFoods, favoriteFoods, isFavorite, toggleFavorite,
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
-  entries, groupedEntries, deleteEntry, openEditEntry
+  entries, groupedEntries, deleteEntry, openEditEntry,
+  dietType, setDietType, allergies, setAllergies,
+  cookingLevel, setCookingLevel, cookingTime, setCookingTime
 }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -418,6 +425,77 @@ export default function FoodTab({
             ))}
           </div>
         )}
+      </div>
+
+      {/* ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ */}
+      <div className="card">
+        <h2 style={{ marginBottom: 10 }}>🥗 {t("foodPrefs.title")}</h2>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("foodPrefs.subtitle")}</div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Diet type */}
+          <div>
+            <div className="profile-label">{t("foodPrefs.dietType")}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {DIET_TYPES.map((d) => (
+                <button key={d} type="button" onClick={() => setDietType(dietType === d ? "" : d)}
+                  style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: dietType === d ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: dietType === d ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {t("foodPrefs.diet." + d)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Allergies */}
+          <div>
+            <div className="profile-label">{t("foodPrefs.allergies")}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {ALLERGY_OPTIONS.map((a) => {
+                const active = allergies.includes(a);
+                return (
+                  <button key={a} type="button" onClick={() => setAllergies(prev => active ? prev.filter(x => x !== a) : [...prev, a])}
+                    style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      background: active ? "#dc2626" : "var(--bg-soft)",
+                      color: active ? "white" : "var(--text-primary)" }}>
+                    {active ? "⚠️ " : ""}{t("foodPrefs.allergy." + a)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cooking level */}
+          <div>
+            <div className="profile-label">👨‍🍳 {t("foodPrefs.cookingLevel")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {COOKING_LEVELS.map((l) => (
+                <button key={l} type="button" onClick={() => setCookingLevel(cookingLevel === l ? "" : l)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: cookingLevel === l ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: cookingLevel === l ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {t("foodPrefs.cooking." + l)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cooking time */}
+          <div>
+            <div className="profile-label">⏱️ {t("foodPrefs.cookingTime")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {COOKING_TIMES.map((ct) => (
+                <button key={ct} type="button" onClick={() => setCookingTime(cookingTime === ct ? "" : ct)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: cookingTime === ct ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: cookingTime === ct ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {t("foodPrefs.time." + ct)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ΠΡΟΣΦΑΤΑ */}

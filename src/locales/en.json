@@ -322,6 +322,8 @@
     "upgradeHint": "Upgrade to Pro ($2.99/month) for 500 AI requests per month!",
     "simpleMode": "Simple groceries",
     "simpleModeDesc": "Repeat meals, short grocery list",
+    "prefsHintTitle": "Get better suggestions!",
+    "prefsHintDesc": "Fill in your Food Profile (Food tab) and Fitness Profile (Exercise tab) for more personalized answers.",
     "askAnything": "Ask me anything or tap for a quick analysis:",
     "analyzeDay": "Analyze my day",
     "analyzing": "Analyzing your data...",
@@ -398,5 +400,67 @@
     "resetSent": "Reset email sent!",
     "googleError": "Error connecting with Google.",
     "logout": "Sign out"
+  },
+  "foodPrefs": {
+    "title": "Food Profile",
+    "subtitle": "Helps the AI Coach give you better meal suggestions",
+    "dietType": "Diet type",
+    "diet": {
+      "omnivore": "Omnivore",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "pescatarian": "Pescatarian",
+      "keto": "Keto",
+      "gluten_free": "Gluten-free"
+    },
+    "allergies": "⚠️ Allergies / Intolerances",
+    "allergy": {
+      "dairy": "Dairy",
+      "gluten": "Gluten",
+      "nuts": "Nuts",
+      "eggs": "Eggs",
+      "soy": "Soy",
+      "shellfish": "Shellfish",
+      "fish": "Fish"
+    },
+    "cookingLevel": "Cooking skill",
+    "cooking": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "cookingTime": "Cooking time",
+    "time": {
+      "quick": "Quick (15min)",
+      "normal": "Normal (30min)",
+      "elaborate": "Elaborate (60min+)"
+    }
+  },
+  "exercisePrefs": {
+    "title": "Fitness Profile",
+    "subtitle": "Helps the AI Coach suggest exercises suitable for you",
+    "fitnessLevel": "Fitness level",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "workoutLocation": "Where I work out",
+    "location": {
+      "home": "🏠 Home",
+      "gym": "🏋️ Gym",
+      "outdoor": "🌳 Outdoor"
+    },
+    "equipment": "Available equipment",
+    "equip": {
+      "none": "Nothing",
+      "dumbbells": "Dumbbells",
+      "bands": "Resistance bands",
+      "full_gym": "Full gym",
+      "pull_up_bar": "Pull-up bar",
+      "kettlebell": "Kettlebell"
+    },
+    "limitations": "Limitations / Injuries",
+    "limitationsPlaceholder": "e.g. back problems, knee pain..."
   }
 }

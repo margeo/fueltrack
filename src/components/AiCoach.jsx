@@ -44,7 +44,9 @@ export default function AiCoach({
   totalCalories, totalProtein, exerciseValue,
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, userName, onShowAuth, onShowRegister
+  onSavePlan, session, userName, onShowAuth, onShowRegister,
+  dietType, allergies, cookingLevel, cookingTime,
+  fitnessLevel, workoutLocation, equipment, limitations
 }) {
   const { t, i18n } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
@@ -184,12 +186,38 @@ export default function AiCoach({
       ? `Nutritionist & personal trainer. English, friendly, practical.${userName ? ` The user's name is ${userName}, address them by name.` : ""}`
       : `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}`;
 
+    // Preferences strings
+    const dietLabels = { omnivore: isEn?"Omnivore":"Κανονική", vegetarian: isEn?"Vegetarian":"Χορτοφαγική", vegan:"Vegan", pescatarian:"Pescatarian", keto:"Keto", gluten_free: isEn?"Gluten-free":"Χωρίς γλουτένη" };
+    const allergyLabels = { dairy: isEn?"Dairy":"Γαλακτοκομικά", gluten: isEn?"Gluten":"Γλουτένη", nuts: isEn?"Nuts":"Ξηροί καρποί", eggs: isEn?"Eggs":"Αυγά", soy: isEn?"Soy":"Σόγια", shellfish: isEn?"Shellfish":"Οστρακοειδή", fish: isEn?"Fish":"Ψάρι" };
+    const levelLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
+    const locationLabels = { home: isEn?"Home":"Σπίτι", gym: isEn?"Gym":"Γυμναστήριο", outdoor: isEn?"Outdoor":"Εξωτερικά" };
+    const equipLabels = { none: isEn?"None":"Τίποτα", dumbbells: isEn?"Dumbbells":"Αλτήρες", bands: isEn?"Resistance bands":"Λάστιχα", full_gym: isEn?"Full gym":"Πλήρες gym", pull_up_bar: isEn?"Pull-up bar":"Μονόζυγο", kettlebell:"Kettlebell" };
+    const cookLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
+    const timeLabels = { quick: isEn?"Quick (15min)":"Γρήγορα (15λ)", normal: isEn?"Normal (30min)":"Κανονικά (30λ)", elaborate: isEn?"Elaborate (60min+)":"Αναλυτικά (60λ+)" };
+
+    const dietStr = dietType ? (dietLabels[dietType] || dietType) : "";
+    const allergyStr = allergies?.length ? allergies.map(a => allergyLabels[a] || a).join(", ") : "";
+    const cookStr = cookingLevel ? (cookLabels[cookingLevel] || cookingLevel) : "";
+    const timeStr = cookingTime ? (timeLabels[cookingTime] || cookingTime) : "";
+    const fitStr = fitnessLevel ? (levelLabels[fitnessLevel] || fitnessLevel) : "";
+    const locStr = workoutLocation ? (locationLabels[workoutLocation] || workoutLocation) : "";
+    const equipStr = equipment?.length ? equipment.map(e => equipLabels[e] || e).join(", ") : "";
+    const limStr = limitations || "";
+
+    const foodPrefsLine = (dietStr || allergyStr || cookStr || timeStr)
+      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}: ${dietStr ? (isEn?"Diet":"Διατροφή")+":"+dietStr : ""}${allergyStr ? " | "+(isEn?"Allergies":"Αλλεργίες")+":"+allergyStr : ""}${cookStr ? " | "+(isEn?"Cooking":"Μαγειρική")+":"+cookStr : ""}${timeStr ? " | "+(isEn?"Time":"Χρόνος")+":"+timeStr : ""}${allergyStr ? "\n"+(isEn?"⚠️ NEVER suggest foods containing: ":"⚠️ ΠΟΤΕ μην προτείνεις φαγητά που περιέχουν: ")+allergyStr : ""}`
+      : "";
+
+    const exercisePrefsLine = (fitStr || locStr || equipStr || limStr)
+      ? `\n${isEn ? "FITNESS PROFILE" : "ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ"}: ${fitStr ? (isEn?"Level":"Επίπεδο")+":"+fitStr : ""}${locStr ? " | "+(isEn?"Location":"Τοποθεσία")+":"+locStr : ""}${equipStr ? " | "+(isEn?"Equipment":"Εξοπλισμός")+":"+equipStr : ""}${limStr ? "\n"+(isEn?"⚠️ IMPORTANT limitations: ":"⚠️ ΣΗΜΑΝΤΙΚΟΙ περιορισμοί: ")+limStr+(isEn?". Adapt all exercises accordingly. Never suggest exercises that could worsen these conditions.":". Προσάρμοσε όλες τις ασκήσεις ανάλογα. Ποτέ μη προτείνεις ασκήσεις που μπορεί να επιδεινώσουν αυτές τις καταστάσεις.") : ""}`
+      : "";
+
     // BASE — στέλνεται σε κάθε request
     const base = `${langInstruction}
 ${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
 ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
 ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label} | ${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}
-${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||favoriteFoodsText||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||favoriteExercisesText||"—"}
+${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||favoriteFoodsText||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||favoriteExercisesText||"—"}${foodPrefsLine}${exercisePrefsLine}
 ${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal
 ${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}
 Mode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
@@ -428,6 +456,12 @@ ${askChange}`;
 
       {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
+          {(!dietType && !fitnessLevel) && (
+            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.5 }}>
+              💡 <strong>{t("aiCoach.prefsHintTitle")}</strong><br />
+              {t("aiCoach.prefsHintDesc")}
+            </div>
+          )}
           <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {quickQuestions.map((q) => (

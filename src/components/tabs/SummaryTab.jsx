@@ -76,7 +76,9 @@ export default function SummaryTab({
   onAddWeight, onDeleteWeight,
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
-  savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister
+  savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister,
+  dietType, allergies, cookingLevel, cookingTime,
+  fitnessLevel, workoutLocation, equipment, limitations
 }) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
@@ -374,6 +376,8 @@ RULES:
         age={age} weight={weight} height={height} gender={gender}
         savedPlans={savedPlans} onSavePlan={onSavePlan}
         session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
+        dietType={dietType} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime}
+        fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
       />
 
       {/* 4. ΠΡΟΓΡΑΜΜΑΤΑ */}

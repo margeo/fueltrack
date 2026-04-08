@@ -13,6 +13,10 @@ const CATEGORIES = [
   { key: "Sports", labelKey: "exercise.categories.sports", icon: "⚽" },
 ];
 
+const FITNESS_LEVELS = ["beginner", "intermediate", "advanced"];
+const WORKOUT_LOCATIONS = ["home", "gym", "outdoor"];
+const EQUIPMENT_OPTIONS = ["none", "dumbbells", "bands", "full_gym", "pull_up_bar", "kettlebell"];
+
 export default function ExerciseTab({
   exercises, exerciseValue,
   customExerciseName, setCustomExerciseName,
@@ -21,7 +25,9 @@ export default function ExerciseTab({
   addExerciseByMinutes, addCustomExercise, deleteExercise,
   selectedDate, updateCurrentDay,
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise,
-  recentExercises, quickAddRecentExercise
+  recentExercises, quickAddRecentExercise,
+  fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
+  equipment, setEquipment, limitations, setLimitations
 }) {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("Όλα");
@@ -203,6 +209,70 @@ export default function ExerciseTab({
             ))}
           </div>
         )}
+      </div>
+
+      {/* ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ */}
+      <div className="card">
+        <h2 style={{ marginBottom: 10 }}>💪 {t("exercisePrefs.title")}</h2>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("exercisePrefs.subtitle")}</div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Fitness level */}
+          <div>
+            <div className="profile-label">{t("exercisePrefs.fitnessLevel")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {FITNESS_LEVELS.map((l) => (
+                <button key={l} type="button" onClick={() => setFitnessLevel(fitnessLevel === l ? "" : l)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: fitnessLevel === l ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: fitnessLevel === l ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {t("exercisePrefs.level." + l)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Workout location */}
+          <div>
+            <div className="profile-label">🏠 {t("exercisePrefs.workoutLocation")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {WORKOUT_LOCATIONS.map((loc) => (
+                <button key={loc} type="button" onClick={() => setWorkoutLocation(workoutLocation === loc ? "" : loc)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: workoutLocation === loc ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: workoutLocation === loc ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {t("exercisePrefs.location." + loc)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          <div>
+            <div className="profile-label">🏋️ {t("exercisePrefs.equipment")}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {EQUIPMENT_OPTIONS.map((eq) => {
+                const active = equipment.includes(eq);
+                return (
+                  <button key={eq} type="button" onClick={() => setEquipment(prev => active ? prev.filter(x => x !== eq) : [...prev, eq])}
+                    style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                      color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                    {t("exercisePrefs.equip." + eq)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Limitations */}
+          <div>
+            <div className="profile-label">🩹 {t("exercisePrefs.limitations")}</div>
+            <input className="input" value={limitations} onChange={(e) => setLimitations(e.target.value)}
+              placeholder={t("exercisePrefs.limitationsPlaceholder")}
+              style={{ fontSize: 13 }} />
+          </div>
+        </div>
       </div>
 
       {/* ΠΡΟΣΦΑΤΑ */}
