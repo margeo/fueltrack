@@ -235,32 +235,32 @@ RULES:
     const isExpanded = expandedPlan === type;
     return (
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>{emoji} {title}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan && !isExpanded ? 0 : 8, minHeight: 36 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+            <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{emoji} {title}</span>
+            {plan && !isExpanded && (
+              <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {plan.date}
+              </span>
+            )}
+          </div>
           {plan && (
-            <div style={{ display: "flex", gap: 5 }}>
+            <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
-              <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
+              <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>📄</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
           )}
         </div>
         {!plan ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
+          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px dashed var(--border-color)" }}>
             <div className="muted" style={{ fontSize: 12 }}>{type === "meal" ? t("summary.noMealPlan") : t("summary.noTrainingPlan")}</div>
           </div>
-        ) : (
-          <>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
-              {!isExpanded && <span style={{ color: "#22c55e", fontWeight: 700, marginRight: 4 }}>✓</span>}
-              <span>{t("summary.savedOn", { date: plan.date })}</span>
-            </div>
-            {isExpanded && (
-              <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
-                {plan.content}
-              </div>
-            )}
-          </>
+        ) : isExpanded ? (
+          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+            {plan.content}
+          </div>
+        ) : null}
         )}
       </div>
     );
@@ -390,15 +390,15 @@ RULES:
         </div>
 
         {/* PLANS — connected under AI Coach */}
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
           <GrocerySection />
         </div>
 
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: 16 }}>
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
           <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
         </div>
       </div>
