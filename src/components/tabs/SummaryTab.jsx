@@ -316,24 +316,28 @@ RULES:
         </div>
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "10px 4px" }}>
+            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "8px 4px" }}>
+              <div className="hero-subtle" style={{ fontSize: 9, marginBottom: 3 }}>{t("summary.remaining")}</div>
               <div style={{ fontWeight: 800, fontSize: 22, lineHeight: 1, color: getRemainingColor() }}>{formatNumber(remainingCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 4, lineHeight: 1.3 }}>{t("summary.remaining")}<br />kcal</div>
+              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 3 }}>kcal</div>
             </div>
             <div className="hero-subtle" style={{ fontSize: 16, fontWeight: 700, flexShrink: 0 }}>=</div>
-            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "10px 4px" }}>
+            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "8px 4px" }}>
+              <div className="hero-subtle" style={{ fontSize: 9, marginBottom: 3 }}>{t("summary.target")}</div>
               <div style={{ fontWeight: 700, fontSize: 16, lineHeight: 1 }}>{formatNumber(targetCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 4, lineHeight: 1.3 }}>{t("summary.target")}<br />kcal</div>
+              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 3 }}>kcal</div>
             </div>
             <div className="hero-subtle" style={{ fontSize: 14, flexShrink: 0, opacity: 0.5 }}>−</div>
-            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "10px 4px" }}>
+            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "8px 4px" }}>
+              <div className="hero-subtle" style={{ fontSize: 9, marginBottom: 3 }}>{t("summary.food")}</div>
               <div style={{ fontWeight: 700, fontSize: 16, lineHeight: 1 }}>{formatNumber(totalCalories)}</div>
-              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 4, lineHeight: 1.3 }}>{t("summary.food")}<br />kcal</div>
+              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 3 }}>kcal</div>
             </div>
             <div className="hero-subtle" style={{ fontSize: 14, flexShrink: 0, opacity: 0.5 }}>+</div>
-            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "10px 4px" }}>
+            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "8px 4px" }}>
+              <div className="hero-subtle" style={{ fontSize: 9, marginBottom: 3 }}>{t("summary.exercise")}</div>
               <div style={{ fontWeight: 700, fontSize: 16, lineHeight: 1 }}>{formatNumber(exerciseValue)}</div>
-              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 4, lineHeight: 1.3 }}>{t("summary.exercise")}<br />kcal</div>
+              <div className="hero-subtle" style={{ fontSize: 9, marginTop: 3 }}>kcal</div>
             </div>
           </div>
         </div>
