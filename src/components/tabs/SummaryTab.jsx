@@ -340,28 +340,29 @@ RULES:
         </div>
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
 
-        {/* MACROS — inline */}
-        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-          <div className="macro-bar-row" style={{ gap: 6 }}>
-            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.proteinLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalProtein)}g/{formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
-            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
-          </div>
-          <div className="macro-bar-row" style={{ gap: 6 }}>
-            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.carbsLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalCarbs)}g/{formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
-            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
-          </div>
-          <div className="macro-bar-row" style={{ gap: 6 }}>
-            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.fatLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalFat)}g/{formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
-            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
-          </div>
+        {/* MACROS — compact inline */}
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { label: t("summary.proteinLabel"), value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
+            { label: t("summary.carbsLabel"), value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },
+            { label: t("summary.fatLabel"), value: `${formatNumber(totalFat)}g / ${formatNumber(macroTargets?.fatGrams || 0)}g`, pct: fatPercent, cls: "macro-bar-fat" },
+          ].map((m) => (
+            <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 65, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)", flexShrink: 0 }}>{m.label}</div>
+              <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
+                <div className={m.cls} style={{ height: "100%", borderRadius: 999, transition: "width 0.3s ease", width: `${m.pct}%` }} />
+              </div>
+              <div style={{ width: 75, fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "right", flexShrink: 0 }}>{m.value}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="hero-stat" style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
-          <div className="hero-subtle" style={{ fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
-          <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-            <span className="hero-subtle" style={{ fontSize: 12 }}>{t("summary.proteinRemaining")} <strong>{formatNumber(remainingProtein)}g</strong></span>
-            <span className="hero-subtle" style={{ fontSize: 12, opacity: 0.7 }}>{formatNumber(totalCalories)}/{formatNumber(targetCalories)} kcal</span>
+        {/* Goal badge */}
+        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(255,255,255,0.08)", borderRadius: 10 }}>
+          <span style={{ fontSize: 16 }}>🎯</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{getGoalLabel()} · {getModeLabel()}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 1 }}>{getModeHint()}</div>
           </div>
         </div>
       </div>
