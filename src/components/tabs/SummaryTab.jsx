@@ -6,23 +6,33 @@ import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
 function exportToPDF(plan) {
-  const title = plan.type === "meal" ? "Εβδομαδιαίο Πρόγραμμα Διατροφής" : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής";
+  const lang = localStorage.getItem("ft_language") || (navigator.language?.startsWith("el") ? "el" : "en");
+  const isEn = lang === "en";
+  const title = plan.type === "meal"
+    ? (isEn ? "Weekly Meal Plan" : "Εβδομαδιαίο Πρόγραμμα Διατροφής")
+    : (isEn ? "Weekly Training Plan" : "Εβδομαδιαίο Πρόγραμμα Γυμναστικής");
   const emoji = plan.type === "meal" ? "🥗" : "💪";
   const lines = plan.content.split("\n").map(line => {
     const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if (line.startsWith("📅")) return `<div class="day-header">${escaped}</div>`;
-    if (line.startsWith("Σύνολο")) return `<div class="total">${escaped}</div>`;
+    if (line.startsWith("Σύνολο") || line.startsWith("Total")) return `<div class="total">${escaped}</div>`;
     if (line.startsWith("─")) return `<hr>`;
     if (line.startsWith("⚠️")) return `<div class="disclaimer">${escaped}</div>`;
     if (line.trim() === "") return `<div style="height:6px"></div>`;
     return `<div class="line">${escaped}</div>`;
   }).join("");
-  const html = `<!DOCTYPE html><html lang="el"><head><meta charset="UTF-8"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.title-block .main-title{font-size:20px;font-weight:bold}.title-block .sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px;flex-shrink:0}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold;white-space:nowrap}.btn-save{background:#166534;color:white}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.day-header{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px;border-left:4px solid #111}.line{padding:3px 12px}.total{font-weight:bold;padding:5px 12px;background:#f9fafb;border-radius:4px}.disclaimer{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-top:20px;font-size:12px;color:#78350f}hr{border:none;border-top:1px solid #e5e7eb;margin:8px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div class="title-block"><div class="main-title">${emoji} FuelTrack — ${title}</div><div class="sub">Δημιουργήθηκε: ${plan.date}</div></div><div class="btn-group"><button class="btn btn-save" onclick="window.print()">💾 Αποθήκευση</button><button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button><button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button></div></div>${lines}</body></html>`;
+  const createdLabel = isEn ? "Created" : "Δημιουργήθηκε";
+  const saveLabel = isEn ? "💾 Save" : "💾 Αποθήκευση";
+  const printLabel = isEn ? "🖨️ Print" : "🖨️ Εκτύπωση";
+  const closeLabel = isEn ? "✕ Close" : "✕ Κλείσιμο";
+  const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.title-block .main-title{font-size:20px;font-weight:bold}.title-block .sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px;flex-shrink:0}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold;white-space:nowrap}.btn-save{background:#166534;color:white}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.day-header{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px;border-left:4px solid #111}.line{padding:3px 12px}.total{font-weight:bold;padding:5px 12px;background:#f9fafb;border-radius:4px}.disclaimer{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-top:20px;font-size:12px;color:#78350f}hr{border:none;border-top:1px solid #e5e7eb;margin:8px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div class="title-block"><div class="main-title">${emoji} FuelTrack — ${title}</div><div class="sub">${createdLabel}: ${plan.date}</div></div><div class="btn-group"><button class="btn btn-save" onclick="window.print()">${saveLabel}</button><button class="btn btn-print" onclick="window.print()">${printLabel}</button><button class="btn btn-close" onclick="window.close()">${closeLabel}</button></div></div>${lines}</body></html>`;
   const win = window.open("", "_blank");
   if (win) { win.document.write(html); win.document.close(); }
 }
 
 function exportGroceryToPDF(groceryContent) {
+  const lang = localStorage.getItem("ft_language") || (navigator.language?.startsWith("el") ? "el" : "en");
+  const isEn = lang === "en";
   const lines = groceryContent.split("\n").map(line => {
     const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if (line.match(/^[🥩🥛🥦🌾🫙]/u)) return `<div class="category">${escaped}</div>`;
@@ -30,7 +40,9 @@ function exportGroceryToPDF(groceryContent) {
     if (line.trim() === "") return `<div style="height:6px"></div>`;
     return `<div class="line">${escaped}</div>`;
   }).join("");
-  const html = `<!DOCTYPE html><html lang="el"><head><meta charset="UTF-8"><title>Λίστα Σούπερ Μάρκετ</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.main-title{font-size:20px;font-weight:bold}.sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold;white-space:nowrap}.btn-save{background:#166534;color:white}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.category{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px}.item{padding:4px 16px}.line{padding:3px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div><div class="main-title">🛒 Λίστα Σούπερ Μάρκετ — FuelTrack</div><div class="sub">Εκτυπώθηκε: ${new Date().toLocaleDateString("el-GR")}</div></div><div class="btn-group"><button class="btn btn-save" onclick="window.print()">💾 Αποθήκευση</button><button class="btn btn-print" onclick="window.print()">🖨️ Εκτύπωση</button><button class="btn btn-close" onclick="window.close()">✕ Κλείσιμο</button></div></div>${lines}</body></html>`;
+  const title = isEn ? "Grocery List" : "Λίστα Σούπερ Μάρκετ";
+  const printedLabel = isEn ? "Printed" : "Εκτυπώθηκε";
+  const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;color:#111;line-height:1.65;font-size:14px}.top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}.main-title{font-size:20px;font-weight:bold}.sub{color:#555;font-size:13px;margin-top:4px}.btn-group{display:flex;gap:10px}.btn{padding:12px 20px;border-radius:10px;font-size:15px;cursor:pointer;border:none;font-weight:bold;white-space:nowrap}.btn-save{background:#166534;color:white}.btn-print{background:#111;color:white}.btn-close{background:#e5e7eb;color:#111}.category{font-weight:bold;font-size:15px;margin-top:16px;margin-bottom:6px;background:#f3f4f6;padding:8px 12px;border-radius:6px}.item{padding:4px 16px}.line{padding:3px 0}@media print{.btn-group{display:none}body{padding:16px}}</style></head><body><div class="top-bar"><div><div class="main-title">🛒 ${title} — FuelTrack</div><div class="sub">${printedLabel}: ${new Date().toLocaleDateString(isEn ? "en-US" : "el-GR")}</div></div><div class="btn-group"><button class="btn btn-save" onclick="window.print()">${isEn ? "💾 Save" : "💾 Αποθήκευση"}</button><button class="btn btn-print" onclick="window.print()">${isEn ? "🖨️ Print" : "🖨️ Εκτύπωση"}</button><button class="btn btn-close" onclick="window.close()">${isEn ? "✕ Close" : "✕ Κλείσιμο"}</button></div></div>${lines}</body></html>`;
   const win = window.open("", "_blank");
   if (win) { win.document.write(html); win.document.close(); }
 }
