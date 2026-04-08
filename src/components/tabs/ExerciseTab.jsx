@@ -16,6 +16,9 @@ const CATEGORIES = [
 const FITNESS_LEVELS = ["beginner", "intermediate", "advanced"];
 const WORKOUT_LOCATIONS = ["home", "gym", "outdoor"];
 const EQUIPMENT_OPTIONS = ["none", "dumbbells", "bands", "full_gym", "pull_up_bar", "kettlebell"];
+const WORKOUT_FREQUENCIES = ["2", "3", "4", "5", "6"];
+const SESSION_DURATIONS = ["15", "30", "45", "60"];
+const FITNESS_GOALS = ["strength", "endurance", "flexibility", "weight_loss", "muscle", "general"];
 
 export default function ExerciseTab({
   exercises, exerciseValue,
@@ -27,7 +30,9 @@ export default function ExerciseTab({
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise,
   recentExercises, quickAddRecentExercise,
   fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
-  equipment, setEquipment, limitations, setLimitations
+  equipment, setEquipment, limitations, setLimitations,
+  workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
+  fitnessGoals, setFitnessGoals
 }) {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("Όλα");
@@ -259,6 +264,57 @@ export default function ExerciseTab({
                       background: active ? "var(--color-accent)" : "var(--bg-soft)",
                       color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
                     {t("exercisePrefs.equip." + eq)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <div className="profile-label">🗓️ {t("exercisePrefs.frequency")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {WORKOUT_FREQUENCIES.map((f) => (
+                <button key={f} type="button" onClick={() => setWorkoutFrequency(workoutFrequency === f ? "" : f)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: workoutFrequency === f ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: workoutFrequency === f ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {f}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Session duration */}
+          <div>
+            <div className="profile-label">⏱️ {t("exercisePrefs.sessionDuration")}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {SESSION_DURATIONS.map((d) => (
+                <button key={d} type="button" onClick={() => setSessionDuration(sessionDuration === d ? "" : d)}
+                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: sessionDuration === d ? "var(--color-accent)" : "var(--bg-soft)",
+                    color: sessionDuration === d ? "var(--bg-card)" : "var(--text-primary)" }}>
+                  {d}{t("exercisePrefs.min")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fitness goals */}
+          <div>
+            <div className="profile-label">🎯 {t("exercisePrefs.fitnessGoals")}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {FITNESS_GOALS.map((g) => {
+                const active = (fitnessGoals || []).includes(g);
+                return (
+                  <button key={g} type="button" onClick={() => setFitnessGoals(prev => {
+                    const list = prev || [];
+                    return active ? list.filter(x => x !== g) : [...list, g];
+                  })}
+                    style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                      color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                    {t("exercisePrefs.goal." + g)}
                   </button>
                 );
               })}

@@ -40,6 +40,12 @@ const defaultProps = {
   setEquipment: vi.fn(),
   limitations: "",
   setLimitations: vi.fn(),
+  workoutFrequency: "",
+  setWorkoutFrequency: vi.fn(),
+  sessionDuration: "",
+  setSessionDuration: vi.fn(),
+  fitnessGoals: [],
+  setFitnessGoals: vi.fn(),
 };
 
 function renderExerciseTab(overrides = {}) {

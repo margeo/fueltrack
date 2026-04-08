@@ -491,6 +491,18 @@
       "pull_up_bar": "Pull-up bar",
       "kettlebell": "Kettlebell"
     },
+    "frequency": "Frequency (times/week)",
+    "sessionDuration": "Session duration",
+    "min": "min",
+    "fitnessGoals": "Fitness goals",
+    "goal": {
+      "strength": "Strength",
+      "endurance": "Endurance",
+      "flexibility": "Flexibility",
+      "weight_loss": "Weight loss",
+      "muscle": "Muscle gain",
+      "general": "General fitness"
+    },
     "limitations": "Limitations / Injuries",
     "limitationsPlaceholder": "e.g. back problems, knee pain..."
   }

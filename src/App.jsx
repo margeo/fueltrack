@@ -75,6 +75,9 @@ export default function App() {
   const [workoutLocation, setWorkoutLocation] = useState(() => loadValue("ft_workoutLocation", ""));
   const [equipment, setEquipment] = useState(() => loadJSON("ft_equipment", []));
   const [limitations, setLimitations] = useState(() => loadValue("ft_limitations", ""));
+  const [workoutFrequency, setWorkoutFrequency] = useState(() => loadValue("ft_workoutFrequency", ""));
+  const [sessionDuration, setSessionDuration] = useState(() => loadValue("ft_sessionDuration", ""));
+  const [fitnessGoals, setFitnessGoals] = useState(() => loadJSON("ft_fitnessGoals", []));
 
   const [foods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
@@ -171,6 +174,9 @@ export default function App() {
   useEffect(() => saveValue("ft_workoutLocation", workoutLocation), [workoutLocation]);
   useEffect(() => saveJSON("ft_equipment", equipment), [equipment]);
   useEffect(() => saveValue("ft_limitations", limitations), [limitations]);
+  useEffect(() => saveValue("ft_workoutFrequency", workoutFrequency), [workoutFrequency]);
+  useEffect(() => saveValue("ft_sessionDuration", sessionDuration), [sessionDuration]);
+  useEffect(() => saveJSON("ft_fitnessGoals", fitnessGoals), [fitnessGoals]);
 
   useEffect(() => {
     if (!hasSeenWelcome && activeTab !== "welcome") { setActiveTab("welcome"); return; }
@@ -433,7 +439,8 @@ export default function App() {
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
     foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
-    fitnessLevel, workoutLocation, equipment, limitations
+    fitnessLevel, workoutLocation, equipment, limitations,
+    workoutFrequency, sessionDuration, fitnessGoals
   };
 
   const foodProps = {
@@ -464,7 +471,9 @@ export default function App() {
     recentExercises,
     quickAddRecentExercise,
     fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
-    equipment, setEquipment, limitations, setLimitations
+    equipment, setEquipment, limitations, setLimitations,
+    workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
+    fitnessGoals, setFitnessGoals
   };
 
   const profileProps = {
@@ -499,9 +508,9 @@ export default function App() {
             <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
               style={{ padding: "4px 6px", lineHeight: 1 }}>
               {i18n.language === "el" ? (
-                <svg width="22" height="16" viewBox="0 0 60 30"><clipPath id="gb"><rect width="60" height="30"/></clipPath><g clipPath="url(#gb)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4" clipPath="url(#gb)"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
-              ) : (
                 <svg width="22" height="16" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
+              ) : (
+                <svg width="22" height="16" viewBox="0 0 60 30"><clipPath id="gb"><rect width="60" height="30"/></clipPath><g clipPath="url(#gb)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4" clipPath="url(#gb)"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
               )}
             </button>
             <button className="theme-toggle-btn" onClick={toggleTheme} type="button">

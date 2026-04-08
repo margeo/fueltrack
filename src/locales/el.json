@@ -491,6 +491,18 @@
       "pull_up_bar": "Μονόζυγο",
       "kettlebell": "Kettlebell"
     },
+    "frequency": "Συχνότητα (φορές/εβδομάδα)",
+    "sessionDuration": "Διάρκεια προπόνησης",
+    "min": "λ",
+    "fitnessGoals": "Στόχος γυμναστικής",
+    "goal": {
+      "strength": "Δύναμη",
+      "endurance": "Αντοχή",
+      "flexibility": "Ευλυγισία",
+      "weight_loss": "Αδυνάτισμα",
+      "muscle": "Μυϊκή μάζα",
+      "general": "Γενική κατάσταση"
+    },
     "limitations": "Περιορισμοί / Τραυματισμοί",
     "limitationsPlaceholder": "π.χ. πρόβλημα στη μέση, πόνος στο γόνατο..."
   }
