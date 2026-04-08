@@ -310,7 +310,8 @@ ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩ
 ${dayLabels.total}: [X]kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
-${isEn ? "AT THE END write EXACTLY this" : "ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό"}: ${disclaimer}
+${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
+${disclaimer}
 ${askChange}`;
 
     // TRAINING PLAN
@@ -324,7 +325,8 @@ Duration: ~[X]min
 
 📅 ${dayLabels.tue} — ${dayLabels.rest} 😴
 (Monday to Sunday)
-AT THE END write EXACTLY this: ${disclaimer}
+AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it:
+${disclaimer}
 ${askChange}` : `
 Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής. Λάβε υπόψη αγαπημένες ασκήσεις. 2+ rest days.
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
@@ -335,7 +337,8 @@ ${askChange}` : `
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
 (Δευτέρα έως Κυριακή)
-ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό: ${disclaimer}
+ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις:
+${disclaimer}
 ${askChange}`;
 
     if (taskType === "meal_plan") return base + mealPlanFormat;
