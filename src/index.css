@@ -248,7 +248,7 @@ select {
   background: linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%);
   color: white;
   border-radius: 22px;
-  padding: 18px;
+  padding: 22px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-hero);
 }
