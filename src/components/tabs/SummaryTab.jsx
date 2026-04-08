@@ -251,9 +251,9 @@ RULES:
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
+              {!isExpanded && <span style={{ color: "#22c55e", fontWeight: 700, marginRight: 4 }}>✓</span>}
               <span>{t("summary.savedOn", { date: plan.date })}</span>
-              {!isExpanded && <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span>}
             </div>
             {isExpanded && (
               <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
