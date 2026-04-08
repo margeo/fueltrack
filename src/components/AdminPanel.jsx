@@ -115,17 +115,15 @@ export default function AdminPanel({ onClose }) {
                 {user.email || <span className="muted">No email</span>}
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => toggleFlag(user.id, "is_paid", user.is_paid)}
+                <span
                   style={{
                     padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-                    border: "none", cursor: "pointer",
                     background: user.is_paid ? "#4ade80" : "var(--bg-btn-light)",
                     color: user.is_paid ? "#052e16" : "var(--text-muted)"
                   }}
                 >
                   {user.is_paid ? "✓ Paid" : "Free"}
-                </button>
+                </span>
                 <button
                   onClick={() => toggleFlag(user.id, "is_demo", user.is_demo)}
                   style={{
