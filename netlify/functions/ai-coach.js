@@ -16,7 +16,7 @@ export async function handler(event) {
     }
 
     const recentMessages = validMessages.slice(-6);
-    const aiModel = process.env.AI_MODEL || "haiku";
+    const aiModel = process.env.AI_MODEL || "gemini-flash";
 
     let responseData;
 
