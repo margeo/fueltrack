@@ -85,7 +85,7 @@
   "summary": {
     "title": "Σύνοψη ημέρας",
     "titleName": "Γεια σου {{name}}!",
-    "remaining": "Υπόλοιπο ημέρας",
+    "remaining": "Υπόλοιπο",
     "target": "Στόχος",
     "food": "Φαγητό",
     "exercise": "Άσκηση",
