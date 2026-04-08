@@ -189,8 +189,8 @@ export default function AiCoach({
     const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
     const langInstruction = isEn
-      ? `Nutritionist & personal trainer. English, friendly, practical.${userName ? ` The user's name is ${userName}, address them by name.` : ""}`
-      : `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}`;
+      ? `Nutritionist & personal trainer. ALWAYS respond in English. Friendly, practical. Use English day names (Monday, Tuesday...), English food names, English units.${userName ? ` The user's name is ${userName}, address them by name.` : ""}`
+      : `Διατροφολόγος & personal trainer. ΠΑΝΤΑ απάντα στα Ελληνικά. Ενικός, φιλικός, πρακτικός. Χρησιμοποίησε ελληνικές ονομασίες ημερών, ελληνικά ονόματα φαγητών.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}`;
 
     // Preferences strings
     const foodItemLabels = {
