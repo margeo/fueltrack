@@ -537,7 +537,7 @@ ${askChange}`;
                   {msg.text}
                   {msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
-                      ⏱ {msg.elapsed}s{msg.usage ? ` · ${msg.usage.inputTokens + msg.usage.outputTokens} tokens · $${msg.usage.costUsd}` : ""}
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · ${msg.usage.inputTokens + msg.usage.outputTokens} tok · $${msg.usage.costUsd}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
                     </div>
                   )}
                   {msg.error && (
