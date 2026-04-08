@@ -402,6 +402,7 @@ ${askChange}`;
     }
 
     try {
+      const startTime = Date.now();
       const response = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -410,12 +411,13 @@ ${askChange}`;
           messages: buildMessages(effectiveMessage)
         })
       });
-      if (!response.ok) throw new Error(`Σφάλμα σύνδεσης (${response.status})`);
+      if (!response.ok) throw new Error(`Connection error (${response.status})`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       setMessages(prev => [
         ...prev,
-        { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined }
+        { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined, elapsed, usage: data.usage }
       ]);
       setHasLoaded(true);
     } catch (err) {
@@ -533,6 +535,11 @@ ${askChange}`;
               ) : (
                 <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.error ? "#fef2f2" : msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" && !msg.error ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.error ? "1px solid #fecaca" : msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
                   {msg.text}
+                  {msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · ${msg.usage.inputTokens + msg.usage.outputTokens} tokens · $${msg.usage.costUsd}` : ""}
+                    </div>
+                  )}
                   {msg.error && (
                     <button type="button" onClick={() => setMessages(prev => prev.filter((_, idx) => idx !== i))}
                       style={{ display: "block", marginTop: 6, padding: "4px 12px", borderRadius: 8, border: "1px solid #fecaca", background: "white", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#b91c1c" }}>

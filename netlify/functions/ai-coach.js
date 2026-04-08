@@ -41,10 +41,15 @@ export async function handler(event) {
     const text = data.content?.[0]?.text;
     if (!text) throw new Error("Empty response from API");
 
+    const usage = data.usage || {};
+    const inputTokens = usage.input_tokens || 0;
+    const outputTokens = usage.output_tokens || 0;
+    const costUsd = (inputTokens * 1 / 1000000) + (outputTokens * 5 / 1000000);
+
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ advice: text })
+      body: JSON.stringify({ advice: text, usage: { inputTokens, outputTokens, costUsd: Math.round(costUsd * 10000) / 10000 } })
     };
   } catch (error) {
     return {
