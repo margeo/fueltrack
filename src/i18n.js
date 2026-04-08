@@ -9,11 +9,11 @@ i18n
   .use(initReactI18next)
   .init({
     resources: { el: { translation: el }, en: { translation: en } },
-    lng: localStorage.getItem("ft_language") || "en",
+    lng: localStorage.getItem("ft_language") || (navigator.language?.startsWith("el") ? "el" : "en"),
     fallbackLng: "en",
     interpolation: { escapeValue: false },
     detection: {
-      order: ["localStorage"],
+      order: ["localStorage", "navigator"],
       lookupLocalStorage: "ft_language",
       caches: ["localStorage"],
     },
