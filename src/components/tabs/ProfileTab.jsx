@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 import { MODE_GROUPS, MODES } from "../../data/modes";
+import AdminPanel from "../AdminPanel";
+import { supabase } from "../../supabaseClient";
 
 // Unit conversion helpers
 const kgToLbs = (kg) => (Number(kg) * 2.20462).toFixed(1);
@@ -91,7 +93,22 @@ export default function ProfileTab({
   onLogout, userEmail, userName, onShowAuth, onShowRegister
 }) {
   const { t, i18n } = useTranslation();
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
+
+  // Check admin status once
+  useEffect(() => {
+    if (!userEmail) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      fetch("/.netlify/functions/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: "list-users" }),
+      }).then(res => setIsAdmin(res.ok)).catch(() => {});
+    });
+  }, [userEmail]);
   const isImperial = units === "imperial";
 
   const [localAge, setLocalAge] = useState(age);
@@ -349,10 +366,18 @@ export default function ProfileTab({
           <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
           {userName && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 2 }}>{userName}</div>}
           <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{userEmail}</div>
-          <button className="btn btn-light" onClick={onLogout} type="button"
-            style={{ fontSize: 13, padding: "10px 24px" }}>
-            {t("auth.logout")}
-          </button>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button className="btn btn-light" onClick={onLogout} type="button"
+              style={{ fontSize: 13, padding: "10px 24px" }}>
+              {t("auth.logout")}
+            </button>
+            {isAdmin && (
+              <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
+                style={{ fontSize: 13, padding: "10px 24px" }}>
+                🛡️ Admin
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="card" style={{ textAlign: "center" }}>
@@ -377,6 +402,8 @@ export default function ProfileTab({
           {t("common.privacyPolicy")}
         </a>
       </div>
+
+      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
     </>
   );
 }
