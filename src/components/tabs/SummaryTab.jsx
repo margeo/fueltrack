@@ -278,7 +278,7 @@ RULES:
               <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
           ) : mealPlan && !groceryLoading ? (
-            <button className="btn btn-dark" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
+            <button className="btn btn-light" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
           ) : null}
         </div>
         {groceryLoading ? (
