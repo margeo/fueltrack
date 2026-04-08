@@ -150,17 +150,25 @@ function FoodAddModal({ food, onAdd, onClose }) {
   );
 }
 
-const DIET_TYPES = ["omnivore", "vegetarian", "vegan", "pescatarian", "keto", "gluten_free"];
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
 const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
 const COOKING_TIMES = ["quick", "normal", "elaborate"];
+
+const FOOD_CATEGORIES = [
+  { key: "proteins", emoji: "🥩", items: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"] },
+  { key: "veggies", emoji: "🥗", items: ["salads", "cooked_veggies", "soups"] },
+  { key: "carbs", emoji: "🍚", items: ["rice", "pasta", "bread", "potatoes", "oats"] },
+  { key: "dairy", emoji: "🧀", items: ["yogurt", "cheese", "milk"] },
+  { key: "snacks", emoji: "🍎", items: ["fruits", "nuts_snack", "smoothies"] },
+  { key: "cooking", emoji: "🔥", items: ["grilled", "oven", "boiled", "fried", "raw"] },
+];
 
 export default function FoodTab({
   foods, customFoods, onAddCustomFood, onDeleteCustomFood,
   recentFoods, favoriteFoods, isFavorite, toggleFavorite,
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
   entries, groupedEntries, deleteEntry, openEditEntry,
-  dietType, setDietType, allergies, setAllergies,
+  foodCategories, setFoodCategories, allergies, setAllergies,
   cookingLevel, setCookingLevel, cookingTime, setCookingTime
 }) {
   const { t } = useTranslation();
@@ -432,21 +440,30 @@ export default function FoodTab({
         <h2 style={{ marginBottom: 10 }}>🥗 {t("foodPrefs.title")}</h2>
         <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("foodPrefs.subtitle")}</div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* Diet type */}
-          <div>
-            <div className="profile-label">{t("foodPrefs.dietType")}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {DIET_TYPES.map((d) => (
-                <button key={d} type="button" onClick={() => setDietType(dietType === d ? "" : d)}
-                  style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    background: dietType === d ? "var(--color-accent)" : "var(--bg-soft)",
-                    color: dietType === d ? "var(--bg-card)" : "var(--text-primary)" }}>
-                  {t("foodPrefs.diet." + d)}
-                </button>
-              ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Food categories */}
+          {FOOD_CATEGORIES.map((cat) => (
+            <div key={cat.key}>
+              <div className="profile-label">{cat.emoji} {t("foodPrefs.cat." + cat.key)}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {cat.items.map((item) => {
+                  const active = (foodCategories || []).includes(item);
+                  return (
+                    <button key={item} type="button"
+                      onClick={() => setFoodCategories(prev => {
+                        const list = prev || [];
+                        return active ? list.filter(x => x !== item) : [...list, item];
+                      })}
+                      style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                        color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                      {t("foodPrefs.item." + item)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ))}
 
           {/* Allergies */}
           <div>

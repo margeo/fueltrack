@@ -64,7 +64,7 @@ export default function App() {
   const [favoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
   // Food preferences
-  const [dietType, setDietType] = useState(() => loadValue("ft_dietType", ""));
+  const [foodCategories, setFoodCategories] = useState(() => loadJSON("ft_foodCategories", []));
   const [allergies, setAllergies] = useState(() => loadJSON("ft_allergies", []));
   const [cookingLevel, setCookingLevel] = useState(() => loadValue("ft_cookingLevel", ""));
   const [cookingTime, setCookingTime] = useState(() => loadValue("ft_cookingTime", ""));
@@ -161,7 +161,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
   useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
-  useEffect(() => saveValue("ft_dietType", dietType), [dietType]);
+  useEffect(() => saveJSON("ft_foodCategories", foodCategories), [foodCategories]);
   useEffect(() => saveJSON("ft_allergies", allergies), [allergies]);
   useEffect(() => saveValue("ft_cookingLevel", cookingLevel), [cookingLevel]);
   useEffect(() => saveValue("ft_cookingTime", cookingTime), [cookingTime]);
@@ -430,7 +430,7 @@ export default function App() {
     userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
-    dietType, allergies, cookingLevel, cookingTime,
+    foodCategories, allergies, cookingLevel, cookingTime,
     fitnessLevel, workoutLocation, equipment, limitations
   };
 
@@ -443,7 +443,7 @@ export default function App() {
     saveRecentFood, updateCurrentDay,
     quickAddRecent, quickAddFavorite,
     entries, groupedEntries, deleteEntry, openEditEntry,
-    dietType, setDietType, allergies, setAllergies,
+    foodCategories, setFoodCategories, allergies, setAllergies,
     cookingLevel, setCookingLevel, cookingTime, setCookingTime
   };
 

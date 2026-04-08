@@ -45,7 +45,7 @@ export default function AiCoach({
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
-  dietType, allergies, cookingLevel, cookingTime,
+  foodCategories, allergies, cookingLevel, cookingTime,
   fitnessLevel, workoutLocation, equipment, limitations
 }) {
   const { t, i18n } = useTranslation();
@@ -187,7 +187,18 @@ export default function AiCoach({
       : `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}`;
 
     // Preferences strings
-    const dietLabels = { omnivore: isEn?"Omnivore":"Κανονική", vegetarian: isEn?"Vegetarian":"Χορτοφαγική", vegan:"Vegan", pescatarian:"Pescatarian", keto:"Keto", gluten_free: isEn?"Gluten-free":"Χωρίς γλουτένη" };
+    const foodItemLabels = {
+      chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
+      fish: isEn?"Fish":"Ψάρι", turkey: isEn?"Turkey":"Γαλοπούλα", eggs: isEn?"Eggs":"Αυγά",
+      legumes: isEn?"Legumes":"Όσπρια", tofu: isEn?"Tofu":"Τόφου",
+      salads: isEn?"Salads":"Σαλάτες", cooked_veggies: isEn?"Cooked veggies":"Μαγειρεμένα λαχανικά", soups: isEn?"Soups":"Σούπες",
+      rice: isEn?"Rice":"Ρύζι", pasta: isEn?"Pasta":"Ζυμαρικά", bread: isEn?"Bread":"Ψωμί",
+      potatoes: isEn?"Potatoes":"Πατάτες", oats: isEn?"Oats":"Βρώμη",
+      yogurt: isEn?"Yogurt":"Γιαούρτι", cheese: isEn?"Cheese":"Τυρί", milk: isEn?"Milk":"Γάλα",
+      fruits: isEn?"Fruits":"Φρούτα", nuts_snack: isEn?"Nuts":"Ξηροί καρποί", smoothies: isEn?"Smoothies":"Smoothies",
+      grilled: isEn?"Grilled":"Ψητά", oven: isEn?"Oven":"Φούρνου", boiled: isEn?"Boiled":"Βραστά",
+      fried: isEn?"Fried":"Τηγανητά", raw: isEn?"Raw":"Ωμά"
+    };
     const allergyLabels = { dairy: isEn?"Dairy":"Γαλακτοκομικά", gluten: isEn?"Gluten":"Γλουτένη", nuts: isEn?"Nuts":"Ξηροί καρποί", eggs: isEn?"Eggs":"Αυγά", soy: isEn?"Soy":"Σόγια", shellfish: isEn?"Shellfish":"Οστρακοειδή", fish: isEn?"Fish":"Ψάρι" };
     const levelLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
     const locationLabels = { home: isEn?"Home":"Σπίτι", gym: isEn?"Gym":"Γυμναστήριο", outdoor: isEn?"Outdoor":"Εξωτερικά" };
@@ -195,7 +206,7 @@ export default function AiCoach({
     const cookLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
     const timeLabels = { quick: isEn?"Quick (15min)":"Γρήγορα (15λ)", normal: isEn?"Normal (30min)":"Κανονικά (30λ)", elaborate: isEn?"Elaborate (60min+)":"Αναλυτικά (60λ+)" };
 
-    const dietStr = dietType ? (dietLabels[dietType] || dietType) : "";
+    const foodCatStr = foodCategories?.length ? foodCategories.map(f => foodItemLabels[f] || f).join(", ") : "";
     const allergyStr = allergies?.length ? allergies.map(a => allergyLabels[a] || a).join(", ") : "";
     const cookStr = cookingLevel ? (cookLabels[cookingLevel] || cookingLevel) : "";
     const timeStr = cookingTime ? (timeLabels[cookingTime] || cookingTime) : "";
@@ -204,8 +215,8 @@ export default function AiCoach({
     const equipStr = equipment?.length ? equipment.map(e => equipLabels[e] || e).join(", ") : "";
     const limStr = limitations || "";
 
-    const foodPrefsLine = (dietStr || allergyStr || cookStr || timeStr)
-      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}: ${dietStr ? (isEn?"Diet":"Διατροφή")+":"+dietStr : ""}${allergyStr ? " | "+(isEn?"Allergies":"Αλλεργίες")+":"+allergyStr : ""}${cookStr ? " | "+(isEn?"Cooking":"Μαγειρική")+":"+cookStr : ""}${timeStr ? " | "+(isEn?"Time":"Χρόνος")+":"+timeStr : ""}${allergyStr ? "\n"+(isEn?"⚠️ NEVER suggest foods containing: ":"⚠️ ΠΟΤΕ μην προτείνεις φαγητά που περιέχουν: ")+allergyStr : ""}`
+    const foodPrefsLine = (foodCatStr || allergyStr || cookStr || timeStr)
+      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}: ${foodCatStr ? (isEn?"Likes":"Αρέσει")+":"+foodCatStr : ""}${allergyStr ? " | "+(isEn?"Allergies":"Αλλεργίες")+":"+allergyStr : ""}${cookStr ? " | "+(isEn?"Cooking":"Μαγειρική")+":"+cookStr : ""}${timeStr ? " | "+(isEn?"Time":"Χρόνος")+":"+timeStr : ""}${foodCatStr ? "\n"+(isEn?"Use the user's preferred foods as much as possible in meal suggestions.":"Χρησιμοποίησε τα αγαπημένα φαγητά του χρήστη όσο γίνεται στις προτάσεις γευμάτων.") : ""}${allergyStr ? "\n"+(isEn?"⚠️ NEVER suggest foods containing: ":"⚠️ ΠΟΤΕ μην προτείνεις φαγητά που περιέχουν: ")+allergyStr : ""}`
       : "";
 
     const exercisePrefsLine = (fitStr || locStr || equipStr || limStr)
@@ -456,7 +467,7 @@ ${askChange}`;
 
       {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
         <div>
-          {(!dietType && !fitnessLevel) && (
+          {(!foodCategories?.length && !fitnessLevel) && (
             <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.5 }}>
               💡 <strong>{t("aiCoach.prefsHintTitle")}</strong><br />
               {t("aiCoach.prefsHintDesc")}
