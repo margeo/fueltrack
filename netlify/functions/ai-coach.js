@@ -15,7 +15,7 @@ export async function handler(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
     }
 
-    const recentMessages = validMessages.slice(-10);
+    const recentMessages = validMessages.slice(-4);
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
