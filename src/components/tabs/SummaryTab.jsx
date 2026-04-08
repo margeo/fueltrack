@@ -316,7 +316,7 @@ RULES:
         </div>
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <div className="hero-stat" style={{ flex: 1, textAlign: "center", padding: "8px 4px" }}>
+            <div className="hero-stat" style={{ flex: 1.3, textAlign: "center", padding: "10px 4px" }}>
               <div className="hero-subtle" style={{ fontSize: 9, marginBottom: 3 }}>{t("summary.remaining")}</div>
               <div style={{ fontWeight: 800, fontSize: 22, lineHeight: 1, color: getRemainingColor() }}>{formatNumber(remainingCalories)}</div>
               <div className="hero-subtle" style={{ fontSize: 9, marginTop: 3 }}>kcal</div>
