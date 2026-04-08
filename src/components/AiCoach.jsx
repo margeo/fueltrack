@@ -414,9 +414,17 @@ ${askChange}`;
 
   return (
     <div>
-      <div style={{ marginBottom: 12 }}>
-        <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
-        <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div>
+          <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
+        </div>
+        {hasLoaded && messages.length > 0 && !loading && (
+          <button type="button" onClick={() => setChatExpanded(prev => !prev)}
+            style={{ padding: "5px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", flexShrink: 0 }}>
+            {chatExpanded ? "▲" : "▼"}
+          </button>
+        )}
       </div>
 
       {limitReached && (
@@ -526,12 +534,6 @@ ${askChange}`;
               </div>
             )}
           </div>
-          {!loading && (
-            <button type="button" onClick={() => setChatExpanded(prev => !prev)}
-              style={{ width: "100%", padding: "6px 0", border: "none", background: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
-              {chatExpanded ? "▲ Collapse" : "▼ Expand"}
-            </button>
-          )}
         </div>
       )}
 
