@@ -239,9 +239,6 @@ RULES:
           {plan && (
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
-              {type === "meal" && (
-                <button className="btn btn-dark" onClick={() => generateGroceryList(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
-              )}
               <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
@@ -269,23 +266,28 @@ RULES:
   }
 
   function GrocerySection() {
-    if (!groceryLoading && !groceryList) return null;
     return (
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groceryExpanded ? 8 : 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (groceryExpanded || groceryLoading || (!groceryList && mealPlan)) ? 8 : 0 }}>
           <div style={{ fontWeight: 700, fontSize: 15 }}>🛒 {t("summary.groceryList")}</div>
-          {groceryList && (
+          {groceryList ? (
             <div style={{ display: "flex", gap: 5 }}>
               <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
               <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>📄 PDF</button>
               <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
-          )}
+          ) : mealPlan && !groceryLoading ? (
+            <button className="btn btn-dark" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
+          ) : null}
         </div>
         {groceryLoading ? (
           <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
-        ) : groceryExpanded ? (
+        ) : groceryList && groceryExpanded ? (
           <GroceryListView content={groceryList} />
+        ) : !groceryList && !groceryLoading ? (
+          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
+            <div className="muted" style={{ fontSize: 12 }}>{mealPlan ? t("summary.groceryReady") : t("summary.groceryNeedPlan")}</div>
+          </div>
         ) : null}
       </div>
     );

@@ -104,6 +104,8 @@
     "groceryList": "Grocery list",
     "groceryBtn": "List",
     "groceryLoading": "Creating list... ⏳",
+    "groceryReady": "Tap \"List\" to generate a grocery list from your meal plan.",
+    "groceryNeedPlan": "Ask the AI Coach for a weekly meal plan first.",
     "groceryError": "Error creating list",
     "progress": "Progress",
     "weightEntry": "Enter weight",
