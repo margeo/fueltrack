@@ -51,13 +51,12 @@ export default function AiCoach({
   const [messages, setMessages] = useState([]);
   const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem("ft_simple_meals") === "true");
   const [isPaid, setIsPaid] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
   const DAILY_LIMIT_FREE = 5;
   const MONTHLY_LIMIT_FREE = 20;
   const LIFETIME_LIMIT_FREE = 20;
-  const DAILY_LIMIT_PAID = 30;
-  const MONTHLY_LIMIT_PAID = 300;
 
   const [monthlyCount, setMonthlyCount] = useState(0);
   const [lifetimeCount, setLifetimeCount] = useState(0);
@@ -74,11 +73,12 @@ export default function AiCoach({
     if (!session?.user?.id) return;
     supabase
       .from("profiles")
-      .select("is_paid")
+      .select("is_paid, is_demo")
       .eq("id", session.user.id)
       .single()
       .then(({ data }) => {
         setIsPaid(data?.is_paid === true);
+        setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
   }, [session]);
@@ -98,10 +98,10 @@ export default function AiCoach({
   }
 
   const needsAccount = !session;
-  const dailyLimit = isPaid ? DAILY_LIMIT_PAID : DAILY_LIMIT_FREE;
-  const monthlyLimit = isPaid ? MONTHLY_LIMIT_PAID : MONTHLY_LIMIT_FREE;
-  const monthlyLimitReached = monthlyCount >= monthlyLimit;
-  const lifetimeLimitReached = !isPaid && lifetimeCount >= LIFETIME_LIMIT_FREE;
+  const unlimited = isPaid || isDemo;
+  const dailyLimit = unlimited ? 50 : DAILY_LIMIT_FREE;
+  const monthlyLimitReached = !unlimited && monthlyCount >= MONTHLY_LIMIT_FREE;
+  const lifetimeLimitReached = !unlimited && lifetimeCount >= LIFETIME_LIMIT_FREE;
   const limitReached = needsAccount || dailyCount >= dailyLimit || monthlyLimitReached || lifetimeLimitReached;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -382,7 +382,7 @@ ${askChange}`;
               : lifetimeLimitReached
               ? t("aiCoach.lifetimeLimitDesc", { limit: LIFETIME_LIMIT_FREE })
               : monthlyLimitReached
-              ? t("aiCoach.monthlyLimitDesc", { limit: monthlyLimit })
+              ? t("aiCoach.monthlyLimitDesc", { limit: MONTHLY_LIMIT_FREE })
               : t("aiCoach.limitDesc", { limit: dailyLimit })}
           </div>
           {needsAccount && onShowAuth && (
