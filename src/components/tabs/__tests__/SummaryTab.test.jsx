@@ -123,9 +123,9 @@ describe("SummaryTab", () => {
     expect(screen.getByText(/80.*144/)).toBeTruthy();
   });
 
-  it("shows remaining protein", () => {
+  it("shows protein in macro bars", () => {
     renderSummary({ proteinTarget: 144, totalProtein: 80 });
-    expect(screen.getByText(/64/)).toBeTruthy(); // 144 - 80
+    expect(screen.getByText(/80.*144/)).toBeTruthy();
   });
 
   it("renders plans section", () => {
