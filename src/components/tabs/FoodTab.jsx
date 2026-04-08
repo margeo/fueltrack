@@ -169,7 +169,8 @@ export default function FoodTab({
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
   entries, groupedEntries, deleteEntry, openEditEntry,
   foodCategories, setFoodCategories, allergies, setAllergies,
-  cookingLevel, setCookingLevel, cookingTime, setCookingTime
+  cookingLevel, setCookingLevel, cookingTime, setCookingTime,
+  simpleMode, setSimpleMode
 }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -180,6 +181,7 @@ export default function FoodTab({
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({});
 
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
@@ -440,77 +442,132 @@ export default function FoodTab({
         <h2 style={{ marginBottom: 10 }}>🥗 {t("foodPrefs.title")}</h2>
         <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("foodPrefs.subtitle")}</div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Food categories */}
-          {FOOD_CATEGORIES.map((cat) => (
-            <div key={cat.key}>
-              <div className="profile-label">{cat.emoji} {t("foodPrefs.cat." + cat.key)}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {cat.items.map((item) => {
-                  const active = (foodCategories || []).includes(item);
-                  return (
-                    <button key={item} type="button"
-                      onClick={() => setFoodCategories(prev => {
-                        const list = prev || [];
-                        return active ? list.filter(x => x !== item) : [...list, item];
-                      })}
-                      style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                        background: active ? "var(--color-accent)" : "var(--bg-soft)",
-                        color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
-                      {t("foodPrefs.item." + item)}
-                    </button>
-                  );
-                })}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {/* Food categories — collapsible */}
+          {FOOD_CATEGORIES.map((cat) => {
+            const isOpen = expandedSections[cat.key];
+            const selectedCount = cat.items.filter(item => (foodCategories || []).includes(item)).length;
+            return (
+              <div key={cat.key}>
+                <button type="button" onClick={() => setExpandedSections(prev => ({ ...prev, [cat.key]: !prev[cat.key] }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{cat.emoji} {t("foodPrefs.cat." + cat.key)}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {selectedCount > 0 && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{selectedCount}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                    {cat.items.map((item) => {
+                      const active = (foodCategories || []).includes(item);
+                      return (
+                        <button key={item} type="button"
+                          onClick={() => setFoodCategories(prev => {
+                            const list = prev || [];
+                            return active ? list.filter(x => x !== item) : [...list, item];
+                          })}
+                          style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                            color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {t("foodPrefs.item." + item)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
-          {/* Allergies */}
-          <div>
-            <div className="profile-label">{t("foodPrefs.allergies")}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {ALLERGY_OPTIONS.map((a) => {
-                const active = allergies.includes(a);
-                return (
-                  <button key={a} type="button" onClick={() => setAllergies(prev => active ? prev.filter(x => x !== a) : [...prev, a])}
-                    style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                      background: active ? "#dc2626" : "var(--bg-soft)",
-                      color: active ? "white" : "var(--text-primary)" }}>
-                    {active ? "⚠️ " : ""}{t("foodPrefs.allergy." + a)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Cooking level */}
-          <div>
-            <div className="profile-label">👨‍🍳 {t("foodPrefs.cookingLevel")}</div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {COOKING_LEVELS.map((l) => (
-                <button key={l} type="button" onClick={() => setCookingLevel(cookingLevel === l ? "" : l)}
-                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    background: cookingLevel === l ? "var(--color-accent)" : "var(--bg-soft)",
-                    color: cookingLevel === l ? "var(--bg-card)" : "var(--text-primary)" }}>
-                  {t("foodPrefs.cooking." + l)}
+          {/* Allergies — collapsible */}
+          {(() => {
+            const isOpen = expandedSections.allergies;
+            return (
+              <div>
+                <button type="button" onClick={() => setExpandedSections(prev => ({ ...prev, allergies: !prev.allergies }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: allergies.length > 0 ? "#fef2f2" : "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>{t("foodPrefs.allergies")}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {allergies.length > 0 && <span style={{ background: "#dc2626", color: "white", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{allergies.length}</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
                 </button>
-              ))}
-            </div>
-          </div>
+                {isOpen && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 4px 4px" }}>
+                    {ALLERGY_OPTIONS.map((a) => {
+                      const active = allergies.includes(a);
+                      return (
+                        <button key={a} type="button" onClick={() => setAllergies(prev => active ? prev.filter(x => x !== a) : [...prev, a])}
+                          style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: active ? "#dc2626" : "var(--bg-soft)",
+                            color: active ? "white" : "var(--text-primary)" }}>
+                          {active ? "⚠️ " : ""}{t("foodPrefs.allergy." + a)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
-          {/* Cooking time */}
-          <div>
-            <div className="profile-label">⏱️ {t("foodPrefs.cookingTime")}</div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {COOKING_TIMES.map((ct) => (
-                <button key={ct} type="button" onClick={() => setCookingTime(cookingTime === ct ? "" : ct)}
-                  style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    background: cookingTime === ct ? "var(--color-accent)" : "var(--bg-soft)",
-                    color: cookingTime === ct ? "var(--bg-card)" : "var(--text-primary)" }}>
-                  {t("foodPrefs.time." + ct)}
+          {/* Cooking — collapsible */}
+          {(() => {
+            const isOpen = expandedSections.cooking_prefs;
+            return (
+              <div>
+                <button type="button" onClick={() => setExpandedSections(prev => ({ ...prev, cooking_prefs: !prev.cooking_prefs }))}
+                  style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span>👨‍🍳 {t("foodPrefs.cookingPrefs")}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {(cookingLevel || cookingTime) && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>✓</span>}
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                  </span>
                 </button>
-              ))}
-            </div>
+                {isOpen && (
+                  <div style={{ padding: "8px 4px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div>
+                      <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.cookingLevel")}</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {COOKING_LEVELS.map((l) => (
+                          <button key={l} type="button" onClick={() => setCookingLevel(cookingLevel === l ? "" : l)}
+                            style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                              background: cookingLevel === l ? "var(--color-accent)" : "var(--bg-soft)",
+                              color: cookingLevel === l ? "var(--bg-card)" : "var(--text-primary)" }}>
+                            {t("foodPrefs.cooking." + l)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.cookingTime")}</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {COOKING_TIMES.map((ct) => (
+                          <button key={ct} type="button" onClick={() => setCookingTime(cookingTime === ct ? "" : ct)}
+                            style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                              background: cookingTime === ct ? "var(--color-accent)" : "var(--bg-soft)",
+                              color: cookingTime === ct ? "var(--bg-card)" : "var(--text-primary)" }}>
+                            {t("foodPrefs.time." + ct)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Simple groceries toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
+            <button type="button" onClick={() => setSimpleMode(!simpleMode)}
+              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
+                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
+                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
+            </button>
+            <span className="muted" style={{ fontSize: 12 }}>🛒 {t("aiCoach.simpleMode")} — {t("aiCoach.simpleModeDesc")}</span>
           </div>
         </div>
       </div>

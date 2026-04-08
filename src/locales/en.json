@@ -453,6 +453,7 @@
       "shellfish": "Shellfish",
       "fish": "Fish"
     },
+    "cookingPrefs": "Cooking",
     "cookingLevel": "Cooking skill",
     "cooking": {
       "beginner": "Beginner",

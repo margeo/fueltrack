@@ -45,13 +45,12 @@ export default function AiCoach({
   remainingCalories, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
-  foodCategories, allergies, cookingLevel, cookingTime,
+  foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
   fitnessLevel, workoutLocation, equipment, limitations
 }) {
   const { t, i18n } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
-  const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem("ft_simple_meals") === "true");
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
@@ -485,15 +484,6 @@ ${askChange}`;
           <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
             📊 {t("aiCoach.analyzeDay")}
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14 }}>
-            <button type="button" onClick={() => { const next = !simpleMode; setSimpleMode(next); localStorage.setItem("ft_simple_meals", String(next)); }}
-              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
-                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
-              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
-                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
-            </button>
-            <span className="muted" style={{ fontSize: 11 }}>🛒 {t("aiCoach.simpleMode")} — {t("aiCoach.simpleModeDesc")}</span>
-          </div>
         </div>
       )}
 

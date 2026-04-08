@@ -77,7 +77,7 @@ export default function SummaryTab({
   favoriteFoods, favoriteFoodsText, favoriteExercisesText,
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister,
-  foodCategories, allergies, cookingLevel, cookingTime,
+  foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
   fitnessLevel, workoutLocation, equipment, limitations
 }) {
   const { t, i18n } = useTranslation();
@@ -378,7 +378,7 @@ RULES:
         age={age} weight={weight} height={height} gender={gender}
         savedPlans={savedPlans} onSavePlan={onSavePlan}
         session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
-        foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime}
+        foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime} simpleMode={simpleMode}
         fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
       />
 

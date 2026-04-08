@@ -50,6 +50,8 @@ const defaultProps = {
   setCookingLevel: vi.fn(),
   cookingTime: "",
   setCookingTime: vi.fn(),
+  simpleMode: false,
+  setSimpleMode: vi.fn(),
 };
 
 function renderFoodTab(overrides = {}) {

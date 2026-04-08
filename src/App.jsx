@@ -68,6 +68,7 @@ export default function App() {
   const [allergies, setAllergies] = useState(() => loadJSON("ft_allergies", []));
   const [cookingLevel, setCookingLevel] = useState(() => loadValue("ft_cookingLevel", ""));
   const [cookingTime, setCookingTime] = useState(() => loadValue("ft_cookingTime", ""));
+  const [simpleMode, setSimpleMode] = useState(() => loadValue("ft_simple_meals", "false") === "true");
 
   // Exercise preferences
   const [fitnessLevel, setFitnessLevel] = useState(() => loadValue("ft_fitnessLevel", ""));
@@ -165,6 +166,7 @@ export default function App() {
   useEffect(() => saveJSON("ft_allergies", allergies), [allergies]);
   useEffect(() => saveValue("ft_cookingLevel", cookingLevel), [cookingLevel]);
   useEffect(() => saveValue("ft_cookingTime", cookingTime), [cookingTime]);
+  useEffect(() => saveValue("ft_simple_meals", simpleMode ? "true" : "false"), [simpleMode]);
   useEffect(() => saveValue("ft_fitnessLevel", fitnessLevel), [fitnessLevel]);
   useEffect(() => saveValue("ft_workoutLocation", workoutLocation), [workoutLocation]);
   useEffect(() => saveJSON("ft_equipment", equipment), [equipment]);
@@ -430,7 +432,7 @@ export default function App() {
     userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
-    foodCategories, allergies, cookingLevel, cookingTime,
+    foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
     fitnessLevel, workoutLocation, equipment, limitations
   };
 
@@ -444,7 +446,8 @@ export default function App() {
     quickAddRecent, quickAddFavorite,
     entries, groupedEntries, deleteEntry, openEditEntry,
     foodCategories, setFoodCategories, allergies, setAllergies,
-    cookingLevel, setCookingLevel, cookingTime, setCookingTime
+    cookingLevel, setCookingLevel, cookingTime, setCookingTime,
+    simpleMode, setSimpleMode
   };
 
   const exerciseProps = {
