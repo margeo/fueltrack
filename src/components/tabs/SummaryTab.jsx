@@ -85,7 +85,38 @@ export default function SummaryTab({
     setGroceryList(null);
     setGroceryExpanded(true);
     try {
-      const systemPrompt = `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+      const isEn = i18n.language === "en";
+      const systemPrompt = isEn ? `Extract a grocery list from a weekly meal plan.
+RULES:
+- Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
+- Merge similar ingredients into the same base category:
+  • "grilled chicken", "chicken breast" → "Chicken"
+  • different fish can stay separate
+  • "2% yogurt" and "0%" → "Yogurt"
+  • tomato and cherry tomatoes → "Tomato"
+- DO NOT keep different names for the same base ingredient
+- DO NOT break down by day — totals only
+- MANDATORY group into categories. Write each category on its own line:
+
+🥩 Meat & Fish
+- Chicken: 900g
+- Salmon: 400g
+
+🥛 Dairy & Eggs
+- Yogurt: 1kg
+- Eggs: 12
+
+🥦 Vegetables & Fruits
+- Tomato: 500g
+
+🌾 Grains & Legumes
+- Rice: 500g
+
+🫙 Other
+- Olive oil: 200ml
+
+- Use "-" for each item
+- Answer ONLY with the list, no intro, no category totals` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
 ΚΑΝΟΝΕΣ:
 - Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
 - Ενοποίησε παρόμοια υλικά στην ίδια βασική κατηγορία:

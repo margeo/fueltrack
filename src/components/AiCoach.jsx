@@ -46,7 +46,7 @@ export default function AiCoach({
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
   const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem("ft_simple_meals") === "true");
@@ -149,17 +149,21 @@ export default function AiCoach({
 
   function buildSystemPrompt(taskType = "general") {
     const currentMode = MODES[mode] || MODES.balanced;
-    const goalLabel = goalType === "lose" ? "Απώλεια βάρους" :
-      goalType === "gain" ? "Μυϊκή ανάπτυξη" :
-      goalType === "fitness" ? "Fitness & Cardio" : "Διατήρηση";
+    const lang = i18n.language;
+    const isEn = lang === "en";
+    const goalLabel = goalType === "lose" ? (isEn ? "Weight loss" : "Απώλεια βάρους") :
+      goalType === "gain" ? (isEn ? "Muscle gain" : "Μυϊκή ανάπτυξη") :
+      goalType === "fitness" ? "Fitness & Cardio" : (isEn ? "Maintenance" : "Διατήρηση");
     const currentWeight = lastWeight || weight;
     const bmi = currentWeight && height
       ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
 
     const today = new Date();
-    const dayNames = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
+    const dayNames = isEn
+      ? ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+      : ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
     const todayName = dayNames[today.getDay()];
-    const todayDate = today.toLocaleDateString("el-GR");
+    const todayDate = today.toLocaleDateString(isEn ? "en-US" : "el-GR");
     const emptyDays = (last7Days || []).filter(d => d.eaten === 0);
 
     const weekSummary = (last7Days || []).map((d) => {
@@ -168,35 +172,66 @@ export default function AiCoach({
       const protein = Math.round(entries.reduce((s, item) => s + Number(item.protein || 0), 0));
       const exNames = Array.isArray(log.exercises) && log.exercises.length > 0
         ? log.exercises.map(e => e.name).join(", ") : "—";
-      return `  ${d.date}: ${d.eaten === 0 ? "⚠️ Χωρίς καταγραφή" : d.eaten + "kcal"} P:${protein}g [${exNames}]`;
+      return `  ${d.date}: ${d.eaten === 0 ? (isEn ? "⚠️ No log" : "⚠️ Χωρίς καταγραφή") : d.eaten + "kcal"} P:${protein}g [${exNames}]`;
     }).join("\n");
 
     const favFoodsList = (favoriteFoods || []).slice(0, 6).map(f => f.name).join(", ");
     const favExList = (favoriteExercises || []).map(e => e.name).join(", ");
 
-    // BASE — στέλνεται σε κάθε request
-    const base = `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}
-ΣΗΜΕΡΑ: ${todayName} ${todayDate}
-Ηλικία:${age||"—"} Φύλο:${gender==="male"?"Άνδρας":"Γυναίκα"} Ύψος:${height||"—"}cm Βάρος:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` Τάση:${weightTrend}kg`:""}
-Στόχος:${goalLabel} | Mode:${currentMode.label} | Θερμίδες:${targetCalories}kcal | Πρωτεΐνη:${proteinTarget}g/μέρα | Streak:${streak}μέρες
-Αγαπημένα:${favFoodsList||favoriteFoodsText||"—"} | Ασκήσεις:${favExList||favoriteExercisesText||"—"}
-Σήμερα: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | Άσκηση:${exerciseValue||0}kcal | Υπόλοιπο:${remainingCalories||targetCalories}kcal
-Εβδομάδα:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} μέρες χωρίς καταγραφή`:""}
-Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
+    const langInstruction = isEn
+      ? `Nutritionist & personal trainer. English, friendly, practical.${userName ? ` The user's name is ${userName}, address them by name.` : ""}`
+      : `Διατροφολόγος & personal trainer. Ελληνικά, ενικός, φιλικός, πρακτικός.${userName ? ` Τον χρήστη τον λένε ${userName}, προσφώνησέ τον με το όνομά του.` : ""}`;
 
-    // GENERAL — βασικές οδηγίες για chat/ανάλυση
-    const generalRules = `
+    // BASE — στέλνεται σε κάθε request
+    const base = `${langInstruction}
+${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
+${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
+${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label} | ${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}
+${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||favoriteFoodsText||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||favoriteExercisesText||"—"}
+${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal
+${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}
+Mode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
+
+    // GENERAL
+    const generalRules = isEn ? `
+Meal rules: 🌅Breakfast=eggs/yogurt/oats/toast (never meat) 🍎Snack=fruit/nuts 🌞Lunch=main meal with protein 🌙Dinner=light.
+If a food doesn't fit ${currentMode.label}, say so immediately.` : `
 Κανόνες γευμάτων: 🌅Πρωινό=αυγά/γιαούρτι/βρώμη/τοστ (ποτέ κρέας) 🍎Σνακ=φρούτο/ξηροί καρποί 🌞Μεσημεριανό=κύριο γεύμα με πρωτεΐνη 🌙Βραδινό=ελαφρύ.
 Αν τρόφιμο δεν ταιριάζει με ${currentMode.label} πες το αμέσως.`;
 
-    // MEAL PLAN — μόνο για εβδομαδιαίο διατροφής
-    const simpleRules = simpleMode ? `
+    // MEAL PLAN
+    const simpleRules = simpleMode ? (isEn ? `
+IMPORTANT — SIMPLE GROCERIES:
+- Maximum 15-18 ingredients for the WHOLE week.
+- Repeat meals: same breakfast 4-5 days, 2-3 rotating lunches, 2-3 rotating dinners.
+- The user wants a short grocery list and easy organization.` : `
 ΣΗΜΑΝΤΙΚΟ — ΛΙΓΑ ΨΩΝΙΑ:
 - Μέγιστο 15-18 υλικά για ΟΛΗ την εβδομάδα.
 - Επανάλαβε γεύματα: ίδιο πρωινό 4-5 μέρες, 2-3 μεσημεριανά που εναλλάσσονται, 2-3 βραδινά που εναλλάσσονται.
-- Ο χρήστης θέλει μικρή λίστα σούπερ μάρκετ και εύκολη οργάνωση.` : "";
-    const mealPlanFormat = `
-Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Στόχος ${targetCalories}kcal ±5%. Κατανομή: Πρωινό ${Math.round(targetCalories*0.25)}, Σνακx2 ${Math.round(targetCalories*0.1)}, Μεσημεριανό ${Math.round(targetCalories*0.35)}, Βραδινό ${Math.round(targetCalories*0.2)}kcal.${simpleRules}
+- Ο χρήστης θέλει μικρή λίστα σούπερ μάρκετ και εύκολη οργάνωση.`) : "";
+
+    const dayLabels = isEn
+      ? { mon: "MONDAY", tue: "TUESDAY", breakfast: "Breakfast", snack: "Snack", lunch: "Lunch", dinner: "Dinner", total: "Total", rest: "Rest" }
+      : { mon: "ΔΕΥΤΕΡΑ", tue: "ΤΡΙΤΗ", breakfast: "Πρωινό", snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό", total: "Σύνολο", rest: "Ανάπαυση" };
+
+    const disclaimer = isEn
+      ? "⚠️ This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication."
+      : "⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.";
+    const askChange = isEn ? `Then ask: "Want me to change anything?"` : `Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
+
+    const ingredientRules = isEn ? `
+INGREDIENT RULES (do not mention these in your answer):
+- Before writing the plan, pick maximum ${simpleMode ? "18" : "28"} different ingredients for the whole week. Do not exceed ${simpleMode ? "18" : "30"}.
+- Use THE SAME core ingredients every day with different combinations — DO NOT add new ingredients as you write.
+- The plan should have variety, but controlled and practical for grocery shopping.
+- DO NOT use the exact same lunch or exact same dinner every day.
+- DO NOT spend variety on too many different vegetables or sides.
+- Variety should be balanced across main proteins, sides, and vegetables.
+- Use a few core proteins that repeat logically through the week, a few core sides, and a few core vegetables/fruits.
+- DO NOT mention the ingredients or their count in your answer.
+- BEFORE giving the final answer, count the unique ingredients for the week and if more than ${simpleMode ? "18" : "25"}, remove or merge until ${simpleMode ? "18" : "25"} or fewer.
+- Treat similar ingredients as one where possible (e.g. tomato and cherry tomatoes, same fish category, same bread/rice/yogurt type) to keep the grocery list short and practical.
+- Write a short 1-2 line intro about the goal, then start with 📅 ${dayLabels.mon}.` : `
 ΚΑΝΟΝΕΣ ΥΛΙΚΩΝ (μην τους αναφέρεις στην απάντηση):
 - Πριν γράψεις το πρόγραμμα, επέλεξε μέγιστο ${simpleMode ? "18" : "28"} διαφορετικά υλικά συνολικά για όλη την εβδομάδα. Μην ξεπερνάς τα ${simpleMode ? "18" : "30"}.
 - Χρησιμοποίησε ΤΑ ΙΔΙΑ βασικά υλικά κάθε μέρα με διαφορετικούς συνδυασμούς — ΜΗΝ προσθέτεις νέα υλικά καθώς γράφεις.
@@ -208,23 +243,37 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 - ΜΗΝ αναφέρεις τα υλικά ή τον αριθμό τους στην απάντησή σου.
 - ΠΡΙΝ δώσεις την τελική απάντηση, μέτρα τα μοναδικά υλικά της εβδομάδας και αν είναι πάνω από ${simpleMode ? "18" : "25"}, αφαίρεσε ή συγχώνευσε υλικά μέχρι να γίνουν ${simpleMode ? "18" : "25"} ή λιγότερα.
 - Θεώρησε παρόμοια υλικά ως ένα όπου γίνεται (π.χ. ντομάτα και ντοματίνια, ίδια κατηγορία ψαριού, ίδιο είδος ψωμιού/ρυζιού/γιαουρτιού) ώστε η λίστα σούπερ μάρκετ να μένει σύντομη και πρακτική.
-- Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.
-ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
+- Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.`;
 
-📅 ΔΕΥΤΕΡΑ
-07:30 🌅 Πρωινό — [γεύμα + ποσότητα] ([X]kcal)
-11:00 🍎 Σνακ — [σνακ] ([X]kcal)
-13:30 🌞 Μεσημεριανό — [γεύμα + ποσότητα] ([X]kcal)
-16:30 🍎 Σνακ — [σνακ] ([X]kcal)
-20:00 🌙 Βραδινό — [γεύμα + ποσότητα] ([X]kcal)
-Σύνολο: [X]kcal
+    const mealPlanFormat = `
+${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."} ${isEn ? "Target" : "Στόχος"} ${targetCalories}kcal ±5%. ${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ${Math.round(targetCalories*0.25)}, ${dayLabels.snack}x2 ${Math.round(targetCalories*0.1)}, ${dayLabels.lunch} ${Math.round(targetCalories*0.35)}, ${dayLabels.dinner} ${Math.round(targetCalories*0.2)}kcal.${simpleRules}${ingredientRules}
+${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
+
+📅 ${dayLabels.mon}
+07:30 🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+11:00 🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)
+13:30 🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+16:30 🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)
+20:00 🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+${dayLabels.total}: [X]kcal
 ─────────────────
-(Δευτέρα έως Κυριακή)
-ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
+(${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
+${isEn ? "AT THE END write EXACTLY this" : "ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό"}: ${disclaimer}
+${askChange}`;
 
-    // TRAINING PLAN — μόνο για εβδομαδιαίο γυμναστικής
-    const trainingPlanFormat = `
+    // TRAINING PLAN
+    const trainingPlanFormat = isEn ? `
+Create a weekly training plan. Consider favorite exercises. 2+ rest days.
+MANDATORY format — ALWAYS emojis:
+
+📅 ${dayLabels.mon} — [workout type]
+09:00 💪 [Exercise]: [sets × reps]
+Duration: ~[X]min
+
+📅 ${dayLabels.tue} — ${dayLabels.rest} 😴
+(Monday to Sunday)
+AT THE END write EXACTLY this: ${disclaimer}
+${askChange}` : `
 Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής. Λάβε υπόψη αγαπημένες ασκήσεις. 2+ rest days.
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
 
@@ -234,8 +283,8 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
 
 📅 ΤΡΙΤΗ — Ανάπαυση 😴
 (Δευτέρα έως Κυριακή)
-ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό: ⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.
-Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
+ΣΤΟ ΤΕΛΟΣ γράψε ΑΚΡΙΒΩΣ αυτό: ${disclaimer}
+${askChange}`;
 
     if (taskType === "meal_plan") return base + mealPlanFormat;
     if (taskType === "training_plan") return base + trainingPlanFormat;
@@ -265,33 +314,29 @@ Mode κανόνες (${currentMode.label}): ${currentMode.aiRule}`;
     const isTrainingPlan = text === t("aiCoach.q3");
     const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : "general";
 
+    const isEn = i18n.language === "en";
     let effectiveMessage;
     if (isInitial) {
-      effectiveMessage = `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
+      effectiveMessage = isEn
+        ? `Look at my data:\n1. What to eat for the rest of the day (${currentMode.label}, ${targetCalories}kcal)\n2. Flag any empty days\n3. Should I exercise today\n4. One thing I'm doing wrong\n5. Ask me something`
+        : `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
     } else if (isEatNow) {
       const hour = new Date().getHours();
-      const mealTime = hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό";
+      const mealTime = isEn
+        ? (hour < 10 ? "breakfast" : hour < 12 ? "morning snack" : hour < 15 ? "lunch" : hour < 18 ? "afternoon snack" : "dinner")
+        : (hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό");
       const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
-      effectiveMessage = `Δώσε 3 επιλογές για ${mealTime} ΤΩΡΑ.
-Υπόλοιπο:${remainingCalories}kcal | Πρωτεΐνη:${remProtein}g | Mode:${currentMode.label}
-
-Format — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):
-
-[emoji] [Γεύμα]
-[X]kcal • [X]g πρωτεΐνη
-[Μια πρόταση γιατί ταιριάζει]
-
-[emoji] [Γεύμα 2]
-[X]kcal • [X]g πρωτεΐνη
-[Μια πρόταση]
-
-[emoji] [Γεύμα 3]
-[X]kcal • [X]g πρωτεΐνη
-[Μια πρόταση]`;
+      effectiveMessage = isEn
+        ? `Give 3 options for ${mealTime} NOW.\nRemaining:${remainingCalories}kcal | Protein:${remProtein}g | Mode:${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
+        : `Δώσε 3 επιλογές για ${mealTime} ΤΩΡΑ.\nΥπόλοιπο:${remainingCalories}kcal | Πρωτεΐνη:${remProtein}g | Mode:${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
     } else if (isMealPlan) {
-      effectiveMessage = `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 🌅 🍎 🌞 🌙. ΠΟΤΕ αστερίσκοι.`;
+      effectiveMessage = isEn
+        ? `Create a weekly meal plan for 7 days (Monday-Sunday). MANDATORY format with 📅 🌅 🍎 🌞 🌙. NEVER asterisks.`
+        : `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 🌅 🍎 🌞 🌙. ΠΟΤΕ αστερίσκοι.`;
     } else if (isTrainingPlan) {
-      effectiveMessage = `Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 💪 😴.`;
+      effectiveMessage = isEn
+        ? `Create a weekly training plan for 7 days (Monday-Sunday). MANDATORY format with 📅 💪 😴.`
+        : `Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής 7 ημερών (Δευτέρα-Κυριακή). ΥΠΟΧΡΕΩΤΙΚΑ format με 📅 💪 😴.`;
     } else {
       effectiveMessage = text;
     }
