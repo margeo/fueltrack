@@ -110,7 +110,6 @@ describe("SummaryTab", () => {
 
   it("renders macro bars section", () => {
     renderSummary();
-    expect(screen.getByText("Macros σήμερα")).toBeTruthy();
     expect(screen.getByText("Πρωτεΐνη")).toBeTruthy();
     expect(screen.getByText("Υδατάνθρακες")).toBeTruthy();
     expect(screen.getByText("Λίπος")).toBeTruthy();

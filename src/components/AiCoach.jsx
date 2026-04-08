@@ -132,8 +132,10 @@ export default function AiCoach({
   useEffect(() => {
     if (!messages.length) return;
     const last = messages[messages.length - 1];
-    if (last.role === "assistant" && lastAssistantRef.current) {
-      lastAssistantRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (last.role === "assistant") {
+      coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const el = chatRef.current;
+      if (el) setTimeout(() => { el.scrollTop = el.scrollHeight; }, 100);
     } else {
       const el = chatRef.current;
       if (el) el.scrollTop = el.scrollHeight;
