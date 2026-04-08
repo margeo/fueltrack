@@ -339,6 +339,23 @@ RULES:
           </div>
         </div>
         <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
+
+        {/* MACROS — inline */}
+        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div className="macro-bar-row" style={{ gap: 6 }}>
+            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.proteinLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalProtein)}g/{formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
+            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
+          </div>
+          <div className="macro-bar-row" style={{ gap: 6 }}>
+            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.carbsLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalCarbs)}g/{formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
+            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
+          </div>
+          <div className="macro-bar-row" style={{ gap: 6 }}>
+            <div className="macro-bar-label" style={{ minWidth: 0 }}><span className="macro-bar-title" style={{ fontSize: 11 }}>{t("summary.fatLabel")}</span><span className="macro-bar-value" style={{ fontSize: 11 }}>{formatNumber(totalFat)}g/{formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
+            <div className="macro-bar-outer" style={{ height: 6 }}><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
+          </div>
+        </div>
+
         <div className="hero-stat" style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12 }}>
           <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>🎯 {getGoalLabel()} · {getModeLabel()}</div>
           <div className="hero-subtle" style={{ fontSize: 12, marginTop: 4 }}>{getModeHint()}</div>
@@ -349,26 +366,7 @@ RULES:
         </div>
       </div>
 
-      {/* 2. MACROS */}
-      <div className="card">
-        <h2>{t("summary.macrosToday")}</h2>
-        <div className="macro-bars">
-          <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.proteinLabel")}</span><span className="macro-bar-value">{formatNumber(totalProtein)}g / {formatNumber(macroTargets?.proteinGrams || 0)}g</span></div>
-            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-protein" style={{ width: `${proteinPercent}%` }} /></div>
-          </div>
-          <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.carbsLabel")}</span><span className="macro-bar-value">{formatNumber(totalCarbs)}g / {formatNumber(macroTargets?.carbsGrams || 0)}g</span></div>
-            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-carbs" style={{ width: `${carbsPercent}%` }} /></div>
-          </div>
-          <div className="macro-bar-row">
-            <div className="macro-bar-label"><span className="macro-bar-title">{t("summary.fatLabel")}</span><span className="macro-bar-value">{formatNumber(totalFat)}g / {formatNumber(macroTargets?.fatGrams || 0)}g</span></div>
-            <div className="macro-bar-outer"><div className="macro-bar-inner macro-bar-fat" style={{ width: `${fatPercent}%` }} /></div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. AI COACH + PLANS (connected) */}
+      {/* 2. AI COACH + PLANS (connected) */}
       <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, overflow: "hidden" }}>
         <div style={{ padding: 16 }}>
           <AiCoach
