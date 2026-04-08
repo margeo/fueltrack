@@ -109,7 +109,7 @@ export default function ProfileTab({
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
   dailyDeficit, proteinTarget, profileComplete,
-  onLogout, userEmail, userName, onShowAuth, onShowRegister,
+  userEmail, userName, onShowAuth, onShowRegister,
   foodCategories, setFoodCategories, allergies, setAllergies,
   cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
   fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,

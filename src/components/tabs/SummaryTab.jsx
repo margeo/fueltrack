@@ -223,7 +223,7 @@ RULES:
     return t("modeHints." + mode, { defaultValue: "" });
   }
 
-  const remainingProtein = Math.max((proteinTarget || 0) - (totalProtein || 0), 0);
+
   const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
   const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
   const fatPercent = macroTargets?.fatGrams ? Math.min((totalFat / macroTargets.fatGrams) * 100, 100) : 0;

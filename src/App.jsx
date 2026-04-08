@@ -479,7 +479,6 @@ export default function App() {
     weeks, setWeeks, tdee, targetCalories,
     dailyDeficit, proteinTarget, profileComplete,
     onContinue: goToSummaryAfterProfile,
-    onLogout: () => supabase.auth.signOut(),
     userEmail: session?.user?.email,
     userName: session?.user?.user_metadata?.full_name,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
