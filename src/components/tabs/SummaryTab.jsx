@@ -343,12 +343,12 @@ RULES:
         {/* MACROS — compact inline */}
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
           {[
-            { label: t("summary.proteinLabel"), value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
-            { label: t("summary.carbsLabel"), value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },
-            { label: t("summary.fatLabel"), value: `${formatNumber(totalFat)}g / ${formatNumber(macroTargets?.fatGrams || 0)}g`, pct: fatPercent, cls: "macro-bar-fat" },
+            { label: "Protein", value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
+            { label: "Carbs", value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },
+            { label: "Fat", value: `${formatNumber(totalFat)}g / ${formatNumber(macroTargets?.fatGrams || 0)}g`, pct: fatPercent, cls: "macro-bar-fat" },
           ].map((m) => (
             <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 65, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)", flexShrink: 0 }}>{m.label}</div>
+              <div style={{ width: 50, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", flexShrink: 0 }}>{m.label}</div>
               <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
                 <div className={m.cls} style={{ height: "100%", borderRadius: 999, transition: "width 0.3s ease", width: `${m.pct}%` }} />
               </div>
