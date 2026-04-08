@@ -135,7 +135,10 @@ export default function AiCoach({
     if (last.role === "assistant") {
       coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       const el = chatRef.current;
-      if (el) setTimeout(() => { el.scrollTop = 0; }, 100);
+      const ref = lastAssistantRef.current;
+      if (el && ref) {
+        setTimeout(() => { el.scrollTop = ref.offsetTop - el.offsetTop; }, 100);
+      }
     } else {
       const el = chatRef.current;
       if (el) el.scrollTop = el.scrollHeight;
