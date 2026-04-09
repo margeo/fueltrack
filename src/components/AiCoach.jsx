@@ -684,7 +684,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             }
             snacks = result?.monday ? result : null;
             console.log("SNACK_RESULT:", snacks?.monday);
-          } catch { /* snack parse failed */ }
+          } catch (e) { console.warn("SNACK_PARSE_ERROR:", e); }
         }
 
         // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
