@@ -668,8 +668,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           try { const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice; snacks = raw?.weekly_plan || raw; } catch { /* */ }
         }
 
-        console.log("MEALS:", meals?.monday);
-        console.log("SNACKS:", snacks);
+        console.log("MEALS RAW:", mealsData.advice?.substring(0, 200));
+        console.log("SNACKS RAW:", snacksData?.advice?.substring(0, 200));
+        console.log("MEALS PARSED:", meals?.monday);
+        console.log("SNACKS PARSED:", snacks);
         // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
         const merged = {};
         DAY_KEYS.forEach(day => {
