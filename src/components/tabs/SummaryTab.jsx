@@ -104,25 +104,51 @@ export default function SummaryTab({
       const isEn = i18n.language === "en";
       const systemPrompt = isEn ? `Extract a grocery list from a weekly meal plan.
 RULES:
-• Group into categories:
-🥩 Meat & Fish
-🥛 Dairy & Eggs
-🥦 Vegetables & Fruits
-🌾 Grains & Legumes
-🫙 Other
+• Group into categories
 • Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
 • Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
-• DO NOT break down by day — show only totals in the above categories` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+• DO NOT break down by day — show only totals in the categories below
+MANDATORY format — ALWAYS emojis, NEVER asterisks:
+
+🥩 Meat & Fish
+- Chicken breast: 1.2kg
+- Salmon: 400g
+─────────────────
+🥛 Dairy & Eggs
+- Yogurt: 1kg
+- Eggs: 12
+─────────────────
+🥦 Vegetables & Fruits
+- Tomato: 500g
+─────────────────
+🌾 Grains & Legumes
+- Rice: 500g
+─────────────────
+🫙 Other
+- Olive oil: 200ml` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
 ΚΑΝΟΝΕΣ:
-• Ομαδοποίησε σε κατηγορίες:
-🥩 Κρέατα & Ψάρια
-🥛 Γαλακτοκομικά & Αυγά
-🥦 Λαχανικά & Φρούτα
-🌾 Δημητριακά & Όσπρια
-🫙 Άλλα
+• Ομαδοποίησε σε κατηγορίες
 • Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο κοτόπουλο → "Κοτόπουλο")
 • Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
-• ΜΗΝ αναλύεις ανά μέρα — δείξε μόνο σύνολα στις παραπάνω κατηγορίες`;
+• ΜΗΝ αναλύεις ανά μέρα — δείξε μόνο σύνολα στις παρακάτω κατηγορίες
+ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
+
+🥩 Κρέατα & Ψάρια
+- Κοτόπουλο στήθος: 1.2kg
+- Σολομός: 400g
+─────────────────
+🥛 Γαλακτοκομικά & Αυγά
+- Γιαούρτι: 1kg
+- Αυγά: 12
+─────────────────
+🥦 Λαχανικά & Φρούτα
+- Ντομάτα: 500g
+─────────────────
+🌾 Δημητριακά & Όσπρια
+- Ρύζι: 500g
+─────────────────
+🫙 Άλλα
+- Ελαιόλαδο: 200ml`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
