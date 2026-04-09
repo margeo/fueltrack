@@ -26,7 +26,7 @@ export async function handler(event) {
         "gemini": "google/gemini-2.5-flash-lite",
         "gemini-flash": "google/gemini-2.5-flash",
         "gemini-pro": "google/gemini-2.5-pro",
-        "grok": "x-ai/grok-4.1-fast",
+        "grok": "x-ai/grok-3-mini",
         "haiku-openrouter": "anthropic/claude-3.5-haiku"
       };
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -52,7 +52,7 @@ export async function handler(event) {
       const txt = d.choices?.[0]?.message?.content;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
-      const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "gemini-pro": "Gemini 2.5 Pro", "grok": "Grok 4.1 Fast", "haiku-openrouter": "Haiku 4.5 (OR)" };
+      const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "gemini-pro": "Gemini 2.5 Pro", "grok": "Grok 3 Mini", "haiku-openrouter": "Haiku 4.5 (OR)" };
       const pricing = { "gemini": [0.10, 0.40], "gemini-flash": [0.30, 2.50], "gemini-pro": [1.25, 10], "grok": [0.30, 0.50], "haiku-openrouter": [1, 5] };
       const [inPrice, outPrice] = pricing[aiModel] || [0, 0];
       const inTok = u.prompt_tokens || 0;
