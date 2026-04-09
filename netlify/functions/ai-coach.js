@@ -32,7 +32,7 @@ export async function handler(event) {
       const reqBody = {
         model: modelMap[aiModel],
         max_tokens: jsonMode ? 16000 : 8000,
-        temperature: jsonMode ? 0.1 : 0.7,
+        temperature: 0.7,
         messages: [
           { role: "system", content: systemPrompt },
           ...recentMessages
