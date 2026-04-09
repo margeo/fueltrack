@@ -447,7 +447,7 @@ ${askChange}`;
                 <option value="haiku">Haiku 4.5</option>
                 <option value="gemini">Gemini Lite</option>
                 <option value="gemini-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-direct">Gemini Direct</option>
+                <option value="gemini-direct">Gemini 2.0 Flash Lite (Direct)</option>
                 <option value="haiku-openrouter">Haiku OR</option>
               </select>
             )}

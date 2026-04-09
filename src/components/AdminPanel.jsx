@@ -126,7 +126,7 @@ export default function AdminPanel({ onClose, adminEmail }) {
               <option value="gemini">Gemini 2.5 Flash Lite</option>
               <option value="haiku">Claude Haiku 4.5</option>
               <option value="haiku-openrouter">Claude Haiku (OpenRouter)</option>
-              <option value="gemini-direct">Gemini Direct (Google API)</option>
+              <option value="gemini-direct">Gemini 2.0 Flash Lite (Google API)</option>
             </select>
           </div>
         </div>
