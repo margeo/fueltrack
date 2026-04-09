@@ -625,7 +625,13 @@ ${askChange}`;
         const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
 Each day has EXACTLY 3 meals: meal_1 (Breakfast), meal_2 (Lunch), meal_3 (Dinner), and daily_total.
 Each meal: "desc" (brief, with grams), "kcal" (integer).
-Target: ${mealsCal}kcal total per day (split across 3 meals).
+
+CALORIE TARGETS (MANDATORY - each meal MUST match these):
+- "meal_1": Breakfast (~${breakfastCal}kcal)
+- "meal_2": Lunch (~${lunchCal}kcal)
+- "meal_3": Dinner (~${dinnerCal}kcal)
+- daily_total: ${mealsCal}
+
 No leftovers. Unique meals each day. Respect input data.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
