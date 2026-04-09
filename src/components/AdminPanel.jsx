@@ -114,6 +114,24 @@ export default function AdminPanel({ onClose, adminEmail }) {
           }}>✕</button>
         </div>
 
+        {/* AI Model Selector */}
+        <div style={{ padding: "12px 20px 0", borderBottom: "1px solid var(--border-soft)", paddingBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>🤖 AI Model</span>
+            <select
+              value={localStorage.getItem("ft_ai_model") || ""}
+              onChange={(e) => { localStorage.setItem("ft_ai_model", e.target.value); window.location.reload(); }}
+              style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer" }}>
+              <option value="">Default (Gemini 2.5 Flash)</option>
+              <option value="gemini">Gemini 2.5 Flash Lite</option>
+              <option value="gemini-flash">Gemini 2.5 Flash</option>
+              <option value="haiku">Claude Haiku 4.5</option>
+              <option value="haiku-openrouter">Claude Haiku (OpenRouter)</option>
+              <option value="gemini-direct">Gemini Direct (Google API)</option>
+            </select>
+          </div>
+        </div>
+
         {/* Search + Filters */}
         <div style={{ padding: "12px 20px 0" }}>
           <input
