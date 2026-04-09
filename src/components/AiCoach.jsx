@@ -219,8 +219,8 @@ export default function AiCoach({
     const levelLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
     const locationLabels = { home: isEn?"Home":"Σπίτι", gym: isEn?"Gym":"Γυμναστήριο", outdoor: isEn?"Outdoor":"Εξωτερικά" };
     const equipLabels = { none: isEn?"None":"Τίποτα", dumbbells: isEn?"Dumbbells":"Αλτήρες", bands: isEn?"Resistance bands":"Λάστιχα", full_gym: isEn?"Full gym":"Πλήρες gym", pull_up_bar: isEn?"Pull-up bar":"Μονόζυγο", kettlebell:"Kettlebell" };
-    const cookLabels = { beginner: isEn?"Beginner":"Αρχάριος", intermediate: isEn?"Intermediate":"Μέτριος", advanced: isEn?"Advanced":"Προχωρημένος" };
-    const timeLabels = { quick: isEn?"Quick (15min)":"Γρήγορα (15λ)", normal: isEn?"Normal (30min)":"Κανονικά (30λ)", elaborate: isEn?"Elaborate (60min+)":"Αναλυτικά (60λ+)" };
+    const cookLabels = { beginner: isEn?"Beginner — simple, quick recipes only":"Αρχάριος — μόνο απλές, γρήγορες συνταγές", intermediate: isEn?"Intermediate — knows basic techniques, moderate complexity":"Μέτριος — ξέρει βασικές τεχνικές, μέτρια πολυπλοκότητα", advanced: isEn?"Advanced — can handle complex recipes":"Προχωρημένος — μπορεί πολύπλοκες συνταγές" };
+    const timeLabels = { quick: isEn?"~15min — quick simple meals":"~15 λεπτά — γρήγορα απλά γεύματα", normal: isEn?"~30min — moderate, not too simple or elaborate":"~30 λεπτά — μέτριας πολυπλοκότητας, ούτε πρόχειρα ούτε πολύπλοκα", elaborate: isEn?"60min+ — elaborate complex cooking":"60+ λεπτά — αναλυτικό, πολύπλοκο μαγείρεμα" };
 
     const foodCatStr = foodCategories?.length ? foodCategories.map(f => foodItemLabels[f] || f).join(", ") : "";
     const allergyStr = allergies?.length ? allergies.map(a => allergyLabels[a] || a).join(", ") : "";
@@ -236,8 +236,8 @@ export default function AiCoach({
     const fitGoalStr = fitnessGoals?.length ? fitnessGoals.map(g => goalLabelsMap[g] || g).join(", ") : "";
     const exCatStr = exerciseCategories?.length ? exerciseCategories.join(", ") : "";
 
-    const foodPrefsLine = (foodCatStr || allergyStr || cookStr || timeStr)
-      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}: ${foodCatStr ? (isEn?"Likes":"Αρέσει")+":"+foodCatStr : ""}${allergyStr ? " | "+(isEn?"Allergies":"Αλλεργίες")+":"+allergyStr : ""}${cookStr ? " | "+(isEn?"Cooking":"Μαγειρική")+":"+cookStr : ""}${timeStr ? " | "+(isEn?"Time":"Χρόνος")+":"+timeStr : ""}${foodCatStr ? "\n"+(isEn?"Prioritize the user's preferred foods above — build the plan mainly around these and similar ingredients.":"Δώσε προτεραιότητα στα αγαπημένα φαγητά του χρήστη — χτίσε το πρόγραμμα κυρίως γύρω από αυτά και τα συναφή τους.") : ""}${allergyStr ? "\n"+(isEn?"⚠️ NEVER suggest foods containing: ":"⚠️ ΠΟΤΕ μην προτείνεις φαγητά που περιέχουν: ")+allergyStr : ""}`
+    const foodPrefsLine = (foodCatStr || favFoodsList || allergyStr || cookStr || timeStr)
+      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}:${foodCatStr ? `\n${isEn?"Prefers":"Προτιμάει"}: ${foodCatStr}` : ""}${favFoodsList ? `\n${isEn?"Favorites":"Αγαπημένα"}: ${favFoodsList}` : ""}${cookStr ? `\n${isEn?"Cooking skill":"Μαγειρική ικανότητα"}: ${cookStr}` : ""}${timeStr ? `\n${isEn?"Cooking time":"Χρόνος μαγειρέματος"}: ${timeStr}` : ""}${allergyStr ? `\n${isEn?"⚠️ ALLERGIES — NEVER use":"⚠️ ΑΛΛΕΡΓΙΕΣ — ΠΟΤΕ μη χρησιμοποιήσεις"}: ${allergyStr}` : ""}${(foodCatStr || favFoodsList) ? `\n${isEn?"Build the plan mainly around the user's preferences and favorites above.":"Χτίσε το πρόγραμμα κυρίως γύρω από τις προτιμήσεις και τα αγαπημένα του χρήστη."}` : ""}`
       : "";
 
     const exercisePrefsLine = (fitStr || locStr || equipStr || limStr || freqStr || durStr || fitGoalStr || exCatStr)
@@ -253,7 +253,7 @@ ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${ge
 ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
 
     // NUTRITION TARGETS: meal_plan, eatnow, general
-    const nutritionTargets = `\n${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}`;
+    const nutritionTargets = `\n${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"}`;
 
     // TODAY'S INTAKE: eatnow, general
     const todayIntake = `\n${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal`;
@@ -262,7 +262,7 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
     const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
 
     // FOOD CONTEXT: meal_plan, eatnow, general (NOT training_plan)
-    const foodContext = `${foodPrefsLine}${favFoodsList ? `\n${isEn ? "Favorite foods" : "Αγαπημένα φαγητά"}:${favFoodsList}` : ""}`;
+    const foodContext = foodPrefsLine;
 
     // FITNESS CONTEXT: training_plan, general (NOT meal_plan, NOT eatnow)
     const fitnessContext = `${exercisePrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
