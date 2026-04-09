@@ -58,7 +58,8 @@ export async function handler(event) {
             ...Object.fromEntries(mealSlots.map(s => [s, mealSchema(snackSlots.includes(s))])),
             daily_total: { type: "integer" }
           },
-          required: [...mealSlots, "daily_total"]
+          required: [...mealSlots, "daily_total"],
+          additionalProperties: false
         };
         reqBody.response_format = {
           type: "json_schema",
