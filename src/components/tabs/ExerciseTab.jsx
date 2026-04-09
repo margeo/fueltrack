@@ -88,12 +88,21 @@ export default function ExerciseTab({
             ))}
           </div>
         )}
-        <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
       </div>
 
       {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
-        <h2 style={{ marginBottom: 12 }}>{t("exercise.addTitle")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0 }}>{t("exercise.addTitle")}</h2>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button className="btn btn-dark" type="button"
+              style={{ fontSize: 12, padding: "8px 0", width: 100, textAlign: "center", opacity: 0.5 }}
+              onClick={() => alert(t("exercise.appleHealthSoon"))}>
+              🍎 Apple Health
+            </button>
+            <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
+          </div>
+        </div>
 
         {/* Search */}
         <input
