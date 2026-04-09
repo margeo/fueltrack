@@ -631,7 +631,13 @@ ${askChange}`;
 
       if (isMealPlan) {
         let parsed = null;
-        try { parsed = JSON.parse(data.advice); } catch { /* fallback to text */ }
+        try {
+          parsed = JSON.parse(data.advice);
+          // If no weekly_plan wrapper, check if it has monday directly
+          if (!parsed?.weekly_plan && parsed?.monday) {
+            parsed = { weekly_plan: parsed };
+          }
+        } catch { /* fallback to text */ }
         if (parsed?.weekly_plan) {
           const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
           // Convert JSON to text for saving
