@@ -280,32 +280,40 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    const exampleDay = `{${mealStructure.map(m => `"${m.slot}":{"description":"...","calories":${m.target_calories},"protein":0}`).join(",")},"daily_total":${targetCalories}}`;
-    const slotList = mealStructure.map(m => `${m.slot} (~${m.target_calories}kcal)`).join(", ");
+    const slotList = mealStructure.map(m => `"${m.slot}": ~${m.target_calories}kcal`).join(", ");
+    const exampleMeals = mealStructure.map(m => {
+      if (m.slot === "breakfast") return `"breakfast":{"description":"${isEn ? "Eggs (3), toast (2 slices)" : "Αυγά (3), τοστ (2 φέτες)"}","calories":${m.target_calories},"protein":25}`;
+      if (m.slot === "morning_snack") return `"morning_snack":{"description":"${isEn ? "Yogurt (150g), almonds (20g)" : "Γιαούρτι (150γρ), αμύγδαλα (20γρ)"}","calories":${m.target_calories},"protein":10}`;
+      if (m.slot === "afternoon_snack") return `"afternoon_snack":{"description":"${isEn ? "Apple, walnuts (15g)" : "Μήλο, καρύδια (15γρ)"}","calories":${m.target_calories},"protein":5}`;
+      if (m.slot === "lunch") return `"lunch":{"description":"${isEn ? "Chicken (200g), rice (150g), salad" : "Κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα"}","calories":${m.target_calories},"protein":45}`;
+      return `"dinner":{"description":"${isEn ? "Salmon (180g), vegetables (250g)" : "Σολομός (180γρ), λαχανικά (250γρ)"}","calories":${m.target_calories},"protein":38}`;
+    }).join(",");
 
     const systemPrompt = isEn
-      ? `You are a JSON diet plan generator. Output ONLY valid JSON, no text.
-RULES:
-1. Each day is an OBJECT with these NAMED KEYS: ${mealSlots.join(", ")}, daily_total. ALL keys are MANDATORY.
-2. Target calories per slot: ${slotList}.
-3. Each slot: description (brief, with grams), calories, protein.
-4. No leftovers. Every slot every day must be unique.
-5. Brief descriptions (e.g. "Grilled chicken (200g), rice (150g), salad").
-6. Respect allergies, preferences, diet_rules from input.
-7. Food names in English.
-EXAMPLE day:
-${exampleDay}`
-      : `Είσαι αλγόριθμος παραγωγής JSON διατροφής. Output ΜΟΝΟ JSON, κανένα κείμενο.
-ΚΑΝΟΝΕΣ:
-1. Κάθε μέρα είναι OBJECT με αυτά τα NAMED KEYS: ${mealSlots.join(", ")}, daily_total. ΟΛΑ τα keys είναι ΥΠΟΧΡΕΩΤΙΚΑ.
-2. Στόχος θερμίδων ανά slot: ${slotList}.
-3. Κάθε slot: description (σύντομο, με γραμμάρια), calories, protein.
-4. Όχι leftovers. Κάθε slot κάθε μέρα μοναδικό.
-5. Σύντομες περιγραφές (π.χ. "Ψητό κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα").
-6. Σεβάσου αλλεργίες, προτιμήσεις, diet_rules από το input.
-7. Ονόματα φαγητών στα Ελληνικά.
-ΠΑΡΑΔΕΙΓΜΑ ημέρας:
-${exampleDay}`;
+      ? `You are a diet JSON generator. Output ONLY a valid JSON object with EXACTLY ${mealSlots.length + 1} keys per day. If any key is missing, the system will crash.
+
+REQUIRED KEYS per day: ${slotList}, "daily_total"
+${mealSlots.includes("morning_snack") ? `⚠️ "morning_snack" is MANDATORY — NEVER omit it. Do NOT merge it into lunch or breakfast.` : ""}
+${mealSlots.includes("afternoon_snack") ? `⚠️ "afternoon_snack" is MANDATORY — NEVER omit it.` : ""}
+daily_total MUST equal the sum of ALL ${mealSlots.length} meals. If you skip a meal, the math will be wrong and rejected.
+
+Each meal: description (brief, with grams), calories, protein.
+No leftovers. Unique meals each day. Respect input data. Food names in English.
+
+EXAMPLE (monday):
+{${exampleMeals},"daily_total":${targetCalories}}`
+      : `Είσαι JSON generator διατροφής. Output ΜΟΝΟ valid JSON object με ΑΚΡΙΒΩΣ ${mealSlots.length + 1} keys ανά μέρα. Αν λείπει key, το σύστημα θα κρασάρει.
+
+ΥΠΟΧΡΕΩΤΙΚΑ KEYS ανά μέρα: ${slotList}, "daily_total"
+${mealSlots.includes("morning_snack") ? `⚠️ "morning_snack" είναι ΥΠΟΧΡΕΩΤΙΚΟ — ΠΟΤΕ μην το παραλείψεις. ΜΗΝ το συγχωνεύσεις με lunch ή breakfast.` : ""}
+${mealSlots.includes("afternoon_snack") ? `⚠️ "afternoon_snack" είναι ΥΠΟΧΡΕΩΤΙΚΟ — ΠΟΤΕ μην το παραλείψεις.` : ""}
+daily_total ΠΡΕΠΕΙ να ισούται με το άθροισμα ΚΑΙ των ${mealSlots.length} γευμάτων. Αν παραλείψεις γεύμα, τα μαθηματικά θα βγουν λάθος.
+
+Κάθε γεύμα: description (σύντομο, με γραμμάρια), calories, protein.
+Χωρίς leftovers. Μοναδικά γεύματα κάθε μέρα. Σεβάσου τα input data. Ονόματα στα Ελληνικά.
+
+ΠΑΡΑΔΕΙΓΜΑ (monday):
+{${exampleMeals},"daily_total":${targetCalories}}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input), mealSlots };
   }

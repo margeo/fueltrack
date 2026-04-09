@@ -39,48 +39,7 @@ export async function handler(event) {
         ]
       };
       if (jsonMode) {
-        const mealSlots = body.mealSlots || ["breakfast", "morning_snack", "lunch", "dinner"];
-        const mealSchema = {
-          type: "object",
-          properties: {
-            description: { type: "string" },
-            calories: { type: "number" },
-            protein: { type: "number" }
-          },
-          required: ["description", "calories", "protein"],
-          additionalProperties: false
-        };
-        const daySchema = {
-          type: "object",
-          properties: {
-            ...Object.fromEntries(mealSlots.map(s => [s, mealSchema])),
-            daily_total: { type: "number" }
-          },
-          required: [...mealSlots, "daily_total"],
-          additionalProperties: false
-        };
-        reqBody.response_format = {
-          type: "json_schema",
-          json_schema: {
-            name: "diet_plan",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                weekly_plan: {
-                  type: "object",
-                  properties: Object.fromEntries(
-                    ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].map(day => [day, daySchema])
-                  ),
-                  required: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
-                  additionalProperties: false
-                }
-              },
-              required: ["weekly_plan"],
-              additionalProperties: false
-            }
-          }
-        };
+        reqBody.response_format = { type: "json_object" };
       }
 
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
