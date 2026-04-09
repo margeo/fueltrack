@@ -40,8 +40,12 @@ function EatNowCards({ text }) {
 
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
-const MEAL_EMOJIS = { breakfast: "🌅", snack: "🍎", lunch: "🌞", dinner: "🌙" };
-const MEAL_LABELS = { el: { breakfast: "Πρωινό", snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό" }, en: { breakfast: "Breakfast", snack: "Snack", lunch: "Lunch", dinner: "Dinner" } };
+const MEAL_EMOJIS = { breakfast: "🌅", morning_snack: "🍎", afternoon_snack: "🍎", lunch: "🌞", dinner: "🌙" };
+const MEAL_LABELS = {
+  el: { breakfast: "Πρωινό", morning_snack: "Σνακ", afternoon_snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό" },
+  en: { breakfast: "Breakfast", morning_snack: "Snack", afternoon_snack: "Snack", lunch: "Lunch", dinner: "Dinner" }
+};
+const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"];
 
 function renderMealPlanText(data, lang) {
   const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
@@ -51,10 +55,12 @@ function renderMealPlanText(data, lang) {
   return DAY_KEYS.map((dayKey, di) => {
     const day = plan[dayKey];
     if (!day) return "";
-    const meals = (day.meals || []).map(m =>
-      `${MEAL_EMOJIS[m.type] || "🍽️"} ${labels[m.type] || m.type} — ${m.description} (${m.calories}kcal)`
-    ).join("\n");
-    const total = day.daily_total || day.meals?.reduce((s, m) => s + (m.calories || 0), 0);
+    const slots = SLOT_ORDER.filter(s => day[s]);
+    const meals = slots.map(s => {
+      const m = day[s];
+      return `${MEAL_EMOJIS[s] || "🍽️"} ${labels[s] || s} — ${m.description} (${m.calories}kcal)`;
+    }).join("\n");
+    const total = day.daily_total || slots.reduce((sum, s) => sum + (day[s]?.calories || 0), 0);
     return `📅 ${days[di]}\n${meals}\n${lang === "en" ? "Total" : "Σύνολο"}: ${total}kcal\n─────────────────`;
   }).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
 }
@@ -69,16 +75,20 @@ function MealPlanView({ data, lang }) {
       {DAY_KEYS.map((dayKey, di) => {
         const day = plan[dayKey];
         if (!day) return null;
+        const slots = SLOT_ORDER.filter(s => day[s]);
         return (
           <div key={dayKey}>
             <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 {days[di]}</div>
-            {(day.meals || []).map((meal, mi) => (
-              <div key={mi} style={{ fontSize: 13, lineHeight: 1.7 }}>
-                {MEAL_EMOJIS[meal.type] || "🍽️"} {labels[meal.type] || meal.type} — {meal.description} ({meal.calories}kcal)
-              </div>
-            ))}
+            {slots.map(s => {
+              const m = day[s];
+              return (
+                <div key={s} style={{ fontSize: 13, lineHeight: 1.7 }}>
+                  {MEAL_EMOJIS[s] || "🍽️"} {labels[s] || s} — {m.description} ({m.calories}kcal)
+                </div>
+              );
+            })}
             <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>
-              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || day.meals?.reduce((s, m) => s + (m.calories || 0), 0)}kcal
+              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || slots.reduce((sum, s) => sum + (day[s]?.calories || 0), 0)}kcal
             </div>
             {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
           </div>
@@ -234,12 +244,13 @@ export default function AiCoach({
     const dinnerCal = remainingForMeals - breakfastCal - lunchCal;
 
     const mealStructure = [
-      { type: "breakfast", target_calories: breakfastCal },
-      ...(nSnacks >= 1 ? [{ type: "snack", target_calories: snackCal }] : []),
-      { type: "lunch", target_calories: lunchCal },
-      ...(nSnacks >= 2 ? [{ type: "snack", target_calories: snackCal }] : []),
-      { type: "dinner", target_calories: dinnerCal }
+      { slot: "breakfast", target_calories: breakfastCal },
+      ...(nSnacks >= 1 ? [{ slot: "morning_snack", target_calories: snackCal }] : []),
+      { slot: "lunch", target_calories: lunchCal },
+      ...(nSnacks >= 2 ? [{ slot: "afternoon_snack", target_calories: snackCal }] : []),
+      { slot: "dinner", target_calories: dinnerCal }
     ];
+    const mealSlots = mealStructure.map(m => m.slot);
 
     const foodItemLabels = {
       chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
@@ -269,33 +280,34 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    const exampleDay = `{"meals":[${mealStructure.map(m => `{"type":"${m.type}","description":"...","calories":${m.target_calories},"protein":0}`).join(",")}],"daily_total":${targetCalories}}`;
+    const exampleDay = `{${mealStructure.map(m => `"${m.slot}":{"description":"...","calories":${m.target_calories},"protein":0}`).join(",")},"daily_total":${targetCalories}}`;
+    const slotList = mealStructure.map(m => `${m.slot} (~${m.target_calories}kcal)`).join(", ");
 
     const systemPrompt = isEn
       ? `You are a JSON diet plan generator. Output ONLY valid JSON, no text.
 RULES:
-1. Array "meals" length = STRICTLY ${mealStructure.length} for every day.
-2. Order: ${mealStructure.map(m => m.type).join(", ")}.
-3. Each meal: type, description (brief, with grams), calories, protein.
-4. No leftovers. Each day ${mealStructure.length} unique meals.
-5. Brief technical descriptions (e.g. "Grilled chicken (200g), rice (150g), salad").
+1. Each day is an OBJECT with these NAMED KEYS: ${mealSlots.join(", ")}, daily_total. ALL keys are MANDATORY.
+2. Target calories per slot: ${slotList}.
+3. Each slot: description (brief, with grams), calories, protein.
+4. No leftovers. Every slot every day must be unique.
+5. Brief descriptions (e.g. "Grilled chicken (200g), rice (150g), salad").
 6. Respect allergies, preferences, diet_rules from input.
 7. Food names in English.
-EXAMPLE day structure:
+EXAMPLE day:
 ${exampleDay}`
       : `Είσαι αλγόριθμος παραγωγής JSON διατροφής. Output ΜΟΝΟ JSON, κανένα κείμενο.
 ΚΑΝΟΝΕΣ:
-1. Array "meals" length = ΑΥΣΤΗΡΑ ${mealStructure.length} για κάθε μέρα.
-2. Σειρά: ${mealStructure.map(m => m.type).join(", ")}.
-3. Κάθε γεύμα: type, description (σύντομο, με γραμμάρια), calories, protein.
-4. Όχι leftovers. Κάθε μέρα ${mealStructure.length} νέα γεύματα.
-5. Σύντομες τεχνικές περιγραφές (π.χ. "Ψητό κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα").
+1. Κάθε μέρα είναι OBJECT με αυτά τα NAMED KEYS: ${mealSlots.join(", ")}, daily_total. ΟΛΑ τα keys είναι ΥΠΟΧΡΕΩΤΙΚΑ.
+2. Στόχος θερμίδων ανά slot: ${slotList}.
+3. Κάθε slot: description (σύντομο, με γραμμάρια), calories, protein.
+4. Όχι leftovers. Κάθε slot κάθε μέρα μοναδικό.
+5. Σύντομες περιγραφές (π.χ. "Ψητό κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα").
 6. Σεβάσου αλλεργίες, προτιμήσεις, diet_rules από το input.
 7. Ονόματα φαγητών στα Ελληνικά.
-ΠΑΡΑΔΕΙΓΜΑ δομής ημέρας:
+ΠΑΡΑΔΕΙΓΜΑ ημέρας:
 ${exampleDay}`;
 
-    return { systemPrompt, userMessage: JSON.stringify(input), mealsCount: mealStructure.length };
+    return { systemPrompt, userMessage: JSON.stringify(input), mealSlots };
   }
 
   function buildSystemPrompt(taskType = "general") {
@@ -584,13 +596,13 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { systemPrompt, userMessage, mealsCount } = buildMealPlanJSON();
+        const { systemPrompt, userMessage, mealSlots } = buildMealPlanJSON();
         reqBody = {
           systemPrompt,
           messages: [{ role: "user", content: userMessage }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
-          mealsCount
+          mealSlots
         };
       } else {
         reqBody = {
