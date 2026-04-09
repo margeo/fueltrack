@@ -320,7 +320,7 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan. Every meal must be a fresh meal — NEVER suggest leftovers from a previous day." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Κάθε γεύμα πρέπει να είναι φρέσκο — ΠΟΤΕ μην προτείνεις υπολείμματα (leftovers) από προηγούμενη μέρα."}
-⚠️ ${isEn ? `IMPORTANT: The total for EACH day must be exactly ${targetCalories}kcal (±20). Add up the calories of all meals BEFORE writing the total. If the sum is not ${targetCalories}±20, adjust portions until it is.` : `ΣΗΜΑΝΤΙΚΟ: Το σύνολο ΚΑΘΕ μέρας πρέπει να είναι ακριβώς ${targetCalories}kcal (±20). Πρόσθεσε τις θερμίδες όλων των γευμάτων ΠΡΙΝ γράψεις το σύνολο. Αν δεν βγαίνει ${targetCalories}±20, προσάρμοσε τις μερίδες μέχρι να βγει.`}
+⚠️ ${isEn ? `CALORIE TARGET: Each day must total ${targetCalories}kcal (±100). Do NOT retry or correct yourself — get it right the first time by planning portions carefully.` : `ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: Κάθε μέρα πρέπει να έχει σύνολο ${targetCalories}kcal (±100). ΜΗΝ ξαναδοκιμάσεις ή διορθώσεις τον εαυτό σου — κάνε το σωστά από την πρώτη φορά σχεδιάζοντας σωστά τις μερίδες.`}
 ${mealsPerDay ? (isEn
   ? `EACH day must have EXACTLY ${mealsPerDay} meals${snacksPerDay && snacksPerDay !== "0" ? ` and ${snacksPerDay} snack${snacksPerDay > 1 ? "s" : ""}` : " and NO snacks"}. Follow the format below strictly — do NOT skip or add meals.`
   : `ΚΑΘΕ μέρα πρέπει να έχει ΑΚΡΙΒΩΣ ${mealsPerDay} γεύματα${snacksPerDay && snacksPerDay !== "0" ? ` και ${snacksPerDay} σνακ` : " και ΚΑΝΕΝΑ σνακ"}. Ακολούθησε το παρακάτω format αυστηρά — ΜΗΝ παραλείψεις ή προσθέσεις γεύματα.`) : ""}${simpleRules}${ingredientRules}
