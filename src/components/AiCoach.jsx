@@ -55,6 +55,7 @@ export default function AiCoach({
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_ai_model") || "");
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
 
   const DAILY_LIMIT_FREE = 5;
@@ -85,6 +86,11 @@ export default function AiCoach({
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
+    fetch("/.netlify/functions/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ action: "list-users" }),
+    }).then(res => setIsAdmin(res.ok)).catch(() => {});
   }, [session]);
 
   function incrementUsage() {
@@ -434,15 +440,17 @@ ${askChange}`;
           <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
             <span className="muted" style={{ fontSize: 12 }}>{t("aiCoach.subtitle")}</span>
-            <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
-              style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
-              <option value="">Default</option>
-              <option value="haiku">Haiku 4.5</option>
-              <option value="gemini">Gemini Lite</option>
-              <option value="gemini-flash">Gemini 2.5 Flash</option>
-              <option value="gemini-direct">Gemini Direct</option>
-              <option value="haiku-openrouter">Haiku OR</option>
-            </select>
+            {isAdmin && (
+              <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
+                style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
+                <option value="">Default</option>
+                <option value="haiku">Haiku 4.5</option>
+                <option value="gemini">Gemini Lite</option>
+                <option value="gemini-flash">Gemini 2.5 Flash</option>
+                <option value="gemini-direct">Gemini Direct</option>
+                <option value="haiku-openrouter">Haiku OR</option>
+              </select>
+            )}
           </div>
         </div>
         {hasLoaded && messages.length > 0 && !loading && (
@@ -548,7 +556,7 @@ ${askChange}`;
               ) : (
                 <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.error ? "#fef2f2" : msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" && !msg.error ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.error ? "1px solid #fecaca" : msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
                   {msg.text}
-                  {msg.elapsed && !msg.error && (
+                  {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · $${msg.usage.costUsd}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
                     </div>
