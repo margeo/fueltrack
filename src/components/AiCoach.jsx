@@ -416,9 +416,15 @@ ${askChange}`;
         ? (hour < 10 ? "breakfast" : hour < 12 ? "morning snack" : hour < 15 ? "lunch" : hour < 18 ? "afternoon snack" : "dinner")
         : (hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό");
       const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const todayLog = dailyLogs?.[todayKey] || { entries: [] };
+      const todayEntries = Array.isArray(todayLog.entries) ? todayLog.entries : [];
+      const eatenSoFar = todayEntries.length > 0
+        ? todayEntries.map(e => e.name || e.food).join(", ")
+        : (isEn ? "nothing yet" : "τίποτα ακόμα");
       effectiveMessage = isEn
-        ? `Give 3 options for ${mealTime} NOW.\nRemaining:${remainingCalories}kcal | Protein:${remProtein}g | Mode:${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
-        : `Δώσε 3 επιλογές για ${mealTime} ΤΩΡΑ.\nΥπόλοιπο:${remainingCalories}kcal | Πρωτεΐνη:${remProtein}g | Mode:${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
+        ? `It's ${hour}:00, next meal is ${mealTime}. Give 3 options based on my food profile and favorites.\nEaten today so far: ${eatenSoFar}\nRemaining: ${remainingCalories}kcal | Protein needed: ${remProtein}g | Mode: ${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
+        : `Ώρα ${hour}:00, επόμενο γεύμα: ${mealTime}. Δώσε 3 επιλογές βασισμένες στο διατροφικό μου προφίλ και τα αγαπημένα μου.\nΈχω φάει σήμερα: ${eatenSoFar}\nΥπόλοιπο: ${remainingCalories}kcal | Πρωτεΐνη που χρειάζομαι: ${remProtein}g | Mode: ${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
     } else if (isMealPlan) {
       effectiveMessage = isEn
         ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. MANDATORY format with 📅 🌅 🍎 🌞 🌙. NEVER asterisks.`
