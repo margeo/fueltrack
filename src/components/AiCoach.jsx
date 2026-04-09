@@ -320,17 +320,17 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
-${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}
-${mealsPerDay ? (isEn ? `Structure: ${mealsPerDay} meals` : `Δομή: ${mealsPerDay} γεύματα`) + (snacksPerDay && snacksPerDay !== "0" ? (isEn ? ` + ${snacksPerDay} snacks` : ` + ${snacksPerDay} σνακ`) : "") + (isEn ? ` per day. Distribute the ${targetCalories}kcal across these meals.` : ` τη μέρα. Μοίρασε τις ${targetCalories}kcal σε αυτά τα γεύματα.`) : ""}${simpleRules}${ingredientRules}
+${mealsPerDay ? (isEn ? `Structure: ${mealsPerDay} meals` : `Δομή: ${mealsPerDay} γεύματα`) + (snacksPerDay && snacksPerDay !== "0" ? (isEn ? ` + ${snacksPerDay} snacks` : ` + ${snacksPerDay} σνακ`) : "") + (isEn ? ` per day.` : ` τη μέρα.`) : ""}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
 🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 ${snacksPerDay >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 ${snacksPerDay >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
-${dayLabels.total}: [X]kcal
+${dayLabels.total}: ${targetCalories}kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
+⚠️ ${isEn ? `IMPORTANT: The total for EACH day must be exactly ${targetCalories}kcal (±50). Add up the calories of all meals before writing the total. If the sum is not ${targetCalories}±50, adjust portions until it is.` : `ΣΗΜΑΝΤΙΚΟ: Το σύνολο ΚΑΘΕ μέρας πρέπει να είναι ακριβώς ${targetCalories}kcal (±50). Πρόσθεσε τις θερμίδες όλων των γευμάτων πριν γράψεις το σύνολο. Αν δεν βγαίνει ${targetCalories}±50, προσάρμοσε τις μερίδες μέχρι να βγει.`}
 ${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
 ${disclaimer}
 ${askChange}`;
