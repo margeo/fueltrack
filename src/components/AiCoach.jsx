@@ -444,10 +444,12 @@ ${askChange}`;
               <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
                 style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
                 <option value="">Gemini 2.5 Flash (default)</option>
-                <option value="haiku">Claude Haiku 4.5</option>
-                <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter)</option>
-                <option value="gemini-direct">Gemini 2.0 Flash Lite (Google API)</option>
-                <option value="gemini">Gemini 2.5 Flash Lite (OpenRouter)</option>
+                <option value="haiku">Claude Haiku 4.5 — $1/$5</option>
+                <option value="haiku-openrouter">Claude Haiku 4.5 (OR) — $1/$5</option>
+                <option value="gemini-direct">Gemini 2.0 Flash Lite (Direct) — $0.10/$0.40</option>
+                <option value="gemini">Gemini 2.5 Flash Lite — $0.10/$0.40</option>
+                <option value="gemini-pro">Gemini 2.5 Pro — $1.25/$10</option>
+                <option value="grok">Grok 4.1 Fast — $0.30/$0.50</option>
               </select>
             )}
           </div>
