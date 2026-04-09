@@ -104,33 +104,25 @@ export default function SummaryTab({
       const isEn = i18n.language === "en";
       const systemPrompt = isEn ? `Extract a grocery list from a weekly meal plan.
 RULES:
-- Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
-- Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
-- DO NOT break down by day — totals only
-- Group into categories:
-
+• Group into categories:
 🥩 Meat & Fish
 🥛 Dairy & Eggs
 🥦 Vegetables & Fruits
 🌾 Grains & Legumes
 🫙 Other
-
-- Use "-" for each item
-- Answer ONLY with the list, nothing else` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+• Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
+• Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
+• DO NOT break down by day — show only totals in the above categories` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
 ΚΑΝΟΝΕΣ:
-- Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
-- Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο → "Κοτόπουλο")
-- ΜΗΝ αναλύεις ανά μέρα — μόνο σύνολα
-- Ομαδοποίησε σε κατηγορίες:
-
+• Ομαδοποίησε σε κατηγορίες:
 🥩 Κρέατα & Ψάρια
 🥛 Γαλακτοκομικά & Αυγά
 🥦 Λαχανικά & Φρούτα
 🌾 Δημητριακά & Όσπρια
 🫙 Άλλα
-
-- Χρησιμοποίησε "-" για κάθε υλικό
-- Απάντησε ΜΟΝΟ με τη λίστα, τίποτα άλλο`;
+• Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο κοτόπουλο → "Κοτόπουλο")
+• Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
+• ΜΗΝ αναλύεις ανά μέρα — δείξε μόνο σύνολα στις παραπάνω κατηγορίες`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
