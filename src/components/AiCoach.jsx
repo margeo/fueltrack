@@ -333,13 +333,22 @@ ${mealsPerDay ? (() => {
     ? `Each day has EXACTLY: ${allNames}. NOTHING else — do NOT add or remove meals.`
     : `Κάθε μέρα έχει ΑΚΡΙΒΩΣ: ${allNames}. ΤΙΠΟΤΑ άλλο — ΜΗΝ προσθέσεις ούτε αφαιρέσεις γεύματα.`;
 })() : ""}${simpleRules}${ingredientRules}
-${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
+${(() => {
+  const nMeals = Number(mealsPerDay) || 3;
+  const nSnacks = Number(snacksPerDay) || 0;
+  const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
+  const mealCal = Math.round((targetCalories - snackCal * nSnacks) / nMeals);
+  const breakfastCal = Math.round(mealCal * 0.8);
+  const lunchCal = Math.round(mealCal * 1.15);
+  const dinnerCal = targetCalories - breakfastCal - lunchCal - snackCal * nSnacks;
+  return `${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks. Each meal MUST hit its calorie target:" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι. Κάθε γεύμα ΠΡΕΠΕΙ να πιάνει τον στόχο θερμίδων:"}
 
 📅 ${dayLabels.mon}
-🌅 ${dayLabels.breakfast} — ${isEn ? "Scrambled eggs (3), whole-wheat toast (2 slices)" : "Ομελέτα (3 αυγά), τοστ ολικής (2 φέτες)"} (${isEn ? "X" : "X"}kcal)
-${Number(snacksPerDay) >= 1 ? `🍎 ${dayLabels.snack} — ${isEn ? "Apple (1), almonds (15g)" : "Μήλο (1), αμύγδαλα (15γρ)"} (Xkcal)\n` : ""}🌞 ${dayLabels.lunch} — ${isEn ? "Grilled chicken breast (180g) with rice (150g) and salad" : "Ψητό στήθος κοτόπουλου (180γρ) με ρύζι (150γρ) και σαλάτα"} (Xkcal)
-${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — ${isEn ? "Yogurt (150g)" : "Γιαούρτι (150γρ)"} (Xkcal)\n` : ""}🌙 ${dayLabels.dinner} — ${isEn ? "Baked salmon (150g) with vegetables (200g)" : "Σολομός φούρνου (150γρ) με λαχανικά (200γρ)"} (Xkcal)
-${dayLabels.total}: ${targetCalories}kcal
+🌅 ${dayLabels.breakfast} — [${isEn ? "meal with portions in grams" : "γεύμα με μερίδες σε γραμμάρια"}] (~${breakfastCal}kcal)
+${nSnacks >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack with portions" : "σνακ με μερίδες"}] (~${snackCal}kcal)\n` : ""}🌞 ${dayLabels.lunch} — [${isEn ? "meal with portions in grams" : "γεύμα με μερίδες σε γραμμάρια"}] (~${lunchCal}kcal)
+${nSnacks >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack with portions" : "σνακ με μερίδες"}] (~${snackCal}kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal with portions in grams" : "γεύμα με μερίδες σε γραμμάρια"}] (~${dinnerCal}kcal)
+${dayLabels.total}: ${targetCalories}kcal`;
+})()}
 ─────────────────
 
 (${isEn ? "Repeat this format for each day Monday to Sunday, with ───────────────── between days." : "Επανάλαβε αυτό το format για κάθε μέρα Δευτέρα έως Κυριακή, με ───────────────── μεταξύ των ημερών."})
