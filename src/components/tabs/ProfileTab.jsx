@@ -8,8 +8,8 @@ import { EXERCISE_LIBRARY } from "../../data/constants";
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
 const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
 const COOKING_TIMES = ["quick", "normal", "elaborate"];
-const MEALS_OPTIONS = ["2", "3", "4", "5"];
-const SNACKS_OPTIONS = ["0", "1", "2", "3"];
+const MEALS_OPTIONS = ["2", "3", "4"];
+const SNACKS_OPTIONS = ["0", "1", "2"];
 const FOOD_CATEGORIES = [
   { key: "proteins", emoji: "🥩", items: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"] },
   { key: "veggies", emoji: "🥗", items: ["salads", "cooked_veggies", "soups"] },
@@ -465,35 +465,46 @@ export default function ProfileTab({
             </div>
           ); })()}
           {/* Meals per day */}
-          <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>🍽️ {t("foodPrefs.mealsTitle")}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div>
-                <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.mealsPerDay")}</div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {MEALS_OPTIONS.map((n) => (
-                    <button key={n} type="button" onClick={() => setMealsPerDay(mealsPerDay === n ? "" : n)}
-                      style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                        background: mealsPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: mealsPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
-                      {n}
-                    </button>
-                  ))}
+          {(() => { const isOpen = expandedPrefs.meals; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, meals: !prev.meals }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🍽️ {t("foodPrefs.mealsTitle")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {(mealsPerDay || snacksPerDay) && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{mealsPerDay || "—"}+{snacksPerDay || "0"}</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.mealsPerDay")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {MEALS_OPTIONS.map((n) => (
+                        <button key={n} type="button" onClick={() => setMealsPerDay(mealsPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: mealsPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: mealsPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.snacksPerDay")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {SNACKS_OPTIONS.map((n) => (
+                        <button key={n} type="button" onClick={() => setSnacksPerDay(snacksPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: snacksPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: snacksPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.snacksPerDay")}</div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {SNACKS_OPTIONS.map((n) => (
-                    <button key={n} type="button" onClick={() => setSnacksPerDay(snacksPerDay === n ? "" : n)}
-                      style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                        background: snacksPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: snacksPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
-          </div>
+          ); })()}
           {/* Allergies */}
           {(() => { const isOpen = expandedPrefs.allergies; return (
             <div>
