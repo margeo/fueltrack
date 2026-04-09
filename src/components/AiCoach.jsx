@@ -466,12 +466,10 @@ ${askChange}`;
             {isAdmin && (
               <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
                 style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
-                <option value="">Gemini 2.5 Flash (default) — $0.30/$2.50</option>
+                <option value="">Gemini 2.5 Flash Lite (default) — $0.10/$0.40</option>
+                <option value="gemini-flash">Gemini 2.5 Flash — $0.30/$2.50</option>
                 <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
                 <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
-
-                <option value="gemini">Gemini 2.5 Flash Lite (OpenRouter) — $0.10/$0.40</option>
-                <option value="deepseek">DeepSeek V3.2 — $0.26/$0.38</option>
                 <option value="grok">Grok 4.1 Fast — $0.20/$0.50</option>
               </select>
             )}

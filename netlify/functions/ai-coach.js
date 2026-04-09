@@ -16,17 +16,16 @@ export async function handler(event) {
     }
 
     const recentMessages = validMessages.slice(-6);
-    const aiModel = requestModel || process.env.AI_MODEL || "gemini-flash";
+    const aiModel = requestModel || process.env.AI_MODEL || "gemini";
 
     let responseData;
 
     // OpenRouter models (gemini, gemini-flash, haiku-openrouter)
-    if (["gemini", "gemini-flash", "grok", "deepseek", "haiku-openrouter"].includes(aiModel)) {
+    if (["gemini", "gemini-flash", "grok", "haiku-openrouter"].includes(aiModel)) {
       const modelMap = {
         "gemini": "google/gemini-2.5-flash-lite",
         "gemini-flash": "google/gemini-2.5-flash",
         "grok": "x-ai/grok-4.1-fast",
-        "deepseek": "deepseek/deepseek-v3.2",
         "haiku-openrouter": "anthropic/claude-3.5-haiku"
       };
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -52,8 +51,8 @@ export async function handler(event) {
       const txt = d.choices?.[0]?.message?.content;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
-      const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "gemini-pro": "Gemini 2.5 Pro", "grok": "Grok 4.1 Fast", "deepseek": "DeepSeek V3.2", "haiku-openrouter": "Haiku 4.5 (OR)" };
-      const pricing = { "gemini": [0.10, 0.40], "gemini-flash": [0.30, 2.50], "grok": [0.20, 0.50], "deepseek": [0.26, 0.38], "haiku-openrouter": [1, 5] };
+      const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "grok": "Grok 4.1 Fast", "haiku-openrouter": "Haiku 4.5 (OR)" };
+      const pricing = { "gemini": [0.10, 0.40], "gemini-flash": [0.30, 2.50], "grok": [0.20, 0.50], "haiku-openrouter": [1, 5] };
       const [inPrice, outPrice] = pricing[aiModel] || [0, 0];
       const inTok = u.prompt_tokens || 0;
       const outTok = u.completion_tokens || 0;
