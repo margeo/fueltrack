@@ -56,10 +56,9 @@ export async function handler(event) {
           type: "object",
           properties: {
             ...Object.fromEntries(mealSlots.map(s => [s, mealSchema(snackSlots.includes(s))])),
-            daily_total: { type: "number" }
+            daily_total: { type: "integer" }
           },
-          required: [...mealSlots, "daily_total"],
-          additionalProperties: false
+          required: [...mealSlots, "daily_total"]
         };
         reqBody.response_format = {
           type: "json_schema",
@@ -68,17 +67,10 @@ export async function handler(event) {
             strict: true,
             schema: {
               type: "object",
-              properties: {
-                weekly_plan: {
-                  type: "object",
-                  properties: Object.fromEntries(
-                    ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].map(day => [day, daySchema])
-                  ),
-                  required: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
-                  additionalProperties: false
-                }
-              },
-              required: ["weekly_plan"],
+              properties: Object.fromEntries(
+                ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].map(day => [day, daySchema])
+              ),
+              required: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
               additionalProperties: false
             }
           }

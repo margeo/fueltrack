@@ -290,39 +290,25 @@ export default function AiCoach({
     }).join("\n");
     const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories},"pro":0}`).join(",");
 
-    const systemPrompt = isEn
-      ? `You are a JSON Generator. You MUST return an object with ${mealSlots.length} meals per day.
+    const langNote = isEn ? "All desc fields in English." : "All desc fields MUST be in Greek.";
+    const systemPrompt = `You are a JSON Diet Generator. You MUST return a JSON object with exactly 7 days.
+Each day MUST contain EXACTLY ${mealSlots.length} meal slots: ${mealSlots.join(", ")}.
 
-STRICT RULES:
-- Name meals meal_1, meal_2, meal_3, meal_4. NOT breakfast/snack/lunch/dinner.
-- meal_2 MUST always be under 250kcal (e.g. 1 fruit or 1 yogurt). It is a SNACK, not a main meal.
-- meal_4 is MANDATORY. If missing, the JSON is useless.
-- Do NOT put 950 calories in meal_2. It is a snack, not lunch!
-- daily_total = meal_1 + meal_2 + meal_3 + meal_4.
+CONSTRAINTS:
+1. meal_2: MUST be a light snack < 250kcal (yogurt, fruit, nuts only). NO meat/pasta.
+2. meal_4: MANDATORY. Never omit meal_4.
+3. Math: daily_total = ${mealSlots.join(" + ")}.
+4. ${langNote}
+5. Each slot: "desc" (brief, with grams), "kcal" (integer), "pro" (integer).
+6. No leftovers. Unique meals each day. Respect input data.
+
+Current Target: ${targetCalories}kcal total per day.
 
 CALORIE TARGETS:
 ${slotRules}
 
-Each slot: "desc" (max 10 words, with grams), "kcal", "pro".
-No leftovers. Unique each day. Respect input data. English food names.
-
-EXAMPLE: {${exampleMeals},"daily_total":${targetCalories}}`
-      : `Είσαι JSON Generator. ΠΡΕΠΕΙ να επιστρέψεις αντικείμενο με ${mealSlots.length} γεύματα ανά ημέρα.
-
-ΑΥΣΤΗΡΟΙ ΚΑΝΟΝΕΣ:
-- Ονόμασε τα γεύματα meal_1, meal_2, meal_3, meal_4. ΟΧΙ breakfast/snack/lunch/dinner.
-- Το meal_2 ΠΡΕΠΕΙ να είναι πάντα κάτω από 250kcal (π.χ. 1 φρούτο ή 1 γιαούρτι). Είναι ΣΝΑΚ, όχι κύριο γεύμα.
-- Το meal_4 είναι ΥΠΟΧΡΕΩΤΙΚΟ. Αν λείπει, το JSON είναι άχρηστο.
-- ΜΗΝ βάζεις 950 θερμίδες στο meal_2. Είναι σνακ, όχι μεσημεριανό!
-- daily_total = meal_1 + meal_2 + meal_3 + meal_4.
-
-ΣΤΟΧΟΙ ΘΕΡΜΙΔΩΝ:
-${slotRules}
-
-Κάθε slot: "desc" (μέγιστο 10 λέξεις, με γραμμάρια), "kcal", "pro".
-Χωρίς leftovers. Μοναδικά κάθε μέρα. Σεβάσου input data. Ελληνικά ονόματα.
-
-ΠΑΡΑΔΕΙΓΜΑ: {${exampleMeals},"daily_total":${targetCalories}}`;
+EXAMPLE (monday):
+{${exampleMeals},"daily_total":${targetCalories}}`;
 
     const snackSlots = mealDefs.filter(m => m.role.includes("Snack")).map(m => m.slot);
     return { systemPrompt, userMessage: JSON.stringify(input), mealSlots, snackSlots };
