@@ -448,7 +448,7 @@ ${askChange}`;
                 <option value="haiku-openrouter">Claude Haiku 4.5 (OR) — $1/$5</option>
                 <option value="gemini-direct">Gemini 2.0 Flash Lite (Direct) — $0.10/$0.40</option>
                 <option value="gemini">Gemini 2.5 Flash Lite — $0.10/$0.40</option>
-                <option value="grok">Grok 3 Mini — $0.30/$0.50</option>
+                <option value="grok">Grok 4.1 Fast</option>
               </select>
             )}
           </div>
