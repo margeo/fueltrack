@@ -40,13 +40,13 @@ function EatNowCards({ text }) {
 
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
-const SLOT_ORDER = ["meal_1", "meal_2", "meal_3", "meal_4", "meal_5"];
+const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"];
 const MEAL_METADATA = {
-  meal_1: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
-  meal_2: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
-  meal_3: { label: { el: "Μεσημεριανό", en: "Lunch" }, emoji: "🌞" },
-  meal_4: { label: { el: "Βραδινό", en: "Dinner" }, emoji: "🌙" },
-  meal_5: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" }
+  breakfast: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
+  morning_snack: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
+  lunch: { label: { el: "Μεσημεριανό", en: "Lunch" }, emoji: "🌞" },
+  afternoon_snack: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
+  dinner: { label: { el: "Βραδινό", en: "Dinner" }, emoji: "🌙" }
 };
 
 function renderMealPlanText(data, lang) {
@@ -684,17 +684,18 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           try { const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice; snacks = raw?.weekly_plan || raw; } catch { /* */ }
         }
 
-        // Merge: insert snack after meal_1 (breakfast)
+        // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
         const merged = {};
         DAY_KEYS.forEach(day => {
-          const dayMeals = meals?.[day];
-          if (!dayMeals) return;
+          const dm = meals?.[day];
+          if (!dm) return;
+          const sn = snacks?.[day];
           merged[day] = {
-            meal_1: dayMeals.meal_1,
-            ...(snacks?.[day] ? { meal_2: snacks[day] } : {}),
-            [snacks?.[day] ? "meal_3" : "meal_2"]: dayMeals.meal_2,
-            [snacks?.[day] ? "meal_4" : "meal_3"]: dayMeals.meal_3,
-            daily_total: (dayMeals.meal_1?.kcal || 0) + (snacks?.[day]?.kcal || 0) + (dayMeals.meal_2?.kcal || 0) + (dayMeals.meal_3?.kcal || 0)
+            breakfast: dm.meal_1,
+            ...(sn ? { morning_snack: sn } : {}),
+            lunch: dm.meal_2,
+            dinner: dm.meal_3,
+            daily_total: (dm.meal_1?.kcal || 0) + (sn?.kcal || 0) + (dm.meal_2?.kcal || 0) + (dm.meal_3?.kcal || 0)
           };
         });
 
