@@ -244,15 +244,31 @@ export default function AiCoach({
       ? `\n${isEn ? "FITNESS PROFILE" : "ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ"}: ${fitStr ? (isEn?"Level":"Επίπεδο")+":"+fitStr : ""}${locStr ? " | "+(isEn?"Location":"Τοποθεσία")+":"+locStr : ""}${equipStr ? " | "+(isEn?"Equipment":"Εξοπλισμός")+":"+equipStr : ""}${freqStr ? " | "+(isEn?"Frequency":"Συχνότητα")+":"+freqStr : ""}${durStr ? " | "+(isEn?"Session":"Προπόνηση")+":"+durStr : ""}${fitGoalStr ? " | "+(isEn?"Goals":"Στόχοι")+":"+fitGoalStr : ""}${exCatStr ? " | "+(isEn?"Preferred exercises":"Αγαπημένες ασκήσεις")+":"+exCatStr : ""}${limStr ? "\n"+(isEn?"⚠️ IMPORTANT limitations: ":"⚠️ ΣΗΜΑΝΤΙΚΟΙ περιορισμοί: ")+limStr+(isEn?". Adapt all exercises accordingly. Never suggest exercises that could worsen these conditions.":". Προσάρμοσε όλες τις ασκήσεις ανάλογα. Ποτέ μη προτείνεις ασκήσεις που μπορεί να επιδεινώσουν αυτές τις καταστάσεις.") : ""}`
       : "";
 
-    // BASE — στέλνεται σε κάθε request
-    const base = `${langInstruction}
+    // === MODULAR BLOCKS — στέλνονται μόνο όπου χρειάζονται ===
+
+    // CORE: πάντα (lang, date, body profile, goal, mode)
+    const core = `${langInstruction}
 ${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
 ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
-${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label} | ${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}
-${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||"—"}${foodPrefsLine}${exercisePrefsLine}
-${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal
-${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}
-Mode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
+${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
+
+    // NUTRITION TARGETS: meal_plan, eatnow, general
+    const nutritionTargets = `\n${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}`;
+
+    // TODAY'S INTAKE: eatnow, general
+    const todayIntake = `\n${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal`;
+
+    // WEEK SUMMARY: general μόνο
+    const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
+
+    // FOOD CONTEXT: meal_plan, eatnow, general (NOT training_plan)
+    const foodContext = `${foodPrefsLine}${favFoodsList ? `\n${isEn ? "Favorite foods" : "Αγαπημένα φαγητά"}:${favFoodsList}` : ""}`;
+
+    // FITNESS CONTEXT: training_plan, general (NOT meal_plan, NOT eatnow)
+    const fitnessContext = `${exercisePrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
+
+    // MODE RULES: πάντα
+    const modeBlock = `\nMode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
 
     // GENERAL
     const generalRules = isEn ? `
@@ -354,10 +370,14 @@ ${askChange}` : `
 ${disclaimer}
 ${askChange}`;
 
-    if (taskType === "meal_plan") return base + mealPlanFormat;
-    if (taskType === "training_plan") return base + trainingPlanFormat;
-    if (taskType === "eatnow") return base; // format ήδη στο effectiveMessage
-    return base + generalRules;
+    // meal_plan: food prefs + targets, NO fitness/week
+    if (taskType === "meal_plan") return core + nutritionTargets + foodContext + modeBlock + mealPlanFormat;
+    // training_plan: fitness prefs, NO food/targets/week
+    if (taskType === "training_plan") return core + fitnessContext + modeBlock + trainingPlanFormat;
+    // eatnow: food prefs + today's intake, NO fitness/week
+    if (taskType === "eatnow") return core + nutritionTargets + todayIntake + foodContext + modeBlock;
+    // general: everything (analyze day, free questions)
+    return core + nutritionTargets + todayIntake + weekBlock + foodContext + fitnessContext + modeBlock + generalRules;
   }
 
   function buildMessages(chatMessage) {
