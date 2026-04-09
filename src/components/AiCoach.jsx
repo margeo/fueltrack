@@ -320,7 +320,8 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
-${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}${simpleRules}${ingredientRules}
+${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}
+${mealsPerDay ? (isEn ? `Structure: ${mealsPerDay} meals` : `Δομή: ${mealsPerDay} γεύματα`) + (snacksPerDay && snacksPerDay !== "0" ? (isEn ? ` + ${snacksPerDay} snacks` : ` + ${snacksPerDay} σνακ`) : "") + (isEn ? ` per day. Distribute the ${targetCalories}kcal across these meals.` : ` τη μέρα. Μοίρασε τις ${targetCalories}kcal σε αυτά τα γεύματα.`) : ""}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
