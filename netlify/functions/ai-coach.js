@@ -42,7 +42,9 @@ export async function handler(event) {
         ]
       };
       if (jsonMode) {
-        if (body.customSchema) {
+        if (body.useSimpleJson) {
+          reqBody.response_format = { type: "json_object" };
+        } else if (body.customSchema) {
           reqBody.response_format = body.customSchema;
         } else {
           const mealSlots = body.mealSlots || ["meal_1", "meal_2", "meal_3"];

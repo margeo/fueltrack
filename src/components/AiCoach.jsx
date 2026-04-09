@@ -634,30 +634,12 @@ Each snack MUST be ~${snackCal}kcal. Light food only: yogurt, fruit, nuts, rice 
 NO meat, pasta, rice, heavy meals. Respect user allergies and preferences.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
-          const snackSchema = {
-            type: "object",
-            properties: { desc: { type: "string" }, kcal: { type: "integer", maximum: 350 } },
-            required: ["desc", "kcal"], additionalProperties: false
-          };
-
           snacksReq = {
             systemPrompt: snacksPrompt,
             messages: [{ role: "user", content: JSON.stringify({ preferences: inputData.preferences, nutrition: { snack_calories: snackCal }, language: inputData.language }) }],
             ...(selectedModel && { model: selectedModel }),
             jsonMode: true,
-            customSchema: {
-              type: "json_schema",
-              json_schema: {
-                name: "snacks",
-                strict: true,
-                schema: {
-                  type: "object",
-                  properties: Object.fromEntries(DAY_KEYS.map(d => [d, snackSchema])),
-                  required: DAY_KEYS,
-                  additionalProperties: false
-                }
-              }
-            }
+            useSimpleJson: true
           };
         }
 
