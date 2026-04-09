@@ -40,7 +40,7 @@ function EatNowCards({ text }) {
 
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
-  mode, goalType, streak, weightLog, favoriteFoods,
+  mode, goalType, weightLog, favoriteFoods,
   totalCalories, totalProtein, exerciseValue,
   remainingCalories,
   favoriteExercises, age, weight, height, gender,
