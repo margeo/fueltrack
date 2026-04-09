@@ -341,7 +341,8 @@ ${Number(snacksPerDay) >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "
 ${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 ${dayLabels.total}: ${targetCalories}kcal
 ─────────────────
-(${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
+
+(${isEn ? "Repeat this format for each day Monday to Sunday, with ───────────────── between days." : "Επανάλαβε αυτό το format για κάθε μέρα Δευτέρα έως Κυριακή, με ───────────────── μεταξύ των ημερών."})
 ${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
 ${disclaimer}
 ${askChange}`;
