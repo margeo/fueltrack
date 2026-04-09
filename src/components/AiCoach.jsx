@@ -325,8 +325,8 @@ ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩ
 
 📅 ${dayLabels.mon}
 🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
-${snacksPerDay >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
-${snacksPerDay >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+${Number(snacksPerDay) >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 ${dayLabels.total}: ${targetCalories}kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
