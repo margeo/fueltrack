@@ -446,7 +446,7 @@ ${askChange}`;
                 <option value="">Gemini 2.5 Flash (default) — $0.30/$2.50</option>
                 <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
                 <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
-                <option value="gemini-direct">Gemini 2.0 Flash Lite (Direct) — $0.10/$0.40</option>
+
                 <option value="gemini">Gemini 2.5 Flash Lite (OpenRouter) — $0.10/$0.40</option>
                 <option value="deepseek">DeepSeek V3.2 — $0.28/$0.42</option>
                 <option value="grok">Grok 4.1 Fast — $0.20/$0.50</option>
