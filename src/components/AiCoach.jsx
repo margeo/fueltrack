@@ -606,6 +606,7 @@ ${askChange}`;
         const nSnacks = Number(snacksPerDay) || 0;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
+        console.log("MEAL PLAN DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, targetCalories });
 
         // Call 1: 3 main meals × 7 days
         const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
