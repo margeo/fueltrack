@@ -644,6 +644,7 @@ ${askChange}`;
         const merged = { ...(p1 || {}), ...(p2 || {}) };
         const hasContent = merged.monday && merged.friday;
 
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
         if (hasContent) {
           const parsed = { weekly_plan: merged };
           const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
@@ -654,8 +655,10 @@ ${askChange}`;
           const totalCost = (d1.usage?.costUsd || 0) + (d2.usage?.costUsd || 0);
           setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: d1.usage?.model || "" } }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: d1.advice + "\n" + d2.advice, elapsed, usage: d1.usage }]);
+          setMessages(prev => [...prev, { role: "assistant", text: (d1.advice || "") + "\n" + (d2.advice || ""), elapsed, usage: d1.usage }]);
         }
+        setHasLoaded(true);
+        return;
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
@@ -673,28 +676,7 @@ ${askChange}`;
       if (data.error) throw new Error(data.error);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
-      if (isMealPlan) {
-        let parsed = null;
-        try {
-          const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
-          if (raw?.monday && !raw?.weekly_plan) {
-            parsed = { weekly_plan: raw };
-          } else {
-            parsed = raw;
-          }
-        } catch { /* fallback to text */ }
-        const hasContent = parsed?.weekly_plan || (parsed && parsed.monday);
-        if (hasContent) {
-          const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
-          // Convert JSON to text for saving
-          const textVersion = renderMealPlanText(parsed, i18n.language);
-          onSavePlan?.({ type: "meal", content: textVersion, date: dateStr });
-          setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: data.usage }]);
-        } else {
-          // Fallback: AI returned text instead of JSON
-          setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
-        }
-      } else {
+      {
         setMessages(prev => [
           ...prev,
           { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined, elapsed, usage: data.usage }
