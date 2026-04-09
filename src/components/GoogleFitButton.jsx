@@ -71,19 +71,14 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
 
   if (!token) {
     return (
-      <div style={{ marginTop: 12 }}>
-        <button
-          className="btn btn-dark"
-          onClick={handleConnect}
-          type="button"
-          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-        >
-          <span style={{ fontSize: 18 }}>🏃</span> {t("googleFit.connect")}
-          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", borderRadius: 999, padding: "2px 6px", marginLeft: 4 }}>{t("googleFit.beta")}</span>
-        </button>
-        <div className="muted" style={{ fontSize: 12, marginTop: 6, textAlign: "center" }}>
-          {t("googleFit.hint")}
-        </div>
+      <button
+        className="btn btn-dark"
+        onClick={handleConnect}
+        type="button"
+        style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}
+      >
+        🏃 Google Fit
+      </button>
       </div>
     );
   }
