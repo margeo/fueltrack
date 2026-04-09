@@ -105,64 +105,32 @@ export default function SummaryTab({
       const systemPrompt = isEn ? `Extract a grocery list from a weekly meal plan.
 RULES:
 - Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
-- Merge similar ingredients into the same base category:
-  • "grilled chicken", "chicken breast" → "Chicken"
-  • different fish can stay separate
-  • "2% yogurt" and "0%" → "Yogurt"
-  • tomato and cherry tomatoes → "Tomato"
-- DO NOT keep different names for the same base ingredient
+- Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
 - DO NOT break down by day — totals only
-- MANDATORY group into categories. Write each category on its own line:
+- Group into categories:
 
 🥩 Meat & Fish
-- Chicken: 900g
-- Salmon: 400g
-
 🥛 Dairy & Eggs
-- Yogurt: 1kg
-- Eggs: 12
-
 🥦 Vegetables & Fruits
-- Tomato: 500g
-
 🌾 Grains & Legumes
-- Rice: 500g
-
 🫙 Other
-- Olive oil: 200ml
 
 - Use "-" for each item
-- Answer ONLY with the list, no intro, no category totals` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+- Answer ONLY with the list, nothing else` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
 ΚΑΝΟΝΕΣ:
 - Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
-- Ενοποίησε παρόμοια υλικά στην ίδια βασική κατηγορία:
-  • "κοτόπουλο ψητό", "φιλέτο κοτόπουλο" → "Κοτόπουλο"
-  • διαφορετικά ψάρια μπορούν να μείνουν ξεχωριστά
-  • "γιαούρτι 2%" και "0%" → "Γιαούρτι"
-  • ντομάτα και ντοματίνια → "Ντομάτα"
-- ΜΗΝ κρατάς διαφορετικές ονομασίες για το ίδιο βασικό υλικό
-- ΜΗΝ αναλύεις ανά μέρα — μόνο το σύνολο
-- ΥΠΟΧΡΕΩΤΙΚΑ ομαδοποίησε σε κατηγορίες. Γράψε κάθε κατηγορία σε δική της γραμμή:
+- Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο → "Κοτόπουλο")
+- ΜΗΝ αναλύεις ανά μέρα — μόνο σύνολα
+- Ομαδοποίησε σε κατηγορίες:
 
 🥩 Κρέατα & Ψάρια
-- Κοτόπουλο: 900g
-- Σολομός: 400g
-
 🥛 Γαλακτοκομικά & Αυγά
-- Γιαούρτι: 1kg
-- Αυγά: 12
-
 🥦 Λαχανικά & Φρούτα
-- Ντομάτα: 500g
-
 🌾 Δημητριακά & Όσπρια
-- Ρύζι: 500g
-
 🫙 Άλλα
-- Ελαιόλαδο: 200ml
 
 - Χρησιμοποίησε "-" για κάθε υλικό
-- Απάντησε ΜΟΝΟ με τη λίστα, χωρίς εισαγωγή, χωρίς σύνολα ανά κατηγορία`;
+- Απάντησε ΜΟΝΟ με τη λίστα, τίποτα άλλο`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
