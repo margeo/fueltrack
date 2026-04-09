@@ -50,45 +50,44 @@ const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "d
 function renderMealPlanText(data, lang) {
   const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
-  const plan = data?.weekly_plan;
-  if (!plan) return "";
+  const plan = data?.weekly_plan || data;
+  if (!plan || typeof plan !== "object") return "";
   return DAY_KEYS.map((dayKey, di) => {
-    const day = plan[dayKey];
+    const day = plan[dayKey.toLowerCase()];
     if (!day) return "";
-    const slots = SLOT_ORDER.filter(s => day[s]);
-    const meals = slots.map(s => {
+    const meals = SLOT_ORDER.filter(s => day[s]).map(s => {
       const m = day[s];
       return `${MEAL_EMOJIS[s] || "🍽️"} ${labels[s] || s} — ${m.description} (${m.calories}kcal)`;
     }).join("\n");
-    const total = day.daily_total || slots.reduce((sum, s) => sum + (day[s]?.calories || 0), 0);
+    const total = day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.calories || 0), 0);
     return `📅 ${days[di]}\n${meals}\n${lang === "en" ? "Total" : "Σύνολο"}: ${total}kcal\n─────────────────`;
-  }).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
+  }).filter(Boolean).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
 }
 
 function MealPlanView({ data, lang }) {
   const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
-  const plan = data?.weekly_plan;
-  if (!plan) return null;
+  const plan = data?.weekly_plan || data;
+  if (!plan || typeof plan !== "object") return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
       {DAY_KEYS.map((dayKey, di) => {
-        const day = plan[dayKey];
+        const day = plan[dayKey.toLowerCase()];
         if (!day) return null;
-        const slots = SLOT_ORDER.filter(s => day[s]);
         return (
           <div key={dayKey}>
             <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 {days[di]}</div>
-            {slots.map(s => {
+            {SLOT_ORDER.map(s => {
               const m = day[s];
+              if (!m) return null;
               return (
                 <div key={s} style={{ fontSize: 13, lineHeight: 1.7 }}>
-                  {MEAL_EMOJIS[s] || "🍽️"} {labels[s] || s} — {m.description} ({m.calories}kcal)
+                  {MEAL_EMOJIS[s] || "🍽️"} <strong>{labels[s] || s}</strong> — {m.description} ({m.calories}kcal)
                 </div>
               );
             })}
             <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>
-              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || slots.reduce((sum, s) => sum + (day[s]?.calories || 0), 0)}kcal
+              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.calories || 0), 0)}kcal
             </div>
             {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
           </div>
@@ -632,13 +631,15 @@ ${askChange}`;
       if (isMealPlan) {
         let parsed = null;
         try {
-          parsed = JSON.parse(data.advice);
-          // If no weekly_plan wrapper, check if it has monday directly
-          if (!parsed?.weekly_plan && parsed?.monday) {
-            parsed = { weekly_plan: parsed };
+          const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+          if (raw?.monday && !raw?.weekly_plan) {
+            parsed = { weekly_plan: raw };
+          } else {
+            parsed = raw;
           }
         } catch { /* fallback to text */ }
-        if (parsed?.weekly_plan) {
+        const hasContent = parsed?.weekly_plan || (parsed && parsed.monday);
+        if (hasContent) {
           const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
           // Convert JSON to text for saving
           const textVersion = renderMealPlanText(parsed, i18n.language);
