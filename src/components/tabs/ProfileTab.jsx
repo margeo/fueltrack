@@ -679,12 +679,18 @@ export default function ProfileTab({
           <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
           {userName && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 2 }}>{userName}</div>}
           <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{userEmail}</div>
-          {isAdmin && (
-            <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
               style={{ fontSize: 13, padding: "10px 24px" }}>
-              🛡️ Admin
+              {t("auth.logout")}
             </button>
-          )}
+            {isAdmin && (
+              <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
+                style={{ fontSize: 13, padding: "10px 24px" }}>
+                🛡️ Admin
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="card" style={{ textAlign: "center" }}>

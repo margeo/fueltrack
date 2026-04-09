@@ -50,7 +50,8 @@ export async function handler(event) {
       const txt = d.choices?.[0]?.message?.content;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
-      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: aiModel } };
+      const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "haiku-openrouter": "Haiku 4.5 (OR)" };
+      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: modelNames[aiModel] || aiModel } };
 
     // Google AI direct (gemini-direct)
     } else if (aiModel === "gemini-direct") {
@@ -98,7 +99,7 @@ export async function handler(event) {
       const inputTokens = u.input_tokens || 0;
       const outputTokens = u.output_tokens || 0;
       const costUsd = (inputTokens * 1 / 1000000) + (outputTokens * 5 / 1000000);
-      responseData = { advice: txt, usage: { inputTokens, outputTokens, costUsd: Math.round(costUsd * 10000) / 10000, model: "haiku-4.5" } };
+      responseData = { advice: txt, usage: { inputTokens, outputTokens, costUsd: Math.round(costUsd * 10000) / 10000, model: "Claude Haiku 4.5" } };
     }
 
     return {
