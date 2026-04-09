@@ -336,9 +336,9 @@ ${mealsPerDay ? (() => {
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
-🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
-${Number(snacksPerDay) >= 1 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
-${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)\n` : ""}🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+🌅 ${dayLabels.breakfast} — ${isEn ? "Scrambled eggs (3), whole-wheat toast (2 slices)" : "Ομελέτα (3 αυγά), τοστ ολικής (2 φέτες)"} (${isEn ? "X" : "X"}kcal)
+${Number(snacksPerDay) >= 1 ? `🍎 ${dayLabels.snack} — ${isEn ? "Apple (1), almonds (15g)" : "Μήλο (1), αμύγδαλα (15γρ)"} (Xkcal)\n` : ""}🌞 ${dayLabels.lunch} — ${isEn ? "Grilled chicken breast (180g) with rice (150g) and salad" : "Ψητό στήθος κοτόπουλου (180γρ) με ρύζι (150γρ) και σαλάτα"} (Xkcal)
+${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — ${isEn ? "Yogurt (150g)" : "Γιαούρτι (150γρ)"} (Xkcal)\n` : ""}🌙 ${dayLabels.dinner} — ${isEn ? "Baked salmon (150g) with vegetables (200g)" : "Σολομός φούρνου (150γρ) με λαχανικά (200γρ)"} (Xkcal)
 ${dayLabels.total}: ${targetCalories}kcal
 ─────────────────
 
