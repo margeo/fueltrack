@@ -38,6 +38,59 @@ function EatNowCards({ text }) {
   );
 }
 
+const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
+const MEAL_EMOJIS = { breakfast: "🌅", snack: "🍎", lunch: "🌞", dinner: "🌙" };
+const MEAL_LABELS = { el: { breakfast: "Πρωινό", snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό" }, en: { breakfast: "Breakfast", snack: "Snack", lunch: "Lunch", dinner: "Dinner" } };
+
+function renderMealPlanText(data, lang) {
+  const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
+  const days = DAY_NAMES[lang] || DAY_NAMES.el;
+  const plan = data?.weekly_plan;
+  if (!plan) return "";
+  return DAY_KEYS.map((dayKey, di) => {
+    const day = plan[dayKey];
+    if (!day) return "";
+    const meals = (day.meals || []).map(m =>
+      `${MEAL_EMOJIS[m.type] || "🍽️"} ${labels[m.type] || m.type} — ${m.description} (${m.calories}kcal)`
+    ).join("\n");
+    const total = day.daily_total || day.meals?.reduce((s, m) => s + (m.calories || 0), 0);
+    return `📅 ${days[di]}\n${meals}\n${lang === "en" ? "Total" : "Σύνολο"}: ${total}kcal\n─────────────────`;
+  }).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
+}
+
+function MealPlanView({ data, lang }) {
+  const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
+  const days = DAY_NAMES[lang] || DAY_NAMES.el;
+  const plan = data?.weekly_plan;
+  if (!plan) return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+      {DAY_KEYS.map((dayKey, di) => {
+        const day = plan[dayKey];
+        if (!day) return null;
+        return (
+          <div key={dayKey}>
+            <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 {days[di]}</div>
+            {(day.meals || []).map((meal, mi) => (
+              <div key={mi} style={{ fontSize: 13, lineHeight: 1.7 }}>
+                {MEAL_EMOJIS[meal.type] || "🍽️"} {labels[meal.type] || meal.type} — {meal.description} ({meal.calories}kcal)
+              </div>
+            ))}
+            <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>
+              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || day.meals?.reduce((s, m) => s + (m.calories || 0), 0)}kcal
+            </div>
+            {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
+          </div>
+        );
+      })}
+      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, lineHeight: 1.5 }}>
+        ⚠️ {lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή."}
+      </div>
+    </div>
+  );
+}
+
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, weightLog, favoriteFoods,
@@ -167,6 +220,81 @@ export default function AiCoach({
     if (hasMealPlan) onSavePlan?.({ type: "meal", content: text, date: dateStr });
     else if (hasTrainingPlan) onSavePlan?.({ type: "training", content: text, date: dateStr });
   }, [messages]);
+
+  function buildMealPlanJSON() {
+    const currentMode = MODES[mode] || MODES.balanced;
+    const isEn = i18n.language === "en";
+    const currentWeight = lastWeight || weight;
+    const bmi = currentWeight && height ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
+    const nSnacks = Number(snacksPerDay) || 0;
+    const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
+    const remainingForMeals = targetCalories - snackCal * nSnacks;
+    const breakfastCal = Math.round(remainingForMeals * 0.25);
+    const lunchCal = Math.round(remainingForMeals * 0.40);
+    const dinnerCal = remainingForMeals - breakfastCal - lunchCal;
+
+    const mealStructure = [
+      { type: "breakfast", target_calories: breakfastCal },
+      ...(nSnacks >= 1 ? [{ type: "snack", target_calories: snackCal }] : []),
+      { type: "lunch", target_calories: lunchCal },
+      ...(nSnacks >= 2 ? [{ type: "snack", target_calories: snackCal }] : []),
+      { type: "dinner", target_calories: dinnerCal }
+    ];
+
+    const foodItemLabels = {
+      chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
+      fish: isEn?"Fish":"Ψάρι", turkey: isEn?"Turkey":"Γαλοπούλα", eggs: isEn?"Eggs":"Αυγά",
+      legumes: isEn?"Legumes":"Όσπρια", tofu: isEn?"Tofu":"Τόφου",
+      salads: isEn?"Salads":"Σαλάτες", cooked_veggies: isEn?"Cooked veggies":"Μαγειρεμένα λαχανικά", soups: isEn?"Soups":"Σούπες",
+      rice: isEn?"Rice":"Ρύζι", pasta: isEn?"Pasta":"Ζυμαρικά", bread: isEn?"Bread":"Ψωμί",
+      potatoes: isEn?"Potatoes":"Πατάτες", oats: isEn?"Oats":"Βρώμη",
+      yogurt: isEn?"Yogurt":"Γιαούρτι", cheese: isEn?"Cheese":"Τυρί", milk: isEn?"Milk":"Γάλα",
+      fruits: isEn?"Fruits":"Φρούτα", nuts_snack: isEn?"Nuts":"Ξηροί καρποί", smoothies: isEn?"Smoothies":"Smoothies"
+    };
+    const favFoodsList = (favoriteFoods || []).slice(0, 6).map(f => f.name);
+
+    const input = {
+      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height, bmi },
+      goal: goalType,
+      nutrition: { calories_target: targetCalories, protein_target_g: proteinTarget, diet_type: currentMode.label, diet_rules: currentMode.aiRule },
+      meal_structure: mealStructure,
+      preferences: {
+        preferred_foods: (foodCategories || []).map(f => foodItemLabels[f] || f),
+        favorites: favFoodsList,
+        allergies: allergies || [],
+        cooking_level: cookingLevel || "",
+        cooking_time: cookingTime || "",
+        simple_groceries: simpleMode
+      },
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = isEn
+      ? `You are a clinical nutritionist. Create a 7-day weekly meal plan based ONLY on the JSON input provided.
+STRICT RULES:
+- Respond ONLY with a valid JSON object. No text, no intro, no disclaimers.
+- Each day must have EXACTLY the meals defined in "meal_structure". No more, no less.
+- Each meal must hit its "target_calories" (±50kcal).
+- Include portions in grams for every ingredient.
+- Every meal must be fresh — NEVER suggest leftovers.
+- Respect allergies, preferences, and diet_rules.
+- Food names and descriptions in ${isEn ? "English" : "Greek"}.
+OUTPUT FORMAT:
+{"weekly_plan":{"monday":{"meals":[{"type":"breakfast","description":"...","calories":X,"protein":X},...],"daily_total":X},"tuesday":{...},...}}`
+      : `Είσαι κλινικός διατροφολόγος. Δημιούργησε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών βασισμένο ΑΠΟΚΛΕΙΣΤΙΚΑ στα JSON δεδομένα.
+ΑΥΣΤΗΡΟΙ ΚΑΝΟΝΕΣ:
+- Απάντησε ΜΟΝΟ με ένα έγκυρο JSON αντικείμενο. Κανένα κείμενο, εισαγωγή ή σχόλιο.
+- Κάθε μέρα πρέπει να έχει ΑΚΡΙΒΩΣ τα γεύματα που ορίζονται στο "meal_structure". Ούτε παραπάνω, ούτε λιγότερα.
+- Κάθε γεύμα πρέπει να πιάνει τις "target_calories" (±50kcal).
+- Βάλε μερίδες σε γραμμάρια για κάθε υλικό.
+- Κάθε γεύμα φρέσκο — ΠΟΤΕ υπολείμματα (leftovers).
+- Σεβάσου αλλεργίες, προτιμήσεις και diet_rules.
+- Ονόματα φαγητών στα Ελληνικά.
+ΜΟΡΦΗ ΕΞΟΔΟΥ:
+{"weekly_plan":{"monday":{"meals":[{"type":"breakfast","description":"...","calories":X,"protein":X},...],"daily_total":X},"tuesday":{...},...}}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
 
   function buildSystemPrompt(taskType = "general") {
     const currentMode = MODES[mode] || MODES.balanced;
@@ -452,23 +580,51 @@ ${askChange}`;
 
     try {
       const startTime = Date.now();
-      const response = await fetch("/.netlify/functions/ai-coach", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let reqBody;
+      if (isMealPlan) {
+        const { systemPrompt, userMessage } = buildMealPlanJSON();
+        reqBody = {
+          systemPrompt,
+          messages: [{ role: "user", content: userMessage }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true
+        };
+      } else {
+        reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
           messages: buildMessages(effectiveMessage),
           ...(selectedModel && { model: selectedModel })
-        })
+        };
+      }
+      const response = await fetch("/.netlify/functions/ai-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reqBody)
       });
       if (!response.ok) throw new Error(`Connection error (${response.status})`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      setMessages(prev => [
-        ...prev,
-        { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined, elapsed, usage: data.usage }
-      ]);
+
+      if (isMealPlan) {
+        let parsed = null;
+        try { parsed = JSON.parse(data.advice); } catch { /* fallback to text */ }
+        if (parsed?.weekly_plan) {
+          const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
+          // Convert JSON to text for saving
+          const textVersion = renderMealPlanText(parsed, i18n.language);
+          onSavePlan?.({ type: "meal", content: textVersion, date: dateStr });
+          setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: data.usage }]);
+        } else {
+          // Fallback: AI returned text instead of JSON
+          setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
+        }
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined, elapsed, usage: data.usage }
+        ]);
+      }
       setHasLoaded(true);
     } catch (err) {
       setMessages(prev => [...prev, { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }]);
@@ -591,7 +747,16 @@ ${askChange}`;
           <div ref={chatRef} style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 8, maxHeight: chatExpanded ? 500 : 150, overflowY: "auto", overflowX: "hidden", paddingRight: 4, scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent", transition: "max-height 0.3s ease", position: "relative" }}>
             {messages.map((msg, i) => (
             <div key={i} ref={msg.role === "assistant" && i === messages.length - 1 ? lastAssistantRef : null} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-              {msg.msgType === "eatnow" ? (
+              {msg.msgType === "meal_plan_json" && msg.mealPlanData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <MealPlanView data={msg.mealPlanData} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "eatnow" ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <EatNowCards text={msg.text} />
                 </div>
