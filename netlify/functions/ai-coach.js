@@ -40,20 +40,21 @@ export async function handler(event) {
       };
       if (jsonMode) {
         const mealSlots = body.mealSlots || ["meal_1", "meal_2", "meal_3", "meal_4"];
-        const mealSchema = {
+        const snackSlots = body.snackSlots || ["meal_2"];
+        const mealSchema = (isSnack) => ({
           type: "object",
           properties: {
             desc: { type: "string" },
-            kcal: { type: "number" },
-            pro: { type: "number" }
+            kcal: isSnack ? { type: "integer", maximum: 300 } : { type: "integer" },
+            pro: { type: "integer" }
           },
           required: ["desc", "kcal", "pro"],
           additionalProperties: false
-        };
+        });
         const daySchema = {
           type: "object",
           properties: {
-            ...Object.fromEntries(mealSlots.map(s => [s, mealSchema])),
+            ...Object.fromEntries(mealSlots.map(s => [s, mealSchema(snackSlots.includes(s))])),
             daily_total: { type: "number" }
           },
           required: [...mealSlots, "daily_total"],

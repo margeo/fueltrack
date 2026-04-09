@@ -80,8 +80,11 @@ function MealPlanView({ data, lang }) {
             <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 {days[di]}</div>
             {SLOT_ORDER.map(s => {
               const m = day[s];
-              if (!m) return null;
               const meta = MEAL_METADATA[s] || { label: { el: s, en: s }, emoji: "🍽️" };
+              if (!m) {
+                if (["meal_1","meal_2","meal_3","meal_4"].includes(s) && di === 0) return <div key={s} style={{ fontSize: 12, color: "#b91c1c" }}>⚠️ {meta.label[lang]} — {lang === "en" ? "missing" : "λείπει"}</div>;
+                return null;
+              }
               return (
                 <div key={s} style={{ fontSize: 13, lineHeight: 1.7 }}>
                   {meta.emoji} <strong>{meta.label[lang] || s}</strong> — {m.desc || m.description} ({m.kcal || m.calories}kcal)
@@ -281,38 +284,40 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    const slotRules = mealDefs.map(m => `- "${m.slot}": ${m.role} (~${m.target_calories}kcal)`).join("\n");
+    const slotRules = mealDefs.map(m => {
+      const isSnack = m.role.includes("Snack");
+      return `- "${m.slot}": ${isSnack ? "Light_Snack" : m.role} (~${m.target_calories}kcal)${isSnack ? " → ONLY yogurt, fruit, nuts, rice cakes. NO meat/pasta/rice." : ""}`;
+    }).join("\n");
     const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories},"pro":0}`).join(",");
 
     const systemPrompt = isEn
-      ? `You are a JSON engine. Strictly follow the schema. Output ONLY valid JSON.
-The user requires a ${mealSlots.length}-slot structure. If you omit any slot, the calculation is invalid.
+      ? `You are a JSON engine. Generate ${mealSlots.length} meals per day. Failure to include meal_4 or putting high calories in meal_2 = system error.
 
-STRUCTURE RULES:
+SLOTS:
 ${slotRules}
-- "daily_total": sum of ALL ${mealSlots.length} slots
 
-Each slot: "desc" (brief, with grams), "kcal", "pro" (protein grams).
-No leftovers. Unique meals each day. Respect input data. Food names in English.
-CRITICAL: ALL ${mealSlots.length} slots MUST be present. daily_total must be sum of all slots.
+RULES:
+- "desc": max 10 words, include grams.
+- daily_total = meal_1 + meal_2 + meal_3 + meal_4. If meal_4 is missing, math fails.
+- No leftovers. Unique each day. Respect input data. English food names.
+- The FINAL key of every day MUST be "daily_total".
 
-EXAMPLE (monday):
-{${exampleMeals},"daily_total":${targetCalories}}`
-      : `Είσαι JSON engine. Ακολούθησε αυστηρά το schema. Output ΜΟΝΟ valid JSON.
-Ο χρήστης απαιτεί δομή ${mealSlots.length} slots. Αν παραλείψεις slot, ο υπολογισμός είναι άκυρος.
+EXAMPLE: {${exampleMeals},"daily_total":${targetCalories}}`
+      : `Είσαι JSON engine. Παράγεις ${mealSlots.length} γεύματα/μέρα. Αν λείπει meal_4 ή meal_2 > 300kcal = σφάλμα.
 
-ΔΟΜΗ:
+SLOTS:
 ${slotRules}
-- "daily_total": άθροισμα ΟΛΩΝ των ${mealSlots.length} slots
 
-Κάθε slot: "desc" (σύντομο, με γραμμάρια), "kcal", "pro" (γραμμάρια πρωτεΐνης).
-Χωρίς leftovers. Μοναδικά γεύματα κάθε μέρα. Σεβάσου τα input data. Ονόματα στα Ελληνικά.
-ΚΡΙΣΙΜΟ: ΟΛΑ τα ${mealSlots.length} slots ΠΡΕΠΕΙ να υπάρχουν. daily_total = άθροισμα όλων.
+ΚΑΝΟΝΕΣ:
+- "desc": μέγιστο 10 λέξεις, με γραμμάρια.
+- daily_total = meal_1 + meal_2 + meal_3 + meal_4. Αν λείπει meal_4, τα μαθηματικά αποτυγχάνουν.
+- Χωρίς leftovers. Μοναδικά κάθε μέρα. Σεβάσου input data. Ελληνικά ονόματα.
+- Το ΤΕΛΕΥΤΑΙΟ key κάθε μέρας ΠΡΕΠΕΙ να είναι "daily_total".
 
-ΠΑΡΑΔΕΙΓΜΑ (monday):
-{${exampleMeals},"daily_total":${targetCalories}}`;
+ΠΑΡΑΔΕΙΓΜΑ: {${exampleMeals},"daily_total":${targetCalories}}`;
 
-    return { systemPrompt, userMessage: JSON.stringify(input), mealSlots };
+    const snackSlots = mealDefs.filter(m => m.role.includes("Snack")).map(m => m.slot);
+    return { systemPrompt, userMessage: JSON.stringify(input), mealSlots, snackSlots };
   }
 
   function buildSystemPrompt(taskType = "general") {
@@ -601,13 +606,14 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { systemPrompt, userMessage, mealSlots } = buildMealPlanJSON();
+        const { systemPrompt, userMessage, mealSlots, snackSlots } = buildMealPlanJSON();
         reqBody = {
           systemPrompt,
           messages: [{ role: "user", content: userMessage }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
-          mealSlots
+          mealSlots,
+          snackSlots
         };
       } else {
         reqBody = {
