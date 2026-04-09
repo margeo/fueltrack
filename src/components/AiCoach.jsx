@@ -319,7 +319,7 @@ INGREDIENT RULES (do not mention these in your answer):
 - Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.`;
 
     const mealPlanFormat = `
-${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
+${isEn ? "Create a weekly meal plan. Every meal must be a fresh meal — NEVER suggest leftovers from a previous day." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Κάθε γεύμα πρέπει να είναι φρέσκο — ΠΟΤΕ μην προτείνεις υπολείμματα (leftovers) από προηγούμενη μέρα."}
 ${mealsPerDay ? (isEn ? `Structure: ${mealsPerDay} meals` : `Δομή: ${mealsPerDay} γεύματα`) + (snacksPerDay && snacksPerDay !== "0" ? (isEn ? ` + ${snacksPerDay} snacks` : ` + ${snacksPerDay} σνακ`) : "") + (isEn ? ` per day.` : ` τη μέρα.`) : ""}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
