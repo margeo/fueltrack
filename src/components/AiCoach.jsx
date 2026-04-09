@@ -665,7 +665,13 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         // Parse snacks
         let snacks = null;
         if (snacksData) {
-          try { const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice; snacks = raw?.weekly_plan || raw; } catch { /* */ }
+          try {
+            const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice;
+            snacks = raw?.weekly_plan || raw;
+            console.log("SNACKS parse success:", snacks?.monday);
+          } catch (e) {
+            console.error("SNACKS parse FAILED:", e.message, snacksData.advice?.substring(0, 300));
+          }
         }
 
         console.log("MEALS RAW:", mealsData.advice?.substring(0, 200));
