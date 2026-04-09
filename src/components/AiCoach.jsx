@@ -668,8 +668,23 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         if (snacksData) {
           try {
             const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice;
-            snacks = raw?.weekly_plan || raw;
-          } catch { /* snack parse failed, continue without snacks */ }
+            let result = raw?.weekly_plan || raw;
+            // Unwrap if model added wrapper key (e.g. {"snacks": {"monday": {...}}})
+            if (result && !result.monday) {
+              const keys = Object.keys(result);
+              if (keys.length === 1 && typeof result[keys[0]] === "object") {
+                result = result[keys[0]];
+              }
+            }
+            // Handle if model returned array instead of object
+            if (Array.isArray(result)) {
+              const obj = {};
+              result.forEach((item, i) => { if (DAY_KEYS[i]) obj[DAY_KEYS[i]] = item; });
+              result = obj;
+            }
+            snacks = result?.monday ? result : null;
+            console.log("SNACK_RESULT:", snacks?.monday);
+          } catch { /* snack parse failed */ }
         }
 
         // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
