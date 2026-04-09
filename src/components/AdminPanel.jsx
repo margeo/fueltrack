@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabaseClient";
 
-export default function AdminPanel({ onClose }) {
+export default function AdminPanel({ onClose, adminEmail }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -57,9 +58,39 @@ export default function AdminPanel({ onClose }) {
     }
   }
 
-  const filtered = users.filter(u =>
-    !search || (u.email || "").toLowerCase().includes(search.toLowerCase())
-  );
+  function getUserType(user) {
+    if (adminEmail && (user.email || "").toLowerCase() === adminEmail.toLowerCase()) return "admin";
+    if (user.is_paid) return "paid";
+    if (user.is_demo) return "demo";
+    return "free";
+  }
+
+  const filtered = users.filter(u => {
+    if (search && !(u.email || "").toLowerCase().includes(search.toLowerCase())) return false;
+    if (filter === "all") return true;
+    return getUserType(u) === filter;
+  });
+
+  const counts = { all: users.length, free: 0, paid: 0, demo: 0, admin: 0 };
+  users.forEach(u => { counts[getUserType(u)]++; });
+
+  const badgeStyle = (type) => {
+    const styles = {
+      free: { background: "var(--bg-btn-light)", color: "var(--text-muted)" },
+      paid: { background: "#4ade80", color: "#052e16" },
+      demo: { background: "#60a5fa", color: "#1e3a5f" },
+      admin: { background: "#f59e0b", color: "#78350f" },
+    };
+    return { padding: "3px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700, ...styles[type] };
+  };
+
+  const filterBtnStyle = (f) => ({
+    padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700,
+    border: filter === f ? "2px solid var(--color-accent)" : "1px solid var(--border-color)",
+    background: filter === f ? "var(--color-accent)" : "var(--bg-soft)",
+    color: filter === f ? "var(--bg-card)" : "var(--text-primary)",
+    cursor: "pointer"
+  });
 
   return (
     <div style={{
@@ -83,7 +114,7 @@ export default function AdminPanel({ onClose }) {
           }}>✕</button>
         </div>
 
-        {/* Search */}
+        {/* Search + Filters */}
         <div style={{ padding: "12px 20px 0" }}>
           <input
             type="text"
@@ -96,6 +127,19 @@ export default function AdminPanel({ onClose }) {
               color: "var(--text-primary)", fontSize: 14, boxSizing: "border-box"
             }}
           />
+          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+            {[
+              { key: "all", label: `All (${counts.all})` },
+              { key: "free", label: `Free (${counts.free})` },
+              { key: "paid", label: `Paid (${counts.paid})` },
+              { key: "demo", label: `Demo (${counts.demo})` },
+              { key: "admin", label: `Admin (${counts.admin})` },
+            ].map(f => (
+              <button key={f.key} type="button" onClick={() => setFilter(f.key)} style={filterBtnStyle(f.key)}>
+                {f.label}
+              </button>
+            ))}
+          </div>
           <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
             {filtered.length} user{filtered.length !== 1 ? "s" : ""}
           </div>
@@ -106,41 +150,42 @@ export default function AdminPanel({ onClose }) {
           {loading && <div style={{ textAlign: "center", padding: 20 }} className="muted">Loading...</div>}
           {error && <div style={{ color: "#ef4444", padding: 12, textAlign: "center" }}>{error}</div>}
 
-          {!loading && !error && filtered.map(user => (
-            <div key={user.id} style={{
-              background: "var(--bg-soft)", borderRadius: 14, padding: "12px 14px",
-              marginBottom: 8, border: "1px solid var(--border-soft)"
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, wordBreak: "break-all" }}>
-                {user.email || <span className="muted">No email</span>}
+          {!loading && !error && filtered.map(user => {
+            const type = getUserType(user);
+            return (
+              <div key={user.id} style={{
+                background: "var(--bg-soft)", borderRadius: 14, padding: "12px 14px",
+                marginBottom: 8, border: "1px solid var(--border-soft)"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, wordBreak: "break-all", flex: 1, minWidth: 0 }}>
+                    {user.email || <span className="muted">No email</span>}
+                  </div>
+                  <span style={badgeStyle(type)}>
+                    {type === "admin" ? "🛡️ Admin" : type === "paid" ? "💳 Paid" : type === "demo" ? "🎮 Demo" : "Free"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  {type !== "admin" && (
+                    <button
+                      onClick={() => toggleFlag(user.id, "is_demo", user.is_demo)}
+                      style={{
+                        padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                        border: "none", cursor: "pointer",
+                        background: user.is_demo ? "#60a5fa" : "var(--bg-btn-light)",
+                        color: user.is_demo ? "#1e3a5f" : "var(--text-muted)"
+                      }}
+                    >
+                      {user.is_demo ? "✓ Remove Demo" : "Grant Demo"}
+                    </button>
+                  )}
+                  <span className="muted" style={{ fontSize: 11, marginLeft: "auto" }}>
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
+                  </span>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <span
-                  style={{
-                    padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-                    background: user.is_paid ? "#4ade80" : "var(--bg-btn-light)",
-                    color: user.is_paid ? "#052e16" : "var(--text-muted)"
-                  }}
-                >
-                  {user.is_paid ? "✓ Paid" : "Free"}
-                </span>
-                <button
-                  onClick={() => toggleFlag(user.id, "is_demo", user.is_demo)}
-                  style={{
-                    padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-                    border: "none", cursor: "pointer",
-                    background: user.is_demo ? "#60a5fa" : "var(--bg-btn-light)",
-                    color: user.is_demo ? "#1e3a5f" : "var(--text-muted)"
-                  }}
-                >
-                  {user.is_demo ? "✓ Demo" : "Demo"}
-                </button>
-                <span className="muted" style={{ fontSize: 11, marginLeft: "auto" }}>
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -716,7 +716,7 @@ export default function ProfileTab({
         </a>
       </div>
 
-      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} adminEmail={userEmail} />}
     </>
   );
 }
