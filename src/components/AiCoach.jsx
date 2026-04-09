@@ -268,7 +268,7 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     const fitnessContext = `${exercisePrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
 
     // MODE RULES: πάντα
-    const modeBlock = `\n${isEn ? "Diet type" : "Τρόπος διατροφής"}: ${currentMode.label}\n${isEn ? "Rules" : "Κανόνες"}: ${currentMode.aiRule}`;
+    const modeBlock = `\n${currentMode.aiRule}`;
 
     // GENERAL
     const generalRules = isEn ? `
@@ -318,7 +318,7 @@ INGREDIENT RULES (do not mention these in your answer):
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
 ${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}
-${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ~25%, ${dayLabels.snack}x2 ~10%, ${dayLabels.lunch} ~35%, ${dayLabels.dinner} ~20%.${simpleRules}${ingredientRules}
+${currentMode.fastingHours ? "" : (isEn ? "Distribution" : "Κατανομή") + `: ${dayLabels.breakfast} ~20%, ${dayLabels.snack}1 ~10%, ${dayLabels.lunch} ~35%, ${dayLabels.snack}2 ~10%, ${dayLabels.dinner} ~25%.`}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
