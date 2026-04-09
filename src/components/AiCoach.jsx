@@ -52,6 +52,7 @@ export default function AiCoach({
   const { t, i18n } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
   const [messages, setMessages] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_ai_model") || "");
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
@@ -408,7 +409,8 @@ ${askChange}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemPrompt: buildSystemPrompt(taskType),
-          messages: buildMessages(effectiveMessage)
+          messages: buildMessages(effectiveMessage),
+          ...(selectedModel && { model: selectedModel })
         })
       });
       if (!response.ok) throw new Error(`Connection error (${response.status})`);
@@ -430,7 +432,18 @@ ${askChange}`;
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t("aiCoach.subtitle")}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+            <span className="muted" style={{ fontSize: 12 }}>{t("aiCoach.subtitle")}</span>
+            <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
+              style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
+              <option value="">Default</option>
+              <option value="haiku">Haiku 4.5</option>
+              <option value="gemini">Gemini Lite</option>
+              <option value="gemini-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-direct">Gemini Direct</option>
+              <option value="haiku-openrouter">Haiku OR</option>
+            </select>
+          </div>
         </div>
         {hasLoaded && messages.length > 0 && !loading && (
           <button type="button" onClick={() => setChatExpanded(prev => !prev)}

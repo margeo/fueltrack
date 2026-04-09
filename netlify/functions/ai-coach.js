@@ -1,7 +1,7 @@
 export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
-    const { systemPrompt, messages } = body;
+    const { systemPrompt, messages, model: requestModel } = body;
 
     if (!systemPrompt || !messages || !Array.isArray(messages)) {
       return { statusCode: 400, body: JSON.stringify({ error: "Missing systemPrompt or messages" }) };
@@ -16,7 +16,7 @@ export async function handler(event) {
     }
 
     const recentMessages = validMessages.slice(-6);
-    const aiModel = process.env.AI_MODEL || "gemini-flash";
+    const aiModel = requestModel || process.env.AI_MODEL || "gemini-flash";
 
     let responseData;
 
