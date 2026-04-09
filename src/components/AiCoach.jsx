@@ -308,7 +308,9 @@ INGREDIENT RULES (do not mention these in your answer):
 - Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.`;
 
     const mealPlanFormat = `
-${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."} ${isEn ? "Target" : "Στόχος"} ${targetCalories}kcal ±5%. ${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ${Math.round(targetCalories*0.25)}, ${dayLabels.snack}x2 ${Math.round(targetCalories*0.1)}, ${dayLabels.lunch} ${Math.round(targetCalories*0.35)}, ${dayLabels.dinner} ${Math.round(targetCalories*0.2)}kcal.${simpleRules}${ingredientRules}
+${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
+⚠️ CRITICAL: ${isEn ? "EACH DAY MUST total EXACTLY" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει ΑΚΡΙΒΩΣ"} ${targetCalories}kcal (±100kcal). ${isEn ? "NOT less, NOT more. This is the most important rule." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο. Αυτός είναι ο πιο σημαντικός κανόνας."}
+${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ~${Math.round(targetCalories*0.25)}kcal, ${dayLabels.snack}x2 ~${Math.round(targetCalories*0.1)}kcal, ${dayLabels.lunch} ~${Math.round(targetCalories*0.35)}kcal, ${dayLabels.dinner} ~${Math.round(targetCalories*0.2)}kcal.${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
@@ -320,6 +322,7 @@ ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩ
 ${dayLabels.total}: [X]kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
+${isEn ? "Do NOT add a grocery list or shopping list. ONLY the meal plan." : "ΜΗΝ προσθέσεις λίστα σούπερ μάρκετ. ΜΟΝΟ το πρόγραμμα διατροφής."}
 ${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
 ${disclaimer}
 ${askChange}`;
