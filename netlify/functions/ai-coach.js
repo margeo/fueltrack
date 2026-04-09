@@ -1,3 +1,5 @@
+const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+
 export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
@@ -40,41 +42,41 @@ export async function handler(event) {
         ]
       };
       if (jsonMode) {
-        const mealSlots = body.mealSlots || ["meal_1", "meal_2", "meal_3", "meal_4"];
-        const snackSlots = body.snackSlots || ["meal_2"];
-        const mealSchema = (isSnack) => ({
-          type: "object",
-          properties: {
-            desc: { type: "string" },
-            kcal: isSnack ? { type: "integer", maximum: 300 } : { type: "integer" }
-          },
-          required: ["desc", "kcal"],
-          additionalProperties: false
-        });
-        const daySchema = {
-          type: "object",
-          properties: {
-            ...Object.fromEntries(mealSlots.map(s => [s, mealSchema(snackSlots.includes(s))])),
-            daily_total: { type: "integer" }
-          },
-          required: [...mealSlots, "daily_total"],
-          additionalProperties: false
-        };
-        reqBody.response_format = {
-          type: "json_schema",
-          json_schema: {
-            name: "diet_plan",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: Object.fromEntries(
-                (body.schemaDays || ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]).map(day => [day, daySchema])
-              ),
-              required: (body.schemaDays || ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]),
-              additionalProperties: false
+        if (body.customSchema) {
+          reqBody.response_format = body.customSchema;
+        } else {
+          const mealSlots = body.mealSlots || ["meal_1", "meal_2", "meal_3"];
+          const mealSchema = {
+            type: "object",
+            properties: { desc: { type: "string" }, kcal: { type: "integer" } },
+            required: ["desc", "kcal"],
+            additionalProperties: false
+          };
+          const daySchema = {
+            type: "object",
+            properties: {
+              ...Object.fromEntries(mealSlots.map(s => [s, mealSchema])),
+              daily_total: { type: "integer" }
+            },
+            required: [...mealSlots, "daily_total"],
+            additionalProperties: false
+          };
+          reqBody.response_format = {
+            type: "json_schema",
+            json_schema: {
+              name: "diet_plan",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: Object.fromEntries(
+                  (body.schemaDays || DAY_KEYS).map(day => [day, daySchema])
+                ),
+                required: (body.schemaDays || DAY_KEYS),
+                additionalProperties: false
+              }
             }
-          }
-        };
+          };
+        }
       }
 
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {

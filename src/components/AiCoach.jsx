@@ -600,62 +600,118 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { systemPrompt, userMessage, mealSlots, snackSlots } = buildMealPlanJSON();
-        const baseReq = {
-          systemPrompt,
+        const { userMessage } = buildMealPlanJSON();
+        const isEn = i18n.language === "en";
+        const inputData = JSON.parse(userMessage);
+        const nSnacks = Number(snacksPerDay) || 0;
+        const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
+        const mealsCal = targetCalories - snackCal * nSnacks;
+
+        // Call 1: 3 main meals × 7 days
+        const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
+Each day has EXACTLY 3 meals: meal_1 (Breakfast), meal_2 (Lunch), meal_3 (Dinner), and daily_total.
+Each meal: "desc" (brief, with grams), "kcal" (integer).
+Target: ${mealsCal}kcal total per day (split across 3 meals).
+No leftovers. Unique meals each day. Respect input data.
+${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
+
+        const mealsReq = {
+          systemPrompt: mealsPrompt,
+          messages: [{ role: "user", content: userMessage }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
-          mealSlots,
-          snackSlots
+          mealSlots: ["meal_1", "meal_2", "meal_3"],
+          snackSlots: [],
+          schemaDays: DAY_KEYS
         };
 
-        // Split into 2 calls: Mon-Thu + Fri-Sun
-        const inputData = JSON.parse(userMessage);
-        const batch1Input = { ...inputData, days: "monday,tuesday,wednesday,thursday" };
-        const batch2Input = { ...inputData, days: "friday,saturday,sunday" };
+        // Call 2: 7 snacks (only if user wants snacks)
+        let snacksReq = null;
+        if (nSnacks > 0) {
+          const snacksPrompt = `You are a JSON Snack Generator. Return a JSON object with 7 keys (monday-sunday).
+Each day has one snack: "desc" (brief, with grams), "kcal" (integer).
+Each snack MUST be ~${snackCal}kcal. Light food only: yogurt, fruit, nuts, rice cakes, smoothie.
+NO meat, pasta, rice, heavy meals. Respect user allergies and preferences.
+${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
-        const batch1Days = ["monday","tuesday","wednesday","thursday"];
-        const batch2Days = ["friday","saturday","sunday"];
+          const snackSchema = {
+            type: "object",
+            properties: { desc: { type: "string" }, kcal: { type: "integer", maximum: 350 } },
+            required: ["desc", "kcal"], additionalProperties: false
+          };
 
-        const sp1 = systemPrompt.replace("exactly 7 days", `exactly 4 days: ${batch1Days.join(", ")}`);
-        const sp2 = systemPrompt.replace("exactly 7 days", `exactly 3 days: ${batch2Days.join(", ")}`);
+          snacksReq = {
+            systemPrompt: snacksPrompt,
+            messages: [{ role: "user", content: JSON.stringify({ preferences: inputData.preferences, nutrition: { snack_calories: snackCal }, language: inputData.language }) }],
+            ...(selectedModel && { model: selectedModel }),
+            jsonMode: true,
+            customSchema: {
+              type: "json_schema",
+              json_schema: {
+                name: "snacks",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: Object.fromEntries(DAY_KEYS.map(d => [d, snackSchema])),
+                  required: DAY_KEYS,
+                  additionalProperties: false
+                }
+              }
+            }
+          };
+        }
 
-        const [res1, res2] = await Promise.all([
-          fetch("/.netlify/functions/ai-coach", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...baseReq, systemPrompt: sp1, messages: [{ role: "user", content: JSON.stringify(batch1Input) }], mealSlots, snackSlots, schemaDays: batch1Days })
-          }),
-          fetch("/.netlify/functions/ai-coach", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...baseReq, systemPrompt: sp2, messages: [{ role: "user", content: JSON.stringify(batch2Input) }], mealSlots, snackSlots, schemaDays: batch2Days })
-          })
-        ]);
+        // Execute in parallel
+        const fetches = [
+          fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(mealsReq) })
+        ];
+        if (snacksReq) fetches.push(fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(snacksReq) }));
 
-        if (!res1.ok || !res2.ok) throw new Error(`Connection error`);
-        const [d1, d2] = await Promise.all([res1.json(), res2.json()]);
-        if (d1.error) throw new Error(d1.error);
-        if (d2.error) throw new Error(d2.error);
+        const responses = await Promise.all(fetches);
+        if (responses.some(r => !r.ok)) throw new Error("Connection error");
+        const results = await Promise.all(responses.map(r => r.json()));
+        if (results.some(r => r.error)) throw new Error(results.find(r => r.error)?.error);
 
-        // Merge results
-        let p1 = null, p2 = null;
-        try { const r1 = typeof d1.advice === "string" ? JSON.parse(d1.advice) : d1.advice; p1 = r1?.weekly_plan || r1; } catch { /* */ }
-        try { const r2 = typeof d2.advice === "string" ? JSON.parse(d2.advice) : d2.advice; p2 = r2?.weekly_plan || r2; } catch { /* */ }
+        const [mealsData, snacksData] = results;
 
-        const merged = { ...(p1 || {}), ...(p2 || {}) };
-        const hasContent = merged.monday && merged.friday;
+        // Parse meals
+        let meals = null;
+        try { const raw = typeof mealsData.advice === "string" ? JSON.parse(mealsData.advice) : mealsData.advice; meals = raw?.weekly_plan || raw; } catch { /* */ }
+
+        // Parse snacks
+        let snacks = null;
+        if (snacksData) {
+          try { const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice; snacks = raw?.weekly_plan || raw; } catch { /* */ }
+        }
+
+        // Merge: insert snack after meal_1 (breakfast)
+        const merged = {};
+        DAY_KEYS.forEach(day => {
+          const dayMeals = meals?.[day];
+          if (!dayMeals) return;
+          merged[day] = {
+            meal_1: dayMeals.meal_1,
+            ...(snacks?.[day] ? { meal_2: snacks[day] } : {}),
+            [snacks?.[day] ? "meal_3" : "meal_2"]: dayMeals.meal_2,
+            [snacks?.[day] ? "meal_4" : "meal_3"]: dayMeals.meal_3,
+            daily_total: (dayMeals.meal_1?.kcal || 0) + (snacks?.[day]?.kcal || 0) + (dayMeals.meal_2?.kcal || 0) + (dayMeals.meal_3?.kcal || 0)
+          };
+        });
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        const hasContent = merged.monday;
+
         if (hasContent) {
           const parsed = { weekly_plan: merged };
-          const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
+          const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
           const textVersion = renderMealPlanText(parsed, i18n.language);
           onSavePlan?.({ type: "meal", content: textVersion, date: dateStr });
-          const totalIn = (d1.usage?.inputTokens || 0) + (d2.usage?.inputTokens || 0);
-          const totalOut = (d1.usage?.outputTokens || 0) + (d2.usage?.outputTokens || 0);
-          const totalCost = (d1.usage?.costUsd || 0) + (d2.usage?.costUsd || 0);
-          setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: d1.usage?.model || "" } }]);
+          const totalIn = (mealsData.usage?.inputTokens || 0) + (snacksData?.usage?.inputTokens || 0);
+          const totalOut = (mealsData.usage?.outputTokens || 0) + (snacksData?.usage?.outputTokens || 0);
+          const totalCost = (mealsData.usage?.costUsd || 0) + (snacksData?.usage?.costUsd || 0);
+          setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: mealsData.usage?.model || "" } }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: (d1.advice || "") + "\n" + (d2.advice || ""), elapsed, usage: d1.usage }]);
+          setMessages(prev => [...prev, { role: "assistant", text: mealsData.advice || "Error", elapsed, usage: mealsData.usage }]);
         }
         setHasLoaded(true);
         return;
