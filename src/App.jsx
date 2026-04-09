@@ -437,6 +437,7 @@ export default function App() {
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
     foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
+    mealsPerDay, snacksPerDay,
     fitnessLevel, workoutLocation, equipment, limitations,
     workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
   };
