@@ -677,6 +677,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           const dm = meals?.[day];
           if (!dm) return;
           const sn = snacks?.[day];
+          if (day === "monday") console.log("MERGE monday:", { breakfast: !!dm.meal_1, snack: sn, lunch: !!dm.meal_2, dinner: !!dm.meal_3 });
           merged[day] = {
             breakfast: dm.meal_1,
             ...(sn ? { morning_snack: sn } : {}),
