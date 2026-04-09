@@ -74,7 +74,7 @@ export default function SummaryTab({
   totalCarbs, totalFat, mode, macroTargets,
   foods, dailyLogs, weightLog,
   onAddWeight, onDeleteWeight,
-  favoriteFoods, favoriteFoodsText, favoriteExercisesText,
+  favoriteFoods,
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
@@ -379,8 +379,8 @@ RULES:
             proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
             weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
             totalCalories={totalCalories} totalProtein={totalProtein} exerciseValue={exerciseValue}
-            remainingCalories={remainingCalories} favoriteFoodsText={favoriteFoodsText}
-            favoriteExercisesText={favoriteExercisesText} favoriteExercises={favoriteExercises}
+            remainingCalories={remainingCalories}
+            favoriteExercises={favoriteExercises}
             age={age} weight={weight} height={height} gender={gender}
             savedPlans={savedPlans} onSavePlan={onSavePlan}
             session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}

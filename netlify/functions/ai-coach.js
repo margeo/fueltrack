@@ -53,7 +53,7 @@ export async function handler(event) {
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
       const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "gemini-pro": "Gemini 2.5 Pro", "grok": "Grok 4.1 Fast", "deepseek": "DeepSeek V3.2", "haiku-openrouter": "Haiku 4.5 (OR)" };
-      const pricing = { "gemini": [0.10, 0.40], "gemini-flash": [0.30, 2.50], "grok": [0.20, 0.50], "deepseek": [0.28, 0.42], "haiku-openrouter": [1, 5] };
+      const pricing = { "gemini": [0.10, 0.40], "gemini-flash": [0.30, 2.50], "grok": [0.20, 0.50], "deepseek": [0.26, 0.38], "haiku-openrouter": [1, 5] };
       const [inPrice, outPrice] = pricing[aiModel] || [0, 0];
       const inTok = u.prompt_tokens || 0;
       const outTok = u.completion_tokens || 0;

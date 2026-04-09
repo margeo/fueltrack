@@ -27,14 +27,12 @@ import { getInitialTheme, applyTheme } from "./utils/theme";
 export default function App() {
   const { t, i18n } = useTranslation();
   const [session, setSession] = useState(null);
-  const [, setAuthLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("login");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setAuthLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -60,8 +58,6 @@ export default function App() {
   const [mode, setMode] = useState(() => loadValue("ft_mode", "balanced"));
   const [targetWeightLoss, setTargetWeightLoss] = useState(() => loadValue("ft_targetWeightLoss", ""));
   const [weeks, setWeeks] = useState(() => loadValue("ft_weeks", ""));
-  const [favoriteFoodsText] = useState(() => loadValue("ft_favFoodsText", ""));
-  const [favoriteExercisesText] = useState(() => loadValue("ft_favExercisesText", ""));
 
   // Food preferences
   const [foodCategories, setFoodCategories] = useState(() => loadJSON("ft_foodCategories", []));
@@ -154,8 +150,6 @@ export default function App() {
   useEffect(() => saveValue("ft_mode", mode), [mode]);
   useEffect(() => saveValue("ft_targetWeightLoss", targetWeightLoss), [targetWeightLoss]);
   useEffect(() => saveValue("ft_weeks", weeks), [weeks]);
-  useEffect(() => saveValue("ft_favFoodsText", favoriteFoodsText), [favoriteFoodsText]);
-  useEffect(() => saveValue("ft_favExercisesText", favoriteExercisesText), [favoriteExercisesText]);
   useEffect(() => saveJSON("ft_foods", foods), [foods]);
   useEffect(() => saveJSON("ft_customFoods", customFoods), [customFoods]);
   useEffect(() => saveJSON("ft_dailyLogs", dailyLogs), [dailyLogs]);
@@ -429,8 +423,6 @@ export default function App() {
     onAddWeight: addWeight,
     onDeleteWeight: deleteWeight,
     favoriteFoods,
-    favoriteFoodsText,
-    favoriteExercisesText,
     favoriteExercises,
     age, weight, height, gender,
     savedPlans,

@@ -91,8 +91,7 @@ export default function useFoodSearch(query) {
         }
 
         setResults(merged);
-      } catch (err) {
-        console.error("Food search error:", err);
+      } catch {
         if (!cancelled) setResults([]);
       } finally {
         if (!cancelled) setLoading(false);

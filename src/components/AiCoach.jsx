@@ -42,7 +42,7 @@ export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, streak, weightLog, favoriteFoods,
   totalCalories, totalProtein, exerciseValue,
-  remainingCalories, favoriteFoodsText, favoriteExercisesText,
+  remainingCalories,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
@@ -249,7 +249,7 @@ export default function AiCoach({
 ${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
 ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
 ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label} | ${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"} | Streak:${streak}${isEn?"days":"μέρες"}
-${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||favoriteFoodsText||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||favoriteExercisesText||"—"}${foodPrefsLine}${exercisePrefsLine}
+${isEn ? "Favorites" : "Αγαπημένα"}:${favFoodsList||"—"} | ${isEn ? "Exercises" : "Ασκήσεις"}:${favExList||"—"}${foodPrefsLine}${exercisePrefsLine}
 ${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal
 ${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}
 Mode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
@@ -448,7 +448,7 @@ ${askChange}`;
                 <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
 
                 <option value="gemini">Gemini 2.5 Flash Lite (OpenRouter) — $0.10/$0.40</option>
-                <option value="deepseek">DeepSeek V3.2 — $0.28/$0.42</option>
+                <option value="deepseek">DeepSeek V3.2 — $0.26/$0.38</option>
                 <option value="grok">Grok 4.1 Fast — $0.20/$0.50</option>
               </select>
             )}
