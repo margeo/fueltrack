@@ -291,28 +291,36 @@ export default function AiCoach({
     const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories},"pro":0}`).join(",");
 
     const systemPrompt = isEn
-      ? `You are a JSON engine. Generate ${mealSlots.length} meals per day. Failure to include meal_4 or putting high calories in meal_2 = system error.
+      ? `You are a JSON Generator. You MUST return an object with ${mealSlots.length} meals per day.
 
-SLOTS:
+STRICT RULES:
+- Name meals meal_1, meal_2, meal_3, meal_4. NOT breakfast/snack/lunch/dinner.
+- meal_2 MUST always be under 250kcal (e.g. 1 fruit or 1 yogurt). It is a SNACK, not a main meal.
+- meal_4 is MANDATORY. If missing, the JSON is useless.
+- Do NOT put 950 calories in meal_2. It is a snack, not lunch!
+- daily_total = meal_1 + meal_2 + meal_3 + meal_4.
+
+CALORIE TARGETS:
 ${slotRules}
 
-RULES:
-- "desc": max 10 words, include grams.
-- daily_total = meal_1 + meal_2 + meal_3 + meal_4. If meal_4 is missing, math fails.
-- No leftovers. Unique each day. Respect input data. English food names.
-- The FINAL key of every day MUST be "daily_total".
+Each slot: "desc" (max 10 words, with grams), "kcal", "pro".
+No leftovers. Unique each day. Respect input data. English food names.
 
 EXAMPLE: {${exampleMeals},"daily_total":${targetCalories}}`
-      : `Είσαι JSON engine. Παράγεις ${mealSlots.length} γεύματα/μέρα. Αν λείπει meal_4 ή meal_2 > 300kcal = σφάλμα.
+      : `Είσαι JSON Generator. ΠΡΕΠΕΙ να επιστρέψεις αντικείμενο με ${mealSlots.length} γεύματα ανά ημέρα.
 
-SLOTS:
+ΑΥΣΤΗΡΟΙ ΚΑΝΟΝΕΣ:
+- Ονόμασε τα γεύματα meal_1, meal_2, meal_3, meal_4. ΟΧΙ breakfast/snack/lunch/dinner.
+- Το meal_2 ΠΡΕΠΕΙ να είναι πάντα κάτω από 250kcal (π.χ. 1 φρούτο ή 1 γιαούρτι). Είναι ΣΝΑΚ, όχι κύριο γεύμα.
+- Το meal_4 είναι ΥΠΟΧΡΕΩΤΙΚΟ. Αν λείπει, το JSON είναι άχρηστο.
+- ΜΗΝ βάζεις 950 θερμίδες στο meal_2. Είναι σνακ, όχι μεσημεριανό!
+- daily_total = meal_1 + meal_2 + meal_3 + meal_4.
+
+ΣΤΟΧΟΙ ΘΕΡΜΙΔΩΝ:
 ${slotRules}
 
-ΚΑΝΟΝΕΣ:
-- "desc": μέγιστο 10 λέξεις, με γραμμάρια.
-- daily_total = meal_1 + meal_2 + meal_3 + meal_4. Αν λείπει meal_4, τα μαθηματικά αποτυγχάνουν.
-- Χωρίς leftovers. Μοναδικά κάθε μέρα. Σεβάσου input data. Ελληνικά ονόματα.
-- Το ΤΕΛΕΥΤΑΙΟ key κάθε μέρας ΠΡΕΠΕΙ να είναι "daily_total".
+Κάθε slot: "desc" (μέγιστο 10 λέξεις, με γραμμάρια), "kcal", "pro".
+Χωρίς leftovers. Μοναδικά κάθε μέρα. Σεβάσου input data. Ελληνικά ονόματα.
 
 ΠΑΡΑΔΕΙΓΜΑ: {${exampleMeals},"daily_total":${targetCalories}}`;
 
