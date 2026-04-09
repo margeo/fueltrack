@@ -628,11 +628,19 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           schemaDays: DAY_KEYS
         };
 
-        // Call 2: 7 snacks (only if user wants snacks)
+        // Call 2: snacks (only if user wants snacks)
         let snacksReq = null;
+        const snackSlotNames = [];
         if (nSnacks > 0) {
+          for (let i = 1; i <= nSnacks; i++) snackSlotNames.push(`snack_${i}`);
+          const snackSlotRules = snackSlotNames.map((s, i) => `- "${s}": ${i === 0 ? "Morning" : "Afternoon"} Snack (~${snackCal}kcal)`).join("\n");
           const snacksPrompt = `You are a JSON Snack Generator. Return a JSON object with 7 keys (monday-sunday).
-Each day has one snack: "desc" (brief, with grams), "kcal" (integer).
+Each day has EXACTLY ${nSnacks} snack slot(s): ${snackSlotNames.join(", ")}.
+Each slot: "desc" (brief, with grams), "kcal" (integer).
+
+SNACK TARGETS:
+${snackSlotRules}
+
 Each snack MUST be ~${snackCal}kcal. Light food only: yogurt, fruit, nuts, rice cakes, smoothie.
 NO meat, pasta, rice, heavy meals. Respect user allergies and preferences.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
@@ -642,7 +650,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             messages: [{ role: "user", content: JSON.stringify({ preferences: inputData.preferences, nutrition: { snack_calories: snackCal }, language: inputData.language }) }],
             ...(selectedModel && { model: selectedModel }),
             jsonMode: true,
-            useSimpleJson: true
+            mealSlots: snackSlotNames,
+            snackSlots: [],
+            schemaDays: DAY_KEYS
           };
         }
 
@@ -669,36 +679,31 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           try {
             const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice;
             let result = raw?.weekly_plan || raw;
-            // Unwrap if model added wrapper key (e.g. {"snacks": {"monday": {...}}})
-            if (result && !result.monday) {
-              const keys = Object.keys(result);
-              if (keys.length === 1 && typeof result[keys[0]] === "object") {
-                result = result[keys[0]];
-              }
-            }
-            // Handle if model returned array instead of object
-            if (Array.isArray(result)) {
-              const obj = {};
-              result.forEach((item, i) => { if (DAY_KEYS[i]) obj[DAY_KEYS[i]] = item; });
-              result = obj;
-            }
             snacks = result?.monday ? result : null;
             console.log("SNACK_RESULT:", snacks?.monday);
           } catch (e) { console.warn("SNACK_PARSE_ERROR:", e); }
         }
 
-        // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
+        // Merge: meals + snacks → unified day structure
         const merged = {};
         DAY_KEYS.forEach(day => {
           const dm = meals?.[day];
           if (!dm) return;
           const sn = snacks?.[day];
+          let snackTotal = 0;
+          const snackEntries = {};
+          if (sn) {
+            if (sn.snack_1) { snackEntries.morning_snack = sn.snack_1; snackTotal += sn.snack_1.kcal || 0; }
+            if (sn.snack_2) { snackEntries.afternoon_snack = sn.snack_2; snackTotal += sn.snack_2.kcal || 0; }
+            // Fallback: if snack response is flat {desc, kcal} without snack_1/snack_2
+            if (!sn.snack_1 && sn.desc) { snackEntries.morning_snack = sn; snackTotal += sn.kcal || 0; }
+          }
           merged[day] = {
             breakfast: dm.meal_1,
-            ...(sn ? { morning_snack: sn } : {}),
+            ...snackEntries,
             lunch: dm.meal_2,
             dinner: dm.meal_3,
-            daily_total: (dm.meal_1?.kcal || 0) + (sn?.kcal || 0) + (dm.meal_2?.kcal || 0) + (dm.meal_3?.kcal || 0)
+            daily_total: (dm.meal_1?.kcal || 0) + snackTotal + (dm.meal_2?.kcal || 0) + (dm.meal_3?.kcal || 0)
           };
         });
 
