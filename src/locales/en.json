@@ -466,6 +466,12 @@
       "quick": "Quick (15min)",
       "normal": "Normal (30min)",
       "elaborate": "Elaborate (60min+)"
+    },
+    "mealsPerDay": "Meals / day",
+    "meals": {
+      "3": "3 meals",
+      "5": "3 + snacks",
+      "2": "2 meals"
     }
   },
   "exercisePrefs": {

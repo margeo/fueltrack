@@ -45,7 +45,7 @@ export default function AiCoach({
   remainingCalories,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
-  foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
+  foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealStructure,
   fitnessLevel, workoutLocation, equipment, limitations,
   workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
 }) {
@@ -236,8 +236,15 @@ export default function AiCoach({
     const fitGoalStr = fitnessGoals?.length ? fitnessGoals.map(g => goalLabelsMap[g] || g).join(", ") : "";
     const exCatStr = exerciseCategories?.length ? exerciseCategories.join(", ") : "";
 
-    const foodPrefsLine = (foodCatStr || favFoodsList || allergyStr || cookStr || timeStr)
-      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}:${foodCatStr ? `\n${isEn?"Prefers":"Προτιμάει"}: ${foodCatStr}` : ""}${favFoodsList ? `\n${isEn?"Favorites":"Αγαπημένα"}: ${favFoodsList}` : ""}${cookStr ? `\n${isEn?"Cooking skill":"Μαγειρική ικανότητα"}: ${cookStr}` : ""}${timeStr ? `\n${isEn?"Cooking time":"Χρόνος μαγειρέματος"}: ${timeStr}` : ""}${allergyStr ? `\n${isEn?"⚠️ ALLERGIES — NEVER use":"⚠️ ΑΛΛΕΡΓΙΕΣ — ΠΟΤΕ μη χρησιμοποιήσεις"}: ${allergyStr}` : ""}${(foodCatStr || favFoodsList) ? `\n${isEn?"Build the plan mainly around the user's preferences and favorites above.":"Χτίσε το πρόγραμμα κυρίως γύρω από τις προτιμήσεις και τα αγαπημένα του χρήστη."}` : ""}`
+    const mealStructureLabels = {
+      "3": isEn ? "3 meals/day (breakfast, lunch, dinner)" : "3 γεύματα/μέρα (πρωινό, μεσημεριανό, βραδινό)",
+      "5": isEn ? "5 meals/day (breakfast, snack, lunch, snack, dinner)" : "5 γεύματα/μέρα (πρωινό, σνακ, μεσημεριανό, σνακ, βραδινό)",
+      "2": isEn ? "2 meals/day (e.g. fasting)" : "2 γεύματα/μέρα (π.χ. fasting)"
+    };
+    const mealStr = mealStructure ? (mealStructureLabels[mealStructure] || "") : "";
+
+    const foodPrefsLine = (foodCatStr || favFoodsList || allergyStr || cookStr || timeStr || mealStr)
+      ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}:${foodCatStr ? `\n${isEn?"Prefers":"Προτιμάει"}: ${foodCatStr}` : ""}${favFoodsList ? `\n${isEn?"Favorites":"Αγαπημένα"}: ${favFoodsList}` : ""}${mealStr ? `\n${isEn?"Meals per day":"Γεύματα/μέρα"}: ${mealStr}` : ""}${cookStr ? `\n${isEn?"Cooking skill":"Μαγειρική ικανότητα"}: ${cookStr}` : ""}${timeStr ? `\n${isEn?"Cooking time":"Χρόνος μαγειρέματος"}: ${timeStr}` : ""}${allergyStr ? `\n${isEn?"⚠️ ALLERGIES — NEVER use":"⚠️ ΑΛΛΕΡΓΙΕΣ — ΠΟΤΕ μη χρησιμοποιήσεις"}: ${allergyStr}` : ""}${(foodCatStr || favFoodsList) ? `\n${isEn?"Build the plan mainly around the user's preferences and favorites above.":"Χτίσε το πρόγραμμα κυρίως γύρω από τις προτιμήσεις και τα αγαπημένα του χρήστη."}` : ""}`
       : "";
 
     const exercisePrefsLine = (fitStr || locStr || equipStr || limStr || freqStr || durStr || fitGoalStr || exCatStr)
@@ -317,16 +324,20 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
-${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}
-${currentMode.fastingHours ? "" : (isEn ? "Distribution" : "Κατανομή") + `: ${dayLabels.breakfast} ~20%, ${dayLabels.snack}1 ~10%, ${dayLabels.lunch} ~35%, ${dayLabels.snack}2 ~10%, ${dayLabels.dinner} ~25%.`}${simpleRules}${ingredientRules}
+${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
-📅 ${dayLabels.mon}
+${mealStructure === "3" ? `📅 ${dayLabels.mon}
+08:00 🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+13:30 🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+20:00 🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)` : mealStructure === "2" ? `📅 ${dayLabels.mon}
+13:00 🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+19:00 🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)` : `📅 ${dayLabels.mon}
 07:30 🌅 ${dayLabels.breakfast} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 11:00 🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)
 13:30 🌞 ${dayLabels.lunch} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
 16:30 🍎 ${dayLabels.snack} — [${isEn ? "snack" : "σνακ"}] ([X]kcal)
-20:00 🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)
+20:00 🌙 ${dayLabels.dinner} — [${isEn ? "meal + portion" : "γεύμα + ποσότητα"}] ([X]kcal)`}
 ${dayLabels.total}: [X]kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})

@@ -65,6 +65,7 @@ export default function App() {
   const [cookingLevel, setCookingLevel] = useState(() => loadValue("ft_cookingLevel", ""));
   const [cookingTime, setCookingTime] = useState(() => loadValue("ft_cookingTime", ""));
   const [simpleMode, setSimpleMode] = useState(() => loadValue("ft_simple_meals", "false") === "true");
+  const [mealStructure, setMealStructure] = useState(() => loadValue("ft_mealStructure", ""));
 
   // Exercise preferences
   const [fitnessLevel, setFitnessLevel] = useState(() => loadValue("ft_fitnessLevel", ""));
@@ -165,6 +166,7 @@ export default function App() {
   useEffect(() => saveValue("ft_cookingLevel", cookingLevel), [cookingLevel]);
   useEffect(() => saveValue("ft_cookingTime", cookingTime), [cookingTime]);
   useEffect(() => saveValue("ft_simple_meals", simpleMode ? "true" : "false"), [simpleMode]);
+  useEffect(() => saveValue("ft_mealStructure", mealStructure), [mealStructure]);
   useEffect(() => saveValue("ft_fitnessLevel", fitnessLevel), [fitnessLevel]);
   useEffect(() => saveValue("ft_workoutLocation", workoutLocation), [workoutLocation]);
   useEffect(() => saveJSON("ft_equipment", equipment), [equipment]);
@@ -476,7 +478,7 @@ export default function App() {
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); },
     foodCategories, setFoodCategories, allergies, setAllergies,
-    cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
+    cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode, mealStructure, setMealStructure,
     fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
     equipment, setEquipment, limitations, setLimitations,
     workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,

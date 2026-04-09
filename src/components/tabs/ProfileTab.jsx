@@ -8,6 +8,7 @@ import { EXERCISE_LIBRARY } from "../../data/constants";
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
 const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
 const COOKING_TIMES = ["quick", "normal", "elaborate"];
+const MEAL_STRUCTURES = ["3", "5", "2"];
 const FOOD_CATEGORIES = [
   { key: "proteins", emoji: "🥩", items: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"] },
   { key: "veggies", emoji: "🥗", items: ["salads", "cooked_veggies", "soups"] },
@@ -111,7 +112,7 @@ export default function ProfileTab({
   dailyDeficit, proteinTarget, profileComplete,
   userEmail, userName, onShowAuth, onShowRegister,
   foodCategories, setFoodCategories, allergies, setAllergies,
-  cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
+  cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode, mealStructure, setMealStructure,
   fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
   equipment, setEquipment, limitations, setLimitations,
   workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
@@ -477,6 +478,18 @@ export default function ProfileTab({
                           style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
                             background: cookingTime === ct ? "var(--color-accent)" : "var(--bg-soft)", color: cookingTime === ct ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {t("foodPrefs.time." + ct)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.mealsPerDay")}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {MEAL_STRUCTURES.map((ms) => (
+                        <button key={ms} type="button" onClick={() => setMealStructure(mealStructure === ms ? "" : ms)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: mealStructure === ms ? "var(--color-accent)" : "var(--bg-soft)", color: mealStructure === ms ? "var(--bg-card)" : "var(--text-primary)" }}>
+                          {t("foodPrefs.meals." + ms)}
                         </button>
                       ))}
                     </div>

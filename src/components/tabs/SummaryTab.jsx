@@ -77,7 +77,7 @@ export default function SummaryTab({
   favoriteFoods,
   favoriteExercises, age, weight, height, gender,
   savedPlans, onSavePlan, onDeletePlan, session, userName, onShowAuth, onShowRegister,
-  foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
+  foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealStructure,
   fitnessLevel, workoutLocation, equipment, limitations,
   workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
 }) {
@@ -384,7 +384,7 @@ RULES:
             age={age} weight={weight} height={height} gender={gender}
             savedPlans={savedPlans} onSavePlan={onSavePlan}
             session={session} userName={userName} onShowAuth={onShowAuth} onShowRegister={onShowRegister}
-            foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime} simpleMode={simpleMode}
+            foodCategories={foodCategories} allergies={allergies} cookingLevel={cookingLevel} cookingTime={cookingTime} simpleMode={simpleMode} mealStructure={mealStructure}
             fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
             workoutFrequency={workoutFrequency} sessionDuration={sessionDuration} fitnessGoals={fitnessGoals} exerciseCategories={exerciseCategories}
           />
