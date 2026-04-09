@@ -122,9 +122,8 @@ export default function AdminPanel({ onClose, adminEmail }) {
               value={localStorage.getItem("ft_ai_model") || ""}
               onChange={(e) => { localStorage.setItem("ft_ai_model", e.target.value); window.location.reload(); }}
               style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer" }}>
-              <option value="">Default (Gemini 2.5 Flash)</option>
+              <option value="">Gemini 2.5 Flash (default)</option>
               <option value="gemini">Gemini 2.5 Flash Lite</option>
-              <option value="gemini-flash">Gemini 2.5 Flash</option>
               <option value="haiku">Claude Haiku 4.5</option>
               <option value="haiku-openrouter">Claude Haiku (OpenRouter)</option>
               <option value="gemini-direct">Gemini Direct (Google API)</option>
