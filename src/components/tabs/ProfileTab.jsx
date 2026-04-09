@@ -745,7 +745,7 @@ export default function ProfileTab({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontWeight: 700, fontSize: 14 }}>{t("profile.language")}</span>
           <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto" }}>
-            <option value="el">Ελληνικά</option>
+            <option value="el">{t("profile.greek")}</option>
             <option value="en">English</option>
           </select>
         </div>

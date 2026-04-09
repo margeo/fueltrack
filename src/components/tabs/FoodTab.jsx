@@ -45,7 +45,7 @@ function FoodAddModal({ food, onAdd, onClose }) {
   const [selectedPortion, setSelectedPortion] = useState(0);
   const [portionQty, setPortionQty] = useState("1");
   const [grams, setGrams] = useState(String(food.estimatedGrams || 100));
-  const [meal, setMeal] = useState("Πρωινό");
+  const [meal, setMeal] = useState(MEALS[0]);
 
   const effectiveGrams = useMemo(() => {
     if (mode === "portion" && hasPotions) {

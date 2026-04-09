@@ -6,7 +6,7 @@ import { formatNumber, stripDiacritics } from "../../utils/helpers";
 import GoogleFitButton from "../GoogleFitButton";
 
 const CATEGORIES = [
-  { key: "Όλα", labelKey: "exercise.categories.all" },
+  { key: "all", labelKey: "exercise.categories.all" },
   { key: "Cardio", labelKey: "exercise.categories.cardio", icon: "🏃" },
   { key: "Gym", labelKey: "exercise.categories.gym", icon: "🏋️" },
   { key: "Training", labelKey: "exercise.categories.training", icon: "🔥" },
@@ -24,13 +24,13 @@ export default function ExerciseTab({
   recentExercises, quickAddRecentExercise
 }) {
   const { t } = useTranslation();
-  const [activeCategory, setActiveCategory] = useState("Όλα");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
 
   const filteredExercises = useMemo(() => {
-    let list = activeCategory === "Όλα"
+    let list = activeCategory === "all"
       ? EXERCISE_LIBRARY
       : EXERCISE_LIBRARY.filter((e) => e.category === activeCategory);
 

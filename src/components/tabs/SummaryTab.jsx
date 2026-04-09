@@ -159,11 +159,11 @@ MANDATORY format — ALWAYS emojis, NEVER asterisks:
         })
       });
       const data = await res.json();
-      const content = data.advice || "Σφάλμα δημιουργίας λίστας";
+      const content = data.advice || t("summary.groceryError");
       setGroceryList(content);
       if (data.advice) onSavePlan?.({ type: "grocery", content, date: new Date().toLocaleDateString("el-GR") });
     } catch (e) {
-      setGroceryList("Σφάλμα: " + e.message);
+      setGroceryList(t("summary.groceryError") + ": " + e.message);
     } finally {
       setGroceryLoading(false);
     }
