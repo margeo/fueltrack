@@ -51,7 +51,12 @@ export async function handler(event) {
       if (!txt) throw new Error("Empty response from API");
       const u = d.usage || {};
       const modelNames = { "gemini": "Gemini 2.5 Flash Lite", "gemini-flash": "Gemini 2.5 Flash", "haiku-openrouter": "Haiku 4.5 (OR)" };
-      responseData = { advice: txt, usage: { inputTokens: u.prompt_tokens || 0, outputTokens: u.completion_tokens || 0, costUsd: 0, model: modelNames[aiModel] || aiModel } };
+      const pricing = { "gemini": [0.075, 0.30], "gemini-flash": [0.15, 0.60], "haiku-openrouter": [1, 5] };
+      const [inPrice, outPrice] = pricing[aiModel] || [0, 0];
+      const inTok = u.prompt_tokens || 0;
+      const outTok = u.completion_tokens || 0;
+      const orCost = (inTok * inPrice / 1000000) + (outTok * outPrice / 1000000);
+      responseData = { advice: txt, usage: { inputTokens: inTok, outputTokens: outTok, costUsd: Math.round(orCost * 10000) / 10000, model: modelNames[aiModel] || aiModel } };
 
     // Google AI direct (gemini-direct)
     } else if (aiModel === "gemini-direct") {
@@ -73,7 +78,10 @@ export async function handler(event) {
       const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!txt) throw new Error("Empty response from API");
       const u = d.usageMetadata || {};
-      responseData = { advice: txt, usage: { inputTokens: u.promptTokenCount || 0, outputTokens: u.candidatesTokenCount || 0, costUsd: 0, model: "gemini-direct" } };
+      const gdIn = u.promptTokenCount || 0;
+      const gdOut = u.candidatesTokenCount || 0;
+      const gdCost = (gdIn * 0.075 / 1000000) + (gdOut * 0.30 / 1000000);
+      responseData = { advice: txt, usage: { inputTokens: gdIn, outputTokens: gdOut, costUsd: Math.round(gdCost * 10000) / 10000, model: "Gemini 2.0 Flash Lite" } };
 
     // Anthropic direct (default: haiku)
     } else {
