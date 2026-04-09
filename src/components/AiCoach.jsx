@@ -321,9 +321,18 @@ INGREDIENT RULES (do not mention these in your answer):
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan. Every meal must be a fresh meal — NEVER suggest leftovers from a previous day." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Κάθε γεύμα πρέπει να είναι φρέσκο — ΠΟΤΕ μην προτείνεις υπολείμματα (leftovers) από προηγούμενη μέρα."}
 ⚠️ ${isEn ? `CALORIE TARGET: Each day must total ${targetCalories}kcal (±100). Do NOT retry or correct yourself — get it right the first time by planning portions carefully.` : `ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: Κάθε μέρα πρέπει να έχει σύνολο ${targetCalories}kcal (±100). ΜΗΝ ξαναδοκιμάσεις ή διορθώσεις τον εαυτό σου — κάνε το σωστά από την πρώτη φορά σχεδιάζοντας σωστά τις μερίδες.`}
-${mealsPerDay ? (isEn
-  ? `EACH day must have EXACTLY ${mealsPerDay} meals${snacksPerDay && snacksPerDay !== "0" ? ` and ${snacksPerDay} snack${snacksPerDay > 1 ? "s" : ""}` : " and NO snacks"}. Follow the format below strictly — do NOT skip or add meals.`
-  : `ΚΑΘΕ μέρα πρέπει να έχει ΑΚΡΙΒΩΣ ${mealsPerDay} γεύματα${snacksPerDay && snacksPerDay !== "0" ? ` και ${snacksPerDay} σνακ` : " και ΚΑΝΕΝΑ σνακ"}. Ακολούθησε το παρακάτω format αυστηρά — ΜΗΝ παραλείψεις ή προσθέσεις γεύματα.`) : ""}${simpleRules}${ingredientRules}
+${mealsPerDay ? (() => {
+  const mealNames = isEn
+    ? [`🌅 ${dayLabels.breakfast}`, `🌞 ${dayLabels.lunch}`, `🌙 ${dayLabels.dinner}`].slice(0, Number(mealsPerDay))
+    : [`🌅 ${dayLabels.breakfast}`, `🌞 ${dayLabels.lunch}`, `🌙 ${dayLabels.dinner}`].slice(0, Number(mealsPerDay));
+  const snackNames = Number(snacksPerDay) > 0
+    ? Array(Number(snacksPerDay)).fill(`🍎 ${dayLabels.snack}`)
+    : [];
+  const allNames = [...mealNames, ...snackNames].join(", ");
+  return isEn
+    ? `Each day has EXACTLY: ${allNames}. NOTHING else — do NOT add or remove meals.`
+    : `Κάθε μέρα έχει ΑΚΡΙΒΩΣ: ${allNames}. ΤΙΠΟΤΑ άλλο — ΜΗΝ προσθέσεις ούτε αφαιρέσεις γεύματα.`;
+})() : ""}${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
