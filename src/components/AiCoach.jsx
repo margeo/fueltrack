@@ -288,7 +288,7 @@ export default function AiCoach({
       const isSnack = m.role.includes("Snack");
       return `- "${m.slot}": ${isSnack ? "Light_Snack" : m.role} (~${m.target_calories}kcal)${isSnack ? " → ONLY yogurt, fruit, nuts, rice cakes. NO meat/pasta/rice." : ""}`;
     }).join("\n");
-    const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories},"pro":0}`).join(",");
+    const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories}}`).join(",");
 
     const langNote = isEn ? "All desc fields in English." : "All desc fields MUST be in Greek.";
     const systemPrompt = `You are a JSON Diet Generator. You MUST return a JSON object with exactly 7 days.
@@ -299,7 +299,7 @@ CONSTRAINTS:
 2. meal_4: MANDATORY. Never omit meal_4.
 3. Math: daily_total = ${mealSlots.join(" + ")}.
 4. ${langNote}
-5. Each slot: "desc" (brief, with grams), "kcal" (integer), "pro" (integer).
+5. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
 6. No leftovers. Unique meals each day. Respect input data.
 
 Current Target: ${targetCalories}kcal total per day.
@@ -601,14 +601,61 @@ ${askChange}`;
       let reqBody;
       if (isMealPlan) {
         const { systemPrompt, userMessage, mealSlots, snackSlots } = buildMealPlanJSON();
-        reqBody = {
+        const baseReq = {
           systemPrompt,
-          messages: [{ role: "user", content: userMessage }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
           mealSlots,
           snackSlots
         };
+
+        // Split into 2 calls: Mon-Thu + Fri-Sun
+        const inputData = JSON.parse(userMessage);
+        const batch1Input = { ...inputData, days: "monday,tuesday,wednesday,thursday" };
+        const batch2Input = { ...inputData, days: "friday,saturday,sunday" };
+
+        const batch1Days = ["monday","tuesday","wednesday","thursday"];
+        const batch2Days = ["friday","saturday","sunday"];
+
+        const sp1 = systemPrompt.replace("exactly 7 days", `exactly 4 days: ${batch1Days.join(", ")}`);
+        const sp2 = systemPrompt.replace("exactly 7 days", `exactly 3 days: ${batch2Days.join(", ")}`);
+
+        const [res1, res2] = await Promise.all([
+          fetch("/.netlify/functions/ai-coach", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...baseReq, systemPrompt: sp1, messages: [{ role: "user", content: JSON.stringify(batch1Input) }], mealSlots, snackSlots, schemaDays: batch1Days })
+          }),
+          fetch("/.netlify/functions/ai-coach", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...baseReq, systemPrompt: sp2, messages: [{ role: "user", content: JSON.stringify(batch2Input) }], mealSlots, snackSlots, schemaDays: batch2Days })
+          })
+        ]);
+
+        if (!res1.ok || !res2.ok) throw new Error(`Connection error`);
+        const [d1, d2] = await Promise.all([res1.json(), res2.json()]);
+        if (d1.error) throw new Error(d1.error);
+        if (d2.error) throw new Error(d2.error);
+
+        // Merge results
+        let p1 = null, p2 = null;
+        try { const r1 = typeof d1.advice === "string" ? JSON.parse(d1.advice) : d1.advice; p1 = r1?.weekly_plan || r1; } catch { /* */ }
+        try { const r2 = typeof d2.advice === "string" ? JSON.parse(d2.advice) : d2.advice; p2 = r2?.weekly_plan || r2; } catch { /* */ }
+
+        const merged = { ...(p1 || {}), ...(p2 || {}) };
+        const hasContent = merged.monday && merged.friday;
+
+        if (hasContent) {
+          const parsed = { weekly_plan: merged };
+          const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
+          const textVersion = renderMealPlanText(parsed, i18n.language);
+          onSavePlan?.({ type: "meal", content: textVersion, date: dateStr });
+          const totalIn = (d1.usage?.inputTokens || 0) + (d2.usage?.inputTokens || 0);
+          const totalOut = (d1.usage?.outputTokens || 0) + (d2.usage?.outputTokens || 0);
+          const totalCost = (d1.usage?.costUsd || 0) + (d2.usage?.costUsd || 0);
+          setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: d1.usage?.model || "" } }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: d1.advice + "\n" + d2.advice, elapsed, usage: d1.usage }]);
+        }
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),

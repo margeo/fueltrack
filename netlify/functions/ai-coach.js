@@ -46,10 +46,9 @@ export async function handler(event) {
           type: "object",
           properties: {
             desc: { type: "string" },
-            kcal: isSnack ? { type: "integer", maximum: 300 } : { type: "integer" },
-            pro: { type: "integer" }
+            kcal: isSnack ? { type: "integer", maximum: 300 } : { type: "integer" }
           },
-          required: ["desc", "kcal", "pro"],
+          required: ["desc", "kcal"],
           additionalProperties: false
         });
         const daySchema = {
@@ -69,9 +68,9 @@ export async function handler(event) {
             schema: {
               type: "object",
               properties: Object.fromEntries(
-                ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].map(day => [day, daySchema])
+                (body.schemaDays || ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]).map(day => [day, daySchema])
               ),
-              required: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
+              required: (body.schemaDays || ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]),
               additionalProperties: false
             }
           }
