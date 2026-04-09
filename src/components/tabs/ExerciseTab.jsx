@@ -96,7 +96,7 @@ export default function ExerciseTab({
           <h2 style={{ margin: 0 }}>{t("exercise.addTitle")}</h2>
           <div style={{ display: "flex", gap: 6 }}>
             <button className="btn btn-dark" type="button"
-              style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center", opacity: 0.5 }}
+              style={{ fontSize: 11, padding: "8px 6px", textAlign: "center", opacity: 0.5 }}
               onClick={() => alert(t("exercise.appleHealthSoon"))}>
               🍎 Health
             </button>
