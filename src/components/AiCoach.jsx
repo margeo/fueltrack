@@ -330,7 +330,7 @@ ${Number(snacksPerDay) >= 2 ? `🍎 ${dayLabels.snack} — [${isEn ? "snack" : "
 ${dayLabels.total}: ${targetCalories}kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
-⚠️ ${isEn ? `IMPORTANT: The total for EACH day must be exactly ${targetCalories}kcal (±50). Add up the calories of all meals before writing the total. If the sum is not ${targetCalories}±50, adjust portions until it is.` : `ΣΗΜΑΝΤΙΚΟ: Το σύνολο ΚΑΘΕ μέρας πρέπει να είναι ακριβώς ${targetCalories}kcal (±50). Πρόσθεσε τις θερμίδες όλων των γευμάτων πριν γράψεις το σύνολο. Αν δεν βγαίνει ${targetCalories}±50, προσάρμοσε τις μερίδες μέχρι να βγει.`}
+⚠️ ${isEn ? `IMPORTANT: The total for EACH day must be exactly ${targetCalories}kcal (±20). Add up the calories of all meals before writing the total. If the sum is not ${targetCalories}±20, adjust portions until it is.` : `ΣΗΜΑΝΤΙΚΟ: Το σύνολο ΚΑΘΕ μέρας πρέπει να είναι ακριβώς ${targetCalories}kcal (±20). Πρόσθεσε τις θερμίδες όλων των γευμάτων πριν γράψεις το σύνολο. Αν δεν βγαίνει ${targetCalories}±20, προσάρμοσε τις μερίδες μέχρι να βγει.`}
 ${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
 ${disclaimer}
 ${askChange}`;
