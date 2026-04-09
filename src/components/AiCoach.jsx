@@ -40,15 +40,16 @@ function EatNowCards({ text }) {
 
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
-const MEAL_EMOJIS = { breakfast: "🌅", morning_snack: "🍎", afternoon_snack: "🍎", lunch: "🌞", dinner: "🌙" };
-const MEAL_LABELS = {
-  el: { breakfast: "Πρωινό", morning_snack: "Σνακ", afternoon_snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό" },
-  en: { breakfast: "Breakfast", morning_snack: "Snack", afternoon_snack: "Snack", lunch: "Lunch", dinner: "Dinner" }
+const SLOT_ORDER = ["meal_1", "meal_2", "meal_3", "meal_4", "meal_5"];
+const MEAL_METADATA = {
+  meal_1: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
+  meal_2: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
+  meal_3: { label: { el: "Μεσημεριανό", en: "Lunch" }, emoji: "🌞" },
+  meal_4: { label: { el: "Βραδινό", en: "Dinner" }, emoji: "🌙" },
+  meal_5: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" }
 };
-const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"];
 
 function renderMealPlanText(data, lang) {
-  const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
   const plan = data?.weekly_plan || data;
   if (!plan || typeof plan !== "object") return "";
@@ -57,15 +58,15 @@ function renderMealPlanText(data, lang) {
     if (!day) return "";
     const meals = SLOT_ORDER.filter(s => day[s]).map(s => {
       const m = day[s];
-      return `${MEAL_EMOJIS[s] || "🍽️"} ${labels[s] || s} — ${m.description} (${m.calories}kcal)`;
+      const meta = MEAL_METADATA[s] || { label: { el: s, en: s }, emoji: "🍽️" };
+      return `${meta.emoji} ${meta.label[lang] || s} — ${m.desc || m.description} (${m.kcal || m.calories}kcal)`;
     }).join("\n");
-    const total = day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.calories || 0), 0);
+    const total = day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0);
     return `📅 ${days[di]}\n${meals}\n${lang === "en" ? "Total" : "Σύνολο"}: ${total}kcal\n─────────────────`;
   }).filter(Boolean).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
 }
 
 function MealPlanView({ data, lang }) {
-  const labels = MEAL_LABELS[lang] || MEAL_LABELS.el;
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
   const plan = data?.weekly_plan || data;
   if (!plan || typeof plan !== "object") return null;
@@ -80,14 +81,15 @@ function MealPlanView({ data, lang }) {
             {SLOT_ORDER.map(s => {
               const m = day[s];
               if (!m) return null;
+              const meta = MEAL_METADATA[s] || { label: { el: s, en: s }, emoji: "🍽️" };
               return (
                 <div key={s} style={{ fontSize: 13, lineHeight: 1.7 }}>
-                  {MEAL_EMOJIS[s] || "🍽️"} <strong>{labels[s] || s}</strong> — {m.description} ({m.calories}kcal)
+                  {meta.emoji} <strong>{meta.label[lang] || s}</strong> — {m.desc || m.description} ({m.kcal || m.calories}kcal)
                 </div>
               );
             })}
             <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>
-              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.calories || 0), 0)}kcal
+              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0)}kcal
             </div>
             {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
           </div>
@@ -242,14 +244,14 @@ export default function AiCoach({
     const lunchCal = Math.round(remainingForMeals * 0.40);
     const dinnerCal = remainingForMeals - breakfastCal - lunchCal;
 
-    const mealStructure = [
-      { slot: "breakfast", target_calories: breakfastCal },
-      ...(nSnacks >= 1 ? [{ slot: "morning_snack", target_calories: snackCal }] : []),
-      { slot: "lunch", target_calories: lunchCal },
-      ...(nSnacks >= 2 ? [{ slot: "afternoon_snack", target_calories: snackCal }] : []),
-      { slot: "dinner", target_calories: dinnerCal }
+    const mealDefs = [
+      { slot: "meal_1", role: "Breakfast", target_calories: breakfastCal },
+      ...(nSnacks >= 1 ? [{ slot: "meal_2", role: "Morning Snack (~200-300kcal, light: yogurt/fruit/nuts)", target_calories: snackCal }] : []),
+      { slot: nSnacks >= 1 ? "meal_3" : "meal_2", role: "Lunch", target_calories: lunchCal },
+      ...(nSnacks >= 2 ? [{ slot: "meal_4", role: "Afternoon Snack (~200-300kcal, light: fruit/nuts)", target_calories: snackCal }] : []),
+      { slot: nSnacks >= 2 ? "meal_5" : nSnacks >= 1 ? "meal_4" : "meal_3", role: "Dinner", target_calories: dinnerCal }
     ];
-    const mealSlots = mealStructure.map(m => m.slot);
+    const mealSlots = mealDefs.map(m => m.slot);
 
     const foodItemLabels = {
       chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
@@ -267,7 +269,7 @@ export default function AiCoach({
       user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height, bmi },
       goal: goalType,
       nutrition: { calories_target: targetCalories, protein_target_g: proteinTarget, diet_type: currentMode.label, diet_rules: currentMode.aiRule },
-      meal_structure: mealStructure,
+      meal_structure: mealDefs,
       preferences: {
         preferred_foods: (foodCategories || []).map(f => foodItemLabels[f] || f),
         favorites: favFoodsList,
@@ -279,37 +281,33 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    const slotList = mealStructure.map(m => `"${m.slot}": ~${m.target_calories}kcal`).join(", ");
-    const exampleMeals = mealStructure.map(m => {
-      if (m.slot === "breakfast") return `"breakfast":{"description":"${isEn ? "Eggs (3), toast (2 slices)" : "Αυγά (3), τοστ (2 φέτες)"}","calories":${m.target_calories},"protein":25}`;
-      if (m.slot === "morning_snack") return `"morning_snack":{"description":"${isEn ? "Yogurt (150g), almonds (20g)" : "Γιαούρτι (150γρ), αμύγδαλα (20γρ)"}","calories":${m.target_calories},"protein":10}`;
-      if (m.slot === "afternoon_snack") return `"afternoon_snack":{"description":"${isEn ? "Apple, walnuts (15g)" : "Μήλο, καρύδια (15γρ)"}","calories":${m.target_calories},"protein":5}`;
-      if (m.slot === "lunch") return `"lunch":{"description":"${isEn ? "Chicken (200g), rice (150g), salad" : "Κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα"}","calories":${m.target_calories},"protein":45}`;
-      return `"dinner":{"description":"${isEn ? "Salmon (180g), vegetables (250g)" : "Σολομός (180γρ), λαχανικά (250γρ)"}","calories":${m.target_calories},"protein":38}`;
-    }).join(",");
+    const slotRules = mealDefs.map(m => `- "${m.slot}": ${m.role} (~${m.target_calories}kcal)`).join("\n");
+    const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories},"pro":0}`).join(",");
 
     const systemPrompt = isEn
-      ? `You are a diet JSON generator. Output ONLY a valid JSON object with EXACTLY ${mealSlots.length + 1} keys per day. If any key is missing, the system will crash.
+      ? `You are a JSON engine. Strictly follow the schema. Output ONLY valid JSON.
+The user requires a ${mealSlots.length}-slot structure. If you omit any slot, the calculation is invalid.
 
-REQUIRED KEYS per day: ${slotList}, "daily_total"
-${mealSlots.includes("morning_snack") ? `⚠️ "morning_snack" is MANDATORY — NEVER omit it. Do NOT merge it into lunch or breakfast.` : ""}
-${mealSlots.includes("afternoon_snack") ? `⚠️ "afternoon_snack" is MANDATORY — NEVER omit it.` : ""}
-daily_total MUST equal the sum of ALL ${mealSlots.length} meals. If you skip a meal, the math will be wrong and rejected.
+STRUCTURE RULES:
+${slotRules}
+- "daily_total": sum of ALL ${mealSlots.length} slots
 
-Each meal: description (brief, with grams), calories, protein.
+Each slot: "desc" (brief, with grams), "kcal", "pro" (protein grams).
 No leftovers. Unique meals each day. Respect input data. Food names in English.
+CRITICAL: ALL ${mealSlots.length} slots MUST be present. daily_total must be sum of all slots.
 
 EXAMPLE (monday):
 {${exampleMeals},"daily_total":${targetCalories}}`
-      : `Είσαι JSON generator διατροφής. Output ΜΟΝΟ valid JSON object με ΑΚΡΙΒΩΣ ${mealSlots.length + 1} keys ανά μέρα. Αν λείπει key, το σύστημα θα κρασάρει.
+      : `Είσαι JSON engine. Ακολούθησε αυστηρά το schema. Output ΜΟΝΟ valid JSON.
+Ο χρήστης απαιτεί δομή ${mealSlots.length} slots. Αν παραλείψεις slot, ο υπολογισμός είναι άκυρος.
 
-ΥΠΟΧΡΕΩΤΙΚΑ KEYS ανά μέρα: ${slotList}, "daily_total"
-${mealSlots.includes("morning_snack") ? `⚠️ "morning_snack" είναι ΥΠΟΧΡΕΩΤΙΚΟ — ΠΟΤΕ μην το παραλείψεις. ΜΗΝ το συγχωνεύσεις με lunch ή breakfast.` : ""}
-${mealSlots.includes("afternoon_snack") ? `⚠️ "afternoon_snack" είναι ΥΠΟΧΡΕΩΤΙΚΟ — ΠΟΤΕ μην το παραλείψεις.` : ""}
-daily_total ΠΡΕΠΕΙ να ισούται με το άθροισμα ΚΑΙ των ${mealSlots.length} γευμάτων. Αν παραλείψεις γεύμα, τα μαθηματικά θα βγουν λάθος.
+ΔΟΜΗ:
+${slotRules}
+- "daily_total": άθροισμα ΟΛΩΝ των ${mealSlots.length} slots
 
-Κάθε γεύμα: description (σύντομο, με γραμμάρια), calories, protein.
+Κάθε slot: "desc" (σύντομο, με γραμμάρια), "kcal", "pro" (γραμμάρια πρωτεΐνης).
 Χωρίς leftovers. Μοναδικά γεύματα κάθε μέρα. Σεβάσου τα input data. Ονόματα στα Ελληνικά.
+ΚΡΙΣΙΜΟ: ΟΛΑ τα ${mealSlots.length} slots ΠΡΕΠΕΙ να υπάρχουν. daily_total = άθροισμα όλων.
 
 ΠΑΡΑΔΕΙΓΜΑ (monday):
 {${exampleMeals},"daily_total":${targetCalories}}`;

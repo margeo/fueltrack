@@ -39,15 +39,15 @@ export async function handler(event) {
         ]
       };
       if (jsonMode) {
-        const mealSlots = body.mealSlots || ["breakfast", "morning_snack", "lunch", "dinner"];
+        const mealSlots = body.mealSlots || ["meal_1", "meal_2", "meal_3", "meal_4"];
         const mealSchema = {
           type: "object",
           properties: {
-            description: { type: "string" },
-            calories: { type: "number" },
-            protein: { type: "number" }
+            desc: { type: "string" },
+            kcal: { type: "number" },
+            pro: { type: "number" }
           },
-          required: ["description", "calories", "protein"],
+          required: ["desc", "kcal", "pro"],
           additionalProperties: false
         };
         const daySchema = {
