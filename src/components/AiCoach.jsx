@@ -606,7 +606,8 @@ ${askChange}`;
         const nSnacks = Number(snacksPerDay) || 0;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
-        console.log("MEAL PLAN DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, targetCalories });
+        // Override calories in input for meals (exclude snack calories)
+        const mealsInput = { ...inputData, nutrition: { ...inputData.nutrition, calories_target: mealsCal, note: `This is ${mealsCal}kcal for 3 main meals only. Snacks are handled separately.` } };
 
         // Call 1: 3 main meals × 7 days
         const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
@@ -618,7 +619,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         const mealsReq = {
           systemPrompt: mealsPrompt,
-          messages: [{ role: "user", content: userMessage }],
+          messages: [{ role: "user", content: JSON.stringify(mealsInput) }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
           mealSlots: ["meal_1", "meal_2", "meal_3"],
@@ -667,6 +668,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           try { const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice; snacks = raw?.weekly_plan || raw; } catch { /* */ }
         }
 
+        console.log("MEALS:", meals?.monday);
+        console.log("SNACKS:", snacks);
         // Merge: map meal_1→breakfast, snack→morning_snack, meal_2→lunch, meal_3→dinner
         const merged = {};
         DAY_KEYS.forEach(day => {
