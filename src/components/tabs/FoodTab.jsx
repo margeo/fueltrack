@@ -402,17 +402,17 @@ export default function FoodTab({
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {favoriteFoods.map((food) => (
               <div key={`${food.source || "local"}-${food.id}`}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden" }}>
-                <div style={{ flex: 1, minWidth: 0, padding: "8px 0 8px 12px" }}>
-                  <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
-                  {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
-                  <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}</span>
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
+                <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button"
+                  style={{ padding: "4px 10px", fontSize: 12, margin: "0 0 0 8px", flexShrink: 0 }}>+</button>
+                <div style={{ flex: 1, minWidth: 0, padding: "8px 0", overflow: "hidden" }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{food.name}</div>
+                  <div className="muted" style={{ fontSize: 11 }}>{formatNumber(food.caloriesPer100g || 0)} kcal · P{formatNumber(food.proteinPer100g || 0)}</div>
                 </div>
-                <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
-                  <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
-                  <button className="btn btn-dark" onClick={() => quickAddFavorite(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
+                <div style={{ display: "flex", flexDirection: "column", flexShrink: 0, paddingRight: 8, alignItems: "center", gap: 2 }}>
+                  <button className="btn btn-light" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "2px 6px", fontSize: 10 }}>✏️</button>
                   <button onClick={() => toggleFavorite(food)} type="button" title={t("food.removeFavorite")}
-                    style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#d97706" }}>⭐</button>
+                    style={{ padding: "2px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#d97706" }}>⭐</button>
                 </div>
               </div>
             ))}
