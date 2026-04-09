@@ -203,10 +203,10 @@ export default function ExerciseTab({
                   <div style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{exercise.icon} {t("exerciseNames." + exercise.name, { defaultValue: exercise.name })}</div>
                   <div className="muted" style={{ fontSize: 11 }}>{exercise.category} · {exercise.caloriesPerMinute} {t("exercise.kcalPerMin")}</div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", flexShrink: 0, paddingRight: 8, alignItems: "center", gap: 2 }}>
-                  <button className="btn btn-light" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); }} type="button" style={{ padding: "2px 6px", fontSize: 10 }}>✏️</button>
+                <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
+                  <button className="btn btn-light" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); }} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                   <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
-                    style={{ padding: "2px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#d97706" }}>⭐</button>
+                    style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#d97706" }}>⭐</button>
                 </div>
               </div>
             ))}
