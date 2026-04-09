@@ -123,10 +123,10 @@ export default function AdminPanel({ onClose, adminEmail }) {
               onChange={(e) => { localStorage.setItem("ft_ai_model", e.target.value); window.location.reload(); }}
               style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer" }}>
               <option value="">Gemini 2.5 Flash (default)</option>
-              <option value="gemini">Gemini 2.5 Flash Lite</option>
               <option value="haiku">Claude Haiku 4.5</option>
-              <option value="haiku-openrouter">Claude Haiku (OpenRouter)</option>
+              <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter)</option>
               <option value="gemini-direct">Gemini 2.0 Flash Lite (Google API)</option>
+              <option value="gemini">Gemini 2.5 Flash Lite (OpenRouter)</option>
             </select>
           </div>
         </div>

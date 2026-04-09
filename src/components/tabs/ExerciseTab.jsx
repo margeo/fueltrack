@@ -219,7 +219,7 @@ export default function ExerciseTab({
         <div className="card">
           <h2>{t("common.recent")}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {recentExercises.slice(0, 6).map((item) => (
+            {[...recentExercises].sort((a, b) => (a.exercise.name || "").localeCompare(b.exercise.name || "")).slice(0, 6).map((item) => (
               <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
                 <button className="btn btn-dark" onClick={() => quickAddRecentExercise(item)} type="button"
                   style={{ padding: "4px 10px", fontSize: 12, margin: "0 0 0 8px", flexShrink: 0, alignSelf: "center" }}>+</button>

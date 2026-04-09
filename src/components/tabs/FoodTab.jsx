@@ -425,7 +425,7 @@ export default function FoodTab({
         <div className="card">
           <h2>{t("common.recent")}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {recentFoods.slice(0, 6).map((item) => {
+            {[...recentFoods].sort((a, b) => (a.food.name || "").localeCompare(b.food.name || "")).slice(0, 6).map((item) => {
               const cal = createFoodEntry(item.food, item.grams, item.mealType);
               return (
                 <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
