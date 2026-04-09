@@ -530,15 +530,31 @@ export default function ProfileTab({
             </div>
           ); })()}
           {/* Simple groceries */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>🛒 {t("aiCoach.simpleMode")}</span>
-            <button type="button" onClick={() => setSimpleMode(!simpleMode)}
-              style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0,
-                background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
-              <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
-                transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
-            </button>
-          </div>
+          {(() => { const isOpen = expandedPrefs.simple_groceries; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, simple_groceries: !prev.simple_groceries }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>🛒 {t("foodPrefs.simpleGroceries")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {simpleMode && <span style={{ background: "var(--color-green)", color: "white", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>ON</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+                    <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>{t("foodPrefs.simpleGroceriesDesc")}</div>
+                    <button type="button" onClick={() => setSimpleMode(!simpleMode)}
+                      style={{ width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer", padding: 2, flexShrink: 0, marginLeft: 12,
+                        background: simpleMode ? "var(--color-green)" : "var(--border-color)", transition: "background 0.2s" }}>
+                      <div style={{ width: 16, height: 16, borderRadius: 8, background: "white",
+                        transform: simpleMode ? "translateX(16px)" : "translateX(0)", transition: "transform 0.2s" }} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ); })()}
         </div>
       </div>
 

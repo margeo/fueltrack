@@ -469,7 +469,9 @@
     },
     "mealsTitle": "Γεύματα",
     "mealsPerDay": "Γεύματα / μέρα",
-    "snacksPerDay": "Σνακ / μέρα"
+    "snacksPerDay": "Σνακ / μέρα",
+    "simpleGroceries": "Λίγα Ψώνια",
+    "simpleGroceriesDesc": "Επαναλαμβάνει γεύματα μέσα στην εβδομάδα ώστε η λίστα σούπερ μάρκετ να είναι σχετικά μικρή"
   },
   "exercisePrefs": {
     "title": "Προφίλ Γυμναστικής",

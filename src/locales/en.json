@@ -469,7 +469,9 @@
     },
     "mealsTitle": "Meals",
     "mealsPerDay": "Meals / day",
-    "snacksPerDay": "Snacks / day"
+    "snacksPerDay": "Snacks / day",
+    "simpleGroceries": "Simple Groceries",
+    "simpleGroceriesDesc": "Repeats meals during the week so the grocery list stays relatively short"
   },
   "exercisePrefs": {
     "title": "Fitness Profile",
