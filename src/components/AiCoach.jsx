@@ -606,6 +606,7 @@ ${askChange}`;
         const nSnacks = Number(snacksPerDay) || 0;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
+        console.log("SNACK_DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, willCallSnacks: nSnacks > 0 });
         // Override calories in input for meals (exclude snack calories)
         const mealsInput = { ...inputData, nutrition: { ...inputData.nutrition, calories_target: mealsCal } };
 
