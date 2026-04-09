@@ -272,10 +272,8 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
 
     // GENERAL
     const generalRules = isEn ? `
-Meal rules: 🌅Breakfast=eggs/yogurt/oats/toast (never meat) 🍎Snack=fruit/nuts 🌞Lunch=main meal with protein 🌙Dinner=light.
-If a food doesn't fit ${currentMode.label}, say so immediately.` : `
-Κανόνες γευμάτων: 🌅Πρωινό=αυγά/γιαούρτι/βρώμη/τοστ (ποτέ κρέας) 🍎Σνακ=φρούτο/ξηροί καρποί 🌞Μεσημεριανό=κύριο γεύμα με πρωτεΐνη 🌙Βραδινό=ελαφρύ.
-Αν τρόφιμο δεν ταιριάζει με ${currentMode.label} πες το αμέσως.`;
+Base suggestions on the user's food profile, preferences, and ${currentMode.label} mode. If a food clearly conflicts with the mode, mention it.` : `
+Βάσισε τις προτάσεις στο διατροφικό προφίλ, τις προτιμήσεις του χρήστη και το mode ${currentMode.label}. Αν κάποιο φαγητό δεν ταιριάζει καθόλου με το mode, ανέφερέ το.`;
 
     // MEAL PLAN
     const simpleRules = simpleMode ? (isEn ? `
