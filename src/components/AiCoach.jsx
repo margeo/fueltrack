@@ -250,7 +250,7 @@ export default function AiCoach({
     const core = `${langInstruction}
 ${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
 ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
-${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
+${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
 
     // NUTRITION TARGETS: meal_plan, eatnow, general
     const nutritionTargets = `\n${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"}`;
@@ -268,12 +268,12 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel} | Mode:${currentMode.label}`;
     const fitnessContext = `${exercisePrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
 
     // MODE RULES: πάντα
-    const modeBlock = `\nMode ${isEn ? "rules" : "κανόνες"} (${currentMode.label}): ${currentMode.aiRule}`;
+    const modeBlock = `\n${isEn ? "Diet type" : "Τρόπος διατροφής"}: ${currentMode.label}\n${isEn ? "Rules" : "Κανόνες"}: ${currentMode.aiRule}`;
 
     // GENERAL
     const generalRules = isEn ? `
-Base suggestions on the user's food profile, preferences, and ${currentMode.label} mode. If a food clearly conflicts with the mode, mention it.` : `
-Βάσισε τις προτάσεις στο διατροφικό προφίλ, τις προτιμήσεις του χρήστη και το mode ${currentMode.label}. Αν κάποιο φαγητό δεν ταιριάζει καθόλου με το mode, ανέφερέ το.`;
+Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.` : `
+Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.`;
 
     // MEAL PLAN
     const simpleRules = simpleMode ? (isEn ? `
@@ -298,24 +298,18 @@ IMPORTANT — SIMPLE GROCERIES:
     const ingredientRules = isEn ? `
 INGREDIENT RULES (do not mention these in your answer):
 - Before writing the plan, pick maximum ${simpleMode ? "18" : "28"} different ingredients for the whole week. Do not exceed ${simpleMode ? "18" : "30"}.
-- Use THE SAME core ingredients every day with different combinations — DO NOT add new ingredients as you write.
 - The plan should have variety, but controlled and practical for grocery shopping.
 - DO NOT use the exact same lunch or exact same dinner every day.
-- DO NOT spend variety on too many different vegetables or sides.
 - Variety should be balanced across main proteins, sides, and vegetables.
-- Use a few core proteins that repeat logically through the week, a few core sides, and a few core vegetables/fruits.
 - DO NOT mention the ingredients or their count in your answer.
 - BEFORE giving the final answer, count the unique ingredients for the week and if more than ${simpleMode ? "18" : "25"}, remove or merge until ${simpleMode ? "18" : "25"} or fewer.
 - Treat similar ingredients as one where possible (e.g. tomato and cherry tomatoes, same fish category, same bread/rice/yogurt type) to keep the grocery list short and practical.
 - Write a short 1-2 line intro about the goal, then start with 📅 ${dayLabels.mon}.` : `
 ΚΑΝΟΝΕΣ ΥΛΙΚΩΝ (μην τους αναφέρεις στην απάντηση):
 - Πριν γράψεις το πρόγραμμα, επέλεξε μέγιστο ${simpleMode ? "18" : "28"} διαφορετικά υλικά συνολικά για όλη την εβδομάδα. Μην ξεπερνάς τα ${simpleMode ? "18" : "30"}.
-- Χρησιμοποίησε ΤΑ ΙΔΙΑ βασικά υλικά κάθε μέρα με διαφορετικούς συνδυασμούς — ΜΗΝ προσθέτεις νέα υλικά καθώς γράφεις.
 - Το πρόγραμμα πρέπει να έχει ποικιλία, αλλά ελεγχόμενη και πρακτική για σούπερ μάρκετ.
 - ΜΗΝ βάζεις το ίδιο ακριβώς μεσημεριανό ή το ίδιο ακριβώς βραδινό κάθε μέρα.
-- ΜΗΝ ξοδεύεις την ποικιλία σε πάρα πολλά διαφορετικά λαχανικά ή συνοδευτικά.
 - Η ποικιλία πρέπει να είναι μοιρασμένη ισορροπημένα σε κύριες πρωτεΐνες, συνοδευτικά και λαχανικά.
-- Βάλε λίγες βασικές πρωτεΐνες που επαναλαμβάνονται λογικά μέσα στην εβδομάδα, λίγα βασικά συνοδευτικά και λίγα βασικά λαχανικά/φρούτα.
 - ΜΗΝ αναφέρεις τα υλικά ή τον αριθμό τους στην απάντησή σου.
 - ΠΡΙΝ δώσεις την τελική απάντηση, μέτρα τα μοναδικά υλικά της εβδομάδας και αν είναι πάνω από ${simpleMode ? "18" : "25"}, αφαίρεσε ή συγχώνευσε υλικά μέχρι να γίνουν ${simpleMode ? "18" : "25"} ή λιγότερα.
 - Θεώρησε παρόμοια υλικά ως ένα όπου γίνεται (π.χ. ντομάτα και ντοματίνια, ίδια κατηγορία ψαριού, ίδιο είδος ψωμιού/ρυζιού/γιαουρτιού) ώστε η λίστα σούπερ μάρκετ να μένει σύντομη και πρακτική.
@@ -323,8 +317,8 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής."}
-⚠️ CRITICAL: ${isEn ? "EACH DAY MUST total EXACTLY" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει ΑΚΡΙΒΩΣ"} ${targetCalories}kcal (±100kcal). ${isEn ? "NOT less, NOT more. This is the most important rule." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο. Αυτός είναι ο πιο σημαντικός κανόνας."}
-${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ~${Math.round(targetCalories*0.25)}kcal, ${dayLabels.snack}x2 ~${Math.round(targetCalories*0.1)}kcal, ${dayLabels.lunch} ~${Math.round(targetCalories*0.35)}kcal, ${dayLabels.dinner} ~${Math.round(targetCalories*0.2)}kcal.${simpleRules}${ingredientRules}
+${isEn ? "EACH DAY MUST total" : "ΚΑΘΕ ΜΕΡΑ ΠΡΕΠΕΙ να έχει"} ${targetCalories}kcal (±50kcal), ${isEn ? "NOT less, NOT more." : "ΟΧΙ λιγότερο, ΟΧΙ περισσότερο."}
+${isEn ? "Distribution" : "Κατανομή"}: ${dayLabels.breakfast} ~25%, ${dayLabels.snack}x2 ~10%, ${dayLabels.lunch} ~35%, ${dayLabels.dinner} ~20%.${simpleRules}${ingredientRules}
 ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι"}:
 
 📅 ${dayLabels.mon}
@@ -336,7 +330,6 @@ ${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks" : "ΥΠΟΧΡΕΩ
 ${dayLabels.total}: [X]kcal
 ─────────────────
 (${isEn ? "Monday to Sunday" : "Δευτέρα έως Κυριακή"})
-${isEn ? "Do NOT add a grocery list or shopping list. ONLY the meal plan." : "ΜΗΝ προσθέσεις λίστα σούπερ μάρκετ. ΜΟΝΟ το πρόγραμμα διατροφής."}
 ${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
 ${disclaimer}
 ${askChange}`;
@@ -370,12 +363,12 @@ ${askChange}`;
 
     // meal_plan: food prefs + targets, NO fitness/week
     if (taskType === "meal_plan") return core + nutritionTargets + foodContext + modeBlock + mealPlanFormat;
-    // training_plan: fitness prefs, NO food/targets/week
-    if (taskType === "training_plan") return core + fitnessContext + modeBlock + trainingPlanFormat;
+    // training_plan: fitness prefs, NO food/targets/week/mode
+    if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
     // eatnow: food prefs + today's intake, NO fitness/week
     if (taskType === "eatnow") return core + nutritionTargets + todayIntake + foodContext + modeBlock;
-    // general: everything (analyze day, free questions)
-    return core + nutritionTargets + todayIntake + weekBlock + foodContext + fitnessContext + modeBlock + generalRules;
+    // general: everything (analyze day, free questions) — food & exercise clearly separated
+    return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
   }
 
   function buildMessages(chatMessage) {
@@ -406,8 +399,8 @@ ${askChange}`;
     let effectiveMessage;
     if (isInitial) {
       effectiveMessage = isEn
-        ? `Look at my data:\n1. What to eat for the rest of the day (${currentMode.label}, ${targetCalories}kcal)\n2. Flag any empty days\n3. Should I exercise today\n4. One thing I'm doing wrong\n5. Ask me something`
-        : `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
+        ? `Look at my data:\n1. What to eat for the rest of the day (${currentMode.label} diet, ${targetCalories}kcal)\n2. Flag any empty days\n3. Should I exercise today\n4. One thing I'm doing wrong\n5. Ask me something`
+        : `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (διατροφή ${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
     } else if (isEatNow) {
       const hour = new Date().getHours();
       const mealTime = isEn
@@ -421,8 +414,8 @@ ${askChange}`;
         ? todayEntries.map(e => e.name || e.food).join(", ")
         : (isEn ? "nothing yet" : "τίποτα ακόμα");
       effectiveMessage = isEn
-        ? `It's ${hour}:00, next meal is ${mealTime}. Give 3 options based on my food profile and favorites.\nEaten today so far: ${eatenSoFar}\nRemaining: ${remainingCalories}kcal | Protein needed: ${remProtein}g | Mode: ${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
-        : `Ώρα ${hour}:00, επόμενο γεύμα: ${mealTime}. Δώσε 3 επιλογές βασισμένες στο διατροφικό μου προφίλ και τα αγαπημένα μου.\nΈχω φάει σήμερα: ${eatenSoFar}\nΥπόλοιπο: ${remainingCalories}kcal | Πρωτεΐνη που χρειάζομαι: ${remProtein}g | Mode: ${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
+        ? `It's ${hour}:00, next meal is ${mealTime}. Give 3 options based on my food profile and favorites.\nEaten today so far: ${eatenSoFar}\nRemaining: ${remainingCalories}kcal | Protein needed: ${remProtein}g | Diet: ${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
+        : `Ώρα ${hour}:00, επόμενο γεύμα: ${mealTime}. Δώσε 3 επιλογές βασισμένες στο διατροφικό μου προφίλ και τα αγαπημένα μου.\nΈχω φάει σήμερα: ${eatenSoFar}\nΥπόλοιπο: ${remainingCalories}kcal | Πρωτεΐνη που χρειάζομαι: ${remProtein}g | Διατροφή: ${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
     } else if (isMealPlan) {
       effectiveMessage = isEn
         ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. MANDATORY format with 📅 🌅 🍎 🌞 🌙. NEVER asterisks.`
