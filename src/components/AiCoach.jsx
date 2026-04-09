@@ -273,8 +273,8 @@ export default function AiCoach({
       ? `You are a clinical nutritionist. Create a 7-day weekly meal plan based ONLY on the JSON input provided.
 STRICT RULES:
 - Respond ONLY with a valid JSON object. No text, no intro, no disclaimers.
-- Each day must have EXACTLY the meals defined in "meal_structure". No more, no less.
-- Each meal must hit its "target_calories" (±50kcal).
+- Each day must have EXACTLY these meals IN THIS ORDER: ${mealStructure.map(m => m.type + " (~" + m.target_calories + "kcal)").join(", ")}. Do NOT skip any. Do NOT add extra meals.
+- Each meal must hit its target_calories (±50kcal).
 - Include portions in grams for every ingredient.
 - Every meal must be fresh — NEVER suggest leftovers.
 - Respect allergies, preferences, and diet_rules.
@@ -284,8 +284,8 @@ OUTPUT FORMAT:
       : `Είσαι κλινικός διατροφολόγος. Δημιούργησε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών βασισμένο ΑΠΟΚΛΕΙΣΤΙΚΑ στα JSON δεδομένα.
 ΑΥΣΤΗΡΟΙ ΚΑΝΟΝΕΣ:
 - Απάντησε ΜΟΝΟ με ένα έγκυρο JSON αντικείμενο. Κανένα κείμενο, εισαγωγή ή σχόλιο.
-- Κάθε μέρα πρέπει να έχει ΑΚΡΙΒΩΣ τα γεύματα που ορίζονται στο "meal_structure". Ούτε παραπάνω, ούτε λιγότερα.
-- Κάθε γεύμα πρέπει να πιάνει τις "target_calories" (±50kcal).
+- Κάθε μέρα πρέπει να έχει ΑΚΡΙΒΩΣ αυτά τα γεύματα ΜΕ ΑΥΤΗ ΤΗ ΣΕΙΡΑ: ${mealStructure.map(m => m.type + " (~" + m.target_calories + "kcal)").join(", ")}. ΜΗΝ παραλείψεις κανένα. ΜΗΝ προσθέσεις επιπλέον.
+- Κάθε γεύμα πρέπει να πιάνει τις target_calories (±50kcal).
 - Βάλε μερίδες σε γραμμάρια για κάθε υλικό.
 - Κάθε γεύμα φρέσκο — ΠΟΤΕ υπολείμματα (leftovers).
 - Σεβάσου αλλεργίες, προτιμήσεις και diet_rules.
