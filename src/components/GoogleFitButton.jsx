@@ -79,7 +79,6 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
       >
         🏃 Google Fit
       </button>
-      </div>
     );
   }
 
