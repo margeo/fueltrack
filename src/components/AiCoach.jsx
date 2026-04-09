@@ -269,31 +269,33 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    const systemPrompt = isEn
-      ? `You are a clinical nutritionist. Create a 7-day weekly meal plan based ONLY on the JSON input provided.
-STRICT RULES:
-- Respond ONLY with a valid JSON object. No text, no intro, no disclaimers.
-- Each day must have EXACTLY these meals IN THIS ORDER: ${mealStructure.map(m => m.type + " (~" + m.target_calories + "kcal)").join(", ")}. Do NOT skip any. Do NOT add extra meals.
-- Each meal must hit its target_calories (±50kcal).
-- Include portions in grams for every ingredient.
-- Every meal must be fresh — NEVER suggest leftovers.
-- Respect allergies, preferences, and diet_rules.
-- Food names and descriptions in ${isEn ? "English" : "Greek"}.
-OUTPUT FORMAT:
-{"weekly_plan":{"monday":{"meals":[{"type":"breakfast","description":"...","calories":X,"protein":X},...],"daily_total":X},"tuesday":{...},...}}`
-      : `Είσαι κλινικός διατροφολόγος. Δημιούργησε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών βασισμένο ΑΠΟΚΛΕΙΣΤΙΚΑ στα JSON δεδομένα.
-ΑΥΣΤΗΡΟΙ ΚΑΝΟΝΕΣ:
-- Απάντησε ΜΟΝΟ με ένα έγκυρο JSON αντικείμενο. Κανένα κείμενο, εισαγωγή ή σχόλιο.
-- Κάθε μέρα πρέπει να έχει ΑΚΡΙΒΩΣ αυτά τα γεύματα ΜΕ ΑΥΤΗ ΤΗ ΣΕΙΡΑ: ${mealStructure.map(m => m.type + " (~" + m.target_calories + "kcal)").join(", ")}. ΜΗΝ παραλείψεις κανένα. ΜΗΝ προσθέσεις επιπλέον.
-- Κάθε γεύμα πρέπει να πιάνει τις target_calories (±50kcal).
-- Βάλε μερίδες σε γραμμάρια για κάθε υλικό.
-- Κάθε γεύμα φρέσκο — ΠΟΤΕ υπολείμματα (leftovers).
-- Σεβάσου αλλεργίες, προτιμήσεις και diet_rules.
-- Ονόματα φαγητών στα Ελληνικά.
-ΜΟΡΦΗ ΕΞΟΔΟΥ:
-{"weekly_plan":{"monday":{"meals":[{"type":"breakfast","description":"...","calories":X,"protein":X},...],"daily_total":X},"tuesday":{...},...}}`;
+    const exampleDay = `{"meals":[${mealStructure.map(m => `{"type":"${m.type}","description":"...","calories":${m.target_calories},"protein":0}`).join(",")}],"daily_total":${targetCalories}}`;
 
-    return { systemPrompt, userMessage: JSON.stringify(input) };
+    const systemPrompt = isEn
+      ? `You are a JSON diet plan generator. Output ONLY valid JSON, no text.
+RULES:
+1. Array "meals" length = STRICTLY ${mealStructure.length} for every day.
+2. Order: ${mealStructure.map(m => m.type).join(", ")}.
+3. Each meal: type, description (brief, with grams), calories, protein.
+4. No leftovers. Each day ${mealStructure.length} unique meals.
+5. Brief technical descriptions (e.g. "Grilled chicken (200g), rice (150g), salad").
+6. Respect allergies, preferences, diet_rules from input.
+7. Food names in English.
+EXAMPLE day structure:
+${exampleDay}`
+      : `Είσαι αλγόριθμος παραγωγής JSON διατροφής. Output ΜΟΝΟ JSON, κανένα κείμενο.
+ΚΑΝΟΝΕΣ:
+1. Array "meals" length = ΑΥΣΤΗΡΑ ${mealStructure.length} για κάθε μέρα.
+2. Σειρά: ${mealStructure.map(m => m.type).join(", ")}.
+3. Κάθε γεύμα: type, description (σύντομο, με γραμμάρια), calories, protein.
+4. Όχι leftovers. Κάθε μέρα ${mealStructure.length} νέα γεύματα.
+5. Σύντομες τεχνικές περιγραφές (π.χ. "Ψητό κοτόπουλο (200γρ), ρύζι (150γρ), σαλάτα").
+6. Σεβάσου αλλεργίες, προτιμήσεις, diet_rules από το input.
+7. Ονόματα φαγητών στα Ελληνικά.
+ΠΑΡΑΔΕΙΓΜΑ δομής ημέρας:
+${exampleDay}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input), mealsCount: mealStructure.length };
   }
 
   function buildSystemPrompt(taskType = "general") {
@@ -582,12 +584,13 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { systemPrompt, userMessage } = buildMealPlanJSON();
+        const { systemPrompt, userMessage, mealsCount } = buildMealPlanJSON();
         reqBody = {
           systemPrompt,
           messages: [{ role: "user", content: userMessage }],
           ...(selectedModel && { model: selectedModel }),
-          jsonMode: true
+          jsonMode: true,
+          mealsCount
         };
       } else {
         reqBody = {

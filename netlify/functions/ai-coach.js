@@ -32,13 +32,60 @@ export async function handler(event) {
       const reqBody = {
         model: modelMap[aiModel],
         max_tokens: jsonMode ? 16000 : 8000,
-        temperature: 0.7,
+        temperature: jsonMode ? 0.1 : 0.7,
         messages: [
           { role: "system", content: systemPrompt },
           ...recentMessages
         ]
       };
-      if (jsonMode) reqBody.response_format = { type: "json_object" };
+      if (jsonMode) {
+        const mealsCount = body.mealsCount || 4;
+        reqBody.response_format = {
+          type: "json_schema",
+          json_schema: {
+            name: "diet_plan",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                weekly_plan: {
+                  type: "object",
+                  properties: Object.fromEntries(
+                    ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].map(day => [day, {
+                      type: "object",
+                      properties: {
+                        meals: {
+                          type: "array",
+                          minItems: mealsCount,
+                          maxItems: mealsCount,
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: { type: "string" },
+                              description: { type: "string" },
+                              calories: { type: "number" },
+                              protein: { type: "number" }
+                            },
+                            required: ["type", "description", "calories", "protein"],
+                            additionalProperties: false
+                          }
+                        },
+                        daily_total: { type: "number" }
+                      },
+                      required: ["meals", "daily_total"],
+                      additionalProperties: false
+                    }])
+                  ),
+                  required: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
+                  additionalProperties: false
+                }
+              },
+              required: ["weekly_plan"],
+              additionalProperties: false
+            }
+          }
+        };
+      }
 
       const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
