@@ -607,8 +607,19 @@ ${askChange}`;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
         console.log("SNACK_DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, willCallSnacks: nSnacks > 0 });
-        // Override calories in input for meals (exclude snack calories)
-        const mealsInput = { ...inputData, nutrition: { ...inputData.nutrition, calories_target: mealsCal } };
+        // Override calories and meal_structure for the 3-meal call (strip snack slots)
+        const breakfastCal = Math.round(mealsCal * 0.25);
+        const lunchCal = Math.round(mealsCal * 0.40);
+        const dinnerCal = mealsCal - breakfastCal - lunchCal;
+        const mealsInput = {
+          ...inputData,
+          nutrition: { ...inputData.nutrition, calories_target: mealsCal },
+          meal_structure: [
+            { slot: "meal_1", role: "Breakfast", target_calories: breakfastCal },
+            { slot: "meal_2", role: "Lunch", target_calories: lunchCal },
+            { slot: "meal_3", role: "Dinner", target_calories: dinnerCal }
+          ]
+        };
 
         // Call 1: 3 main meals × 7 days
         const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
