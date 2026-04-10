@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FuelTrack — Pricing Model</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; font-size: 14px; line-height: 1.6; }
+  h1 { font-size: 22px; margin-bottom: 2px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 16px; margin-top: 30px; border-bottom: 2px solid #2563eb; padding-bottom: 4px; color: #2563eb; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+  th { background: #f1f5f9; text-align: left; padding: 8px 10px; border: 1px solid #e2e8f0; font-weight: 700; }
+  td { padding: 8px 10px; border: 1px solid #e2e8f0; }
+  tr:nth-child(even) { background: #f8fafc; }
+  .note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .logic { margin: 12px 0; }
+  .logic li { margin-bottom: 8px; }
+  .logic strong { color: #2563eb; }
+  .highlight { background: #fef3c7; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+  .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #999; font-size: 11px; }
+  @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+
+<h1>FuelTrack — Pricing Model</h1>
+<div class="subtitle">fueltrack.me &bull; Fitness & Nutrition PWA &bull; Updated April 2026</div>
+
+<h2>Features per Plan</h2>
+<table>
+  <tr><th>Feature</th><th>No account</th><th>Free account</th><th>Paid ($2.99/mo)</th><th>Demo</th></tr>
+  <tr><td>Food tracking</td><td>localStorage</td><td>Supabase sync</td><td>Supabase sync</td><td>Supabase sync</td></tr>
+  <tr><td>Exercise, macros</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+  <tr><td>Barcode scan</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+  <tr><td>Data backup/sync</td><td>&#10007;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+  <tr><td>Multi-device</td><td>&#10007;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+  <tr><td>AI Coach</td><td>&#10007;</td><td>Trial (20 requests)</td><td>&#10003;</td><td>&#10003; Unlimited</td></tr>
+</table>
+
+<div class="note">
+  <strong>AI Coach</strong> includes: Meal plans, Training plans, Grocery lists, Analysis, Questions — all counted from the same request counter.
+</div>
+
+<h2>AI Limits (single counter for all)</h2>
+<table>
+  <tr><th>Limit</th><th>No account</th><th>Free</th><th>Paid</th><th>Demo</th></tr>
+  <tr><td>Daily</td><td>&#10007;</td><td>5</td><td class="highlight">25</td><td>&infin;</td></tr>
+  <tr><td>Monthly</td><td>&#10007;</td><td>20</td><td>500</td><td>&infin;</td></tr>
+  <tr><td>Lifetime</td><td>&#10007;</td><td>20</td><td>&infin;</td><td>&infin;</td></tr>
+  <tr><td>Extra pack</td><td>—</td><td>—</td><td>+500 for $2.99</td><td>—</td></tr>
+</table>
+
+<h2>Logic</h2>
+<ol class="logic">
+  <li><strong>No account</strong> — Use the app normally (food tracking, exercise, barcode), but no AI and no backup.</li>
+  <li><strong>Free account</strong> — Backup/sync + <span class="highlight">20 trial AI requests</span> (lifetime). Incentive: backup = safety.</li>
+  <li><strong>Paid $2.99/mo</strong> — Full AI Coach, <span class="highlight">500 requests total/month</span>, max <span class="highlight">25/day</span>. Need more? +500 for $2.99 extra.</li>
+  <li><strong>Demo</strong> — Unlimited AI, granted manually from admin panel.</li>
+</ol>
+
+<div class="note">
+  <strong>500 requests</strong> = meal plans + training plans + grocery lists + questions + analysis. All together, one counter. Not 500 per type.
+</div>
+
+<div class="footer">FuelTrack &copy; 2026 &bull; Internal document</div>
+
+</body>
+</html>
