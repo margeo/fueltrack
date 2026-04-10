@@ -321,7 +321,7 @@ RULES:
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
-            <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Προηγούμενη μέρα"}</span>
+            <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <input ref={heroDateRef} type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none" }} />
             <button type="button" onClick={() => openDatePicker(heroDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
@@ -526,7 +526,7 @@ RULES:
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Προηγούμενη μέρα"}</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <input ref={historyDateRef} type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none" }} />
             <button type="button" onClick={() => openDatePicker(historyDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
