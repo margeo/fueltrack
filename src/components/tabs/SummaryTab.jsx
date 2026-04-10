@@ -525,23 +525,25 @@ RULES:
             const hasDetails = day.protein > 0 || day.exercise > 0;
             return (
             <div key={day.date} style={{ borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", overflow: "hidden" }}>
-              <button onClick={() => { setSelectedDate(day.date); setExpandedDay(isExpanded ? null : day.date); }} type="button"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: "pointer", textAlign: "left" }}>
+              <button onClick={() => hasDetails && setExpandedDay(isExpanded ? null : day.date)} type="button"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: hasDetails ? "pointer" : "default", textAlign: "left" }}>
                 <span style={{ fontWeight: 700, fontSize: 13 }}>
                   {hasDetails && <span style={{ fontSize: 10, marginRight: 4 }}>{isExpanded ? "▲" : "▼"}</span>}
                   {formatDisplayDate(day.date, dateLocale)}
                 </span>
-                <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
-                  className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
-                  {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
-                </span>
-              </button>
-              {isExpanded && hasDetails && (
-                <div style={{ padding: "0 12px 8px", display: "flex", gap: 12, fontSize: 11, opacity: 0.75 }}>
-                  {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
-                  {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+                  <span style={{ fontSize: 12 }}
+                    className={day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
+                    {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
+                  </span>
+                  {isExpanded && hasDetails && (
+                    <div style={{ display: "flex", gap: 10, fontSize: 11, opacity: 0.75 }}>
+                      {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
+                      {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
+                    </div>
+                  )}
                 </div>
-              )}
+              </button>
             </div>
             );
           })}
