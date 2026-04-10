@@ -119,6 +119,7 @@ export default function SummaryTab({
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
   const dateInputRef = useRef(null);
+  const historyDateRef = useRef(null);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -523,13 +524,14 @@ RULES:
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-              {i18n.language === "en" ? "📅 Tap calendar to log a past day" : "📅 Πάτα το ημερολόγιο για καταγραφή προηγούμενης μέρας"}
-            </div>
+          <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+              {i18n.language === "en" ? "Tap to log a past day" : "Πάτα για προηγούμενη μέρα"}
+            </span>
+            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, position: "relative" }} onClick={() => historyDateRef.current?.showPicker()}>📅</button>
+            <input ref={historyDateRef} type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }} />
           </div>
-          <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
