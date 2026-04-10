@@ -680,7 +680,7 @@ RULES:
 Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
 
 RULES:
-1. Be encouraging but honest. Score based on consistency, calorie adherence, and activity.
+1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, and exercise activity.
 2. 2-4 highlights and 2-4 improvements.
 3. If there are days with zero or no food logging, ALWAYS mention it as an improvement — emphasize that consistent logging is crucial for progress.
 4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
