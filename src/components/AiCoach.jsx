@@ -641,7 +641,7 @@ RULES:
 
     const weekData = (last7Days || []).map(d => ({
       date: d.date,
-      calories: d.eaten,
+      calories_eaten: d.eaten,
       calories_target: targetCalories,
       protein_g: d.protein || 0,
       carbs_g: d.carbs || 0,
@@ -671,8 +671,8 @@ RULES:
 1. Score based on: daily food logging (days with entries vs empty), calorie/protein target adherence, macro balance (carbs/fat), exercise activity, weight trend, and streak consistency. Compare actual values to targets.
 2. 2-4 highlights and 2-4 improvements.
 3. 2-4 issues — each must reference actual data and have a concrete fix.
-4. If there are days with zero calories, the user did NOT log food — flag as both an improvement AND an issue.
-5. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
+4. If there are days with zero calories_eaten, the user did NOT log food — flag as both an improvement AND an issue.
+5. Reference specific days and numbers (e.g. "Monday: eaten 1850 / target 2375kcal — good", "Wednesday: 0kcal eaten — no logging").
 6. Consider weight trend and streak — positive streak and weight progress = highlight; stalling or wrong direction = issue.
 7. Check macro balance — flag if carbs or fat are consistently too high or too low for the user's goal.
 8. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
