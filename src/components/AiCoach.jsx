@@ -925,8 +925,8 @@ ${askChange}`;
   }
 
   function buildMessages(chatMessage) {
-    // Skip auto-load and JSON-mode preset responses — they're not conversational context
-    const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.msgType).map(msg => ({ role: msg.role, content: msg.text }));
+    // Skip auto-load, preset button clicks, and JSON-mode responses — they're not conversational context
+    const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !msg.msgType).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
@@ -940,8 +940,6 @@ ${askChange}`;
     setChatExpanded(true);
     coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     incrementUsage();
-    if (text) { setMessages(prev => [...prev, { role: "user", text }]); setInput(""); }
-
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const isMealPlan = text === t("aiCoach.q1");
@@ -949,6 +947,9 @@ ${askChange}`;
     const isWeeklyReview = text === t("aiCoach.q3");
     const isMistakes = text === t("aiCoach.q4");
     const isMacroAnalysis = text === t("aiCoach.q5");
+    const isPreset = isMealPlan || isTrainingPlan || isWeeklyReview || isMistakes || isMacroAnalysis;
+
+    if (text) { setMessages(prev => [...prev, { role: "user", text, ...(isPreset && { isPreset: true }) }]); setInput(""); }
     const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
