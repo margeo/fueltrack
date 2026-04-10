@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { calculateStreak } from "../utils/streak";
+import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
@@ -645,17 +646,29 @@ RULES:
     const currentMode = MODES[mode] || MODES.balanced;
     const currentWeight = lastWeight || weight;
 
-    const weekData = (last7Days || []).map(d => ({
-      date: d.date,
-      calories_eaten: d.eaten,
-      calories_target: targetCalories,
-      protein_eaten_gr: d.protein || 0,
-      carbs_eaten_gr: d.carbs || 0,
-      fat_eaten_gr: d.fat || 0,
-      protein_target_gr: proteinTarget,
-      exercise_kcal: d.exercise || 0,
-      exercises_done: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
-    }));
+    // Always compute from today (not selectedDate) so weekly review is always current
+    const today = getTodayKey();
+    const weekData = Array.from({ length: 7 }, (_, i) => {
+      const date = shiftDate(today, -i);
+      const log = normalizeDayLog(dailyLogs[date]);
+      const eaten = log.entries.reduce((s, item) => s + Number(item.calories || 0), 0);
+      const protein = Math.round(log.entries.reduce((s, item) => s + Number(item.protein || 0), 0));
+      const carbs = Math.round(log.entries.reduce((s, item) => s + Number(item.carbs || 0), 0));
+      const fat = Math.round(log.entries.reduce((s, item) => s + Number(item.fat || 0), 0));
+      const exercise = log.exercises.reduce((s, item) => s + Number(item.calories || 0), 0);
+      const exNames = log.exercises.map(e => e.name).filter(Boolean);
+      return {
+        date,
+        calories_eaten: eaten,
+        calories_target: targetCalories,
+        protein_eaten_gr: protein,
+        carbs_eaten_gr: carbs,
+        fat_eaten_gr: fat,
+        protein_target_gr: proteinTarget,
+        exercise_kcal: exercise,
+        exercises_done: exNames.length ? exNames.join(", ") : "none"
+      };
+    });
 
     const input = {
       user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
