@@ -1,5 +1,5 @@
 // src/components/tabs/SummaryTab.jsx
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
@@ -118,6 +118,8 @@ export default function SummaryTab({
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
+  const heroDateRef = useRef(null);
+  const historyDateRef = useRef(null);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -227,6 +229,10 @@ RULES:
     return t("modeHints." + mode, { defaultValue: "" });
   }
 
+  function openDatePicker(ref) {
+    if (!ref.current) return;
+    try { ref.current.showPicker(); } catch { ref.current.focus(); ref.current.click(); }
+  }
 
   const proteinPercent = macroTargets?.proteinGrams ? Math.min((totalProtein / macroTargets.proteinGrams) * 100, 100) : 0;
   const carbsPercent = macroTargets?.carbsGrams ? Math.min((totalCarbs / macroTargets.carbsGrams) * 100, 100) : 0;
@@ -316,10 +322,8 @@ RULES:
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
-            <label style={{ cursor: "pointer", fontSize: 22, lineHeight: 1 }}>
-              📅
-              <input type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} />
-            </label>
+            <input ref={heroDateRef} type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none" }} />
+            <button type="button" onClick={() => openDatePicker(heroDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
         <div style={{ marginTop: 16, marginBottom: 12 }}>
@@ -523,10 +527,8 @@ RULES:
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
-            <label style={{ cursor: "pointer", fontSize: 22, lineHeight: 1 }}>
-              📅
-              <input type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} />
-            </label>
+            <input ref={historyDateRef} type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none" }} />
+            <button type="button" onClick={() => openDatePicker(historyDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
