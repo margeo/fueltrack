@@ -675,6 +675,8 @@ RULES:
       calories: d.eaten,
       calories_target: targetCalories,
       protein_g: d.protein || 0,
+      carbs_g: d.carbs || 0,
+      fat_g: d.fat || 0,
       protein_target_g: proteinTarget,
       exercise_kcal: d.exercise || 0,
       exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
@@ -697,7 +699,7 @@ RULES:
 Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
 
 RULES:
-1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, exercise activity, weight trend, and streak consistency. Compare actual values to targets for each day.
+1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, macro balance (carbs/fat), exercise activity, weight trend, and streak consistency. Compare actual values to targets for each day.
 2. 2-4 highlights and 2-4 improvements.
 3. If there are days with zero calories, the user did NOT log food — ALWAYS mention it as an improvement.
 4. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
@@ -717,6 +719,8 @@ RULES:
       calories: d.eaten,
       calories_target: targetCalories,
       protein_g: d.protein || 0,
+      carbs_g: d.carbs || 0,
+      fat_g: d.fat || 0,
       protein_target_g: proteinTarget,
       exercise_kcal: d.exercise || 0,
       exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
@@ -739,12 +743,13 @@ RULES:
 Fields: "issues" (array of {emoji, title, detail, fix}), "doing_right" (array of {emoji, text}), "top_priority" (the #1 most important thing to fix).
 
 RULES:
-1. Be specific — reference actual data (days, calories, patterns).
+1. Be specific — reference actual data (days, calories, macros, patterns).
 2. Each issue must have a concrete fix.
 3. Also mention 1-3 things they're doing right.
 4. If there are days with zero or no food logging, ALWAYS flag it as an issue — consistent logging is the #1 priority for progress.
 5. Consider weight progress and streak — if weight is stalling or moving wrong direction vs goal, flag it. If streak is strong, mention it as something done right.
-6. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+6. Check macro balance — flag if carbs or fat are consistently too high or too low for the user's goal.
+7. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
