@@ -560,7 +560,7 @@ export default function AiCoach({
 
     const slotRules = mealDefs.map(m => {
       const isSnack = m.role.includes("Snack");
-      return `- "${m.slot}": ${isSnack ? "Light_Snack" : m.role} (~${m.target_calories}kcal)${isSnack ? " → ONLY yogurt, fruit, nuts, rice cakes. NO meat/pasta/rice." : ""}`;
+      return `- "${m.slot}": ${isSnack ? "Light_Snack" : m.role} (~${m.target_calories}kcal)`;
     }).join("\n");
     const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories}}`).join(",");
 
