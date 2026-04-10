@@ -523,7 +523,7 @@ RULES:
 
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
