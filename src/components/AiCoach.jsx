@@ -6,9 +6,17 @@ import { supabase } from "../supabaseClient";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
-function stripMarkdown(text) {
+function formatAiText(text) {
   if (!text) return text;
-  return text.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1");
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*\*([^*]+)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/^[-•]\s+(.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>\n?)+/gs, (m) => `<ul style="margin:4px 0;padding-left:18px">${m}</ul>`)
+    .replace(/^(\d+)\.\s+(.+)$/gm, "<li>$2</li>")
+    .replace(/(?:^<li>.*<\/li>\n?)+(?!<\/ul>)/gm, (m) => m.includes("<ul") ? m : `<ol style="margin:4px 0;padding-left:18px">${m}</ol>`);
 }
 
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -1231,7 +1239,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       if (taskType === "general" || taskType === "initial") {
-        setMessages(prev => [...prev, { role: "assistant", text: stripMarkdown(data.advice), isAutoLoad: isInitial, elapsed, usage: data.usage }]);
+        setMessages(prev => [...prev, { role: "assistant", text: data.advice, isAutoLoad: isInitial, elapsed, usage: data.usage }]);
       }
       setHasLoaded(true);
     } catch (err) {
@@ -1395,7 +1403,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 </div>
               ) : (
                 <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.error ? "#fef2f2" : msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" && !msg.error ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.error ? "1px solid #fecaca" : msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
-                  {msg.text}
+                  {msg.role === "assistant" && !msg.error ? <span style={{ whiteSpace: "pre-wrap" }} dangerouslySetInnerHTML={{ __html: formatAiText(msg.text) }} /> : msg.text}
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
