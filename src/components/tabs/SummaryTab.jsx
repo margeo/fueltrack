@@ -119,7 +119,6 @@ export default function SummaryTab({
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
   const dateInputRef = useRef(null);
-  const historyDateRef = useRef(null);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -529,8 +528,7 @@ RULES:
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
               {i18n.language === "en" ? "Tap to log a past day" : "Πάτα για προηγούμενη μέρα"}
             </span>
-            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, position: "relative" }} onClick={() => historyDateRef.current?.showPicker()}>📅</button>
-            <input ref={historyDateRef} type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }} />
+            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
