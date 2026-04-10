@@ -1023,8 +1023,10 @@ ${askChange}`;
     if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
     // eatnow: food prefs + today's intake, NO fitness/week
     if (taskType === "eatnow") return core + nutritionTargets + todayIntake + foodContext + modeBlock;
-    // general: everything (analyze day, free questions) — food & exercise clearly separated
-    return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
+    // initial auto-load: everything (weekly analysis)
+    if (taskType === "initial") return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
+    // general chat: profile + today only, NO weekly history (user has dedicated buttons for that)
+    return core + nutritionTargets + modeBlock + todayIntake + foodContext + fitnessContext + generalRules;
   }
 
   function buildMessages(chatMessage) {
@@ -1052,7 +1054,7 @@ ${askChange}`;
     const isWeeklyReview = text === t("aiCoach.q4");
     const isMistakes = text === t("aiCoach.q5");
     const isMacroAnalysis = text === t("aiCoach.q6");
-    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
+    const taskType = isInitial ? "initial" : isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
