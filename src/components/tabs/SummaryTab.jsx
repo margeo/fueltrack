@@ -524,12 +524,10 @@ RULES:
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-              {i18n.language === "en" ? "Tap to log a past day" : "Πάτα για προηγούμενη μέρα"}
-            </span>
-            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
-          </div>
+          <button type="button" style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }} onClick={() => dateInputRef.current?.showPicker()}>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>📅</span>
+            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
+          </button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
