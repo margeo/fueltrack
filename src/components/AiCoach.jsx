@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
+import { calculateStreak } from "../utils/streak";
 import { supabase } from "../supabaseClient";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
@@ -489,6 +490,8 @@ export default function AiCoach({
     return diff > 0 ? `+${diff}` : `${diff}`;
   })();
 
+  const streak = calculateStreak(dailyLogs, targetCalories);
+
   useEffect(() => {
     if (!messages.length) return;
     const last = messages[messages.length - 1];
@@ -682,7 +685,11 @@ RULES:
       goal: goalType,
       targets: { calories: targetCalories, protein_g: proteinTarget },
       last_7_days: weekData,
-      weight_log: (weightLog || []).slice(-7),
+      progress: {
+        weight_log: (weightLog || []).slice(-7),
+        weight_trend_kg: weightTrend || null,
+        streak_days: streak
+      },
       language: isEn ? "English" : "Greek"
     };
 
@@ -690,11 +697,12 @@ RULES:
 Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
 
 RULES:
-1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, and exercise activity. Compare actual values to targets for each day.
+1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, exercise activity, weight trend, and streak consistency. Compare actual values to targets for each day.
 2. 2-4 highlights and 2-4 improvements.
 3. If there are days with zero calories, the user did NOT log food — ALWAYS mention it as an improvement.
 4. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
-5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+5. Consider the weight trend and streak in your evaluation — a positive streak and consistent weight progress are important highlights; a broken streak or stalling weight should be flagged.
+6. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -719,6 +727,11 @@ RULES:
       goal: goalType,
       targets: { calories: targetCalories, protein_g: proteinTarget },
       last_7_days: weekData,
+      progress: {
+        weight_log: (weightLog || []).slice(-7),
+        weight_trend_kg: weightTrend || null,
+        streak_days: streak
+      },
       language: isEn ? "English" : "Greek"
     };
 
@@ -730,7 +743,8 @@ RULES:
 2. Each issue must have a concrete fix.
 3. Also mention 1-3 things they're doing right.
 4. If there are days with zero or no food logging, ALWAYS flag it as an issue — consistent logging is the #1 priority for progress.
-5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+5. Consider weight progress and streak — if weight is stalling or moving wrong direction vs goal, flag it. If streak is strong, mention it as something done right.
+6. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
