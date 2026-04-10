@@ -963,8 +963,8 @@ ${askChange}`;
     if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
     // initial auto-load: everything (weekly analysis)
     if (taskType === "initial") return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
-    // general chat: profile + today only, NO weekly history (user has dedicated buttons for that)
-    return core + nutritionTargets + modeBlock + todayIntake + foodContext + fitnessContext + generalRules;
+    // general chat: light context only — food/fitness profiles go to dedicated plan builders
+    return core + nutritionTargets + modeBlock + todayIntake + generalRules;
   }
 
   function buildMessages(chatMessage) {
