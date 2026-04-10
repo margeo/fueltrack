@@ -108,7 +108,7 @@ RULES:
 • Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
 • Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
 • DO NOT break down by day — show only totals in the categories below
-MANDATORY format — ALWAYS emojis, NEVER asterisks:
+MANDATORY format — ALWAYS emojis:
 
 🥩 Meat & Fish
 - Chicken breast: 1.2kg
@@ -131,7 +131,7 @@ MANDATORY format — ALWAYS emojis, NEVER asterisks:
 • Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο κοτόπουλο → "Κοτόπουλο")
 • Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
 • ΜΗΝ αναλύεις ανά μέρα — δείξε μόνο σύνολα στις παρακάτω κατηγορίες
-ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι:
+ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
 
 🥩 Κρέατα & Ψάρια
 - Κοτόπουλο στήθος: 1.2kg
@@ -159,7 +159,8 @@ MANDATORY format — ALWAYS emojis, NEVER asterisks:
         })
       });
       const data = await res.json();
-      const content = data.advice || t("summary.groceryError");
+      const raw = data.advice || t("summary.groceryError");
+      const content = raw.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1");
       setGroceryList(content);
       if (data.advice) onSavePlan?.({ type: "grocery", content, date: new Date().toLocaleDateString("el-GR") });
     } catch (e) {
