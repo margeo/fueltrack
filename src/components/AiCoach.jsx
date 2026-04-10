@@ -503,10 +503,12 @@ export default function AiCoach({
     if (last.role === "assistant") {
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (lastAssistantRef.current && chatRef.current) {
-          chatRef.current.scrollTop = lastAssistantRef.current.offsetTop;
-        }
-      }, 200);
+        setTimeout(() => {
+          if (lastAssistantRef.current && chatRef.current) {
+            chatRef.current.scrollTop = lastAssistantRef.current.offsetTop;
+          }
+        }, 100);
+      }, 300);
     } else {
       const el = chatRef.current;
       if (el) el.scrollTop = el.scrollHeight;
@@ -896,8 +898,22 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
 
     // GENERAL
     const generalRules = isEn ? `
-Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.` : `
-Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.`;
+Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.
+
+FORMAT RULES (MANDATORY for ALL responses):
+- NEVER use asterisks (**bold** or *italic*) — use emojis and line breaks instead.
+- Use section emojis: 📊 for data, ✅ for positives, ⚠️ for warnings, 💡 for tips, 🎯 for priorities.
+- Keep answers concise — bullet points, not paragraphs.
+- Use line breaks between sections.
+- If there are days without food logging, always mention it.` : `
+Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.
+
+ΚΑΝΟΝΕΣ FORMAT (ΥΠΟΧΡΕΩΤΙΚΟΙ σε ΟΛΕΣ τις απαντήσεις):
+- ΠΟΤΕ αστερίσκοι (**bold** ή *italic*) — χρησιμοποίησε emojis και line breaks.
+- Χρησιμοποίησε emojis ανά section: 📊 δεδομένα, ✅ θετικά, ⚠️ warnings, 💡 tips, 🎯 προτεραιότητες.
+- Σύντομες απαντήσεις — bullet points, όχι παραγράφους.
+- Line breaks μεταξύ sections.
+- Αν υπάρχουν μέρες χωρίς καταγραφή φαγητού, πάντα να το αναφέρεις.`;
 
     // MEAL PLAN
     const simpleRules = simpleMode ? (isEn ? `
