@@ -174,6 +174,18 @@ export default function ProfileTab({
 
   const showGoalFields = goalType === "lose" || goalType === "gain";
   const currentMode = MODES[mode] || MODES.balanced;
+  const isFasting = !!currentMode.fastingHours;
+  const isOmad = mode === "omad";
+  const fastingMaxMeals = isOmad ? "1" : isFasting ? "2" : "4";
+  const fastingMaxSnacks = isFasting ? "0" : "2";
+
+  // Auto-correct meals/snacks when switching to fasting mode
+  useEffect(() => {
+    if (isFasting) {
+      if (Number(mealsPerDay) > Number(fastingMaxMeals)) setMealsPerDay(fastingMaxMeals);
+      if (Number(snacksPerDay) > Number(fastingMaxSnacks)) setSnacksPerDay(fastingMaxSnacks);
+    }
+  }, [mode]);
 
   function getActivityLabel() {
     if (activity === "1.2") return t("profile.sedentary");
@@ -480,27 +492,40 @@ export default function ProfileTab({
                   <div>
                     <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.mealsPerDay")}</div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      {MEALS_OPTIONS.map((n) => (
-                        <button key={n} type="button" onClick={() => setMealsPerDay(mealsPerDay === n ? "" : n)}
-                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      {MEALS_OPTIONS.map((n) => {
+                        const disabled = isFasting && Number(n) > Number(fastingMaxMeals);
+                        return (
+                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && setMealsPerDay(mealsPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.35 : 1,
                             background: mealsPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: mealsPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {n}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   <div>
                     <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.snacksPerDay")}</div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      {SNACKS_OPTIONS.map((n) => (
-                        <button key={n} type="button" onClick={() => setSnacksPerDay(snacksPerDay === n ? "" : n)}
-                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      {SNACKS_OPTIONS.map((n) => {
+                        const disabled = isFasting && Number(n) > Number(fastingMaxSnacks);
+                        return (
+                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && setSnacksPerDay(snacksPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.35 : 1,
                             background: snacksPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: snacksPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {n}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
+                  {isFasting && (
+                    <div style={{ fontSize: 11, color: "#b45309", marginTop: 4 }}>
+                      ⚠️ {isOmad
+                        ? (i18n.language === "en" ? "OMAD: 1 meal only, no snacks" : "OMAD: 1 μόνο γεύμα, χωρίς σνακ")
+                        : (i18n.language === "en" ? `Fasting mode: max ${fastingMaxMeals} meals, no snacks` : `Fasting mode: max ${fastingMaxMeals} γεύματα, χωρίς σνακ`)}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
