@@ -914,8 +914,9 @@ ${askChange}`;
   }
 
   function buildMessages(chatMessage) {
-    // Skip auto-load, preset button clicks, and JSON-mode responses — they're not conversational context
-    const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !msg.msgType).map(msg => ({ role: msg.role, content: msg.text }));
+    // Keep chat_json (custom questions), skip preset JSON responses (meal plan, training, etc.)
+    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "mistakes_json", "macro_analysis_json"];
+    const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !SKIP_TYPES.includes(msg.msgType)).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
@@ -1222,7 +1223,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         } catch { /* parse failed */ }
 
         if (chatData) {
-          setMessages(prev => [...prev, { role: "assistant", chatData, msgType: "chat_json", elapsed, usage: data.usage }]);
+          const chatText = chatData.sections.map(s => `${s.emoji} ${s.title}: ${s.content}`).join("\n") + (chatData.tip ? `\n💡 ${chatData.tip}` : "");
+          setMessages(prev => [...prev, { role: "assistant", chatData, text: chatText, msgType: "chat_json", elapsed, usage: data.usage }]);
         } else {
           setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
         }
