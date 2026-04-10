@@ -532,6 +532,11 @@ RULES:
             <button type="button" onClick={() => openDatePicker(historyDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 12px 4px", gap: 6 }}>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{t("summary.food")}</span>
+          <span style={{ fontSize: 10, color: "var(--text-muted)" }}>·</span>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{t("summary.remaining")}</span>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
             const isExpanded = expandedDay === day.date;
