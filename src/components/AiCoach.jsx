@@ -59,6 +59,12 @@ const INSIGHT_ITEM_SCHEMA = {
   required: ["emoji", "text"],
   additionalProperties: false
 };
+const ISSUE_SCHEMA = {
+  type: "object",
+  properties: { emoji: { type: "string" }, title: { type: "string" }, detail: { type: "string" }, fix: { type: "string" } },
+  required: ["emoji", "title", "detail", "fix"],
+  additionalProperties: false
+};
 const WEEKLY_REVIEW_SCHEMA = {
   type: "json_schema",
   json_schema: {
