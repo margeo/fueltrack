@@ -643,9 +643,9 @@ RULES:
       date: d.date,
       calories_eaten: d.eaten,
       calories_target: targetCalories,
-      protein_g: d.protein || 0,
-      carbs_g: d.carbs || 0,
-      fat_g: d.fat || 0,
+      protein_eaten_g: d.protein || 0,
+      carbs_eaten_g: d.carbs || 0,
+      fat_eaten_g: d.fat || 0,
       protein_target_g: proteinTarget,
       exercise_kcal: d.exercise || 0,
       exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
