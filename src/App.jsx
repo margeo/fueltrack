@@ -401,9 +401,11 @@ export default function App() {
       const date = shiftDate(selectedDate, -index);
       const log = normalizeDayLog(dailyLogs[date]);
       const eaten = log.entries.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+      const protein = log.entries.reduce((sum, item) => sum + Number(item.protein || 0), 0);
       const ex = log.exercises.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+      const exNames = log.exercises.map(e => e.name).filter(Boolean);
       const remaining = targetCalories - eaten + ex;
-      return { date, eaten, exercise: ex, remaining };
+      return { date, eaten, protein: Math.round(protein), exercise: ex, exerciseNames: exNames, remaining };
     });
   }, [selectedDate, dailyLogs, targetCalories]);
 

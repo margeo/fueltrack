@@ -667,11 +667,21 @@ RULES:
     const currentMode = MODES[mode] || MODES.balanced;
     const currentWeight = lastWeight || weight;
 
+    const weekData = (last7Days || []).map(d => ({
+      date: d.date,
+      calories: d.eaten,
+      calories_target: targetCalories,
+      protein_g: d.protein || 0,
+      protein_target_g: proteinTarget,
+      exercise_kcal: d.exercise || 0,
+      exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
+    }));
+
     const input = {
       user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
       goal: goalType,
-      diet: { type: currentMode.label, calories_target: targetCalories, protein_target: proteinTarget },
-      last_7_days: last7Days || [],
+      targets: { calories: targetCalories, protein_g: proteinTarget },
+      last_7_days: weekData,
       weight_log: (weightLog || []).slice(-7),
       language: isEn ? "English" : "Greek"
     };
@@ -680,10 +690,11 @@ RULES:
 Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
 
 RULES:
-1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, and exercise activity.
+1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, and exercise activity. Compare actual values to targets for each day.
 2. 2-4 highlights and 2-4 improvements.
-3. If there are days with zero or no food logging, ALWAYS mention it as an improvement — emphasize that consistent logging is crucial for progress.
-4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+3. If there are days with zero calories, the user did NOT log food — ALWAYS mention it as an improvement.
+4. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
+5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -693,11 +704,21 @@ RULES:
     const currentMode = MODES[mode] || MODES.balanced;
     const currentWeight = lastWeight || weight;
 
+    const weekData = (last7Days || []).map(d => ({
+      date: d.date,
+      calories: d.eaten,
+      calories_target: targetCalories,
+      protein_g: d.protein || 0,
+      protein_target_g: proteinTarget,
+      exercise_kcal: d.exercise || 0,
+      exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
+    }));
+
     const input = {
       user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
       goal: goalType,
-      diet: { type: currentMode.label, calories_target: targetCalories, protein_target: proteinTarget },
-      last_7_days: last7Days || [],
+      targets: { calories: targetCalories, protein_g: proteinTarget },
+      last_7_days: weekData,
       language: isEn ? "English" : "Greek"
     };
 
