@@ -606,8 +606,6 @@ ${askChange}`;
         const nSnacks = Number(snacksPerDay) || 0;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
-        console.log("SNACK_DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, willCallSnacks: nSnacks > 0 });
-        // Override calories and meal_structure for the 3-meal call (strip snack slots)
         const breakfastCal = Math.round(mealsCal * 0.25);
         const lunchCal = Math.round(mealsCal * 0.40);
         const dinnerCal = mealsCal - breakfastCal - lunchCal;
@@ -698,8 +696,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice;
             let result = raw?.weekly_plan || raw;
             snacks = result?.monday ? result : null;
-            console.log("SNACK_RESULT:", snacks?.monday);
-          } catch (e) { console.warn("SNACK_PARSE_ERROR:", e); }
+          } catch { /* snack parse failed */ }
         }
 
         // Merge: meals + snacks → unified day structure
