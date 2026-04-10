@@ -532,11 +532,6 @@ RULES:
             <button type="button" onClick={() => openDatePicker(historyDateRef)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 12px 4px", gap: 6 }}>
-          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{t("summary.food")}</span>
-          <span style={{ fontSize: 10, color: "var(--text-muted)" }}>·</span>
-          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{t("summary.remaining")}</span>
-        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
             const isExpanded = expandedDay === day.date;
@@ -549,25 +544,21 @@ RULES:
                   <span style={{ fontSize: 10, marginRight: 4 }}>{isExpanded ? "▲" : "▼"}</span>
                   {formatDisplayDate(day.date, dateLocale)}
                 </span>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
-                  <span style={{ fontSize: 12 }}
-                    className={day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
-                    {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
-                  </span>
-                  {isExpanded && (
-                    <div style={{ display: "flex", gap: 10, fontSize: 11, opacity: 0.75 }}>
-                      {hasDetails ? (
-                        <>
-                          {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
-                          {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
-                        </>
-                      ) : (
-                        <span>{i18n.language === "en" ? "No data logged" : "Χωρίς καταγραφή"}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <span style={{ fontSize: 12 }}
+                  className={day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
+                  {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
+                </span>
               </button>
+              {isExpanded && (
+                <div style={{ padding: "4px 12px 10px", display: "flex", flexWrap: "wrap", gap: 8, fontSize: 11 }}>
+                  <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🍽️ <strong>{t("summary.food")}:</strong> {formatNumber(day.eaten)} kcal</span>
+                  <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🎯 <strong>{t("summary.target")}:</strong> {formatNumber(targetCalories)} kcal</span>
+                  <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px", color: day.remaining >= 0 ? "#16a34a" : "#dc2626" }}>📊 <strong>{t("summary.remaining")}:</strong> {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} kcal</span>
+                  {day.protein > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🥩 <strong>Protein:</strong> {day.protein}g</span>}
+                  {day.exercise > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🏃 <strong>{t("summary.exercise")}:</strong> {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
+                  {!hasDetails && !day.eaten && <span style={{ color: "var(--text-muted)" }}>{i18n.language === "en" ? "No data logged" : "Χωρίς καταγραφή"}</span>}
+                </div>
+              )}
             </div>
             );
           })}
