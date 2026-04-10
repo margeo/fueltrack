@@ -531,20 +531,33 @@ export default function AiCoach({
     const isEn = i18n.language === "en";
     const currentWeight = lastWeight || weight;
     const bmi = currentWeight && height ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
+    const nMeals = Number(mealsPerDay) || 3;
     const nSnacks = Number(snacksPerDay) || 0;
     const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
     const remainingForMeals = targetCalories - snackCal * nSnacks;
-    const breakfastCal = Math.round(remainingForMeals * 0.25);
-    const lunchCal = Math.round(remainingForMeals * 0.40);
-    const dinnerCal = remainingForMeals - breakfastCal - lunchCal;
 
-    const mealDefs = [
-      { slot: "meal_1", role: "Breakfast", target_calories: breakfastCal },
-      ...(nSnacks >= 1 ? [{ slot: "meal_2", role: "Morning Snack (~200-300kcal, light: yogurt/fruit/nuts)", target_calories: snackCal }] : []),
-      { slot: nSnacks >= 1 ? "meal_3" : "meal_2", role: "Lunch", target_calories: lunchCal },
-      ...(nSnacks >= 2 ? [{ slot: "meal_4", role: "Afternoon Snack (~200-300kcal, light: fruit/nuts)", target_calories: snackCal }] : []),
-      { slot: nSnacks >= 2 ? "meal_5" : nSnacks >= 1 ? "meal_4" : "meal_3", role: "Dinner", target_calories: dinnerCal }
-    ];
+    // Dynamic meal roles based on mealsPerDay
+    const mealRoles = nMeals === 1
+      ? [{ role: "Main Meal", pct: 1.0 }]
+      : nMeals === 2
+      ? [{ role: "Lunch", pct: 0.45 }, { role: "Dinner", pct: 0.55 }]
+      : nMeals === 4
+      ? [{ role: "Breakfast", pct: 0.20 }, { role: "Lunch", pct: 0.35 }, { role: "Afternoon Meal", pct: 0.20 }, { role: "Dinner", pct: 0.25 }]
+      : [{ role: "Breakfast", pct: 0.25 }, { role: "Lunch", pct: 0.40 }, { role: "Dinner", pct: 0.35 }];
+
+    let slotIdx = 1;
+    const mainMealDefs = mealRoles.map(m => {
+      const cal = Math.round(remainingForMeals * m.pct);
+      return { slot: `meal_${slotIdx++}`, role: m.role, target_calories: cal };
+    });
+
+    // Insert snacks between meals
+    const mealDefs = [];
+    mainMealDefs.forEach((m, i) => {
+      mealDefs.push(m);
+      if (nSnacks >= 1 && i === 0 && mainMealDefs.length > 1) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Morning Snack (~200-300kcal, light: yogurt/fruit/nuts)", target_calories: snackCal });
+      if (nSnacks >= 2 && i === 1 && mainMealDefs.length > 2) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Afternoon Snack (~200-300kcal, light: fruit/nuts)", target_calories: snackCal });
+    });
     const mealSlots = mealDefs.map(m => m.slot);
 
     const foodItemLabels = {
@@ -1023,34 +1036,23 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { userMessage } = buildMealPlanJSON();
+        const { userMessage, mealSlots: buildSlots } = buildMealPlanJSON();
         const isEn = i18n.language === "en";
         const inputData = JSON.parse(userMessage);
-        const nSnacks = Number(snacksPerDay) || 0;
-        const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
-        const mealsCal = targetCalories - snackCal * nSnacks;
-        const breakfastCal = Math.round(mealsCal * 0.25);
-        const lunchCal = Math.round(mealsCal * 0.40);
-        const dinnerCal = mealsCal - breakfastCal - lunchCal;
-        const mealsInput = {
-          ...inputData,
-          nutrition: { ...inputData.nutrition, calories_target: mealsCal },
-          meal_structure: [
-            { slot: "meal_1", role: "Breakfast", target_calories: breakfastCal },
-            { slot: "meal_2", role: "Lunch", target_calories: lunchCal },
-            { slot: "meal_3", role: "Dinner", target_calories: dinnerCal }
-          ]
-        };
+        // Use main meal slots from buildMealPlanJSON (respects mealsPerDay)
+        const mainMealDefs = inputData.meal_structure.filter(m => !m.role.includes("Snack"));
+        const mainSlots = mainMealDefs.map(m => m.slot);
+        const mealsCal = mainMealDefs.reduce((s, m) => s + m.target_calories, 0);
 
-        // Call 1: 3 main meals × 7 days
+        const slotRules = mainMealDefs.map(m => `- "${m.slot}": ${m.role} (~${m.target_calories}kcal)`).join("\n");
+        const slotList = mainMealDefs.map(m => `${m.slot} (${m.role})`).join(", ");
+
         const mealsPrompt = `You are a JSON Diet Generator. Return a JSON object with 7 days (monday-sunday).
-Each day has EXACTLY 3 meals: meal_1 (Breakfast), meal_2 (Lunch), meal_3 (Dinner), and daily_total.
+Each day has EXACTLY ${mainSlots.length} meal(s): ${slotList}, and daily_total.
 Each meal: "desc" (brief, with grams), "kcal" (integer).
 
 CALORIE TARGETS (MANDATORY - each meal MUST match these):
-- "meal_1": Breakfast (~${breakfastCal}kcal)
-- "meal_2": Lunch (~${lunchCal}kcal)
-- "meal_3": Dinner (~${dinnerCal}kcal)
+${slotRules}
 - daily_total: ${mealsCal}
 
 No leftovers. Unique meals each day. Respect input data.
@@ -1058,15 +1060,17 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         const mealsReq = {
           systemPrompt: mealsPrompt,
-          messages: [{ role: "user", content: JSON.stringify(mealsInput) }],
+          messages: [{ role: "user", content: JSON.stringify({ ...inputData, meal_structure: mainMealDefs }) }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
-          mealSlots: ["meal_1", "meal_2", "meal_3"],
+          mealSlots: mainSlots,
           snackSlots: [],
           schemaDays: DAY_KEYS
         };
 
         // Call 2: snacks (only if user wants snacks)
+        const nSnacks = Number(snacksPerDay) || 0;
+        const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         let snacksReq = null;
         const snackSlotNames = [];
         if (nSnacks > 0) {
