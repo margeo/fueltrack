@@ -626,12 +626,16 @@ EXAMPLE (monday):
       language: isEn ? "English" : "Greek"
     };
 
+    const restDayRule = workoutFrequency
+      ? (isEn ? `The user wants to train ${workoutFrequency}x per week. Schedule exactly ${workoutFrequency} workout days and ${7 - Number(workoutFrequency)} rest days.` : `Ο χρήστης θέλει να γυμνάζεται ${workoutFrequency}x την εβδομάδα. Βάλε ακριβώς ${workoutFrequency} μέρες προπόνησης και ${7 - Number(workoutFrequency)} μέρες ξεκούρασης.`)
+      : (isEn ? "Choose an appropriate number of rest days based on the user's fitness level and goals." : "Επέλεξε κατάλληλο αριθμό ημερών ξεκούρασης βάσει του επιπέδου φυσικής κατάστασης και των στόχων του χρήστη.");
+
     const systemPrompt = `You are a JSON Training Plan Generator. Return a JSON object with exactly 7 days (monday-sunday).
 Each day: "workout_type" (string), "exercises" (array of {name, detail}), "duration_min" (integer).
 For rest days: workout_type="${isEn ? "Rest" : "Ξεκούραση"}", exercises=[], duration_min=0.
 
 RULES:
-1. Include at least 2 rest days per week.
+1. ${restDayRule}
 2. Each exercise "detail" should include sets × reps or duration (e.g. "3 sets × 12 reps" or "30 min").
 3. Respect user's fitness level, equipment, location, and limitations.
 4. Vary workout types across the week.
@@ -919,8 +923,12 @@ ${disclaimer}
 ${askChange}`;
 
     // TRAINING PLAN
+    const tpRestRule = workoutFrequency
+      ? (isEn ? `Train ${workoutFrequency}x/week, ${7 - Number(workoutFrequency)} rest days.` : `Προπόνηση ${workoutFrequency}x/εβδομάδα, ${7 - Number(workoutFrequency)} μέρες ξεκούρασης.`)
+      : (isEn ? "Choose rest days based on fitness level." : "Επέλεξε μέρες ξεκούρασης βάσει επιπέδου.");
+
     const trainingPlanFormat = isEn ? `
-Create a weekly training plan. Consider favorite exercises. 2+ rest days.
+Create a weekly training plan. Consider favorite exercises. ${tpRestRule}
 MANDATORY format — ALWAYS emojis:
 
 📅 ${dayLabels.mon} — [workout type]
@@ -932,7 +940,7 @@ Duration: ~[X]min
 AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it:
 ${disclaimer}
 ${askChange}` : `
-Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής. Λάβε υπόψη αγαπημένες ασκήσεις. 2+ rest days.
+Δώσε εβδομαδιαίο πρόγραμμα γυμναστικής. Λάβε υπόψη αγαπημένες ασκήσεις. ${tpRestRule}
 ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
 
 📅 ΔΕΥΤΕΡΑ — [τύπος προπόνησης]

@@ -497,7 +497,7 @@
       "pull_up_bar": "Pull-up bar",
       "kettlebell": "Kettlebell"
     },
-    "schedule": "Schedule",
+    "schedule": "Desired workout frequency",
     "frequency": "Frequency (times/week)",
     "sessionDuration": "Session duration",
     "min": "min",
