@@ -272,7 +272,7 @@ MANDATORY format — ALWAYS emojis, NEVER asterisks:
         {groceryLoading ? (
           <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
         ) : groceryList && groceryExpanded ? (
-          <div style={{ maxHeight: 400, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "var(--border-color) transparent" }}>
+          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
             <GroceryListView content={groceryList} />
           </div>
         ) : !groceryList && !groceryLoading ? (
