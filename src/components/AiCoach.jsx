@@ -498,12 +498,10 @@ export default function AiCoach({
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         if (chatRef.current) {
-          // Find the user message before the last assistant response and scroll to it
+          // Scroll to the assistant response (last message), not the question
           const children = chatRef.current.children;
-          const lastIdx = messages.length - 1;
-          const userIdx = lastIdx - 1;
-          const userEl = userIdx >= 0 && children[userIdx] ? children[userIdx] : null;
-          chatRef.current.scrollTop = userEl ? userEl.offsetTop : (lastAssistantRef.current?.offsetTop || 0);
+          const lastEl = children[children.length - 1];
+          chatRef.current.scrollTop = lastEl ? lastEl.offsetTop : chatRef.current.scrollHeight;
         }
       }, 200);
     } else {
