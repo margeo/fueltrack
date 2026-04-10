@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { supabase } from "../supabaseClient";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
 function parseEatNowCards(text) {
   try {
@@ -100,6 +100,119 @@ const EATNOW_SCHEMA = {
     }
   }
 };
+
+const INSIGHT_ITEM_SCHEMA = {
+  type: "object",
+  properties: { emoji: { type: "string" }, text: { type: "string" } },
+  required: ["emoji", "text"],
+  additionalProperties: false
+};
+const WEEKLY_REVIEW_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "weekly_review",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        summary: { type: "string" },
+        score: { type: "integer" },
+        highlights: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        improvements: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        tip: { type: "string" }
+      },
+      required: ["summary", "score", "highlights", "improvements", "tip"],
+      additionalProperties: false
+    }
+  }
+};
+
+const ISSUE_SCHEMA = {
+  type: "object",
+  properties: { emoji: { type: "string" }, title: { type: "string" }, detail: { type: "string" }, fix: { type: "string" } },
+  required: ["emoji", "title", "detail", "fix"],
+  additionalProperties: false
+};
+const MISTAKES_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "mistakes_review",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        issues: { type: "array", items: ISSUE_SCHEMA },
+        doing_right: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        top_priority: { type: "string" }
+      },
+      required: ["issues", "doing_right", "top_priority"],
+      additionalProperties: false
+    }
+  }
+};
+
+function WeeklyReviewView({ data, lang }) {
+  if (!data) return null;
+  const isEn = lang === "en";
+  const scoreColor = data.score >= 7 ? "#16a34a" : data.score >= 4 ? "#d97706" : "#dc2626";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+      <div style={{ textAlign: "center", marginBottom: 4 }}>
+        <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor }}>{data.score}/10</div>
+        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{data.summary}</div>
+      </div>
+      {data.highlights?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Doing well" : "Πάει καλά"}</div>
+          {data.highlights.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+        </div>
+      )}
+      {data.improvements?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "To improve" : "Για βελτίωση"}</div>
+          {data.improvements.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+        </div>
+      )}
+      {data.tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {data.tip}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MistakesReviewView({ data, lang }) {
+  if (!data) return null;
+  const isEn = lang === "en";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+      {data.top_priority && (
+        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          🎯 <strong>{isEn ? "Top priority" : "Προτεραιότητα #1"}:</strong> {data.top_priority}
+        </div>
+      )}
+      {data.issues?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Issues" : "Προβλήματα"}</div>
+          {data.issues.map((issue, i) => (
+            <div key={i} style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>{issue.emoji} {issue.title}</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>{issue.detail}</div>
+              <div style={{ fontSize: 12, color: "#16a34a", lineHeight: 1.5 }}>→ {issue.fix}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {data.doing_right?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Doing right" : "Κάνεις σωστά"}</div>
+          {data.doing_right.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function renderTrainingPlanText(data, lang) {
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
@@ -523,6 +636,56 @@ RULES:
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
 
+  function buildWeeklyReviewJSON() {
+    const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
+    const currentWeight = lastWeight || weight;
+
+    const input = {
+      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
+      goal: goalType,
+      diet: { type: currentMode.label, calories_target: targetCalories, protein_target: proteinTarget },
+      last_7_days: last7Days || [],
+      weight_log: (weightLog || []).slice(-7),
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are a fitness coach reviewing the user's weekly progress. Return a JSON object.
+Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
+
+RULES:
+1. Be encouraging but honest. Score based on consistency, calorie adherence, and activity.
+2. 2-4 highlights and 2-4 improvements.
+3. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
+
+  function buildMistakesJSON() {
+    const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
+    const currentWeight = lastWeight || weight;
+
+    const input = {
+      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
+      goal: goalType,
+      diet: { type: currentMode.label, calories_target: targetCalories, protein_target: proteinTarget },
+      last_7_days: last7Days || [],
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are a strict but constructive fitness coach. Analyze the user's data and identify mistakes. Return a JSON object.
+Fields: "issues" (array of {emoji, title, detail, fix}), "doing_right" (array of {emoji, text}), "top_priority" (the #1 most important thing to fix).
+
+RULES:
+1. Be specific — reference actual data (days, calories, patterns).
+2. Each issue must have a concrete fix.
+3. Also mention 1-3 things they're doing right.
+4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
+
   function buildSystemPrompt(taskType = "general") {
     const currentMode = MODES[mode] || MODES.balanced;
     const lang = i18n.language;
@@ -770,7 +933,9 @@ ${askChange}`;
     const isEatNow = text === t("aiCoach.q1");
     const isMealPlan = text === t("aiCoach.q2");
     const isTrainingPlan = text === t("aiCoach.q3");
-    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : "general";
+    const isWeeklyReview = text === t("aiCoach.q4");
+    const isMistakes = text === t("aiCoach.q5");
+    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
@@ -1011,6 +1176,35 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         }
         setHasLoaded(true);
         return;
+      } else if (isWeeklyReview || isMistakes) {
+        // Weekly review / Mistakes — JSON mode
+        const { systemPrompt: rPrompt, userMessage: rInput } = isWeeklyReview ? buildWeeklyReviewJSON() : buildMistakesJSON();
+        const rReq = {
+          systemPrompt: rPrompt,
+          messages: [{ role: "user", content: rInput }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: isWeeklyReview ? WEEKLY_REVIEW_SCHEMA : MISTAKES_SCHEMA
+        };
+        const rResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rReq) });
+        if (!rResponse.ok) throw new Error(`Connection error (${rResponse.status})`);
+        const rData = await rResponse.json();
+        if (rData.error) throw new Error(rData.error);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let reviewData = null;
+        try {
+          const raw = typeof rData.advice === "string" ? JSON.parse(rData.advice) : rData.advice;
+          reviewData = raw;
+        } catch { /* parse failed */ }
+
+        if (reviewData && (reviewData.score !== undefined || reviewData.issues)) {
+          setMessages(prev => [...prev, { role: "assistant", reviewData, msgType: isWeeklyReview ? "weekly_review_json" : "mistakes_json", elapsed, usage: rData.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: rData.advice || "Error", elapsed, usage: rData.usage }]);
+        }
+        setHasLoaded(true);
+        return;
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
@@ -1198,6 +1392,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ) : msg.msgType === "eatnow" ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <EatNowCards text={msg.text} />
+                </div>
+              ) : (msg.msgType === "weekly_review_json" || msg.msgType === "mistakes_json") && msg.reviewData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  {msg.msgType === "weekly_review_json" ? <WeeklyReviewView data={msg.reviewData} lang={i18n.language} /> : <MistakesReviewView data={msg.reviewData} lang={i18n.language} />}
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div style={{ maxWidth: "90%", padding: "10px 14px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.error ? "#fef2f2" : msg.role === "user" ? "var(--color-accent)" : "var(--bg-soft)", color: msg.role === "user" && !msg.error ? "var(--bg-card)" : "var(--text-primary)", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", border: msg.error ? "1px solid #fecaca" : msg.role === "assistant" ? "1px solid var(--border-soft)" : "none" }}>
