@@ -11,38 +11,6 @@ function stripMarkdown(text) {
   return text.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1");
 }
 
-function parseEatNowCards(text) {
-  try {
-    const blocks = text.trim().split(/\n\n+/).filter((b) => b.trim().length > 0);
-    if (blocks.length < 2) return null;
-    const cards = blocks.slice(0, 3).map((block) => {
-      const lines = block.trim().split("\n").filter((l) => l.trim());
-      if (lines.length < 2) return null;
-      return { title: lines[0].trim(), stats: lines[1].trim(), desc: lines[2]?.trim() || "" };
-    }).filter(Boolean);
-    if (cards.length < 2) return null;
-    return cards;
-  } catch { return null; }
-}
-
-function EatNowCards({ text }) {
-  const { t } = useTranslation();
-  const cards = parseEatNowCards(text);
-  if (!cards) return <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</span>;
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
-      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 {t("aiCoach.optionsNow")}</div>
-      {cards.map((card, i) => (
-        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title}</div>
-          <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.desc ? 3 : 0 }}>{card.stats}</div>
-          {card.desc && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.desc}</div>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
 
@@ -71,36 +39,6 @@ const TRAINING_SCHEMA = {
       type: "object",
       properties: Object.fromEntries(DAY_KEYS.map(d => [d, TRAINING_DAY_SCHEMA])),
       required: DAY_KEYS,
-      additionalProperties: false
-    }
-  }
-};
-
-const EATNOW_OPTION_SCHEMA = {
-  type: "object",
-  properties: {
-    emoji: { type: "string" },
-    title: { type: "string" },
-    kcal: { type: "integer" },
-    protein_g: { type: "integer" },
-    reason: { type: "string" }
-  },
-  required: ["emoji", "title", "kcal", "protein_g", "reason"],
-  additionalProperties: false
-};
-const EATNOW_SCHEMA = {
-  type: "json_schema",
-  json_schema: {
-    name: "eat_now",
-    strict: true,
-    schema: {
-      type: "object",
-      properties: {
-        option_1: EATNOW_OPTION_SCHEMA,
-        option_2: EATNOW_OPTION_SCHEMA,
-        option_3: EATNOW_OPTION_SCHEMA
-      },
-      required: ["option_1", "option_2", "option_3"],
       additionalProperties: false
     }
   }
@@ -703,62 +641,6 @@ RULES:
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
 
-  function buildEatNowJSON() {
-    const isEn = i18n.language === "en";
-    const currentMode = MODES[mode] || MODES.balanced;
-    const hour = new Date().getHours();
-    const mealTime = isEn
-      ? (hour < 10 ? "breakfast" : hour < 12 ? "morning snack" : hour < 15 ? "lunch" : hour < 18 ? "afternoon snack" : "dinner")
-      : (hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό");
-    const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const todayLog = dailyLogs?.[todayKey] || { entries: [] };
-    const todayEntries = Array.isArray(todayLog.entries) ? todayLog.entries : [];
-    const eatenSoFar = todayEntries.length > 0
-      ? todayEntries.map(e => e.name || e.food).join(", ")
-      : (isEn ? "nothing yet" : "τίποτα ακόμα");
-
-    const foodItemLabels = {
-      chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
-      fish: isEn?"Fish":"Ψάρι", turkey: isEn?"Turkey":"Γαλοπούλα", eggs: isEn?"Eggs":"Αυγά",
-      legumes: isEn?"Legumes":"Όσπρια", tofu: isEn?"Tofu":"Τόφου",
-      salads: isEn?"Salads":"Σαλάτες", cooked_veggies: isEn?"Cooked veggies":"Μαγειρεμένα λαχανικά", soups: isEn?"Soups":"Σούπες",
-      rice: isEn?"Rice":"Ρύζι", pasta: isEn?"Pasta":"Ζυμαρικά", bread: isEn?"Bread":"Ψωμί",
-      potatoes: isEn?"Potatoes":"Πατάτες", oats: isEn?"Oats":"Βρώμη",
-      yogurt: isEn?"Yogurt":"Γιαούρτι", cheese: isEn?"Cheese":"Τυρί", milk: isEn?"Milk":"Γάλα",
-      fruits: isEn?"Fruits":"Φρούτα", nuts_snack: isEn?"Nuts":"Ξηροί καρποί", smoothies: isEn?"Smoothies":"Smoothies"
-    };
-
-    const input = {
-      current_hour: hour,
-      meal_time: mealTime,
-      remaining_calories: remainingCalories || targetCalories,
-      remaining_protein_g: remProtein,
-      eaten_today: eatenSoFar,
-      diet: { type: currentMode.label, rules: currentMode.aiRule },
-      preferences: {
-        preferred_foods: (foodCategories || []).map(f => foodItemLabels[f] || f),
-        favorites: (favoriteFoods || []).slice(0, 6).map(f => f.name),
-        allergies: allergies || [],
-        cooking_level: cookingLevel || "",
-        cooking_time: cookingTime || ""
-      },
-      language: isEn ? "English" : "Greek"
-    };
-
-    const systemPrompt = `You are a meal suggestion engine. Return exactly 3 meal options for the user's next meal.
-Each option: "emoji" (single food emoji), "title" (meal name with portions in grams), "kcal" (integer), "protein_g" (integer), "reason" (one sentence why it fits).
-
-RULES:
-1. Each option must fit within the user's remaining calories and protein needs.
-2. Respect the user's diet type strictly.
-3. Consider what they've already eaten today to avoid repetition.
-4. Consider the time of day (meal_time).
-5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
-
-    return { systemPrompt, userMessage: JSON.stringify(input) };
-  }
-
   function buildWeeklyReviewJSON() {
     const isEn = i18n.language === "en";
     const currentMode = MODES[mode] || MODES.balanced;
@@ -929,19 +811,19 @@ ${isEn ? "TODAY" : "ΣΗΜΕΡΑ"}: ${todayName} ${todayDate}
 ${isEn ? "Age" : "Ηλικία"}:${age||"—"} ${isEn ? "Sex" : "Φύλο"}:${gender==="male"?(isEn?"Male":"Άνδρας"):(isEn?"Female":"Γυναίκα")} ${isEn ? "Height" : "Ύψος"}:${height||"—"}cm ${isEn ? "Weight" : "Βάρος"}:${currentWeight||"—"}kg${bmi?` BMI:${bmi}`:""}${weightTrend?` ${isEn?"Trend":"Τάση"}:${weightTrend}kg`:""}
 ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
 
-    // NUTRITION TARGETS: meal_plan, eatnow, general
+    // NUTRITION TARGETS: meal_plan, general
     const nutritionTargets = `\n${isEn ? "Calories" : "Θερμίδες"}:${targetCalories}kcal | ${isEn ? "Protein" : "Πρωτεΐνη"}:${proteinTarget}g/${isEn?"day":"μέρα"}`;
 
-    // TODAY'S INTAKE: eatnow, general
+    // TODAY'S INTAKE: general
     const todayIntake = `\n${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal`;
 
     // WEEK SUMMARY: general μόνο
     const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
 
-    // FOOD CONTEXT: meal_plan, eatnow, general (NOT training_plan)
+    // FOOD CONTEXT: meal_plan, general (NOT training_plan)
     const foodContext = foodPrefsLine;
 
-    // FITNESS CONTEXT: training_plan, general (NOT meal_plan, NOT eatnow)
+    // FITNESS CONTEXT: training_plan, general (NOT meal_plan)
     const fitnessContext = `${exercisePrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
 
     // MODE RULES: πάντα
@@ -1067,8 +949,6 @@ ${askChange}`;
     if (taskType === "meal_plan") return core + nutritionTargets + foodContext + modeBlock + mealPlanFormat;
     // training_plan: fitness prefs, NO food/targets/week/mode
     if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
-    // eatnow: food prefs + today's intake, NO fitness/week
-    if (taskType === "eatnow") return core + nutritionTargets + todayIntake + foodContext + modeBlock;
     // initial auto-load: everything (weekly analysis)
     if (taskType === "initial") return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
     // general chat: profile + today only, NO weekly history (user has dedicated buttons for that)
@@ -1095,13 +975,12 @@ ${askChange}`;
 
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
-    const isEatNow = text === t("aiCoach.q1");
     const isMealPlan = text === t("aiCoach.q2");
     const isTrainingPlan = text === t("aiCoach.q3");
     const isWeeklyReview = text === t("aiCoach.q4");
     const isMistakes = text === t("aiCoach.q5");
     const isMacroAnalysis = text === t("aiCoach.q6");
-    const taskType = isInitial ? "initial" : isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
+    const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
@@ -1109,21 +988,6 @@ ${askChange}`;
       effectiveMessage = isEn
         ? `Look at my data:\n1. What to eat for the rest of the day (${currentMode.label} diet, ${targetCalories}kcal)\n2. Flag any empty days\n3. Should I exercise today\n4. One thing I'm doing wrong\n5. Ask me something`
         : `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (διατροφή ${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
-    } else if (isEatNow) {
-      const hour = new Date().getHours();
-      const mealTime = isEn
-        ? (hour < 10 ? "breakfast" : hour < 12 ? "morning snack" : hour < 15 ? "lunch" : hour < 18 ? "afternoon snack" : "dinner")
-        : (hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό");
-      const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
-      const todayKey = new Date().toISOString().slice(0, 10);
-      const todayLog = dailyLogs?.[todayKey] || { entries: [] };
-      const todayEntries = Array.isArray(todayLog.entries) ? todayLog.entries : [];
-      const eatenSoFar = todayEntries.length > 0
-        ? todayEntries.map(e => e.name || e.food).join(", ")
-        : (isEn ? "nothing yet" : "τίποτα ακόμα");
-      effectiveMessage = isEn
-        ? `It's ${hour}:00, next meal is ${mealTime}. Give 3 options based on my food profile and favorites.\nEaten today so far: ${eatenSoFar}\nRemaining: ${remainingCalories}kcal | Protein needed: ${remProtein}g | Diet: ${currentMode.label}\n\nFormat — EXACTLY like this (blank line between, NOTHING else before or after):\n\n[emoji] [Meal]\n[X]kcal • [X]g protein\n[One sentence why it fits]\n\n[emoji] [Meal 2]\n[X]kcal • [X]g protein\n[One sentence]\n\n[emoji] [Meal 3]\n[X]kcal • [X]g protein\n[One sentence]`
-        : `Ώρα ${hour}:00, επόμενο γεύμα: ${mealTime}. Δώσε 3 επιλογές βασισμένες στο διατροφικό μου προφίλ και τα αγαπημένα μου.\nΈχω φάει σήμερα: ${eatenSoFar}\nΥπόλοιπο: ${remainingCalories}kcal | Πρωτεΐνη που χρειάζομαι: ${remProtein}g | Διατροφή: ${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
     } else if (isMealPlan) {
       effectiveMessage = isEn
         ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. Include ALL meals${Number(snacksPerDay) > 0 ? " AND snacks" : ""} as specified in the format.`
@@ -1311,37 +1175,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         } else {
           const isEn2 = i18n.language === "en";
           setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ The training plan could not be generated. Please try again." : "⚠️ Το πρόγραμμα γυμναστικής δεν ολοκληρώθηκε. Δοκίμασε ξανά.", error: true, elapsed, usage: tpData.usage }]);
-        }
-        setHasLoaded(true);
-        return;
-      } else if (isEatNow) {
-        // Eat now — JSON mode
-        const { systemPrompt: enPrompt, userMessage: enInput } = buildEatNowJSON();
-        const enReq = {
-          systemPrompt: enPrompt,
-          messages: [{ role: "user", content: enInput }],
-          ...(selectedModel && { model: selectedModel }),
-          jsonMode: true,
-          customSchema: EATNOW_SCHEMA
-        };
-        const enResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(enReq) });
-        if (!enResponse.ok) throw new Error(`Connection error (${enResponse.status})`);
-        const enData = await enResponse.json();
-        if (enData.error) throw new Error(enData.error);
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-        let eatNowData = null;
-        try {
-          const raw = typeof enData.advice === "string" ? JSON.parse(enData.advice) : enData.advice;
-          eatNowData = raw?.option_1 ? raw : null;
-        } catch { /* parse failed */ }
-
-        if (eatNowData) {
-          const cards = [eatNowData.option_1, eatNowData.option_2, eatNowData.option_3].filter(Boolean);
-          setMessages(prev => [...prev, { role: "assistant", eatNowCards: cards, msgType: "eatnow_json", elapsed, usage: enData.usage }]);
-        } else {
-          const isEn2 = i18n.language === "en";
-          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ Could not generate meal options. Please try again." : "⚠️ Δεν ήταν δυνατή η δημιουργία προτάσεων. Δοκίμασε ξανά.", error: true, elapsed, usage: enData.usage }]);
         }
         setHasLoaded(true);
         return;
@@ -1584,28 +1417,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
                     </div>
                   )}
-                </div>
-              ) : msg.msgType === "eatnow_json" && msg.eatNowCards ? (
-                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 {t("aiCoach.optionsNow")}</div>
-                    {msg.eatNowCards.map((card, ci) => (
-                      <div key={ci} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.emoji} {card.title}</div>
-                        <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.reason ? 3 : 0 }}>{card.kcal}kcal • {card.protein_g}g {i18n.language === "en" ? "protein" : "πρωτεΐνη"}</div>
-                        {card.reason && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.reason}</div>}
-                      </div>
-                    ))}
-                  </div>
-                  {isAdmin && msg.elapsed && !msg.error && (
-                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
-                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
-                    </div>
-                  )}
-                </div>
-              ) : msg.msgType === "eatnow" ? (
-                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
-                  <EatNowCards text={msg.text} />
                 </div>
               ) : (msg.msgType === "weekly_review_json" || msg.msgType === "mistakes_json") && msg.reviewData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
