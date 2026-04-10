@@ -6,6 +6,11 @@ import { supabase } from "../supabaseClient";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5", "aiCoach.q6"];
 
+function stripMarkdown(text) {
+  if (!text) return text;
+  return text.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1");
+}
+
 function parseEatNowCards(text) {
   try {
     const blocks = text.trim().split(/\n\n+/).filter((b) => b.trim().length > 0);
@@ -900,13 +905,11 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     const generalRules = isEn ? `
 Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.
 
-FORMAT RULES (MANDATORY):
-- NEVER use asterisks (**bold** or *italic*) — use emojis and line breaks instead.
+FORMAT RULES:
 - Keep answers concise — bullet points, not paragraphs.` : `
 Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.
 
-ΚΑΝΟΝΕΣ FORMAT (ΥΠΟΧΡΕΩΤΙΚΟΙ):
-- ΠΟΤΕ αστερίσκοι (**bold** ή *italic*) — χρησιμοποίησε emojis και line breaks.
+ΚΑΝΟΝΕΣ FORMAT:
 - Σύντομες απαντήσεις — bullet points, όχι παραγράφους.`;
 
     // MEAL PLAN
@@ -972,7 +975,7 @@ ${(() => {
   const breakfastCal = Math.round(mealCal * 0.8);
   const lunchCal = Math.round(mealCal * 1.15);
   const dinnerCal = targetCalories - breakfastCal - lunchCal - snackCal * nSnacks;
-  return `${isEn ? "MANDATORY format — ALWAYS emojis, NEVER asterisks. Each meal MUST hit its calorie target:" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis, ΠΟΤΕ αστερίσκοι. Κάθε γεύμα ΠΡΕΠΕΙ να πιάνει τον στόχο θερμίδων:"}
+  return `${isEn ? "MANDATORY format — ALWAYS emojis. Each meal MUST hit its calorie target:" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis. Κάθε γεύμα ΠΡΕΠΕΙ να πιάνει τον στόχο θερμίδων:"}
 
 📅 ${dayLabels.mon}
 🌅 ${dayLabels.breakfast} — [${isEn ? "meal with portions in grams" : "γεύμα με μερίδες σε γραμμάρια"}] (~${breakfastCal}kcal)
@@ -1077,8 +1080,8 @@ ${askChange}`;
         : `Ώρα ${hour}:00, επόμενο γεύμα: ${mealTime}. Δώσε 3 επιλογές βασισμένες στο διατροφικό μου προφίλ και τα αγαπημένα μου.\nΈχω φάει σήμερα: ${eatenSoFar}\nΥπόλοιπο: ${remainingCalories}kcal | Πρωτεΐνη που χρειάζομαι: ${remProtein}g | Διατροφή: ${currentMode.label}\n\nFormat — ΑΚΡΙΒΩΣ έτσι (κενή γραμμή μεταξύ, ΤΙΠΟΤΑ άλλο πριν ή μετά):\n\n[emoji] [Γεύμα]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση γιατί ταιριάζει]\n\n[emoji] [Γεύμα 2]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]\n\n[emoji] [Γεύμα 3]\n[X]kcal • [X]g πρωτεΐνη\n[Μια πρόταση]`;
     } else if (isMealPlan) {
       effectiveMessage = isEn
-        ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. Include ALL meals${Number(snacksPerDay) > 0 ? " AND snacks" : ""} as specified in the format. NEVER asterisks.`
-        : `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Ξεκίνα ΑΜΕΣΑ με το πρόγραμμα, ΜΗΝ κάνεις ερωτήσεις πρώτα. Συμπερίλαβε ΟΛΑ τα γεύματα${Number(snacksPerDay) > 0 ? " ΚΑΙ τα σνακ" : ""} όπως ορίζονται στο format. ΠΟΤΕ αστερίσκοι.`;
+        ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. Include ALL meals${Number(snacksPerDay) > 0 ? " AND snacks" : ""} as specified in the format.`
+        : `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Ξεκίνα ΑΜΕΣΑ με το πρόγραμμα, ΜΗΝ κάνεις ερωτήσεις πρώτα. Συμπερίλαβε ΟΛΑ τα γεύματα${Number(snacksPerDay) > 0 ? " ΚΑΙ τα σνακ" : ""} όπως ορίζονται στο format.`;
     } else if (isTrainingPlan) {
       effectiveMessage = isEn
         ? `Create a weekly training plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. MANDATORY format with 📅 💪 😴.`
@@ -1377,7 +1380,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       {
         setMessages(prev => [
           ...prev,
-          { role: "assistant", text: data.advice, elapsed, usage: data.usage }
+          { role: "assistant", text: stripMarkdown(data.advice), elapsed, usage: data.usage }
         ]);
       }
       setHasLoaded(true);
