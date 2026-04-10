@@ -8,7 +8,7 @@ import { EXERCISE_LIBRARY } from "../../data/constants";
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
 const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
 const COOKING_TIMES = ["quick", "normal", "elaborate"];
-const MEALS_OPTIONS = ["2", "3", "4"];
+const MEALS_OPTIONS = ["1", "2", "3", "4"];
 const SNACKS_OPTIONS = ["0", "1", "2"];
 const FOOD_CATEGORIES = [
   { key: "proteins", emoji: "🥩", items: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"] },
@@ -179,11 +179,11 @@ export default function ProfileTab({
   const fastingMaxMeals = isOmad ? "1" : isFasting ? "2" : "4";
   const fastingMaxSnacks = isFasting ? "0" : "2";
 
-  // Auto-correct meals/snacks when switching to fasting mode
+  // Force meals/snacks when switching to fasting mode
   useEffect(() => {
     if (isFasting) {
-      if (Number(mealsPerDay) > Number(fastingMaxMeals)) setMealsPerDay(fastingMaxMeals);
-      if (Number(snacksPerDay) > Number(fastingMaxSnacks)) setSnacksPerDay(fastingMaxSnacks);
+      setMealsPerDay(fastingMaxMeals);
+      setSnacksPerDay("0");
     }
   }, [mode]);
 
@@ -494,9 +494,10 @@ export default function ProfileTab({
                     <div style={{ display: "flex", gap: 6 }}>
                       {MEALS_OPTIONS.map((n) => {
                         const disabled = isFasting && Number(n) > Number(fastingMaxMeals);
+                        const locked = isFasting && n === fastingMaxMeals;
                         return (
-                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && setMealsPerDay(mealsPerDay === n ? "" : n)}
-                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.35 : 1,
+                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && !locked && setMealsPerDay(mealsPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : locked ? "default" : "pointer", opacity: disabled ? 0.35 : 1,
                             background: mealsPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: mealsPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {n}
                         </button>
@@ -504,19 +505,16 @@ export default function ProfileTab({
                       })}
                     </div>
                   </div>
-                  <div>
+                  <div style={{ opacity: isFasting ? 0.35 : 1 }}>
                     <div className="muted" style={{ fontSize: 11, marginBottom: 4, fontWeight: 600 }}>{t("foodPrefs.snacksPerDay")}</div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      {SNACKS_OPTIONS.map((n) => {
-                        const disabled = isFasting && Number(n) > Number(fastingMaxSnacks);
-                        return (
-                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && setSnacksPerDay(snacksPerDay === n ? "" : n)}
-                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.35 : 1,
+                      {SNACKS_OPTIONS.map((n) => (
+                        <button key={n} type="button" disabled={isFasting} onClick={() => !isFasting && setSnacksPerDay(snacksPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: isFasting ? "not-allowed" : "pointer",
                             background: snacksPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: snacksPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {n}
                         </button>
-                        );
-                      })}
+                      ))}
                     </div>
                   </div>
                   {isFasting && (
