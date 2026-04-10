@@ -525,8 +525,8 @@ export default function AiCoach({
     const mealDefs = [];
     mainMealDefs.forEach((m, i) => {
       mealDefs.push(m);
-      if (nSnacks >= 1 && i === 0 && mainMealDefs.length > 1) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Morning Snack (~200-300kcal, light: yogurt/fruit/nuts)", target_calories: snackCal });
-      if (nSnacks >= 2 && i === 1 && mainMealDefs.length > 2) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Afternoon Snack (~200-300kcal, light: fruit/nuts)", target_calories: snackCal });
+      if (nSnacks >= 1 && i === 0 && mainMealDefs.length > 1) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Morning Snack", target_calories: snackCal });
+      if (nSnacks >= 2 && i === 1 && mainMealDefs.length > 2) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Afternoon Snack", target_calories: snackCal });
     });
     const mealSlots = mealDefs.map(m => m.slot);
 
@@ -565,16 +565,20 @@ export default function AiCoach({
     const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories}}`).join(",");
 
     const langNote = isEn ? "All desc fields in English." : "All desc fields MUST be in Greek.";
+    const snackConstraints = mealDefs
+      .filter(m => m.role.includes("Snack"))
+      .map((m, i) => `${i + 1}. ${m.slot}: MUST be a light snack (yogurt, fruit, nuts). NO meat/pasta/rice.`)
+      .join("\n");
+    let ruleNum = mealDefs.filter(m => m.role.includes("Snack")).length + 1;
     const systemPrompt = `You are a JSON Diet Generator. You MUST return a JSON object with exactly 7 days.
 Each day MUST contain EXACTLY ${mealSlots.length} meal slots: ${mealSlots.join(", ")}.
 
 CONSTRAINTS:
-1. meal_2: MUST be a light snack < 250kcal (yogurt, fruit, nuts only). NO meat/pasta.
-2. meal_4: MANDATORY. Never omit meal_4.
-3. Math: daily_total = ${mealSlots.join(" + ")}.
-4. ${langNote}
-5. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
-6. No leftovers. Unique meals each day. Respect input data.
+${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
+${ruleNum++}. "daily_total" must equal the sum of all meal kcal values.
+${ruleNum++}. ${langNote}
+${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
+${ruleNum++}. No leftovers. Unique meals each day. Respect input data.
 
 Current Target: ${targetCalories}kcal total per day.
 
