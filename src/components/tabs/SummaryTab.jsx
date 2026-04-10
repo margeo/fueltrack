@@ -518,6 +518,10 @@ RULES:
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
         <h2>{t("summary.last7")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "0 12px 4px", fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>
+          <span>{i18n.language === "en" ? "Date" : "Ημ/νία"}</span>
+          <span>{t("common.calories")} · {t("common.remaining")}</span>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => (
             <button key={day.date} onClick={() => setSelectedDate(day.date)} type="button"
