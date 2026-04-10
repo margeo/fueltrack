@@ -495,10 +495,11 @@ export default function ProfileTab({
                       {MEALS_OPTIONS.map((n) => {
                         const disabled = isFasting && Number(n) > Number(fastingMaxMeals);
                         const locked = isFasting && n === fastingMaxMeals;
+                        const selected = mealsPerDay === n || locked;
                         return (
-                        <button key={n} type="button" disabled={disabled} onClick={() => !disabled && !locked && setMealsPerDay(mealsPerDay === n ? "" : n)}
-                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled ? "not-allowed" : locked ? "default" : "pointer", opacity: disabled ? 0.35 : 1,
-                            background: mealsPerDay === n ? "var(--color-accent)" : "var(--bg-soft)", color: mealsPerDay === n ? "var(--bg-card)" : "var(--text-primary)" }}>
+                        <button key={n} type="button" disabled={disabled || locked} onClick={() => setMealsPerDay(mealsPerDay === n ? "" : n)}
+                          style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: disabled || locked ? "not-allowed" : "pointer", opacity: disabled ? 0.35 : 1,
+                            background: selected ? "var(--color-accent)" : "var(--bg-soft)", color: selected ? "var(--bg-card)" : "var(--text-primary)" }}>
                           {n}
                         </button>
                         );
