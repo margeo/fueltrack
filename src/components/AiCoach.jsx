@@ -1465,7 +1465,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
                 <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
                 <option value="gpt4o-mini">GPT-4o Mini — $0.15/$0.60</option>
-                <option value="grok">Grok 4.1 Fast — $0.20/$0.50</option>
               </select>
             )}
           </div>
