@@ -907,7 +907,7 @@ INGREDIENT RULES (do not mention these in your answer):
 
     const mealPlanFormat = `
 ${isEn ? "Create a weekly meal plan. Every meal must be a fresh meal — NEVER suggest leftovers from a previous day." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Κάθε γεύμα πρέπει να είναι φρέσκο — ΠΟΤΕ μην προτείνεις υπολείμματα (leftovers) από προηγούμενη μέρα."}
-⚠️ ${isEn ? `CALORIE TARGET: Each day must total ${targetCalories}kcal (±100). Do NOT retry or correct yourself — get it right the first time by planning portions carefully.` : `ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: Κάθε μέρα πρέπει να έχει σύνολο ${targetCalories}kcal (±100). ΜΗΝ ξαναδοκιμάσεις ή διορθώσεις τον εαυτό σου — κάνε το σωστά από την πρώτη φορά σχεδιάζοντας σωστά τις μερίδες.`}
+⚠️ ${isEn ? `CALORIE TARGET: Each day must total ${targetCalories}kcal (±100). The kcal for each meal must reflect the REAL calories of the food and portions described — do NOT just write the target number. Adjust portion sizes (grams) so calories are realistic and the daily total reaches ${targetCalories}kcal.` : `ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: Κάθε μέρα πρέπει να έχει σύνολο ${targetCalories}kcal (±100). Οι θερμίδες κάθε γεύματος πρέπει να αντιστοιχούν στις ΠΡΑΓΜΑΤΙΚΕΣ θερμίδες των τροφίμων και μερίδων — ΜΗΝ γράψεις απλά τον αριθμό-στόχο. Προσάρμοσε τα γραμμάρια ώστε οι θερμίδες να είναι ρεαλιστικές και το ημερήσιο σύνολο να φτάνει ${targetCalories}kcal.`}
 ${(() => {
   const nMeals = Number(mealsPerDay) || 3;
   const nSnacks = Number(snacksPerDay) || 0;
@@ -1048,9 +1048,11 @@ ${askChange}`;
 Each day has EXACTLY ${mainSlots.length} meal(s): ${slotList}, and daily_total.
 Each meal: "desc" (brief, with grams), "kcal" (integer).
 
-CALORIE TARGETS (MANDATORY - each meal MUST match these):
+DAILY TOTAL: ${mealsCal}kcal — the sum of all meals MUST equal this.
+Approximate split (flexible):
 ${slotRules}
-- daily_total: ${mealsCal}
+
+CRITICAL: The kcal value for each meal must MATCH the actual food and portions described. Do NOT write a target number — calculate the real calories from the ingredients and grams. Adjust portions up or down so the daily total reaches ${mealsCal}kcal.
 
 No leftovers. Unique meals each day. Respect input data.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
