@@ -659,9 +659,8 @@ Each slot: "desc" (brief, with grams), "kcal" (integer).
 SNACK TARGETS:
 ${snackSlotRules}
 
-Each snack MUST be ~${snackCal}kcal. Light snacks only.
-IMPORTANT: Follow the user's diet type strictly. Snacks MUST comply with diet rules.
-Respect user allergies and preferences.
+Each snack MUST be ~${snackCal}kcal. Light in-between meal.
+Follow the user's diet type strictly. Respect allergies and preferences.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
           snacksReq = {
