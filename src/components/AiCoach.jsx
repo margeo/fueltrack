@@ -154,13 +154,16 @@ const MISTAKES_SCHEMA = {
 function WeeklyReviewView({ data, lang }) {
   if (!data) return null;
   const isEn = lang === "en";
-  const scoreColor = data.score >= 7 ? "#16a34a" : data.score >= 4 ? "#d97706" : "#dc2626";
+  const score = typeof data.score === "number" ? data.score : null;
+  const scoreColor = score >= 7 ? "#16a34a" : score >= 4 ? "#d97706" : "#dc2626";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-      <div style={{ textAlign: "center", marginBottom: 4 }}>
-        <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor }}>{data.score}/10</div>
-        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{data.summary}</div>
-      </div>
+      {data.summary && <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4 }}>{data.summary}</div>}
+      {score !== null && (
+        <div style={{ textAlign: "center", marginBottom: 4 }}>
+          <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor }}>{score}/10</div>
+        </div>
+      )}
       {data.highlights?.length > 0 && (
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Doing well" : "Πάει καλά"}</div>
@@ -1196,10 +1199,18 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         let reviewData = null;
         try {
           const raw = typeof rData.advice === "string" ? JSON.parse(rData.advice) : rData.advice;
-          reviewData = raw;
+          // Unwrap if model added wrapper key
+          if (raw && typeof raw === "object") {
+            const keys = Object.keys(raw);
+            if (keys.length === 1 && typeof raw[keys[0]] === "object" && !Array.isArray(raw[keys[0]])) {
+              reviewData = raw[keys[0]];
+            } else {
+              reviewData = raw;
+            }
+          }
         } catch { /* parse failed */ }
 
-        if (reviewData && (reviewData.score !== undefined || reviewData.issues)) {
+        if (reviewData && typeof reviewData === "object" && Object.keys(reviewData).length > 0) {
           setMessages(prev => [...prev, { role: "assistant", reviewData, msgType: isWeeklyReview ? "weekly_review_json" : "mistakes_json", elapsed, usage: rData.usage }]);
         } else {
           setMessages(prev => [...prev, { role: "assistant", text: rData.advice || "Error", elapsed, usage: rData.usage }]);
