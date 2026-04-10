@@ -1,5 +1,5 @@
 // src/components/tabs/SummaryTab.jsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
@@ -118,6 +118,7 @@ export default function SummaryTab({
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
+  const dateInputRef = useRef(null);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -315,10 +316,8 @@ RULES:
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, display: "block" }} onClick={() => { const inp = document.getElementById("hero-date-picker"); if (inp) { inp.showPicker?.(); inp.focus(); } }}>📅</button>
-              <input id="hero-date-picker" type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
-            </div>
+            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
+            <input ref={dateInputRef} type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }} />
           </div>
         </div>
         {!isToday && (
