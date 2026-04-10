@@ -1387,7 +1387,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
   }
 
   return (
-    <div ref={coachTopRef}>
+    <div ref={coachTopRef} style={{ scrollMarginTop: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
