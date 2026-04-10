@@ -317,8 +317,8 @@ RULES:
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <button type="button" className="day-card-btn" style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 10, padding: "7px 10px", cursor: "pointer", lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>
-              <span style={{ fontSize: 18 }}>📅</span>
-              <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
+              <span style={{ fontSize: 20 }}>📅</span>
+              <span style={{ fontSize: 11, opacity: 0.8 }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
             </button>
             <input ref={dateInputRef} type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }} />
           </div>
