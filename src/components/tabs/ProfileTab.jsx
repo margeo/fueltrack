@@ -494,7 +494,7 @@ export default function ProfileTab({
                     <div style={{ display: "flex", gap: 6 }}>
                       {MEALS_OPTIONS.map((n) => {
                         const forced = isFasting && n === fastingMaxMeals;
-                        const selected = forced || mealsPerDay === n;
+                        const selected = isFasting ? forced : mealsPerDay === n;
                         return (
                         <button key={n} type="button" disabled={isFasting} onClick={() => !isFasting && setMealsPerDay(mealsPerDay === n ? "" : n)}
                           style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: isFasting ? "not-allowed" : "pointer", opacity: isFasting && !forced ? 0.35 : 1,
