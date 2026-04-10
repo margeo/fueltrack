@@ -40,6 +40,117 @@ function EatNowCards({ text }) {
 
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_NAMES = { el: ["ΔΕΥΤΕΡΑ", "ΤΡΙΤΗ", "ΤΕΤΑΡΤΗ", "ΠΕΜΠΤΗ", "ΠΑΡΑΣΚΕΥΗ", "ΣΑΒΒΑΤΟ", "ΚΥΡΙΑΚΗ"], en: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] };
+
+const TRAINING_EXERCISE_SCHEMA = {
+  type: "object",
+  properties: { name: { type: "string" }, detail: { type: "string" } },
+  required: ["name", "detail"],
+  additionalProperties: false
+};
+const TRAINING_DAY_SCHEMA = {
+  type: "object",
+  properties: {
+    workout_type: { type: "string" },
+    exercises: { type: "array", items: TRAINING_EXERCISE_SCHEMA },
+    duration_min: { type: "integer" }
+  },
+  required: ["workout_type", "exercises", "duration_min"],
+  additionalProperties: false
+};
+const TRAINING_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "training_plan",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: Object.fromEntries(DAY_KEYS.map(d => [d, TRAINING_DAY_SCHEMA])),
+      required: DAY_KEYS,
+      additionalProperties: false
+    }
+  }
+};
+
+const EATNOW_OPTION_SCHEMA = {
+  type: "object",
+  properties: {
+    emoji: { type: "string" },
+    title: { type: "string" },
+    kcal: { type: "integer" },
+    protein_g: { type: "integer" },
+    reason: { type: "string" }
+  },
+  required: ["emoji", "title", "kcal", "protein_g", "reason"],
+  additionalProperties: false
+};
+const EATNOW_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "eat_now",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        option_1: EATNOW_OPTION_SCHEMA,
+        option_2: EATNOW_OPTION_SCHEMA,
+        option_3: EATNOW_OPTION_SCHEMA
+      },
+      required: ["option_1", "option_2", "option_3"],
+      additionalProperties: false
+    }
+  }
+};
+
+function renderTrainingPlanText(data, lang) {
+  const days = DAY_NAMES[lang] || DAY_NAMES.el;
+  const plan = data?.weekly_plan || data;
+  if (!plan || typeof plan !== "object") return "";
+  return DAY_KEYS.map((dayKey, di) => {
+    const day = plan[dayKey];
+    if (!day) return "";
+    const isRest = day.duration_min === 0 || day.exercises?.length === 0;
+    if (isRest) return `📅 ${days[di]} — ${day.workout_type} 😴`;
+    const exercises = (day.exercises || []).map(e => `💪 ${e.name}: ${e.detail}`).join("\n");
+    const dur = day.duration_min ? `\n⏱ ${lang === "en" ? "Duration" : "Διάρκεια"}: ~${day.duration_min}${lang === "en" ? "min" : "λεπτά"}` : "";
+    return `📅 ${days[di]} — ${day.workout_type}\n${exercises}${dur}`;
+  }).filter(Boolean).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή."}`;
+}
+
+function TrainingPlanView({ data, lang }) {
+  const days = DAY_NAMES[lang] || DAY_NAMES.el;
+  const plan = data?.weekly_plan || data;
+  if (!plan || typeof plan !== "object") return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+      {DAY_KEYS.map((dayKey, di) => {
+        const day = plan[dayKey];
+        if (!day) return null;
+        const isRest = day.duration_min === 0 || day.exercises?.length === 0;
+        return (
+          <div key={dayKey}>
+            <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>
+              📅 {days[di]} — {day.workout_type} {isRest ? "😴" : ""}
+            </div>
+            {!isRest && (day.exercises || []).map((e, ei) => (
+              <div key={ei} style={{ fontSize: 13, lineHeight: 1.7 }}>
+                💪 <strong>{e.name}</strong>: {e.detail}
+              </div>
+            ))}
+            {!isRest && day.duration_min > 0 && (
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                ⏱ {lang === "en" ? "Duration" : "Διάρκεια"}: ~{day.duration_min}{lang === "en" ? "min" : "λεπτά"}
+              </div>
+            )}
+            {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
+          </div>
+        );
+      })}
+      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, lineHeight: 1.5 }}>
+        ⚠️ {lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή."}
+      </div>
+    </div>
+  );
+}
 const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"];
 const MEAL_METADATA = {
   breakfast: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
@@ -312,6 +423,104 @@ EXAMPLE (monday):
 
     const snackSlots = mealDefs.filter(m => m.role.includes("Snack")).map(m => m.slot);
     return { systemPrompt, userMessage: JSON.stringify(input), mealSlots, snackSlots };
+  }
+
+  function buildTrainingPlanJSON() {
+    const isEn = i18n.language === "en";
+    const currentWeight = lastWeight || weight;
+    const bmi = currentWeight && height ? Math.round((currentWeight / ((height / 100) ** 2)) * 10) / 10 : null;
+
+    const equipLabels = {
+      dumbbells: isEn?"Dumbbells":"Αλτήρες", bands: isEn?"Resistance bands":"Λάστιχα", full_gym: isEn?"Full gym":"Πλήρες γυμναστήριο",
+      pull_up_bar: isEn?"Pull-up bar":"Μπάρα μονόζυγου", kettlebell: isEn?"Kettlebell":"Kettlebell", none: isEn?"No equipment":"Χωρίς εξοπλισμό"
+    };
+
+    const input = {
+      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height, bmi },
+      goal: goalType,
+      fitness: {
+        level: fitnessLevel || "",
+        location: workoutLocation || "",
+        equipment: (equipment || []).map(e => equipLabels[e] || e),
+        frequency: workoutFrequency || "",
+        session_duration: sessionDuration || "",
+        goals: fitnessGoals || [],
+        exercise_categories: exerciseCategories || [],
+        limitations: limitations || [],
+        favorite_exercises: (favoriteExercises || []).slice(0, 6).map(e => typeof e === "string" ? e : e.name || e)
+      },
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are a JSON Training Plan Generator. Return a JSON object with exactly 7 days (monday-sunday).
+Each day: "workout_type" (string), "exercises" (array of {name, detail}), "duration_min" (integer).
+For rest days: workout_type="${isEn ? "Rest" : "Ξεκούραση"}", exercises=[], duration_min=0.
+
+RULES:
+1. Include at least 2 rest days per week.
+2. Each exercise "detail" should include sets × reps or duration (e.g. "3 sets × 12 reps" or "30 min").
+3. Respect user's fitness level, equipment, location, and limitations.
+4. Vary workout types across the week.
+5. ${isEn ? "All text in English." : "All text MUST be in Greek."}
+6. Never suggest exercises that could worsen user's limitations.`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
+
+  function buildEatNowJSON() {
+    const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
+    const hour = new Date().getHours();
+    const mealTime = isEn
+      ? (hour < 10 ? "breakfast" : hour < 12 ? "morning snack" : hour < 15 ? "lunch" : hour < 18 ? "afternoon snack" : "dinner")
+      : (hour < 10 ? "πρωινό" : hour < 12 ? "σνακ πρωί" : hour < 15 ? "μεσημεριανό" : hour < 18 ? "σνακ απόγευμα" : "βραδινό");
+    const remProtein = Math.max(Math.round((proteinTarget || 0) - (totalProtein || 0)), 0);
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayLog = dailyLogs?.[todayKey] || { entries: [] };
+    const todayEntries = Array.isArray(todayLog.entries) ? todayLog.entries : [];
+    const eatenSoFar = todayEntries.length > 0
+      ? todayEntries.map(e => e.name || e.food).join(", ")
+      : (isEn ? "nothing yet" : "τίποτα ακόμα");
+
+    const foodItemLabels = {
+      chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
+      fish: isEn?"Fish":"Ψάρι", turkey: isEn?"Turkey":"Γαλοπούλα", eggs: isEn?"Eggs":"Αυγά",
+      legumes: isEn?"Legumes":"Όσπρια", tofu: isEn?"Tofu":"Τόφου",
+      salads: isEn?"Salads":"Σαλάτες", cooked_veggies: isEn?"Cooked veggies":"Μαγειρεμένα λαχανικά", soups: isEn?"Soups":"Σούπες",
+      rice: isEn?"Rice":"Ρύζι", pasta: isEn?"Pasta":"Ζυμαρικά", bread: isEn?"Bread":"Ψωμί",
+      potatoes: isEn?"Potatoes":"Πατάτες", oats: isEn?"Oats":"Βρώμη",
+      yogurt: isEn?"Yogurt":"Γιαούρτι", cheese: isEn?"Cheese":"Τυρί", milk: isEn?"Milk":"Γάλα",
+      fruits: isEn?"Fruits":"Φρούτα", nuts_snack: isEn?"Nuts":"Ξηροί καρποί", smoothies: isEn?"Smoothies":"Smoothies"
+    };
+
+    const input = {
+      current_hour: hour,
+      meal_time: mealTime,
+      remaining_calories: remainingCalories || targetCalories,
+      remaining_protein_g: remProtein,
+      eaten_today: eatenSoFar,
+      diet: { type: currentMode.label, rules: currentMode.aiRule },
+      preferences: {
+        preferred_foods: (foodCategories || []).map(f => foodItemLabels[f] || f),
+        favorites: (favoriteFoods || []).slice(0, 6).map(f => f.name),
+        allergies: allergies || [],
+        cooking_level: cookingLevel || "",
+        cooking_time: cookingTime || ""
+      },
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are a meal suggestion engine. Return exactly 3 meal options for the user's next meal.
+Each option: "emoji" (single food emoji), "title" (meal name with portions in grams), "kcal" (integer), "protein_g" (integer), "reason" (one sentence why it fits).
+
+RULES:
+1. Each option must fit within the user's remaining calories and protein needs.
+2. Respect the user's diet type strictly.
+3. Consider what they've already eaten today to avoid repetition.
+4. Consider the time of day (meal_time).
+5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
   }
 
   function buildSystemPrompt(taskType = "general") {
@@ -606,8 +815,6 @@ ${askChange}`;
         const nSnacks = Number(snacksPerDay) || 0;
         const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
         const mealsCal = targetCalories - snackCal * nSnacks;
-        console.log("SNACK_DEBUG:", { snacksPerDay, nSnacks, snackCal, mealsCal, willCallSnacks: nSnacks > 0 });
-        // Override calories and meal_structure for the 3-meal call (strip snack slots)
         const breakfastCal = Math.round(mealsCal * 0.25);
         const lunchCal = Math.round(mealsCal * 0.40);
         const dinnerCal = mealsCal - breakfastCal - lunchCal;
@@ -698,8 +905,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             const raw = typeof snacksData.advice === "string" ? JSON.parse(snacksData.advice) : snacksData.advice;
             let result = raw?.weekly_plan || raw;
             snacks = result?.monday ? result : null;
-            console.log("SNACK_RESULT:", snacks?.monday);
-          } catch (e) { console.warn("SNACK_PARSE_ERROR:", e); }
+          } catch { /* snack parse failed */ }
         }
 
         // Merge: meals + snacks → unified day structure
@@ -742,6 +948,69 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         }
         setHasLoaded(true);
         return;
+      } else if (isTrainingPlan) {
+        // Training plan — JSON mode
+        const { systemPrompt: tpPrompt, userMessage: tpInput } = buildTrainingPlanJSON();
+        const tpReq = {
+          systemPrompt: tpPrompt,
+          messages: [{ role: "user", content: tpInput }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: TRAINING_SCHEMA
+        };
+        const tpResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(tpReq) });
+        if (!tpResponse.ok) throw new Error(`Connection error (${tpResponse.status})`);
+        const tpData = await tpResponse.json();
+        if (tpData.error) throw new Error(tpData.error);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let trainingPlan = null;
+        try {
+          const raw = typeof tpData.advice === "string" ? JSON.parse(tpData.advice) : tpData.advice;
+          trainingPlan = raw?.weekly_plan || raw;
+        } catch { /* parse failed */ }
+
+        if (trainingPlan?.monday) {
+          const parsed = { weekly_plan: trainingPlan };
+          const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
+          const textVersion = renderTrainingPlanText(parsed, i18n.language);
+          onSavePlan?.({ type: "training", content: textVersion, date: dateStr });
+          setMessages(prev => [...prev, { role: "assistant", trainingPlanData: parsed, text: textVersion, msgType: "training_plan_json", elapsed, usage: tpData.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: tpData.advice || "Error", elapsed, usage: tpData.usage }]);
+        }
+        setHasLoaded(true);
+        return;
+      } else if (isEatNow) {
+        // Eat now — JSON mode
+        const { systemPrompt: enPrompt, userMessage: enInput } = buildEatNowJSON();
+        const enReq = {
+          systemPrompt: enPrompt,
+          messages: [{ role: "user", content: enInput }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: EATNOW_SCHEMA
+        };
+        const enResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(enReq) });
+        if (!enResponse.ok) throw new Error(`Connection error (${enResponse.status})`);
+        const enData = await enResponse.json();
+        if (enData.error) throw new Error(enData.error);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let eatNowData = null;
+        try {
+          const raw = typeof enData.advice === "string" ? JSON.parse(enData.advice) : enData.advice;
+          eatNowData = raw?.option_1 ? raw : null;
+        } catch { /* parse failed */ }
+
+        if (eatNowData) {
+          const cards = [eatNowData.option_1, eatNowData.option_2, eatNowData.option_3].filter(Boolean);
+          setMessages(prev => [...prev, { role: "assistant", eatNowCards: cards, msgType: "eatnow_json", elapsed, usage: enData.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: enData.advice || "Error", msgType: "eatnow", elapsed, usage: enData.usage }]);
+        }
+        setHasLoaded(true);
+        return;
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
@@ -762,7 +1031,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       {
         setMessages(prev => [
           ...prev,
-          { role: "assistant", text: data.advice, msgType: isEatNow ? "eatnow" : undefined, elapsed, usage: data.usage }
+          { role: "assistant", text: data.advice, elapsed, usage: data.usage }
         ]);
       }
       setHasLoaded(true);
@@ -893,6 +1162,33 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               {msg.msgType === "meal_plan_json" && msg.mealPlanData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <MealPlanView data={msg.mealPlanData} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "training_plan_json" && msg.trainingPlanData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <TrainingPlanView data={msg.trainingPlanData} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "eatnow_json" && msg.eatNowCards ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, fontWeight: 600 }}>🔥 {t("aiCoach.optionsNow")}</div>
+                    {msg.eatNowCards.map((card, ci) => (
+                      <div key={ci} style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "10px 12px" }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.emoji} {card.title}</div>
+                        <div style={{ fontSize: 12, color: "var(--color-accent)", fontWeight: 700, marginBottom: card.reason ? 3 : 0 }}>{card.kcal}kcal • {card.protein_g}g {i18n.language === "en" ? "protein" : "πρωτεΐνη"}</div>
+                        {card.reason && <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{card.reason}</div>}
+                      </div>
+                    ))}
+                  </div>
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
