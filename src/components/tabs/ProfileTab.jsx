@@ -315,11 +315,6 @@ export default function ProfileTab({
         {currentMode.description && (
           <div style={{ marginTop: 8, fontSize: 12, color: "var(--text-muted)" }}>
             {t("modeDescriptions." + mode, { defaultValue: "" }) || currentMode.description}
-            {currentMode.fastingHours && (
-              <span style={{ marginLeft: 6, fontWeight: 700 }}>
-                {t("profile.fasting", { fasting: currentMode.fastingHours, eating: currentMode.eatingWindowHours })}
-              </span>
-            )}
           </div>
         )}
         <div style={{ fontSize: 12, marginTop: 10, color: "var(--text-muted)" }}>
