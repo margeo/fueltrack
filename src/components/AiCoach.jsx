@@ -1151,7 +1151,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
         const hasContent = merged.monday;
 
-        if (!hasContent) console.warn("MEAL_DEBUG", { mealsPerDay, mainSlots, mealsAdvice: mealsData.advice?.substring?.(0, 200), mealsKeys: meals ? Object.keys(meals) : null, mergedKeys: Object.keys(merged) });
         if (hasContent) {
           const parsed = { weekly_plan: merged };
           const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
@@ -1163,9 +1162,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: mealsData.usage?.model || "" } }]);
         } else {
           const isEn2 = i18n.language === "en";
-          const adv = typeof mealsData.advice === "string" ? mealsData.advice.substring(0, 150) : JSON.stringify(mealsData.advice).substring(0, 150);
-          const dbg = `meals:${!!meals} slots:${mainSlots.join(",")} mpd:${mealsPerDay} resp:${adv}`;
-          setMessages(prev => [...prev, { role: "assistant", text: `⚠️ ${isEn2 ? "The meal plan could not be generated." : "Το πρόγραμμα διατροφής δεν ολοκληρώθηκε."} [${dbg}]`, error: true, elapsed, usage: mealsData.usage }]);
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ The meal plan could not be generated. Please try again." : "⚠️ Το πρόγραμμα διατροφής δεν ολοκληρώθηκε. Δοκίμασε ξανά.", error: true, elapsed, usage: mealsData.usage }]);
         }
         setHasLoaded(true);
         return;
