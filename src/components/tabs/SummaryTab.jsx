@@ -316,11 +316,16 @@ RULES:
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, display: "block" }}>📅</button>
-              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
+              <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1, display: "block" }} onClick={() => { const inp = document.getElementById("hero-date-picker"); if (inp) { inp.showPicker?.(); inp.focus(); } }}>📅</button>
+              <input id="hero-date-picker" type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", fontSize: 0 }} />
             </div>
           </div>
         </div>
+        {!isToday && (
+          <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>
+            {i18n.language === "en" ? "📝 Viewing a past day — you can add food & exercise retroactively" : "📝 Βλέπεις προηγούμενη μέρα — μπορείς να προσθέσεις φαγητά & άσκηση αναδρομικά"}
+          </div>
+        )}
         <div style={{ marginTop: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <div className="hero-stat" style={{ flex: 1.3, textAlign: "center", padding: "10px 4px" }}>
