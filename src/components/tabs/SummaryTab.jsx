@@ -537,10 +537,10 @@ RULES:
             const hasDetails = day.protein > 0 || day.exercise > 0;
             return (
             <div key={day.date} style={{ borderRadius: 10, border: "1px solid var(--border-soft)", background: "var(--bg-soft)", color: "var(--text-primary)", overflow: "hidden" }}>
-              <button onClick={() => hasDetails && setExpandedDay(isExpanded ? null : day.date)} type="button"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: hasDetails ? "pointer" : "default", textAlign: "left" }}>
+              <button onClick={() => setExpandedDay(isExpanded ? null : day.date)} type="button"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: "pointer", textAlign: "left" }}>
                 <span style={{ fontWeight: 700, fontSize: 13 }}>
-                  {hasDetails && <span style={{ fontSize: 10, marginRight: 4 }}>{isExpanded ? "▲" : "▼"}</span>}
+                  <span style={{ fontSize: 10, marginRight: 4 }}>{isExpanded ? "▲" : "▼"}</span>
                   {formatDisplayDate(day.date, dateLocale)}
                 </span>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
@@ -548,10 +548,16 @@ RULES:
                     className={day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
                     {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
                   </span>
-                  {isExpanded && hasDetails && (
+                  {isExpanded && (
                     <div style={{ display: "flex", gap: 10, fontSize: 11, opacity: 0.75 }}>
-                      {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
-                      {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
+                      {hasDetails ? (
+                        <>
+                          {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
+                          {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
+                        </>
+                      ) : (
+                        <span>{i18n.language === "en" ? "No data logged" : "Χωρίς καταγραφή"}</span>
+                      )}
                     </div>
                   )}
                 </div>
