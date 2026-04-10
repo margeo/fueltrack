@@ -454,7 +454,7 @@
       "shellfish": "Οστρακοειδή",
       "fish": "Ψάρι"
     },
-    "cookingPrefs": "Μαγειρική",
+    "cookingPrefs": "Μαγειρικές ικανότητες",
     "cookingLevel": "Επίπεδο μαγειρικής",
     "cooking": {
       "beginner": "Αρχάριος",
@@ -467,7 +467,7 @@
       "normal": "Κανονικά (30λ)",
       "elaborate": "Αναλυτικά (60λ+)"
     },
-    "mealsTitle": "Γεύματα",
+    "mealsTitle": "Γεύματα ανά ημέρα",
     "mealsPerDay": "Γεύματα / μέρα",
     "snacksPerDay": "Σνακ / μέρα",
     "simpleGroceries": "Λίγα Ψώνια",

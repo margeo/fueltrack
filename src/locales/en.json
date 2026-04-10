@@ -454,7 +454,7 @@
       "shellfish": "Shellfish",
       "fish": "Fish"
     },
-    "cookingPrefs": "Cooking",
+    "cookingPrefs": "Cooking skills",
     "cookingLevel": "Cooking skill",
     "cooking": {
       "beginner": "Beginner",
@@ -467,7 +467,7 @@
       "normal": "Normal (30min)",
       "elaborate": "Elaborate (60min+)"
     },
-    "mealsTitle": "Meals",
+    "mealsTitle": "Meals per day",
     "mealsPerDay": "Meals / day",
     "snacksPerDay": "Snacks / day",
     "simpleGroceries": "Simple Groceries",
