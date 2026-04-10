@@ -838,11 +838,15 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
 Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.
 
 FORMAT RULES:
-- Keep answers concise — bullet points, not paragraphs.` : `
+- Answer ONLY the user's question. Do NOT add unrelated topics, weekly plans, macro analysis, or training suggestions unless specifically asked.
+- Keep answers concise — bullet points, not paragraphs.
+- Use 1-2 sections maximum. Only add more if the question genuinely requires it.` : `
 Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.
 
 ΚΑΝΟΝΕΣ FORMAT:
-- Σύντομες απαντήσεις — bullet points, όχι παραγράφους.`;
+- Απάντα ΜΟΝΟ στην ερώτηση του χρήστη. ΜΗΝ προσθέτεις άσχετα θέματα, εβδομαδιαία πλάνα, ανάλυση μακροθρεπτικών ή προτάσεις γυμναστικής εκτός αν ρωτηθεί συγκεκριμένα.
+- Σύντομες απαντήσεις — bullet points, όχι παραγράφους.
+- Χρησιμοποίησε 1-2 sections μέγιστο. Πρόσθεσε περισσότερα μόνο αν η ερώτηση το απαιτεί.`;
 
     // MEAL PLAN
     const simpleRules = simpleMode ? (isEn ? `
