@@ -1163,7 +1163,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: mealsData.usage?.model || "" } }]);
         } else {
           const isEn2 = i18n.language === "en";
-          const dbg = `meals:${!!meals} keys:${meals?Object.keys(meals).join(","):"null"} slots:${mainSlots.join(",")} mpd:${mealsPerDay}`;
+          const adv = typeof mealsData.advice === "string" ? mealsData.advice.substring(0, 150) : JSON.stringify(mealsData.advice).substring(0, 150);
+          const dbg = `meals:${!!meals} slots:${mainSlots.join(",")} mpd:${mealsPerDay} resp:${adv}`;
           setMessages(prev => [...prev, { role: "assistant", text: `⚠️ ${isEn2 ? "The meal plan could not be generated." : "Το πρόγραμμα διατροφής δεν ολοκληρώθηκε."} [${dbg}]`, error: true, elapsed, usage: mealsData.usage }]);
         }
         setHasLoaded(true);
