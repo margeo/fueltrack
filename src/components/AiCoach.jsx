@@ -628,11 +628,14 @@ For rest days: workout_type="${isEn ? "Rest" : "Ξεκούραση"}", exercises
 
 RULES:
 1. ${restDayRule}
-2. Each exercise "detail" should include sets × reps or duration (e.g. "3 sets × 12 reps" or "30 min").
-3. Respect user's fitness level, equipment, location, and limitations.
-4. Vary workout types across the week.
-5. ${isEn ? "All text in English." : "All text MUST be in Greek."}
-6. Never suggest exercises that could worsen user's limitations.`;
+2. Each workout session should be ~${sessionDuration || "45"} minutes.
+3. Each exercise "detail" should include sets × reps or duration (e.g. "3 sets × 12 reps" or "30 min").
+4. Respect ALL user profile data: fitness level, equipment, location, limitations, fitness goals, and exercise categories (Cardio, Gym, Training, Sports).
+5. Prioritize the user's fitness goals and preferred exercise categories when choosing workout types.
+6. Include the user's favorite exercises where appropriate.
+7. Vary workout types across the week.
+8. ${isEn ? "All text in English." : "All text MUST be in Greek."}
+9. Never suggest exercises that could worsen user's limitations.`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
