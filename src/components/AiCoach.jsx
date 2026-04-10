@@ -448,7 +448,8 @@ export default function AiCoach({
     if (!messages.length) return;
     const last = messages[messages.length - 1];
     if (last.role !== "assistant") return;
-    const text = last.text;
+    const text = last.text || "";
+    if (!text) return;
     const hasMealPlan = (text.includes("Σύνολο:") || text.includes("Total:")) && text.includes("🌅") && text.includes("🌞") && text.includes("🌙");
     const hasTrainingPlan = !hasMealPlan && text.includes("📅") && (
       text.includes("σετ ×") || text.includes("sets ×") || text.includes("sets x") ||
