@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { supabase } from "../supabaseClient";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
 function parseEatNowCards(text) {
   try {
