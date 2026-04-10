@@ -5,7 +5,7 @@ import { MODES } from "../data/modes";
 import { calculateStreak } from "../utils/streak";
 import { supabase } from "../supabaseClient";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
 
 function formatAiText(text) {
   if (!text) return text;
@@ -71,33 +71,11 @@ const WEEKLY_REVIEW_SCHEMA = {
         score: { type: "integer" },
         highlights: { type: "array", items: INSIGHT_ITEM_SCHEMA },
         improvements: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        issues: { type: "array", items: ISSUE_SCHEMA },
+        top_priority: { type: "string" },
         tip: { type: "string" }
       },
-      required: ["summary", "score", "highlights", "improvements", "tip"],
-      additionalProperties: false
-    }
-  }
-};
-
-const ISSUE_SCHEMA = {
-  type: "object",
-  properties: { emoji: { type: "string" }, title: { type: "string" }, detail: { type: "string" }, fix: { type: "string" } },
-  required: ["emoji", "title", "detail", "fix"],
-  additionalProperties: false
-};
-const MISTAKES_SCHEMA = {
-  type: "json_schema",
-  json_schema: {
-    name: "mistakes_review",
-    strict: true,
-    schema: {
-      type: "object",
-      properties: {
-        issues: { type: "array", items: ISSUE_SCHEMA },
-        doing_right: { type: "array", items: INSIGHT_ITEM_SCHEMA },
-        top_priority: { type: "string" }
-      },
-      required: ["issues", "doing_right", "top_priority"],
+      required: ["summary", "score", "highlights", "improvements", "issues", "top_priority", "tip"],
       additionalProperties: false
     }
   }
@@ -128,25 +106,6 @@ function WeeklyReviewView({ data, lang }) {
           {data.improvements.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
         </div>
       )}
-      {data.tip && (
-        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
-          💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {data.tip}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MistakesReviewView({ data, lang }) {
-  if (!data) return null;
-  const isEn = lang === "en";
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-      {data.top_priority && (
-        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
-          🎯 <strong>{isEn ? "Top priority" : "Προτεραιότητα #1"}:</strong> {data.top_priority}
-        </div>
-      )}
       {data.issues?.length > 0 && (
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Issues" : "Προβλήματα"}</div>
@@ -159,10 +118,14 @@ function MistakesReviewView({ data, lang }) {
           ))}
         </div>
       )}
-      {data.doing_right?.length > 0 && (
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{isEn ? "Doing right" : "Κάνεις σωστά"}</div>
-          {data.doing_right.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+      {data.top_priority && (
+        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          🎯 <strong>{isEn ? "Top priority" : "Προτεραιότητα #1"}:</strong> {data.top_priority}
+        </div>
+      )}
+      {data.tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {data.tip}
         </div>
       )}
     </div>
@@ -695,61 +658,18 @@ RULES:
       language: isEn ? "English" : "Greek"
     };
 
-    const systemPrompt = `You are a fitness coach reviewing the user's weekly progress. Return a JSON object.
-Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array of {emoji, text} — good things), "improvements" (array of {emoji, text} — areas to improve), "tip" (one actionable tip).
+    const systemPrompt = `You are a strict but encouraging fitness coach. Review the user's weekly progress AND identify mistakes. Return a JSON object.
+Fields: "summary" (1-2 sentences overall), "score" (1-10 integer), "highlights" (array of {emoji, text} — things going well), "improvements" (array of {emoji, text} — areas to improve), "issues" (array of {emoji, title, detail, fix} — specific mistakes with concrete fixes), "top_priority" (the #1 most important thing to fix right now), "tip" (one actionable tip).
 
 RULES:
-1. Be encouraging but honest. Score based on: daily food logging (days with entries vs empty days), calorie target adherence, protein target adherence, macro balance (carbs/fat), exercise activity, weight trend, and streak consistency. Compare actual values to targets for each day.
+1. Score based on: daily food logging (days with entries vs empty), calorie/protein target adherence, macro balance (carbs/fat), exercise activity, weight trend, and streak consistency. Compare actual values to targets.
 2. 2-4 highlights and 2-4 improvements.
-3. If there are days with zero calories, the user did NOT log food — ALWAYS mention it as an improvement.
-4. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
-5. Consider the weight trend and streak in your evaluation — a positive streak and consistent weight progress are important highlights; a broken streak or stalling weight should be flagged.
-6. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
-
-    return { systemPrompt, userMessage: JSON.stringify(input) };
-  }
-
-  function buildMistakesJSON() {
-    const isEn = i18n.language === "en";
-    const currentMode = MODES[mode] || MODES.balanced;
-    const currentWeight = lastWeight || weight;
-
-    const weekData = (last7Days || []).map(d => ({
-      date: d.date,
-      calories: d.eaten,
-      calories_target: targetCalories,
-      protein_g: d.protein || 0,
-      carbs_g: d.carbs || 0,
-      fat_g: d.fat || 0,
-      protein_target_g: proteinTarget,
-      exercise_kcal: d.exercise || 0,
-      exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
-    }));
-
-    const input = {
-      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
-      goal: goalType,
-      targets: { calories: targetCalories, protein_g: proteinTarget },
-      last_7_days: weekData,
-      progress: {
-        weight_log: (weightLog || []).slice(-7),
-        weight_trend_kg: weightTrend || null,
-        streak_days: streak
-      },
-      language: isEn ? "English" : "Greek"
-    };
-
-    const systemPrompt = `You are a strict but constructive fitness coach. Analyze the user's data and identify mistakes. Return a JSON object.
-Fields: "issues" (array of {emoji, title, detail, fix}), "doing_right" (array of {emoji, text}), "top_priority" (the #1 most important thing to fix).
-
-RULES:
-1. Be specific — reference actual data (days, calories, macros, patterns).
-2. Each issue must have a concrete fix.
-3. Also mention 1-3 things they're doing right.
-4. If there are days with zero or no food logging, ALWAYS flag it as an issue — consistent logging is the #1 priority for progress.
-5. Consider weight progress and streak — if weight is stalling or moving wrong direction vs goal, flag it. If streak is strong, mention it as something done right.
-6. Check macro balance — flag if carbs or fat are consistently too high or too low for the user's goal.
-7. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+3. 2-4 issues — each must reference actual data and have a concrete fix.
+4. If there are days with zero calories, the user did NOT log food — flag as both an improvement AND an issue.
+5. Reference specific days and numbers (e.g. "Monday: 1850/2375kcal — good", "Wednesday: 0kcal — no logging").
+6. Consider weight trend and streak — positive streak and weight progress = highlight; stalling or wrong direction = issue.
+7. Check macro balance — flag if carbs or fat are consistently too high or too low for the user's goal.
+8. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -955,7 +875,7 @@ ${askChange}`;
 
   function buildMessages(chatMessage) {
     // Keep chat_json (custom questions), skip preset JSON responses (meal plan, training, etc.)
-    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "mistakes_json", "macro_analysis_json"];
+    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "macro_analysis_json"];
     const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !SKIP_TYPES.includes(msg.msgType)).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
@@ -975,12 +895,11 @@ ${askChange}`;
     const isMealPlan = text === t("aiCoach.q1");
     const isTrainingPlan = text === t("aiCoach.q2");
     const isWeeklyReview = text === t("aiCoach.q3");
-    const isMistakes = text === t("aiCoach.q4");
-    const isMacroAnalysis = text === t("aiCoach.q5");
-    const isPreset = isMealPlan || isTrainingPlan || isWeeklyReview || isMistakes || isMacroAnalysis;
+    const isMacroAnalysis = text === t("aiCoach.q4");
+    const isPreset = isMealPlan || isTrainingPlan || isWeeklyReview || isMacroAnalysis;
 
     if (text) { setMessages(prev => [...prev, { role: "user", text, ...(isPreset && { isPreset: true }) }]); setInput(""); }
-    const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
+    const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
@@ -1172,15 +1091,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         }
         setHasLoaded(true);
         return;
-      } else if (isWeeklyReview || isMistakes) {
-        // Weekly review / Mistakes — JSON mode
-        const { systemPrompt: rPrompt, userMessage: rInput } = isWeeklyReview ? buildWeeklyReviewJSON() : buildMistakesJSON();
+      } else if (isWeeklyReview) {
+        // Weekly review (includes mistakes analysis) — JSON mode
+        const { systemPrompt: rPrompt, userMessage: rInput } = buildWeeklyReviewJSON();
         const rReq = {
           systemPrompt: rPrompt,
           messages: [{ role: "user", content: rInput }],
           ...(selectedModel && { model: selectedModel }),
           jsonMode: true,
-          customSchema: isWeeklyReview ? WEEKLY_REVIEW_SCHEMA : MISTAKES_SCHEMA
+          customSchema: WEEKLY_REVIEW_SCHEMA
         };
         const rResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rReq) });
         if (!rResponse.ok) throw new Error(`Connection error (${rResponse.status})`);
@@ -1203,7 +1122,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         } catch { /* parse failed */ }
 
         if (reviewData && typeof reviewData === "object" && Object.keys(reviewData).length > 0) {
-          setMessages(prev => [...prev, { role: "assistant", reviewData, msgType: isWeeklyReview ? "weekly_review_json" : "mistakes_json", elapsed, usage: rData.usage }]);
+          setMessages(prev => [...prev, { role: "assistant", reviewData, msgType: "weekly_review_json", elapsed, usage: rData.usage }]);
         } else {
           const isEn2 = i18n.language === "en";
           setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ Could not generate analysis. Please try again." : "⚠️ Δεν ήταν δυνατή η ανάλυση. Δοκίμασε ξανά.", error: true, elapsed, usage: rData.usage }]);
@@ -1421,9 +1340,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                     </div>
                   )}
                 </div>
-              ) : (msg.msgType === "weekly_review_json" || msg.msgType === "mistakes_json") && msg.reviewData ? (
+              ) : msg.msgType === "weekly_review_json" && msg.reviewData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
-                  {msg.msgType === "weekly_review_json" ? <WeeklyReviewView data={msg.reviewData} lang={i18n.language} /> : <MistakesReviewView data={msg.reviewData} lang={i18n.language} />}
+                  <WeeklyReviewView data={msg.reviewData} lang={i18n.language} />
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
