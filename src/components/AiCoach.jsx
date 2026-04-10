@@ -574,16 +574,15 @@ export default function AiCoach({
 Each day MUST contain EXACTLY ${mealSlots.length} meal slots: ${mealSlots.join(", ")}.
 
 CONSTRAINTS:
-${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
-${ruleNum++}. "daily_total" must equal the sum of all meal kcal values.
+${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. STRICT CALORIES: daily_total MUST be exactly ${targetCalories}kcal. Each meal kcal must be within ±50 of its target. The sum of all meals MUST equal daily_total.
+${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
 ${ruleNum++}. ${langNote}
 ${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
 ${ruleNum++}. No leftovers. Unique meals each day. Respect input data.
 
-Current Target: ${targetCalories}kcal total per day.
-
-CALORIE TARGETS:
+CALORIE TARGETS (strict — follow these numbers):
 ${slotRules}
+daily_total: exactly ${targetCalories}kcal
 
 EXAMPLE (monday):
 {${exampleMeals},"daily_total":${targetCalories}}`;
