@@ -314,12 +314,10 @@ RULES:
             {formatDisplayDate(selectedDate, dateLocale)}
             {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· {t("common.today")}</span>}
           </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
-            <button type="button" className="day-card-btn" style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 10, padding: "7px 10px", cursor: "pointer", lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>
-              <span style={{ fontSize: 20 }}>📅</span>
-              <span style={{ fontSize: 11, opacity: 0.8 }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
-            </button>
+            <span style={{ fontSize: 10, opacity: 0.6 }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
+            <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 20, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
             <input ref={dateInputRef} type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }} />
           </div>
         </div>
@@ -522,10 +520,13 @@ RULES:
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
-          <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Προηγ. μέρα"}</span>
-            <input type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ width: 20, height: 20, opacity: 0.6, cursor: "pointer", border: "none", background: "none", padding: 0 }} />
-          </label>
+            <label style={{ cursor: "pointer", fontSize: 20, lineHeight: 1 }}>
+              📅
+              <input type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)} style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} />
+            </label>
+          </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
