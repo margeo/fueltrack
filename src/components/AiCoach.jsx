@@ -726,7 +726,8 @@ Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array o
 RULES:
 1. Be encouraging but honest. Score based on consistency, calorie adherence, and activity.
 2. 2-4 highlights and 2-4 improvements.
-3. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+3. If there are days with zero or no food logging, ALWAYS mention it as an improvement — emphasize that consistent logging is crucial for progress.
+4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -751,7 +752,8 @@ RULES:
 1. Be specific — reference actual data (days, calories, patterns).
 2. Each issue must have a concrete fix.
 3. Also mention 1-3 things they're doing right.
-4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+4. If there are days with zero or no food logging, ALWAYS flag it as an issue — consistent logging is the #1 priority for progress.
+5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
