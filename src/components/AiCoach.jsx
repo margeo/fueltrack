@@ -865,17 +865,6 @@ FORMAT RULES:
 - Σύντομες απαντήσεις — bullet points, όχι παραγράφους.
 - Χρησιμοποίησε 1-2 sections μέγιστο. Πρόσθεσε περισσότερα μόνο αν η ερώτηση το απαιτεί.`;
 
-    // MEAL PLAN
-    const simpleRules = simpleMode ? (isEn ? `
-IMPORTANT — SIMPLE GROCERIES:
-- Maximum 15-18 ingredients for the WHOLE week.
-- Repeat meals: same breakfast 4-5 days, 2-3 rotating lunches, 2-3 rotating dinners.
-- The user wants a short grocery list and easy organization.` : `
-ΣΗΜΑΝΤΙΚΟ — ΛΙΓΑ ΨΩΝΙΑ:
-- Μέγιστο 15-18 υλικά για ΟΛΗ την εβδομάδα.
-- Επανάλαβε γεύματα: ίδιο πρωινό 4-5 μέρες, 2-3 μεσημεριανά που εναλλάσσονται, 2-3 βραδινά που εναλλάσσονται.
-- Ο χρήστης θέλει μικρή λίστα σούπερ μάρκετ και εύκολη οργάνωση.`) : "";
-
     const dayLabels = isEn
       ? { mon: "MONDAY", tue: "TUESDAY", breakfast: "Breakfast", snack: "Snack", lunch: "Lunch", dinner: "Dinner", total: "Total", rest: "Rest" }
       : { mon: "ΔΕΥΤΕΡΑ", tue: "ΤΡΙΤΗ", breakfast: "Πρωινό", snack: "Σνακ", lunch: "Μεσημεριανό", dinner: "Βραδινό", total: "Σύνολο", rest: "Ανάπαυση" };
@@ -884,63 +873,6 @@ IMPORTANT — SIMPLE GROCERIES:
       ? "⚠️ This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication."
       : "⚠️ Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή.";
     const askChange = isEn ? `Then ask: "Want me to change anything?"` : `Μετά ρώτα: "Θέλεις να αλλάξω κάτι;"`;
-
-    const ingredientRules = isEn ? `
-INGREDIENT RULES (do not mention these in your answer):
-- Before writing the plan, pick maximum ${simpleMode ? "18" : "28"} different ingredients for the whole week. Do not exceed ${simpleMode ? "18" : "30"}.
-- The plan should have variety, but controlled and practical for grocery shopping.
-- DO NOT use the exact same lunch or exact same dinner every day.
-- Variety should be balanced across main proteins, sides, and vegetables.
-- DO NOT mention the ingredients or their count in your answer.
-- BEFORE giving the final answer, count the unique ingredients for the week and if more than ${simpleMode ? "18" : "25"}, remove or merge until ${simpleMode ? "18" : "25"} or fewer.
-- Treat similar ingredients as one where possible (e.g. tomato and cherry tomatoes, same fish category, same bread/rice/yogurt type) to keep the grocery list short and practical.
-- Write a short 1-2 line intro about the goal, then start with 📅 ${dayLabels.mon}.` : `
-ΚΑΝΟΝΕΣ ΥΛΙΚΩΝ (μην τους αναφέρεις στην απάντηση):
-- Πριν γράψεις το πρόγραμμα, επέλεξε μέγιστο ${simpleMode ? "18" : "28"} διαφορετικά υλικά συνολικά για όλη την εβδομάδα. Μην ξεπερνάς τα ${simpleMode ? "18" : "30"}.
-- Το πρόγραμμα πρέπει να έχει ποικιλία, αλλά ελεγχόμενη και πρακτική για σούπερ μάρκετ.
-- ΜΗΝ βάζεις το ίδιο ακριβώς μεσημεριανό ή το ίδιο ακριβώς βραδινό κάθε μέρα.
-- Η ποικιλία πρέπει να είναι μοιρασμένη ισορροπημένα σε κύριες πρωτεΐνες, συνοδευτικά και λαχανικά.
-- ΜΗΝ αναφέρεις τα υλικά ή τον αριθμό τους στην απάντησή σου.
-- ΠΡΙΝ δώσεις την τελική απάντηση, μέτρα τα μοναδικά υλικά της εβδομάδας και αν είναι πάνω από ${simpleMode ? "18" : "25"}, αφαίρεσε ή συγχώνευσε υλικά μέχρι να γίνουν ${simpleMode ? "18" : "25"} ή λιγότερα.
-- Θεώρησε παρόμοια υλικά ως ένα όπου γίνεται (π.χ. ντομάτα και ντοματίνια, ίδια κατηγορία ψαριού, ίδιο είδος ψωμιού/ρυζιού/γιαουρτιού) ώστε η λίστα σούπερ μάρκετ να μένει σύντομη και πρακτική.
-- Γράψε σύντομη εισαγωγική πρόταση 1-2 γραμμών μόνο για τον στόχο, μετά ξεκίνα με 📅 ΔΕΥΤΕΡΑ.`;
-
-    const mealPlanFormat = `
-${isEn ? "Create a weekly meal plan. Every meal must be a fresh meal — NEVER suggest leftovers from a previous day." : "Δώσε εβδομαδιαίο πρόγραμμα διατροφής. Κάθε γεύμα πρέπει να είναι φρέσκο — ΠΟΤΕ μην προτείνεις υπολείμματα (leftovers) από προηγούμενη μέρα."}
-⚠️ ${isEn ? `CALORIE TARGET: Each day must total ${targetCalories}kcal (±100). The kcal for each meal must reflect the REAL calories of the food and portions described — do NOT just write the target number. Adjust portion sizes (grams) so calories are realistic and the daily total reaches ${targetCalories}kcal.` : `ΣΤΟΧΟΣ ΘΕΡΜΙΔΩΝ: Κάθε μέρα πρέπει να έχει σύνολο ${targetCalories}kcal (±100). Οι θερμίδες κάθε γεύματος πρέπει να αντιστοιχούν στις ΠΡΑΓΜΑΤΙΚΕΣ θερμίδες των τροφίμων και μερίδων — ΜΗΝ γράψεις απλά τον αριθμό-στόχο. Προσάρμοσε τα γραμμάρια ώστε οι θερμίδες να είναι ρεαλιστικές και το ημερήσιο σύνολο να φτάνει ${targetCalories}kcal.`}
-${(() => {
-  const nMeals = Number(mealsPerDay) || 3;
-  const nSnacks = Number(snacksPerDay) || 0;
-  const snackCal = nSnacks > 0 ? Math.round(targetCalories * 0.10) : 0;
-  const remainCal = targetCalories - snackCal * nSnacks;
-  const roles = nMeals === 1
-    ? [{ name: isEn ? "Main Meal" : "Κύριο Γεύμα", emoji: "🍽️", pct: 1.0 }]
-    : nMeals === 2
-    ? [{ name: dayLabels.lunch, emoji: "🌞", pct: 0.45 }, { name: dayLabels.dinner, emoji: "🌙", pct: 0.55 }]
-    : nMeals === 4
-    ? [{ name: dayLabels.breakfast, emoji: "🌅", pct: 0.20 }, { name: dayLabels.lunch, emoji: "🌞", pct: 0.35 }, { name: isEn ? "Afternoon Meal" : "Απογευματινό", emoji: "🍽️", pct: 0.20 }, { name: dayLabels.dinner, emoji: "🌙", pct: 0.25 }]
-    : [{ name: dayLabels.breakfast, emoji: "🌅", pct: 0.25 }, { name: dayLabels.lunch, emoji: "🌞", pct: 0.40 }, { name: dayLabels.dinner, emoji: "🌙", pct: 0.35 }];
-  const mealLines = [];
-  roles.forEach((r, i) => {
-    const cal = Math.round(remainCal * r.pct);
-    mealLines.push(`${r.emoji} ${r.name} — [${isEn ? "meal with portions in grams" : "γεύμα με μερίδες σε γραμμάρια"}] (~${cal}kcal)`);
-    if (nSnacks >= 1 && i === 0 && roles.length > 1) mealLines.push(`🍎 ${dayLabels.snack} — [${isEn ? "snack with portions" : "σνακ με μερίδες"}] (~${snackCal}kcal)`);
-    if (nSnacks >= 2 && i === 1 && roles.length > 2) mealLines.push(`🍎 ${dayLabels.snack} — [${isEn ? "snack with portions" : "σνακ με μερίδες"}] (~${snackCal}kcal)`);
-  });
-  const mealNamesList = [...roles.map(r => `${r.emoji} ${r.name}`), ...Array(nSnacks).fill(`🍎 ${dayLabels.snack}`)].join(", ");
-  return `${isEn ? `Each day has EXACTLY: ${mealNamesList}. NOTHING else.` : `Κάθε μέρα έχει ΑΚΡΙΒΩΣ: ${mealNamesList}. ΤΙΠΟΤΑ άλλο.`}
-${isEn ? "MANDATORY format — ALWAYS emojis. Each meal MUST hit its calorie target:" : "ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis. Κάθε γεύμα ΠΡΕΠΕΙ να πιάνει τον στόχο θερμίδων:"}
-
-📅 ${dayLabels.mon}
-${mealLines.join("\n")}
-${dayLabels.total}: ${targetCalories}kcal`;
-})()}${simpleRules}${ingredientRules}
-─────────────────
-
-(${isEn ? "Repeat this format for each day Monday to Sunday, with ───────────────── between days." : "Επανάλαβε αυτό το format για κάθε μέρα Δευτέρα έως Κυριακή, με ───────────────── μεταξύ των ημερών."})
-${isEn ? "AT THE END copy-paste this disclaimer EXACTLY as-is, do NOT translate it" : "ΣΤΟ ΤΕΛΟΣ αντέγραψε αυτό το disclaimer ΑΚΡΙΒΩΣ όπως είναι, ΜΗΝ το μεταφράσεις"}:
-${disclaimer}
-${askChange}`;
 
     // TRAINING PLAN
     const tpRestRule = workoutFrequency
@@ -973,8 +905,6 @@ ${askChange}` : `
 ${disclaimer}
 ${askChange}`;
 
-    // meal_plan: food prefs + targets, NO fitness/week
-    if (taskType === "meal_plan") return core + nutritionTargets + foodContext + modeBlock + mealPlanFormat;
     // training_plan: fitness prefs, NO food/targets/week/mode
     if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
     // initial auto-load: everything (weekly analysis)
