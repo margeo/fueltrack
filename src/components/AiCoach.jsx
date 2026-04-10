@@ -1028,10 +1028,7 @@ ${askChange}`;
   }
 
   function buildMessages(chatMessage) {
-    // Skip the first user+assistant pair (initial auto-load) to avoid context pollution
-    const skipInitial = messages.length >= 2 && messages[0].role === "assistant";
-    const relevantMessages = skipInitial ? messages.slice(2) : messages;
-    const history = relevantMessages.filter(msg => msg.text).map(msg => ({ role: msg.role, content: msg.text }));
+    const history = messages.filter(msg => msg.text && !msg.isAutoLoad).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
@@ -1380,7 +1377,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       {
         setMessages(prev => [
           ...prev,
-          { role: "assistant", text: stripMarkdown(data.advice), elapsed, usage: data.usage }
+          { role: "assistant", text: stripMarkdown(data.advice), isAutoLoad: isInitial, elapsed, usage: data.usage }
         ]);
       }
       setHasLoaded(true);
