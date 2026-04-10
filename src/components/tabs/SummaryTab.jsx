@@ -522,7 +522,15 @@ RULES:
 
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
-        <h2>{t("summary.last7")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+              {i18n.language === "en" ? "📅 Tap calendar to log a past day" : "📅 Πάτα το ημερολόγιο για καταγραφή προηγούμενης μέρας"}
+            </div>
+          </div>
+          <button type="button" className="day-card-btn" style={{ borderRadius: 10, padding: "7px 10px", cursor: "pointer", fontSize: 18, lineHeight: 1 }} onClick={() => dateInputRef.current?.showPicker()}>📅</button>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
             const isExpanded = expandedDay === day.date;
