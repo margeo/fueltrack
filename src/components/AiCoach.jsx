@@ -900,20 +900,14 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     const generalRules = isEn ? `
 Base food suggestions on the user's food profile, preferences, and diet type. Base exercise suggestions on the fitness profile. If a food clearly conflicts with the diet type, mention it.
 
-FORMAT RULES (MANDATORY for ALL responses):
+FORMAT RULES (MANDATORY):
 - NEVER use asterisks (**bold** or *italic*) — use emojis and line breaks instead.
-- Use section emojis: 📊 for data, ✅ for positives, ⚠️ for warnings, 💡 for tips, 🎯 for priorities.
-- Keep answers concise — bullet points, not paragraphs.
-- Use line breaks between sections.
-- If there are days without food logging, always mention it.` : `
+- Keep answers concise — bullet points, not paragraphs.` : `
 Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.
 
-ΚΑΝΟΝΕΣ FORMAT (ΥΠΟΧΡΕΩΤΙΚΟΙ σε ΟΛΕΣ τις απαντήσεις):
+ΚΑΝΟΝΕΣ FORMAT (ΥΠΟΧΡΕΩΤΙΚΟΙ):
 - ΠΟΤΕ αστερίσκοι (**bold** ή *italic*) — χρησιμοποίησε emojis και line breaks.
-- Χρησιμοποίησε emojis ανά section: 📊 δεδομένα, ✅ θετικά, ⚠️ warnings, 💡 tips, 🎯 προτεραιότητες.
-- Σύντομες απαντήσεις — bullet points, όχι παραγράφους.
-- Line breaks μεταξύ sections.
-- Αν υπάρχουν μέρες χωρίς καταγραφή φαγητού, πάντα να το αναφέρεις.`;
+- Σύντομες απαντήσεις — bullet points, όχι παραγράφους.`;
 
     // MEAL PLAN
     const simpleRules = simpleMode ? (isEn ? `
@@ -1031,7 +1025,10 @@ ${askChange}`;
   }
 
   function buildMessages(chatMessage) {
-    const history = messages.map(msg => ({ role: msg.role, content: msg.text }));
+    // Skip the first user+assistant pair (initial auto-load) to avoid context pollution
+    const skipInitial = messages.length >= 2 && messages[0].role === "assistant";
+    const relevantMessages = skipInitial ? messages.slice(2) : messages;
+    const history = relevantMessages.filter(msg => msg.text).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
