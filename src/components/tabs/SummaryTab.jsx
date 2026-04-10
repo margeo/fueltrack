@@ -528,7 +528,7 @@ RULES:
             const isExpanded = expandedDay === day.date;
             const hasDetails = day.protein > 0 || day.exercise > 0;
             return (
-            <div key={day.date} style={{ borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", overflow: "hidden" }}>
+            <div key={day.date} style={{ borderRadius: 10, border: "1px solid var(--border-soft)", background: "var(--bg-soft)", color: "var(--text-primary)", overflow: "hidden" }}>
               <button onClick={() => hasDetails && setExpandedDay(isExpanded ? null : day.date)} type="button"
                 style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: hasDetails ? "pointer" : "default", textAlign: "left" }}>
                 <span style={{ fontWeight: 700, fontSize: 13 }}>
