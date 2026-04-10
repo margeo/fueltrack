@@ -367,7 +367,8 @@ MANDATORY format — ALWAYS emojis, NEVER asterisks:
             last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
             proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
             weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
-            totalCalories={totalCalories} totalProtein={totalProtein} exerciseValue={exerciseValue}
+            totalCalories={totalCalories} totalProtein={totalProtein} totalCarbs={totalCarbs} totalFat={totalFat} exerciseValue={exerciseValue}
+            macroTargets={macroTargets}
             remainingCalories={remainingCalories}
             favoriteExercises={favoriteExercises}
             age={age} weight={weight} height={height} gender={gender}
