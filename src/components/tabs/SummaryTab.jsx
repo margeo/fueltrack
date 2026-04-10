@@ -546,7 +546,7 @@ RULES:
                 </span>
                 <span style={{ fontSize: 12 }}
                   className={day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
-                  {t("summary.food")} {formatNumber(day.eaten)} kcal{day.exercise > 0 ? ` · ${t("summary.exercise")} ${formatNumber(day.exercise)} kcal` : ""} · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
+                  {t("summary.food")} {formatNumber(day.eaten)} kcal{day.exercise > 0 ? ` · ${t("summary.exercise")} ${formatNumber(day.exercise)} kcal` : ""} · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("summary.remaining")}
                 </span>
               </button>
               {isExpanded && (
