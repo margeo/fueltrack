@@ -1222,6 +1222,14 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           chatData = raw?.sections?.length ? raw : null;
         } catch { /* parse failed */ }
 
+        if (!chatData) {
+          // Fallback: try to extract sections from different JSON shapes
+          try {
+            const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+            if (Array.isArray(raw)) chatData = { sections: raw, tip: "" };
+            else if (raw?.emoji && raw?.title) chatData = { sections: [raw], tip: "" };
+          } catch { /* not JSON */ }
+        }
         if (chatData) {
           const chatText = chatData.sections.map(s => `${s.emoji} ${s.title}: ${s.content}`).join("\n") + (chatData.tip ? `\n💡 ${chatData.tip}` : "");
           setMessages(prev => [...prev, { role: "assistant", chatData, text: chatText, msgType: "chat_json", elapsed, usage: data.usage }]);
