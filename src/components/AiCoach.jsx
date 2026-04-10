@@ -327,13 +327,14 @@ function TrainingPlanView({ data, lang }) {
     </div>
   );
 }
-const SLOT_ORDER = ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"];
 const MEAL_METADATA = {
   breakfast: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
   morning_snack: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
   lunch: { label: { el: "Μεσημεριανό", en: "Lunch" }, emoji: "🌞" },
   afternoon_snack: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
-  dinner: { label: { el: "Βραδινό", en: "Dinner" }, emoji: "🌙" }
+  "afternoon meal": { label: { el: "Απογευματινό", en: "Afternoon Meal" }, emoji: "🍽️" },
+  dinner: { label: { el: "Βραδινό", en: "Dinner" }, emoji: "🌙" },
+  "main meal": { label: { el: "Κύριο Γεύμα", en: "Main Meal" }, emoji: "🍽️" }
 };
 
 function renderMealPlanText(data, lang) {
@@ -343,12 +344,13 @@ function renderMealPlanText(data, lang) {
   return DAY_KEYS.map((dayKey, di) => {
     const day = plan[dayKey.toLowerCase()];
     if (!day) return "";
-    const meals = SLOT_ORDER.filter(s => day[s]).map(s => {
+    const slots = Object.keys(day).filter(k => k !== "daily_total" && day[k]?.desc);
+    const meals = slots.map(s => {
       const m = day[s];
       const meta = MEAL_METADATA[s] || { label: { el: s, en: s }, emoji: "🍽️" };
       return `${meta.emoji} ${meta.label[lang] || s} — ${m.desc || m.description} (${m.kcal || m.calories}kcal)`;
     }).join("\n");
-    const total = day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0);
+    const total = day.daily_total || slots.reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0);
     return `📅 ${days[di]}\n${meals}\n${lang === "en" ? "Total" : "Σύνολο"}: ${total}kcal\n─────────────────`;
   }).filter(Boolean).join("\n\n") + `\n\n⚠️ ${lang === "en" ? "This information is for guidance only and does not replace a doctor, nutritionist, or trainer. Consult a specialist if you have conditions, allergies, or take medication." : "Οι πληροφορίες είναι ενημερωτικές και δεν υποκαθιστούν γιατρό, διατροφολόγο ή γυμναστή. Συμβουλέψου ειδικό αν έχεις νοσήματα, αλλεργίες ή λαμβάνεις φαρμακευτική αγωγή."}`;
 }
@@ -365,13 +367,9 @@ function MealPlanView({ data, lang }) {
         return (
           <div key={dayKey}>
             <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 {days[di]}</div>
-            {SLOT_ORDER.map(s => {
+            {Object.keys(day).filter(k => k !== "daily_total" && day[k]?.desc).map(s => {
               const m = day[s];
               const meta = MEAL_METADATA[s] || { label: { el: s, en: s }, emoji: "🍽️" };
-              if (!m) {
-                if (["meal_1","meal_2","meal_3","meal_4"].includes(s) && di === 0) return <div key={s} style={{ fontSize: 12, color: "#b91c1c" }}>⚠️ {meta.label[lang]} — {lang === "en" ? "missing" : "λείπει"}</div>;
-                return null;
-              }
               return (
                 <div key={s} style={{ fontSize: 13, lineHeight: 1.7 }}>
                   {meta.emoji} <strong>{meta.label[lang] || s}</strong> — {m.desc || m.description} ({m.kcal || m.calories}kcal)
@@ -379,7 +377,7 @@ function MealPlanView({ data, lang }) {
               );
             })}
             <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>
-              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || SLOT_ORDER.reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0)}kcal
+              {lang === "en" ? "Total" : "Σύνολο"}: {day.daily_total || Object.keys(day).filter(k => k !== "daily_total").reduce((sum, s) => sum + (day[s]?.kcal || day[s]?.calories || 0), 0)}kcal
             </div>
             {di < 6 && <div style={{ borderBottom: "1px solid var(--border-soft)", margin: "6px 0" }} />}
           </div>
@@ -1128,6 +1126,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         // Merge: meals + snacks → unified day structure
         const merged = {};
+        const slotToLabel = { meal_1: mainMealDefs[0]?.role?.toLowerCase() || "meal_1", meal_2: (mainMealDefs[1]?.role?.toLowerCase() || "meal_2"), meal_3: (mainMealDefs[2]?.role?.toLowerCase() || "meal_3"), meal_4: (mainMealDefs[3]?.role?.toLowerCase() || "meal_4") };
         DAY_KEYS.forEach(day => {
           const dm = meals?.[day];
           if (!dm) return;
@@ -1137,16 +1136,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           if (sn) {
             if (sn.snack_1) { snackEntries.morning_snack = sn.snack_1; snackTotal += sn.snack_1.kcal || 0; }
             if (sn.snack_2) { snackEntries.afternoon_snack = sn.snack_2; snackTotal += sn.snack_2.kcal || 0; }
-            // Fallback: if snack response is flat {desc, kcal} without snack_1/snack_2
             if (!sn.snack_1 && sn.desc) { snackEntries.morning_snack = sn; snackTotal += sn.kcal || 0; }
           }
-          merged[day] = {
-            breakfast: dm.meal_1,
-            ...snackEntries,
-            lunch: dm.meal_2,
-            dinner: dm.meal_3,
-            daily_total: (dm.meal_1?.kcal || 0) + snackTotal + (dm.meal_2?.kcal || 0) + (dm.meal_3?.kcal || 0)
-          };
+          const dayEntry = {};
+          let mealTotal = 0;
+          mainSlots.forEach((slot, i) => {
+            const label = slotToLabel[slot] || slot;
+            dayEntry[label] = dm[slot];
+            mealTotal += dm[slot]?.kcal || 0;
+          });
+          merged[day] = { ...dayEntry, ...snackEntries, daily_total: mealTotal + snackTotal };
         });
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
