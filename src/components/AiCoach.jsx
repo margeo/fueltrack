@@ -648,7 +648,7 @@ RULES:
       fat_eaten_gr: d.fat || 0,
       protein_target_gr: proteinTarget,
       exercise_kcal: d.exercise || 0,
-      exercises: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
+      exercises_done: d.exerciseNames?.length ? d.exerciseNames.join(", ") : "none"
     }));
 
     const input = {
