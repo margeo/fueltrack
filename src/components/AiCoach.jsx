@@ -773,6 +773,7 @@ ${askChange}`;
     const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : "general";
 
     const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
     let effectiveMessage;
     if (isInitial) {
       effectiveMessage = isEn
