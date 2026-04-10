@@ -1226,7 +1226,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           const totalCost = (mealsData.usage?.costUsd || 0) + (snacksData?.usage?.costUsd || 0);
           setMessages(prev => [...prev, { role: "assistant", mealPlanData: parsed, text: textVersion, msgType: "meal_plan_json", elapsed, usage: { inputTokens: totalIn, outputTokens: totalOut, costUsd: Math.round(totalCost * 10000) / 10000, model: mealsData.usage?.model || "" } }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: mealsData.advice || "Error", elapsed, usage: mealsData.usage }]);
+          const isEn2 = i18n.language === "en";
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ The meal plan could not be generated. Please try again." : "⚠️ Το πρόγραμμα διατροφής δεν ολοκληρώθηκε. Δοκίμασε ξανά.", error: true, elapsed, usage: mealsData.usage }]);
         }
         setHasLoaded(true);
         return;
@@ -1259,7 +1260,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           onSavePlan?.({ type: "training", content: textVersion, date: dateStr });
           setMessages(prev => [...prev, { role: "assistant", trainingPlanData: parsed, text: textVersion, msgType: "training_plan_json", elapsed, usage: tpData.usage }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: tpData.advice || "Error", elapsed, usage: tpData.usage }]);
+          const isEn2 = i18n.language === "en";
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ The training plan could not be generated. Please try again." : "⚠️ Το πρόγραμμα γυμναστικής δεν ολοκληρώθηκε. Δοκίμασε ξανά.", error: true, elapsed, usage: tpData.usage }]);
         }
         setHasLoaded(true);
         return;
@@ -1289,7 +1291,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           const cards = [eatNowData.option_1, eatNowData.option_2, eatNowData.option_3].filter(Boolean);
           setMessages(prev => [...prev, { role: "assistant", eatNowCards: cards, msgType: "eatnow_json", elapsed, usage: enData.usage }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: enData.advice || "Error", msgType: "eatnow", elapsed, usage: enData.usage }]);
+          const isEn2 = i18n.language === "en";
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ Could not generate meal options. Please try again." : "⚠️ Δεν ήταν δυνατή η δημιουργία προτάσεων. Δοκίμασε ξανά.", error: true, elapsed, usage: enData.usage }]);
         }
         setHasLoaded(true);
         return;
@@ -1326,7 +1329,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         if (reviewData && typeof reviewData === "object" && Object.keys(reviewData).length > 0) {
           setMessages(prev => [...prev, { role: "assistant", reviewData, msgType: isWeeklyReview ? "weekly_review_json" : "mistakes_json", elapsed, usage: rData.usage }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", text: rData.advice || "Error", elapsed, usage: rData.usage }]);
+          const isEn2 = i18n.language === "en";
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ Could not generate analysis. Please try again." : "⚠️ Δεν ήταν δυνατή η ανάλυση. Δοκίμασε ξανά.", error: true, elapsed, usage: rData.usage }]);
         }
         setHasLoaded(true);
         return;
