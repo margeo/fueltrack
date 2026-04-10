@@ -117,6 +117,7 @@ export default function SummaryTab({
   const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
+  const [expandedDay, setExpandedDay] = useState(null);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -519,24 +520,31 @@ RULES:
       <div className="card">
         <h2>{t("summary.last7")}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {last7Days.map((day) => (
-            <button key={day.date} onClick={() => setSelectedDate(day.date)} type="button"
-              style={{ display: "flex", flexDirection: "column", padding: "8px 12px", background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, cursor: "pointer", textAlign: "left", gap: 2 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>{formatDisplayDate(day.date, dateLocale)}</span>
+          {last7Days.map((day) => {
+            const isExpanded = expandedDay === day.date;
+            const hasDetails = day.protein > 0 || day.exercise > 0;
+            return (
+            <div key={day.date} style={{ borderRadius: 10, border: `1px solid ${day.date === selectedDate ? "var(--color-accent)" : "var(--border-soft)"}`, background: day.date === selectedDate ? "var(--color-accent)" : "var(--bg-soft)", color: day.date === selectedDate ? "var(--bg-card)" : "var(--text-primary)", overflow: "hidden" }}>
+              <button onClick={() => { setSelectedDate(day.date); setExpandedDay(isExpanded ? null : day.date); }} type="button"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", background: "transparent", color: "inherit", border: "none", cursor: "pointer", textAlign: "left" }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>
+                  {hasDetails && <span style={{ fontSize: 10, marginRight: 4 }}>{isExpanded ? "▲" : "▼"}</span>}
+                  {formatDisplayDate(day.date, dateLocale)}
+                </span>
                 <span style={{ fontSize: 12, opacity: day.date === selectedDate ? 0.85 : 1 }}
                   className={day.date === selectedDate ? "" : day.remaining >= 0 ? "summary-history-remaining-positive" : "summary-history-remaining-negative"}>
                   {formatNumber(day.eaten)} kcal · {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} {t("common.remaining")}
                 </span>
-              </div>
-              {(day.protein > 0 || day.exercise > 0) && (
-                <div style={{ display: "flex", gap: 10, fontSize: 11, opacity: 0.75 }}>
+              </button>
+              {isExpanded && hasDetails && (
+                <div style={{ padding: "0 12px 8px", display: "flex", gap: 12, fontSize: 11, opacity: 0.75 }}>
                   {day.protein > 0 && <span>🥩 {day.protein}g prot</span>}
                   {day.exercise > 0 && <span>🏃 {formatNumber(day.exercise)} kcal{day.exerciseNames?.length ? ` (${day.exerciseNames.join(", ")})` : ""}</span>}
                 </div>
               )}
-            </button>
-          ))}
+            </div>
+            );
+          })}
         </div>
       </div>
     </>
