@@ -222,6 +222,49 @@ function MistakesReviewView({ data, lang }) {
   );
 }
 
+const CHAT_SECTION_SCHEMA = {
+  type: "object",
+  properties: { emoji: { type: "string" }, title: { type: "string" }, content: { type: "string" } },
+  required: ["emoji", "title", "content"],
+  additionalProperties: false
+};
+const CHAT_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "chat_response",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        sections: { type: "array", items: CHAT_SECTION_SCHEMA },
+        tip: { type: "string" }
+      },
+      required: ["sections", "tip"],
+      additionalProperties: false
+    }
+  }
+};
+
+function ChatResponseView({ data, lang }) {
+  if (!data?.sections?.length) return null;
+  const isEn = lang === "en";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+      {data.sections.map((s, i) => (
+        <div key={i}>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{s.emoji} {s.title}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.7, color: "var(--text-primary)" }}>{s.content}</div>
+        </div>
+      ))}
+      {data.tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13, marginTop: 4 }}>
+          💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {data.tip}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const MACRO_INSIGHT_SCHEMA = {
   type: "json_schema",
   json_schema: {
@@ -1371,7 +1414,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
           messages: buildMessages(effectiveMessage),
-          ...(selectedModel && { model: selectedModel })
+          ...(selectedModel && { model: selectedModel }),
+          ...(taskType === "general" && { jsonMode: true, customSchema: CHAT_RESPONSE_SCHEMA })
         };
       }
       const response = await fetch("/.netlify/functions/ai-coach", {
@@ -1384,11 +1428,20 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       if (data.error) throw new Error(data.error);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
-      {
-        setMessages(prev => [
-          ...prev,
-          { role: "assistant", text: stripMarkdown(data.advice), isAutoLoad: isInitial, elapsed, usage: data.usage }
-        ]);
+      if (taskType === "general") {
+        let chatData = null;
+        try {
+          const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+          chatData = raw?.sections?.length ? raw : null;
+        } catch { /* parse failed */ }
+
+        if (chatData) {
+          setMessages(prev => [...prev, { role: "assistant", chatData, msgType: "chat_json", elapsed, usage: data.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: stripMarkdown(data.advice), elapsed, usage: data.usage }]);
+        }
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", text: stripMarkdown(data.advice), isAutoLoad: isInitial, elapsed, usage: data.usage }]);
       }
       setHasLoaded(true);
     } catch (err) {
@@ -1567,6 +1620,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ) : msg.msgType === "macro_analysis_json" && msg.macroData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <MacroAnalysisView macros={msg.macroData.macros} targets={msg.macroData.targets} aiInsight={msg.macroData.aiInsight} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "chat_json" && msg.chatData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <ChatResponseView data={msg.chatData} lang={i18n.language} />
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
