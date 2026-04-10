@@ -30,15 +30,13 @@ function exportToPDF(plan) {
   if (win) { win.document.write(html); win.document.close(); }
 }
 
-function exportGroceryToPDF(groceryContent) {
+function exportGroceryToPDF(groceryData) {
   const lang = localStorage.getItem("ft_language") || (navigator.language?.startsWith("el") ? "el" : "en");
   const isEn = lang === "en";
-  const lines = groceryContent.split("\n").map(line => {
-    const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    if (line.match(/^[🥩🥛🥦🌾🫙]/u)) return `<div class="category">${escaped}</div>`;
-    if (line.startsWith("- ")) return `<div class="item">${escaped}</div>`;
-    if (line.trim() === "") return `<div style="height:6px"></div>`;
-    return `<div class="line">${escaped}</div>`;
+  const lines = (groceryData?.categories || []).map(cat => {
+    const header = `<div class="category">${cat.emoji} ${cat.name}</div>`;
+    const items = cat.items.map(i => `<div class="item">${i.name}: ${i.quantity}</div>`).join("");
+    return header + items;
   }).join("");
   const title = isEn ? "Grocery List" : "Λίστα Σούπερ Μάρκετ";
   const printedLabel = isEn ? "Printed" : "Εκτυπώθηκε";
@@ -47,21 +45,52 @@ function exportGroceryToPDF(groceryContent) {
   if (win) { win.document.write(html); win.document.close(); }
 }
 
-function GroceryListView({ content }) {
-  if (!content) return null;
-  const lines = content.split("\n").filter(l => l.trim());
+const GROCERY_ITEM_SCHEMA = {
+  type: "object",
+  properties: { name: { type: "string" }, quantity: { type: "string" } },
+  required: ["name", "quantity"],
+  additionalProperties: false
+};
+const GROCERY_CATEGORY_SCHEMA = {
+  type: "object",
+  properties: {
+    emoji: { type: "string" },
+    name: { type: "string" },
+    items: { type: "array", items: GROCERY_ITEM_SCHEMA }
+  },
+  required: ["emoji", "name", "items"],
+  additionalProperties: false
+};
+const GROCERY_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "grocery_list",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        categories: { type: "array", items: GROCERY_CATEGORY_SCHEMA }
+      },
+      required: ["categories"],
+      additionalProperties: false
+    }
+  }
+};
+
+function GroceryListView({ data }) {
+  if (!data?.categories?.length) return null;
   return (
     <div style={{ fontSize: 13, lineHeight: 1.6 }}>
-      {lines.map((line, i) => {
-        const trimmed = line.trim();
-        if (trimmed.match(/^[🥩🥛🥦🌾🫙]/u)) {
-          return <div key={i} style={{ fontWeight: 700, fontSize: 13, marginTop: i > 0 ? 12 : 0, marginBottom: 4, paddingBottom: 3, borderBottom: "1px solid var(--border-soft)" }}>{trimmed}</div>;
-        }
-        if (trimmed.startsWith("- ")) {
-          return <div key={i} style={{ padding: "2px 0 2px 8px" }}>{trimmed}</div>;
-        }
-        return <div key={i} style={{ padding: "2px 0" }}>{trimmed}</div>;
-      })}
+      {data.categories.map((cat, ci) => (
+        <div key={ci}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginTop: ci > 0 ? 12 : 0, marginBottom: 4, paddingBottom: 3, borderBottom: "1px solid var(--border-soft)" }}>
+            {cat.emoji} {cat.name}
+          </div>
+          {cat.items.map((item, ii) => (
+            <div key={ii} style={{ padding: "2px 0 2px 8px" }}>{item.name}: {item.quantity}</div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -91,7 +120,12 @@ export default function SummaryTab({
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
-  const [groceryList, setGroceryList] = useState(savedGrocery?.content || null);
+  const [groceryList, setGroceryList] = useState(() => {
+    if (!savedGrocery?.content) return null;
+    // Handle both old text format and new JSON format
+    if (typeof savedGrocery.content === "object") return savedGrocery.content;
+    try { return JSON.parse(savedGrocery.content); } catch { return null; }
+  });
   const [groceryLoading, setGroceryLoading] = useState(false);
   const [groceryExpanded, setGroceryExpanded] = useState(false);
 
@@ -102,69 +136,50 @@ export default function SummaryTab({
     setGroceryExpanded(true);
     try {
       const isEn = i18n.language === "en";
-      const systemPrompt = isEn ? `Extract a grocery list from a weekly meal plan.
+      const systemPrompt = isEn
+        ? `Extract a grocery list from a weekly meal plan. Return a JSON object.
 RULES:
-• Group into categories
-• Merge similar ingredients (grilled chicken + chicken breast → "Chicken")
-• Sum ALL identical ingredients into ONE line with total quantity (e.g. "Chicken: 900g")
-• DO NOT break down by day — show only totals in the categories below
-MANDATORY format — ALWAYS emojis:
-
-🥩 Meat & Fish
-- Chicken breast: 1.2kg
-- Salmon: 400g
-─────────────────
-🥛 Dairy & Eggs
-- Yogurt: 1kg
-- Eggs: 12
-─────────────────
-🥦 Vegetables & Fruits
-- Tomato: 500g
-─────────────────
-🌾 Grains & Legumes
-- Rice: 500g
-─────────────────
-🫙 Other
-- Olive oil: 200ml` : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής.
+- Group into categories (Meat & Fish, Dairy & Eggs, Vegetables & Fruits, Grains & Legumes, Other)
+- Merge similar ingredients into one line with total quantity
+- Each category: emoji, name, items array [{name, quantity}]
+- Do not break down by day — totals only`
+        : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής. Επέστρεψε JSON.
 ΚΑΝΟΝΕΣ:
-• Ομαδοποίησε σε κατηγορίες
-• Ενοποίησε παρόμοια υλικά (κοτόπουλο ψητό + φιλέτο κοτόπουλο → "Κοτόπουλο")
-• Άθροισε ΟΛΑ τα ίδια υλικά σε ΜΙΑ γραμμή με τη συνολική ποσότητα (π.χ. "Κοτόπουλο: 900g")
-• ΜΗΝ αναλύεις ανά μέρα — δείξε μόνο σύνολα στις παρακάτω κατηγορίες
-ΥΠΟΧΡΕΩΤΙΚΟ format — ΠΑΝΤΑ emojis:
-
-🥩 Κρέατα & Ψάρια
-- Κοτόπουλο στήθος: 1.2kg
-- Σολομός: 400g
-─────────────────
-🥛 Γαλακτοκομικά & Αυγά
-- Γιαούρτι: 1kg
-- Αυγά: 12
-─────────────────
-🥦 Λαχανικά & Φρούτα
-- Ντομάτα: 500g
-─────────────────
-🌾 Δημητριακά & Όσπρια
-- Ρύζι: 500g
-─────────────────
-🫙 Άλλα
-- Ελαιόλαδο: 200ml`;
+- Ομαδοποίησε σε κατηγορίες (Κρέατα & Ψάρια, Γαλακτοκομικά & Αυγά, Λαχανικά & Φρούτα, Δημητριακά & Όσπρια, Άλλα)
+- Ενοποίησε παρόμοια υλικά σε μία γραμμή με συνολική ποσότητα
+- Κάθε κατηγορία: emoji, name, items array [{name, quantity}]
+- Μόνο σύνολα, όχι ανά μέρα`;
 
       const res = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemPrompt,
-          messages: [{ role: "user", content: plan.content }]
+          messages: [{ role: "user", content: plan.content }],
+          jsonMode: true,
+          customSchema: GROCERY_SCHEMA
         })
       });
       const data = await res.json();
-      const raw = data.advice || t("summary.groceryError");
-      const content = raw.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1");
-      setGroceryList(content);
-      if (data.advice) onSavePlan?.({ type: "grocery", content, date: new Date().toLocaleDateString("el-GR") });
+      let groceryData = null;
+      try {
+        const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+        groceryData = raw?.categories?.length ? raw : null;
+      } catch { /* parse failed */ }
+
+      if (groceryData) {
+        setGroceryList(groceryData);
+        const textVersion = groceryData.categories.map(c =>
+          `${c.emoji} ${c.name}\n${c.items.map(i => `${i.name}: ${i.quantity}`).join("\n")}`
+        ).join("\n\n");
+        onSavePlan?.({ type: "grocery", content: JSON.stringify(groceryData), date: new Date().toLocaleDateString("el-GR") });
+      } else {
+        setGroceryList(null);
+        setGroceryExpanded(false);
+      }
     } catch (e) {
-      setGroceryList(t("summary.groceryError") + ": " + e.message);
+      setGroceryList(null);
+      setGroceryExpanded(false);
     } finally {
       setGroceryLoading(false);
     }
@@ -274,7 +289,7 @@ MANDATORY format — ALWAYS emojis:
           <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
         ) : groceryList && groceryExpanded ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
-            <GroceryListView content={groceryList} />
+            <GroceryListView data={groceryList} />
           </div>
         ) : !groceryList && !groceryLoading ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
