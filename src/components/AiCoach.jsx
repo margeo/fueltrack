@@ -508,8 +508,13 @@ export default function AiCoach({
     if (last.role === "assistant") {
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (lastAssistantRef.current && chatRef.current) {
-          chatRef.current.scrollTop = lastAssistantRef.current.offsetTop;
+        if (chatRef.current) {
+          // Find the user message before the last assistant response and scroll to it
+          const children = chatRef.current.children;
+          const lastIdx = messages.length - 1;
+          const userIdx = lastIdx - 1;
+          const userEl = userIdx >= 0 && children[userIdx] ? children[userIdx] : null;
+          chatRef.current.scrollTop = userEl ? userEl.offsetTop : (lastAssistantRef.current?.offsetTop || 0);
         }
       }, 200);
     } else {
