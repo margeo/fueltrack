@@ -333,11 +333,11 @@
     "analyzing": "Analyzing your data...",
     "thinking": "Thinking...",
     "placeholder": "Ask me something...",
-    "q2": "Weekly meal plan",
-    "q3": "Weekly training plan",
-    "q4": "How am I doing this week?",
-    "q5": "What am I doing wrong?",
-    "q6": "Macro analysis"
+    "q1": "Weekly meal plan",
+    "q2": "Weekly training plan",
+    "q3": "How am I doing this week?",
+    "q4": "What am I doing wrong?",
+    "q5": "Macro analysis"
   },
   "modeGroups": {
     "balanced": "🥗 Balanced",

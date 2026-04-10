@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { supabase } from "../supabaseClient";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5", "aiCoach.q6"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
 function stripMarkdown(text) {
   if (!text) return text;
@@ -975,11 +975,11 @@ ${askChange}`;
 
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
-    const isMealPlan = text === t("aiCoach.q2");
-    const isTrainingPlan = text === t("aiCoach.q3");
-    const isWeeklyReview = text === t("aiCoach.q4");
-    const isMistakes = text === t("aiCoach.q5");
-    const isMacroAnalysis = text === t("aiCoach.q6");
+    const isMealPlan = text === t("aiCoach.q1");
+    const isTrainingPlan = text === t("aiCoach.q2");
+    const isWeeklyReview = text === t("aiCoach.q3");
+    const isMistakes = text === t("aiCoach.q4");
+    const isMacroAnalysis = text === t("aiCoach.q5");
     const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
