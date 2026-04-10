@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { supabase } from "../supabaseClient";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5", "aiCoach.q6"];
 
 function parseEatNowCards(text) {
   try {
@@ -217,6 +217,72 @@ function MistakesReviewView({ data, lang }) {
   );
 }
 
+const MACRO_INSIGHT_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "macro_analysis",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        protein_verdict: { type: "string" },
+        carbs_verdict: { type: "string" },
+        fat_verdict: { type: "string" },
+        weekly_pattern: { type: "string" },
+        tip: { type: "string" }
+      },
+      required: ["protein_verdict", "carbs_verdict", "fat_verdict", "weekly_pattern", "tip"],
+      additionalProperties: false
+    }
+  }
+};
+
+function MacroBar({ label, current, target, color }) {
+  const pct = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+  const remaining = Math.max(Math.round(target - current), 0);
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, marginBottom: 2 }}>
+        <span>{label}</span>
+        <span>{Math.round(current)}g / {Math.round(target)}g</span>
+      </div>
+      <div style={{ height: 8, borderRadius: 4, background: "var(--border-soft)", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: color, transition: "width 0.3s" }} />
+      </div>
+      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>
+        {pct}% — {remaining > 0 ? `${remaining}g remaining` : "target reached"}
+      </div>
+    </div>
+  );
+}
+
+function MacroAnalysisView({ macros, targets, aiInsight, lang }) {
+  const isEn = lang === "en";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>🔬 {isEn ? "Macro Analysis" : "Ανάλυση Μακροθρεπτικών"}</div>
+      <div>
+        <MacroBar label={isEn ? "Protein" : "Πρωτεΐνη"} current={macros.protein} target={targets.protein} color="#3b82f6" />
+        <MacroBar label={isEn ? "Carbs" : "Υδατάνθρακες"} current={macros.carbs} target={targets.carbs} color="#f59e0b" />
+        <MacroBar label={isEn ? "Fat" : "Λίπος"} current={macros.fat} target={targets.fat} color="#ef4444" />
+      </div>
+      {aiInsight && (
+        <div style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 8 }}>
+          {aiInsight.protein_verdict && <div style={{ fontSize: 13, lineHeight: 1.7 }}>🥩 {aiInsight.protein_verdict}</div>}
+          {aiInsight.carbs_verdict && <div style={{ fontSize: 13, lineHeight: 1.7 }}>🌾 {aiInsight.carbs_verdict}</div>}
+          {aiInsight.fat_verdict && <div style={{ fontSize: 13, lineHeight: 1.7 }}>🫒 {aiInsight.fat_verdict}</div>}
+          {aiInsight.weekly_pattern && <div style={{ fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>📊 {aiInsight.weekly_pattern}</div>}
+          {aiInsight.tip && (
+            <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13, marginTop: 6 }}>
+              💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {aiInsight.tip}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function renderTrainingPlanText(data, lang) {
   const days = DAY_NAMES[lang] || DAY_NAMES.el;
   const plan = data?.weekly_plan || data;
@@ -335,8 +401,8 @@ function MealPlanView({ data, lang }) {
 export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, weightLog, favoriteFoods,
-  totalCalories, totalProtein, exerciseValue,
-  remainingCalories,
+  totalCalories, totalProtein, totalCarbs, totalFat, exerciseValue,
+  remainingCalories, macroTargets,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
@@ -660,7 +726,8 @@ Fields: "summary" (1-2 sentences), "score" (1-10 integer), "highlights" (array o
 RULES:
 1. Be encouraging but honest. Score based on consistency, calorie adherence, and activity.
 2. 2-4 highlights and 2-4 improvements.
-3. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+3. If there are days with zero or no food logging, ALWAYS mention it as an improvement — emphasize that consistent logging is crucial for progress.
+4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -685,7 +752,39 @@ RULES:
 1. Be specific — reference actual data (days, calories, patterns).
 2. Each issue must have a concrete fix.
 3. Also mention 1-3 things they're doing right.
-4. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+4. If there are days with zero or no food logging, ALWAYS flag it as an issue — consistent logging is the #1 priority for progress.
+5. ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
+
+  function buildMacroAnalysisJSON() {
+    const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
+
+    const input = {
+      today: {
+        protein_g: Math.round(totalProtein || 0),
+        carbs_g: Math.round(totalCarbs || 0),
+        fat_g: Math.round(totalFat || 0),
+        calories: Math.round(totalCalories || 0)
+      },
+      targets: {
+        protein_g: Math.round(macroTargets?.proteinGrams || proteinTarget || 0),
+        carbs_g: Math.round(macroTargets?.carbsGrams || 0),
+        fat_g: Math.round(macroTargets?.fatGrams || 0),
+        calories: targetCalories
+      },
+      diet_type: currentMode.label,
+      last_7_days: last7Days || [],
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are a nutrition analyst. Analyze the user's macronutrient intake. Return a JSON object.
+Fields: "protein_verdict" (1 sentence about protein), "carbs_verdict" (1 sentence about carbs), "fat_verdict" (1 sentence about fat), "weekly_pattern" (1 sentence about weekly trends), "tip" (one actionable tip to improve balance).
+
+Be specific — reference actual numbers. Keep each field to 1 sentence.
+${isEn ? "All text in English." : "All text MUST be in Greek."}`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -939,7 +1038,8 @@ ${askChange}`;
     const isTrainingPlan = text === t("aiCoach.q3");
     const isWeeklyReview = text === t("aiCoach.q4");
     const isMistakes = text === t("aiCoach.q5");
-    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : "general";
+    const isMacroAnalysis = text === t("aiCoach.q6");
+    const taskType = isEatNow ? "eatnow" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMistakes ? "mistakes" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
@@ -1217,6 +1317,33 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         }
         setHasLoaded(true);
         return;
+      } else if (isMacroAnalysis) {
+        // Macro analysis — widget + AI insight
+        const { systemPrompt: maPrompt, userMessage: maInput } = buildMacroAnalysisJSON();
+        const maReq = {
+          systemPrompt: maPrompt,
+          messages: [{ role: "user", content: maInput }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: MACRO_INSIGHT_SCHEMA
+        };
+        const maResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(maReq) });
+        if (!maResponse.ok) throw new Error(`Connection error (${maResponse.status})`);
+        const maData = await maResponse.json();
+        if (maData.error) throw new Error(maData.error);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let aiInsight = null;
+        try {
+          const raw = typeof maData.advice === "string" ? JSON.parse(maData.advice) : maData.advice;
+          aiInsight = raw && typeof raw === "object" ? raw : null;
+        } catch { /* parse failed */ }
+
+        const macros = { protein: totalProtein || 0, carbs: totalCarbs || 0, fat: totalFat || 0 };
+        const targets = { protein: macroTargets?.proteinGrams || proteinTarget || 0, carbs: macroTargets?.carbsGrams || 0, fat: macroTargets?.fatGrams || 0 };
+        setMessages(prev => [...prev, { role: "assistant", macroData: { macros, targets, aiInsight }, msgType: "macro_analysis_json", elapsed, usage: maData.usage }]);
+        setHasLoaded(true);
+        return;
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
@@ -1408,6 +1535,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ) : (msg.msgType === "weekly_review_json" || msg.msgType === "mistakes_json") && msg.reviewData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   {msg.msgType === "weekly_review_json" ? <WeeklyReviewView data={msg.reviewData} lang={i18n.language} /> : <MistakesReviewView data={msg.reviewData} lang={i18n.language} />}
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "macro_analysis_json" && msg.macroData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <MacroAnalysisView macros={msg.macroData.macros} targets={msg.macroData.targets} aiInsight={msg.macroData.aiInsight} lang={i18n.language} />
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
