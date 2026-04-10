@@ -651,6 +651,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         if (nSnacks > 0) {
           for (let i = 1; i <= nSnacks; i++) snackSlotNames.push(`snack_${i}`);
           const snackSlotRules = snackSlotNames.map((s, i) => `- "${s}": ${i === 0 ? "Morning" : "Afternoon"} Snack (~${snackCal}kcal)`).join("\n");
+          const currentMode = MODES[mode] || MODES.balanced;
           const snacksPrompt = `You are a JSON Snack Generator. Return a JSON object with 7 keys (monday-sunday).
 Each day has EXACTLY ${nSnacks} snack slot(s): ${snackSlotNames.join(", ")}.
 Each slot: "desc" (brief, with grams), "kcal" (integer).
@@ -658,13 +659,13 @@ Each slot: "desc" (brief, with grams), "kcal" (integer).
 SNACK TARGETS:
 ${snackSlotRules}
 
-Each snack MUST be ~${snackCal}kcal. Light food only: yogurt, fruit, nuts, rice cakes, smoothie.
-NO meat, pasta, rice, heavy meals. Respect user allergies and preferences.
+Each snack MUST be ~${snackCal}kcal. Light in-between meal.
+Follow the user's diet type strictly. Respect allergies and preferences.
 ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
           snacksReq = {
             systemPrompt: snacksPrompt,
-            messages: [{ role: "user", content: JSON.stringify({ preferences: inputData.preferences, nutrition: { snack_calories: snackCal }, language: inputData.language }) }],
+            messages: [{ role: "user", content: JSON.stringify({ preferences: inputData.preferences, nutrition: { snack_calories: snackCal, diet_type: currentMode.label, diet_rules: currentMode.aiRule }, language: inputData.language }) }],
             ...(selectedModel && { model: selectedModel }),
             jsonMode: true,
             mealSlots: snackSlotNames,
@@ -793,10 +794,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       </div>
       {hasLoaded && messages.length > 0 && !loading && (
-        <div style={{ textAlign: "center", marginBottom: 6 }}>
+        <div style={{ textAlign: "right", marginBottom: 6 }}>
           <button type="button" onClick={() => setChatExpanded(prev => !prev)}
-            style={{ padding: "4px 20px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>
-            {chatExpanded ? "▲ Σύμπτυξη" : "▼ Ανάπτυξη"}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>
+            {chatExpanded ? "▲" : "▼"}
           </button>
         </div>
       )}
