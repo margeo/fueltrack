@@ -1033,7 +1033,8 @@ ${askChange}`;
   }
 
   function buildMessages(chatMessage) {
-    const history = messages.filter(msg => msg.text && !msg.isAutoLoad).map(msg => ({ role: msg.role, content: msg.text }));
+    // Skip auto-load and JSON-mode preset responses — they're not conversational context
+    const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.msgType).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
   }
