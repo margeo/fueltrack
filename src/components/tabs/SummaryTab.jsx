@@ -553,13 +553,13 @@ RULES:
                 <div style={{ padding: "4px 12px 10px", display: "flex", flexWrap: "wrap", gap: 6, fontSize: 11 }}>
                   {day.eaten > 0 || day.exercise > 0 ? (
                     <>
-                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🍽️ {formatNumber(day.eaten)} kcal</span>
-                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🎯 {formatNumber(targetCalories)} kcal</span>
-                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px", color: day.remaining >= 0 ? "#16a34a" : "#dc2626" }}>📊 {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)}</span>
-                      {day.exercise > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🏃 {formatNumber(day.exercise)} kcal</span>}
-                      {day.protein > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🥩 {day.protein}g</span>}
-                      {day.carbs > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🍞 {day.carbs}g</span>}
-                      {day.fat > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🧈 {day.fat}g</span>}
+                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px", color: day.remaining >= 0 ? "#16a34a" : "#dc2626" }}>📊 <strong>{t("summary.remaining")}:</strong> {day.remaining >= 0 ? "+" : ""}{formatNumber(day.remaining)} kcal</span>
+                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🎯 <strong>{t("summary.target")}:</strong> {formatNumber(targetCalories)} kcal</span>
+                      <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🍽️ <strong>{t("summary.food")}:</strong> {formatNumber(day.eaten)} kcal</span>
+                      {day.exercise > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🏃 <strong>{t("summary.exercise")}:</strong> {formatNumber(day.exercise)} kcal</span>}
+                      {day.protein > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🥩 <strong>Protein:</strong> {day.protein}g</span>}
+                      {day.carbs > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🍞 <strong>Carbs:</strong> {day.carbs}g</span>}
+                      {day.fat > 0 && <span style={{ background: "var(--bg-card)", border: "1px solid var(--border-soft)", borderRadius: 6, padding: "3px 8px" }}>🧈 <strong>Fat:</strong> {day.fat}g</span>}
                     </>
                   ) : (
                     <span style={{ color: "var(--text-muted)" }}>{i18n.language === "en" ? "No data logged" : "Χωρίς καταγραφή"}</span>
