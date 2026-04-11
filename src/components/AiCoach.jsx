@@ -387,7 +387,22 @@ export default function AiCoach({
     setMonthlyCount(newMonthly);
     setLifetimeCount(newLifetime);
     localStorage.setItem("ft_ai_usage_" + uid, JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly, lifetime: newLifetime }));
+    window.dispatchEvent(new CustomEvent("ft-ai-usage-change", { detail: { uid, usage: { dailyCount: newDaily, monthlyCount: newMonthly, lifetimeCount: newLifetime } } }));
   }
+
+  useEffect(() => {
+    function onUsageChange() {
+      const uid = session?.user?.id || "anon";
+      const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
+      const today = new Date().toISOString().slice(0, 10);
+      const month = today.slice(0, 7);
+      setDailyCount(stored.date === today ? (stored.count || 0) : 0);
+      setMonthlyCount(stored.month === month ? (stored.monthCount || 0) : 0);
+      setLifetimeCount(stored.lifetime || 0);
+    }
+    window.addEventListener("ft-ai-usage-change", onUsageChange);
+    return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
+  }, [session]);
 
   const needsAccount = !session;
   const unlimited = isDemo;
