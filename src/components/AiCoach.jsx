@@ -460,25 +460,35 @@ export default function AiCoach({
     if (!messages.length) return;
     const last = messages[messages.length - 1];
     if (last.role === "assistant") {
-      setTimeout(() => {
-        // 1) Page-level scroll: bring the whole AI Coach section to
-        //    the top of the viewport
-        coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        // 2) Chat-container scroll: bring the latest assistant bubble
-        //    to the top of the chat window. Using getBoundingClientRect
-        //    is more reliable than offsetTop inside a flex container,
-        //    and scrolling chatRef directly (not via scrollIntoView)
-        //    avoids fighting with the page-level scroll above.
+      // Wait for React commit + browser paint + Android WebView layout
+      // to settle before measuring. A plain setTimeout(200) was too
+      // aggressive on Android: getBoundingClientRect() ran before the
+      // new bubble had reached its final position, so the first scroll
+      // ended up off-target (the second message worked because by then
+      // the WebView layout had warmed up).
+      //
+      // Double requestAnimationFrame guarantees React has committed
+      // and the browser has painted at least once; the extra 300ms
+      // timeout absorbs the slower layout settle of Android WebView.
+      const runScroll = () => {
         const msgEl = lastAssistantRef.current;
         const container = chatRef.current;
-        if (msgEl && container) {
-          const msgRect = msgEl.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          const delta = msgRect.top - containerRect.top;
-          const targetScroll = container.scrollTop + delta;
-          container.scrollTo({ top: targetScroll, behavior: "smooth" });
-        }
-      }, 200);
+        if (!msgEl || !container) return;
+        // Scroll the chat container first so the measurement is based
+        // on its current viewport, then nudge the page-level scroll.
+        // Doing them in this order avoids the page scroll shifting
+        // the measurements out from under us.
+        const msgRect = msgEl.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const delta = msgRect.top - containerRect.top;
+        container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
+        coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(runScroll, 300);
+        });
+      });
     } else {
       const el = chatRef.current;
       if (el) el.scrollTop = el.scrollHeight;
