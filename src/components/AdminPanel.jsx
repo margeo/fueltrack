@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabaseClient";
+import { apiUrl } from "../utils/apiBase";
 
 export default function AdminPanel({ onClose, adminEmail }) {
   const [users, setUsers] = useState([]);
@@ -13,7 +14,7 @@ export default function AdminPanel({ onClose, adminEmail }) {
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch("/.netlify/functions/admin", {
+      const res = await fetch(apiUrl("/.netlify/functions/admin"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +37,7 @@ export default function AdminPanel({ onClose, adminEmail }) {
   async function toggleFlag(userId, flag, currentValue) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch("/.netlify/functions/admin", {
+      const res = await fetch(apiUrl("/.netlify/functions/admin"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

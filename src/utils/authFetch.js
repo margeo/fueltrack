@@ -9,6 +9,7 @@
 // an expired token while the refresh_token is still valid.
 
 import { supabase } from "../supabaseClient";
+import { apiUrl } from "./apiBase";
 
 function buildHeaders(baseHeaders, token) {
   const headers = { ...(baseHeaders || {}) };
@@ -17,10 +18,11 @@ function buildHeaders(baseHeaders, token) {
 }
 
 export async function authedFetch(url, options = {}) {
+  const resolvedUrl = apiUrl(url);
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token || "";
 
-  let response = await fetch(url, {
+  let response = await fetch(resolvedUrl, {
     ...options,
     headers: buildHeaders(options.headers, token)
   });
@@ -30,7 +32,7 @@ export async function authedFetch(url, options = {}) {
       const { data: { session: refreshed } } = await supabase.auth.refreshSession();
       const newToken = refreshed?.access_token || "";
       if (newToken && newToken !== token) {
-        response = await fetch(url, {
+        response = await fetch(resolvedUrl, {
           ...options,
           headers: buildHeaders(options.headers, newToken)
         });

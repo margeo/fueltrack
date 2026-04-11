@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
+import { apiUrl } from "../../utils/apiBase";
 import { EXERCISE_LIBRARY } from "../../data/constants";
 
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
@@ -131,7 +132,7 @@ export default function ProfileTab({
     if (!userEmail) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
-      fetch("/.netlify/functions/admin", {
+      fetch(apiUrl("/.netlify/functions/admin"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ action: "list-users" }),
