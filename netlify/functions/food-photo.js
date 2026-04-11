@@ -1,3 +1,5 @@
+import { checkAiGate, incrementAiUsage } from "./_aiGate.js";
+
 export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
@@ -8,6 +10,12 @@ export async function handler(event) {
         statusCode: 400,
         body: JSON.stringify({ error: "Missing image" })
       };
+    }
+
+    // Gate: verify JWT + check AI usage limits BEFORE making the expensive AI call
+    const gate = await checkAiGate(event);
+    if (!gate.ok) {
+      return { statusCode: gate.statusCode, headers: { "Content-Type": "application/json" }, body: gate.body };
     }
 
     const isEn = language === "en";
@@ -165,6 +173,12 @@ All values are per 100g except estimatedGrams which is the estimated quantity sh
     }
 
     result.usage = usageMeta;
+
+    // Atomically increment AI usage after the AI call succeeded
+    const newAiUsage = await incrementAiUsage(gate.admin, gate.userId);
+    if (newAiUsage) {
+      result.aiUsage = newAiUsage;
+    }
 
     return {
       statusCode: 200,

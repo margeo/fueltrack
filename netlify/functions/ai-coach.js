@@ -1,5 +1,7 @@
 const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
 
+import { checkAiGate, incrementAiUsage } from "./_aiGate.js";
+
 export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
@@ -15,6 +17,12 @@ export async function handler(event) {
 
     if (validMessages.length === 0) {
       return { statusCode: 400, body: JSON.stringify({ error: "No valid messages" }) };
+    }
+
+    // Gate: verify JWT + check AI usage limits BEFORE making the expensive AI call
+    const gate = await checkAiGate(event);
+    if (!gate.ok) {
+      return { statusCode: gate.statusCode, headers: { "Content-Type": "application/json" }, body: gate.body };
     }
 
     const recentMessages = validMessages.slice(-6);
@@ -128,6 +136,12 @@ export async function handler(event) {
       const outputTokens = u.output_tokens || 0;
       const costUsd = (inputTokens * 1 / 1000000) + (outputTokens * 5 / 1000000);
       responseData = { advice: txt, usage: { inputTokens, outputTokens, costUsd: Math.round(costUsd * 10000) / 10000, model: "Claude Haiku 4.5" } };
+    }
+
+    // Atomically increment AI usage after the AI call succeeded
+    const newAiUsage = await incrementAiUsage(gate.admin, gate.userId);
+    if (newAiUsage) {
+      responseData.aiUsage = newAiUsage;
     }
 
     return {
