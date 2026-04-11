@@ -456,7 +456,10 @@ export default function App() {
     isFavorite, toggleFavorite,
     saveRecentFood, updateCurrentDay,
     quickAddRecent, quickAddFavorite,
-    entries, groupedEntries, deleteEntry, openEditEntry
+    entries, groupedEntries, deleteEntry, openEditEntry,
+    session,
+    onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
+    onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
   };
 
   const exerciseProps = {

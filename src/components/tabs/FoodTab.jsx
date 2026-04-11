@@ -154,7 +154,8 @@ export default function FoodTab({
   foods, customFoods, onAddCustomFood, onDeleteCustomFood,
   recentFoods, favoriteFoods, isFavorite, toggleFavorite,
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
-  entries, groupedEntries, deleteEntry, openEditEntry
+  entries, groupedEntries, deleteEntry, openEditEntry,
+  session, onShowAuth, onShowRegister
 }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -270,6 +271,9 @@ export default function FoodTab({
         <FoodPhotoAnalyzer
           onFoodFound={(food) => { setSelectedFood(food); setShowPhotoAnalyzer(false); }}
           onClose={() => setShowPhotoAnalyzer(false)}
+          session={session}
+          onShowAuth={() => { setShowPhotoAnalyzer(false); onShowAuth?.(); }}
+          onShowRegister={() => { setShowPhotoAnalyzer(false); onShowRegister?.(); }}
         />
       )}
       {selectedFood && (

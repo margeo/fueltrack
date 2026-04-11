@@ -1,32 +1,58 @@
 import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
+import { getUsage, incrementUsage, computeLimitState } from "../utils/aiUsage";
+import AiLimitLock from "./AiLimitLock";
 
-export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
+export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onShowAuth, onShowRegister }) {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
+  const [usage, setUsage] = useState(() => getUsage(session?.user?.id));
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const fileRef = useRef(null);
 
   useEffect(() => {
+    function onUsageChange() { setUsage(getUsage(session?.user?.id)); }
+    window.addEventListener("ft-ai-usage-change", onUsageChange);
+    return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
+  }, [session]);
+
+  useEffect(() => {
+    setUsage(getUsage(session?.user?.id));
+    if (!session?.access_token || !session?.user?.id) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.access_token) return;
-      fetch("/.netlify/functions/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ action: "list-users" }),
-      }).then(res => { if (!cancelled) setIsAdmin(res.ok); }).catch(() => {});
-    });
+    supabase
+      .from("profiles")
+      .select("is_paid, is_demo")
+      .eq("id", session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setIsPaid(data?.is_paid === true);
+        setIsDemo(data?.is_demo === true);
+      })
+      .catch(() => {});
+    fetch("/.netlify/functions/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ action: "list-users" }),
+    }).then(res => { if (!cancelled) setIsAdmin(res.ok); }).catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [session]);
+
+  const needsAccount = !session;
+  const limitState = computeLimitState({ usage, isPaid, isDemo, needsAccount });
+  const { limitReached } = limitState;
 
   async function handleImage(file) {
     if (!file) return;
+    if (limitReached) return;
 
     setError("");
     setResult(null);
@@ -45,6 +71,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
     });
 
     setLoading(true);
+    const newUsage = incrementUsage(session?.user?.id);
+    setUsage(newUsage);
 
     try {
       const res = await fetch("/.netlify/functions/food-photo", {
@@ -148,8 +176,20 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
           )}
         </div>
 
+        {limitReached && (
+          <AiLimitLock
+            needsAccount={limitState.limitReached && !session}
+            paidLimitReached={limitState.paidLimitReached}
+            lifetimeLimitReached={limitState.lifetimeLimitReached}
+            monthlyLimitReached={limitState.monthlyLimitReached}
+            isPaid={isPaid}
+            onShowAuth={onShowAuth}
+            onShowRegister={onShowRegister}
+          />
+        )}
+
         {/* Upload area */}
-        {!preview && (
+        {!limitReached && !preview && (
           <div
             onClick={() => fileRef.current?.click()}
             style={{
@@ -286,7 +326,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
               {t("common.add")}
             </button>
           )}
-          {!preview && !loading && (
+          {!limitReached && !preview && !loading && (
             <button
               className="btn btn-dark"
               onClick={() => fileRef.current?.click()}
