@@ -15,7 +15,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [isDemo, setIsDemo] = useState(false);
   const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
+  const [cameraOn, setCameraOn] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const fileRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   function applyServerUsage(serverUsage) {
     if (!serverUsage) return;
@@ -63,6 +67,64 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const needsAccount = !session;
   const limitState = computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount });
   const { limitReached } = limitState;
+
+  async function startCamera() {
+    setCameraError("");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError(t("photo.cameraNotSupported"));
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+      streamRef.current = stream;
+      setCameraOn(true);
+      // Wait for next tick so the <video> element is mounted
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 0);
+    } catch (err) {
+      setCameraError(err?.name === "NotAllowedError" ? t("photo.cameraDenied") : t("photo.cameraError"));
+    }
+  }
+
+  function stopCamera() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setCameraOn(false);
+  }
+
+  async function capturePhoto() {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
+    if (!blob) return;
+    const file = new File([blob], `camera-${Date.now()}.jpg`, { type: "image/jpeg" });
+    stopCamera();
+    handleImage(file);
+  }
+
+  // Stop camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
 
   async function handleImage(file) {
     if (!file) return;
@@ -209,25 +271,60 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           />
         )}
 
-        {/* Upload area */}
-        {!limitReached && !preview && (
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{
-              border: "2px dashed var(--border-color)",
-              borderRadius: 14,
-              padding: 30,
-              textAlign: "center",
-              cursor: "pointer",
-              marginBottom: 12
-            }}
-          >
-            <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("photo.selectPhoto")}</div>
-            <div className="muted" style={{ fontSize: 13 }}>
-              {t("photo.orCamera")}
+        {/* Camera live preview */}
+        {!limitReached && cameraOn && (
+          <div style={{ marginBottom: 12 }}>
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              style={{ width: "100%", borderRadius: 12, background: "#000", maxHeight: 260, objectFit: "cover" }}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button className="btn btn-dark" onClick={capturePhoto} type="button" style={{ flex: 1 }}>
+                📸 {t("photo.capture")}
+              </button>
+              <button className="btn btn-light" onClick={stopCamera} type="button">
+                {t("common.cancel")}
+              </button>
             </div>
           </div>
+        )}
+
+        {/* Upload area */}
+        {!limitReached && !cameraOn && !preview && (
+          <>
+            <div
+              onClick={() => fileRef.current?.click()}
+              style={{
+                border: "2px dashed var(--border-color)",
+                borderRadius: 14,
+                padding: 30,
+                textAlign: "center",
+                cursor: "pointer",
+                marginBottom: 8
+              }}
+            >
+              <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("photo.selectPhoto")}</div>
+              <div className="muted" style={{ fontSize: 13 }}>
+                {t("photo.orCamera")}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={startCamera}
+              className="btn btn-light"
+              style={{ width: "100%", marginBottom: 12, fontSize: 13 }}
+            >
+              📹 {t("photo.openCamera")}
+            </button>
+            {cameraError && (
+              <div style={{ color: "#b91c1c", fontSize: 12, marginBottom: 8, textAlign: "center" }}>
+                {cameraError}
+              </div>
+            )}
+          </>
         )}
 
         <input
@@ -347,7 +444,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
               {t("common.add")}
             </button>
           )}
-          {!limitReached && !preview && !loading && (
+          {!limitReached && !preview && !loading && !cameraOn && (
             <button
               className="btn btn-dark"
               onClick={() => fileRef.current?.click()}
