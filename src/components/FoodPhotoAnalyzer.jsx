@@ -17,6 +17,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [currentDeviceIdx, setCurrentDeviceIdx] = useState(0);
   const fileRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -68,6 +70,32 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const limitState = computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount });
   const { limitReached } = limitState;
 
+  function stopStream() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(tr => tr.stop());
+      streamRef.current = null;
+    }
+  }
+
+  async function openStreamForDevice(deviceId) {
+    // Stop any existing stream first
+    stopStream();
+    const constraints = {
+      video: deviceId
+        ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        : { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    streamRef.current = stream;
+    // Ensure the video element picks up the new stream immediately
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(() => {});
+    }
+    return stream;
+  }
+
   async function startCamera() {
     setCameraError("");
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -75,22 +103,37 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
       return;
     }
     try {
-      // Prefer the rear camera on mobile, but don't require it — laptops
-      // typically only have a front-facing camera, and a strict
-      // facingMode would get rejected. Using "ideal" lets the browser
-      // fall back to whatever is available.
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width:  { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
-      streamRef.current = stream;
+      // First call without a specific device to trigger the permission
+      // prompt (enumerateDevices returns labels only after permission).
+      await openStreamForDevice(null);
+
+      // Now enumerate and remember the list of video inputs so we can
+      // cycle through them with the switch button.
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cams = devices.filter(d => d.kind === "videoinput");
+        setVideoDevices(cams);
+        // Find which device our current stream is using and sync the index
+        const currentTrack = streamRef.current?.getVideoTracks?.()[0];
+        const currentId = currentTrack?.getSettings?.().deviceId;
+        const idx = cams.findIndex(c => c.deviceId === currentId);
+        setCurrentDeviceIdx(idx >= 0 ? idx : 0);
+      } catch { /* ignore enumeration failures */ }
+
       setCameraOn(true);
     } catch (err) {
       setCameraError(err?.name === "NotAllowedError" ? t("photo.cameraDenied") : t("photo.cameraError"));
+    }
+  }
+
+  async function switchCamera() {
+    if (videoDevices.length < 2) return;
+    const nextIdx = (currentDeviceIdx + 1) % videoDevices.length;
+    try {
+      await openStreamForDevice(videoDevices[nextIdx].deviceId);
+      setCurrentDeviceIdx(nextIdx);
+    } catch {
+      setCameraError(t("photo.cameraError"));
     }
   }
 
@@ -105,10 +148,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   }
 
   function stopCamera() {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
+    stopStream();
     setCameraOn(false);
   }
 
@@ -129,12 +169,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
 
   // Stop camera on unmount
   useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-      }
-    };
+    return () => { stopStream(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleImage(file) {
@@ -296,6 +332,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
               <button className="btn btn-dark" onClick={capturePhoto} type="button" style={{ flex: 1 }}>
                 📸 {t("photo.capture")}
               </button>
+              {videoDevices.length > 1 && (
+                <button className="btn btn-light" onClick={switchCamera} type="button" title={t("photo.switchCamera")}>
+                  🔄
+                </button>
+              )}
               <button className="btn btn-light" onClick={stopCamera} type="button">
                 {t("common.cancel")}
               </button>
