@@ -317,7 +317,7 @@ RULES:
             <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
               📅
-              <input type="date" value={selectedDate} max={getTodayKey()} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+              <input type="date" value={selectedDate} max={getTodayKey()} onChange={(e) => { const v = e.target.value; if (v && v <= getTodayKey()) setSelectedDate(v); }}
                 style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
             </span>
           </div>
@@ -445,7 +445,7 @@ RULES:
                 value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
                 style={{ flex: 1, padding: "10px 12px" }} />
               <input className="input" type="date" value={weightDate} max={getTodayKey()}
-                onChange={(e) => setWeightDate(e.target.value)}
+                onChange={(e) => { const v = e.target.value; if (v && v <= getTodayKey()) setWeightDate(v); }}
                 style={{ flex: 1, padding: "10px 12px" }} />
               <button className="btn btn-dark" onClick={handleAddWeight} type="button"
                 style={{ flexShrink: 0, padding: "10px 14px" }}>+</button>
@@ -526,7 +526,7 @@ RULES:
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
               📅
-              <input type="date" max={getTodayKey()} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+              <input type="date" max={getTodayKey()} onChange={(e) => { const v = e.target.value; if (v && v <= getTodayKey()) setSelectedDate(v); }}
                 style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
             </span>
           </div>
