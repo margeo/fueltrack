@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
@@ -36,7 +36,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageBase64: base64,
-          mediaType: file.type || "image/jpeg"
+          mediaType: file.type || "image/jpeg",
+          language: i18n.language
         })
       });
 
