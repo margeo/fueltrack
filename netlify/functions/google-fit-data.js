@@ -1,4 +1,6 @@
-export async function handler(event) {
+import { withCors } from "./_cors.js";
+
+export const handler = withCors(async function handler(event) {
   const accessToken = event.queryStringParameters?.token;
   const date = event.queryStringParameters?.date || new Date().toISOString().slice(0, 10);
 
@@ -66,4 +68,4 @@ export async function handler(event) {
       body: JSON.stringify({ error: err.message })
     };
   }
-}
+});

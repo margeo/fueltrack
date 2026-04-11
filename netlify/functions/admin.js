@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { withCors } from "./_cors.js";
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
@@ -16,11 +17,7 @@ async function verifyAdmin(event) {
   return user;
 }
 
-export async function handler(event) {
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, body: "" };
-  }
-
+export const handler = withCors(async function handler(event) {
   try {
     const admin = await verifyAdmin(event);
     if (!admin) {
@@ -68,4 +65,4 @@ export async function handler(event) {
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-}
+});

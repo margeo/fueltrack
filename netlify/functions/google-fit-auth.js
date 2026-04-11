@@ -1,4 +1,6 @@
-export async function handler() {
+import { withCors } from "./_cors.js";
+
+export const handler = withCors(async function handler() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = "https://fueltrack.me/.netlify/functions/google-fit-callback";
 
@@ -18,4 +20,4 @@ export async function handler() {
     statusCode: 302,
     headers: { Location: url }
   };
-}
+});

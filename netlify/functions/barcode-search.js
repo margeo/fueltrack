@@ -1,6 +1,7 @@
 import { parseBarcode } from "./food-parsers.js";
+import { withCors } from "./_cors.js";
 
-export async function handler(event) {
+export const handler = withCors(async function handler(event) {
   try {
     const barcode = event.queryStringParameters?.code?.trim();
 
@@ -32,4 +33,4 @@ export async function handler(event) {
       body: JSON.stringify({ error: error.message || "Unknown error" })
     };
   }
-}
+});

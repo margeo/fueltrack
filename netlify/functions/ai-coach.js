@@ -1,8 +1,9 @@
 const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
 
 import { checkAiGate, incrementAiUsage } from "./_aiGate.js";
+import { withCors } from "./_cors.js";
 
-export async function handler(event) {
+export const handler = withCors(async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
     const { systemPrompt, messages, model: requestModel, jsonMode } = body;
@@ -155,4 +156,4 @@ export async function handler(event) {
       body: JSON.stringify({ error: error.message || "Unknown error" })
     };
   }
-}
+});
