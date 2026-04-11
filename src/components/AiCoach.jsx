@@ -418,13 +418,20 @@ export default function AiCoach({
     if (!messages.length) return;
     const last = messages[messages.length - 1];
     if (last.role === "assistant") {
+      // Wait a beat so the new message is painted, then scroll both
+      // the page and the inner chat container to the top of the
+      // assistant message. Using lastAssistantRef (explicitly bound
+      // to the last assistant bubble) avoids accidentally targeting
+      // the "thinking..." loading indicator during the brief window
+      // where both states flip at once.
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (chatRef.current) {
-          // Scroll to the assistant response (last message), not the question
-          const children = chatRef.current.children;
-          const lastEl = children[children.length - 1];
-          chatRef.current.scrollTop = lastEl ? lastEl.offsetTop : chatRef.current.scrollHeight;
+        const msgEl = lastAssistantRef.current;
+        const container = chatRef.current;
+        if (msgEl && container) {
+          container.scrollTo({ top: msgEl.offsetTop, behavior: "smooth" });
+        } else if (container) {
+          container.scrollTop = container.scrollHeight;
         }
       }, 200);
     } else {
