@@ -75,21 +75,32 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
       return;
     }
     try {
+      // Prefer the rear camera on mobile, but don't require it — laptops
+      // typically only have a front-facing camera, and a strict
+      // facingMode would get rejected. Using "ideal" lets the browser
+      // fall back to whatever is available.
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: {
+          facingMode: { ideal: "environment" },
+          width:  { ideal: 1280 },
+          height: { ideal: 720 }
+        },
         audio: false
       });
       streamRef.current = stream;
       setCameraOn(true);
-      // Wait for next tick so the <video> element is mounted
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      }, 0);
     } catch (err) {
       setCameraError(err?.name === "NotAllowedError" ? t("photo.cameraDenied") : t("photo.cameraError"));
+    }
+  }
+
+  // Callback ref — attaches the stream at the exact moment the <video>
+  // element mounts, avoiding any race with useEffect timing.
+  function attachVideo(el) {
+    videoRef.current = el;
+    if (el && streamRef.current && el.srcObject !== streamRef.current) {
+      el.srcObject = streamRef.current;
+      el.play().catch(() => {});
     }
   }
 
@@ -275,7 +286,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         {!limitReached && cameraOn && (
           <div style={{ marginBottom: 12 }}>
             <video
-              ref={videoRef}
+              ref={attachVideo}
+              autoPlay
               playsInline
               muted
               style={{ width: "100%", borderRadius: 12, background: "#000", maxHeight: 260, objectFit: "cover" }}
