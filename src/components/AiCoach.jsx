@@ -141,6 +141,48 @@ function WeeklyReviewView({ data, lang }) {
   );
 }
 
+const CHAT_SECTION_SCHEMA = {
+  type: "object",
+  properties: { emoji: { type: "string" }, title: { type: "string" }, content: { type: "string" } },
+  required: ["emoji", "title", "content"],
+  additionalProperties: false
+};
+const CHAT_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "chat_response",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        sections: { type: "array", items: CHAT_SECTION_SCHEMA },
+        tip: { type: "string" }
+      },
+      required: ["sections", "tip"],
+      additionalProperties: false
+    }
+  }
+};
+
+function ChatResponseView({ data, lang }) {
+  if (!data?.sections?.length) return null;
+  const isEn = lang === "en";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+      {data.sections.map((s, i) => (
+        <div key={i}>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{s.emoji} {s.title}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.7, color: "var(--text-primary)" }}>{s.content}</div>
+        </div>
+      ))}
+      {data.tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13, marginTop: 4 }}>
+          💡 <strong>{isEn ? "Tip" : "Συμβουλή"}:</strong> {data.tip}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const MACRO_INSIGHT_SCHEMA = {
   type: "json_schema",
@@ -418,20 +460,16 @@ export default function AiCoach({
     if (!messages.length) return;
     const last = messages[messages.length - 1];
     if (last.role === "assistant") {
-      // Wait a beat so the new message is painted, then scroll both
-      // the page and the inner chat container to the top of the
-      // assistant message. Using lastAssistantRef (explicitly bound
-      // to the last assistant bubble) avoids accidentally targeting
-      // the "thinking..." loading indicator during the brief window
-      // where both states flip at once.
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Scroll the chat container so the last assistant message is
+        // at the top. lastAssistantRef is bound to the last assistant
+        // bubble and the bottom spacer ensures enough scroll headroom
+        // for short responses.
         const msgEl = lastAssistantRef.current;
         const container = chatRef.current;
         if (msgEl && container) {
-          container.scrollTo({ top: msgEl.offsetTop, behavior: "smooth" });
-        } else if (container) {
-          container.scrollTop = container.scrollHeight;
+          container.scrollTop = msgEl.offsetTop;
         }
       }, 200);
     } else {
@@ -801,15 +839,13 @@ Base food suggestions on the user's food profile, preferences, and diet type. Ba
 FORMAT RULES:
 - Answer ONLY the user's question. Do NOT add unrelated topics, weekly plans, macro analysis, or training suggestions unless specifically asked.
 - Keep answers concise — bullet points, not paragraphs.
-- Use **bold** for key terms and emphasis.
-- Use plain text with markdown formatting (bold, bullet points, numbered lists). Do NOT use JSON.` : `
+- Use 1-2 sections maximum. Only add more if the question genuinely requires it.` : `
 Βάσισε τις προτάσεις φαγητού στο διατροφικό προφίλ και τον τρόπο διατροφής του χρήστη. Βάσισε τις προτάσεις άσκησης στο προφίλ γυμναστικής. Αν κάποιο φαγητό δεν ταιριάζει με τον τρόπο διατροφής, ανέφερέ το.
 
 ΚΑΝΟΝΕΣ FORMAT:
 - Απάντα ΜΟΝΟ στην ερώτηση του χρήστη. ΜΗΝ προσθέτεις άσχετα θέματα, εβδομαδιαία πλάνα, ανάλυση μακροθρεπτικών ή προτάσεις γυμναστικής εκτός αν ρωτηθεί συγκεκριμένα.
 - Σύντομες απαντήσεις — bullet points, όχι παραγράφους.
-- Χρησιμοποίησε **bold** για βασικούς όρους και έμφαση.
-- Χρησιμοποίησε plain text με markdown formatting (bold, bullet points, αριθμημένες λίστες). ΜΗΝ χρησιμοποιήσεις JSON.`;
+- Χρησιμοποίησε 1-2 sections μέγιστο. Πρόσθεσε περισσότερα μόνο αν η ερώτηση το απαιτεί.`;
 
     const dayLabels = isEn
       ? { mon: "MONDAY", tue: "TUESDAY", breakfast: "Breakfast", snack: "Snack", lunch: "Lunch", dinner: "Dinner", total: "Total", rest: "Rest" }
@@ -1170,7 +1206,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
           messages: buildMessages(effectiveMessage),
-          ...(selectedModel && { model: selectedModel })
+          ...(selectedModel && { model: selectedModel }),
+          ...(taskType === "general" && { jsonMode: true, customSchema: CHAT_RESPONSE_SCHEMA })
         };
       }
       const response = await authedFetch("/.netlify/functions/ai-coach", {
@@ -1190,7 +1227,26 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       if (taskType === "general") {
-        setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
+        let chatData = null;
+        try {
+          const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+          chatData = raw?.sections?.length ? raw : null;
+        } catch { /* parse failed */ }
+
+        if (!chatData) {
+          // Fallback: try to extract sections from different JSON shapes
+          try {
+            const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
+            if (Array.isArray(raw)) chatData = { sections: raw, tip: "" };
+            else if (raw?.emoji && raw?.title) chatData = { sections: [raw], tip: "" };
+          } catch { /* not JSON */ }
+        }
+        if (chatData) {
+          const chatText = chatData.sections.map(s => `${s.emoji} ${s.title}: ${s.content}`).join("\n") + (chatData.tip ? `\n💡 ${chatData.tip}` : "");
+          setMessages(prev => [...prev, { role: "assistant", chatData, text: chatText, msgType: "chat_json", elapsed, usage: data.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
+        }
       } else if (taskType === "initial") {
         setMessages(prev => [...prev, { role: "assistant", text: data.advice, isAutoLoad: true, elapsed, usage: data.usage }]);
       }
@@ -1350,6 +1406,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                     </div>
                   )}
                 </div>
+              ) : msg.msgType === "chat_json" && msg.chatData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <ChatResponseView data={msg.chatData} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
               ) : msg.msgType === "macro_analysis_json" && msg.macroData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <MacroAnalysisView macros={msg.macroData.macros} targets={msg.macroData.targets} aiInsight={msg.macroData.aiInsight} lang={i18n.language} />
@@ -1384,6 +1449,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 </div>
               </div>
             )}
+            {/* Bottom spacer guarantees the latest assistant message can
+                always be scrolled to the top of the chat container, even
+                when the total content is shorter than the visible area. */}
+            <div style={{ flexShrink: 0, height: chatExpanded ? 460 : 120 }} aria-hidden="true" />
           </div>
         </div>
       )}
