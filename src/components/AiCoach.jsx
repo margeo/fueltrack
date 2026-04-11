@@ -462,11 +462,14 @@ export default function AiCoach({
     if (last.role === "assistant") {
       setTimeout(() => {
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (chatRef.current) {
-          // Scroll to the assistant response (last message), not the question
-          const children = chatRef.current.children;
-          const lastEl = children[children.length - 1];
-          chatRef.current.scrollTop = lastEl ? lastEl.offsetTop : chatRef.current.scrollHeight;
+        // Scroll the chat container so the last assistant message is
+        // at the top. lastAssistantRef is bound to the last assistant
+        // bubble and the bottom spacer ensures enough scroll headroom
+        // for short responses.
+        const msgEl = lastAssistantRef.current;
+        const container = chatRef.current;
+        if (msgEl && container) {
+          container.scrollTop = msgEl.offsetTop;
         }
       }, 200);
     } else {
@@ -1446,6 +1449,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 </div>
               </div>
             )}
+            {/* Bottom spacer guarantees the latest assistant message can
+                always be scrolled to the top of the chat container, even
+                when the total content is shorter than the visible area. */}
+            <div style={{ flexShrink: 0, height: chatExpanded ? 460 : 120 }} aria-hidden="true" />
           </div>
         </div>
       )}
