@@ -3,11 +3,24 @@ import { useTranslation } from "react-i18next";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import { Capacitor } from "@capacitor/core";
 import { BarcodeScanner as MlkitBarcodeScanner, BarcodeFormat } from "@capacitor-mlkit/barcode-scanning";
+import { hasNativePlugin } from "../utils/nativeCapabilities";
 
 // Capacitor native uses Google's ML Kit barcode scanner, which opens
 // its own full-screen camera UI, handles permissions, and returns
 // scanned codes. Web still uses @zxing/library against a <video>.
-const IS_NATIVE = Capacitor.isNativePlatform();
+//
+// IS_NATIVE_SHELL tells us whether we're running inside the
+// Android/iOS app at all. HAS_NATIVE_BARCODE tells us whether that
+// app actually has @capacitor-mlkit/barcode-scanning compiled in —
+// it can be false when the APK is stale (built before Phase A3).
+// If we don't check HAS_NATIVE_BARCODE and just gate on IS_NATIVE,
+// calling MlkitBarcodeScanner.scan() on a stale APK throws "plugin
+// not implemented" and we render the zxing <video> fallback against
+// a black WebView that has no camera access — a very confusing
+// failure mode. Instead we detect the stale state up front and show
+// a clear "please update the app" message.
+const IS_NATIVE_SHELL = Capacitor.isNativePlatform();
+const HAS_NATIVE_BARCODE = hasNativePlugin("BarcodeScanner");
 
 // Product barcode formats we care about for food lookups.
 const SCAN_FORMATS = [
@@ -23,10 +36,23 @@ export default function BarcodeScanner({ onResult, onClose }) {
   const { t } = useTranslation();
   const videoRef = useRef(null);
   const readerRef = useRef(null);
-  const [error, setError] = useState("");
+  // Initialize the error state directly for the stale-APK case so
+  // the first render already shows the update-required message
+  // instead of briefly rendering an empty <video> before the effect
+  // runs.
+  const [error, setError] = useState(() =>
+    IS_NATIVE_SHELL && !HAS_NATIVE_BARCODE ? t("barcode.updateRequired") : ""
+  );
 
   useEffect(() => {
-    if (IS_NATIVE) {
+    // Stale APK: we already surfaced the error from useState. Don't
+    // try the @zxing <video> fallback — it can't access the camera
+    // from inside the Android WebView anyway.
+    if (IS_NATIVE_SHELL && !HAS_NATIVE_BARCODE) {
+      return;
+    }
+
+    if (HAS_NATIVE_BARCODE) {
       // On native we don't render the @zxing overlay at all. We just
       // open the ML Kit full-screen scanner immediately. It returns
       // the list of detected barcodes (or an empty list if the user
@@ -72,8 +98,10 @@ export default function BarcodeScanner({ onResult, onClose }) {
 
   // On native the ML Kit modal covers the whole screen — no need to
   // render our own overlay. Only keep a minimal fallback for the rare
-  // error case (e.g. ML Kit plugin not installed).
-  if (IS_NATIVE && !error) {
+  // error case. If we're on a stale native shell (HAS_NATIVE_BARCODE
+  // is false) we still render the overlay so the user can see the
+  // updateRequired error we set in the effect above.
+  if (HAS_NATIVE_BARCODE && !error) {
     return null;
   }
 

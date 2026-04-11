@@ -7,6 +7,7 @@ import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
+import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
@@ -642,6 +643,8 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        <NativeStaleBuildBanner />
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
         {showProfile && <ProfileTab {...profileProps} />}

@@ -370,6 +370,7 @@
   "barcode": {
     "title": "Barcode Scanner",
     "cameraError": "Camera access was not allowed.",
+    "updateRequired": "Barcode scanning requires an updated version of the app. Please reinstall FuelTrack from fueltrack.me.",
     "hint": "Point at the product's barcode"
   },
   "photo": {
@@ -393,7 +394,13 @@
     "cameraNotSupported": "Camera not available on this browser.",
     "cameraDenied": "Camera permission denied.",
     "cameraError": "Could not access the camera.",
+    "updateRequired": "The camera feature requires an updated version of the app. Please reinstall FuelTrack from fueltrack.me.",
     "switchCamera": "Switch camera"
+  },
+  "nativeStale": {
+    "title": "App update required",
+    "body": "Your installed app is missing native components ({{plugins}}). Some features will not work until you reinstall FuelTrack from fueltrack.me.",
+    "dismiss": "Dismiss"
   },
   "googleFit": {
     "connect": "Connect to Google Fit",

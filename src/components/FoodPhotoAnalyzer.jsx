@@ -5,6 +5,7 @@ import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { supabase } from "../supabaseClient";
 import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
+import { hasNativePlugin } from "../utils/nativeCapabilities";
 import AiLimitLock from "./AiLimitLock";
 
 // When we run inside a Capacitor native shell we prefer the native
@@ -12,7 +13,19 @@ import AiLimitLock from "./AiLimitLock";
 // permission prompts natively, and returns a ready-to-upload image.
 // The existing web flow (getUserMedia + file input) stays in place
 // and is still used when the app runs as a PWA in a browser.
-const IS_NATIVE = Capacitor.isNativePlatform();
+//
+// IS_NATIVE_SHELL tells us "running inside the Android/iOS app".
+// HAS_NATIVE_CAMERA tells us "the installed APK has the Camera
+// plugin compiled in". The second is stricter: a stale APK built
+// before Phase A3 returns true for IS_NATIVE_SHELL but false for
+// HAS_NATIVE_CAMERA, and in that case we must NOT fall back to
+// getUserMedia because @capacitor/core would route the call to
+// its web impl (getUserMedia inside the Android WebView fails
+// with a generic "could not access the camera" message that is
+// extremely confusing to debug). Instead we surface a clear
+// "please update the app" error to the user.
+const IS_NATIVE_SHELL = Capacitor.isNativePlatform();
+const HAS_NATIVE_CAMERA = hasNativePlugin("Camera");
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onShowAuth, onShowRegister }) {
   const { t, i18n } = useTranslation();
@@ -179,7 +192,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
 
   // Capacitor native camera/gallery picker. Opens the platform
   // camera UI (or photo picker) and returns a File ready for the
-  // existing handleImage pipeline. Used only when IS_NATIVE.
+  // existing handleImage pipeline. Only called when HAS_NATIVE_CAMERA
+  // is true — callers must gate on that, otherwise we would end up
+  // exercising @capacitor/camera's web fallback inside the Android
+  // WebView (see comment at the top of this file).
   async function pickPhotoNative(source) {
     setCameraError("");
     try {
@@ -398,7 +414,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           <>
             <div
               onClick={() => {
-                if (IS_NATIVE) pickPhotoNative(CameraSource.Photos);
+                if (HAS_NATIVE_CAMERA) pickPhotoNative(CameraSource.Photos);
+                else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
                 else fileRef.current?.click();
               }}
               style={{
@@ -419,7 +436,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             <button
               type="button"
               onClick={() => {
-                if (IS_NATIVE) pickPhotoNative(CameraSource.Camera);
+                if (HAS_NATIVE_CAMERA) pickPhotoNative(CameraSource.Camera);
+                else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
                 else startCamera();
               }}
               className="btn btn-light"
@@ -556,7 +574,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             <button
               className="btn btn-dark"
               onClick={() => {
-                if (IS_NATIVE) pickPhotoNative(CameraSource.Photos);
+                if (HAS_NATIVE_CAMERA) pickPhotoNative(CameraSource.Photos);
+                else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
                 else fileRef.current?.click();
               }}
               type="button"

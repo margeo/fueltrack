@@ -370,6 +370,7 @@
   "barcode": {
     "title": "Σκανάρισμα Barcode",
     "cameraError": "Δεν επιτράπηκε η πρόσβαση στην κάμερα.",
+    "updateRequired": "Το σκανάρισμα barcode χρειάζεται νέα έκδοση της εφαρμογής. Κάνε επανεγκατάσταση του FuelTrack από το fueltrack.me.",
     "hint": "Στόχευσε το barcode του προϊόντος"
   },
   "photo": {
@@ -393,7 +394,13 @@
     "cameraNotSupported": "Η κάμερα δεν υποστηρίζεται σε αυτόν τον browser.",
     "cameraDenied": "Δεν δόθηκε άδεια χρήσης κάμερας.",
     "cameraError": "Δεν ήταν δυνατή η πρόσβαση στην κάμερα.",
+    "updateRequired": "Η λειτουργία κάμερας χρειάζεται νέα έκδοση της εφαρμογής. Κάνε επανεγκατάσταση του FuelTrack από το fueltrack.me.",
     "switchCamera": "Εναλλαγή κάμερας"
+  },
+  "nativeStale": {
+    "title": "Απαιτείται ενημέρωση εφαρμογής",
+    "body": "Η εγκατεστημένη εφαρμογή σου δεν περιέχει όλα τα απαραίτητα native components ({{plugins}}). Κάποιες λειτουργίες δεν θα δουλεύουν μέχρι να κάνεις επανεγκατάσταση του FuelTrack από το fueltrack.me.",
+    "dismiss": "Κλείσιμο"
   },
   "googleFit": {
     "connect": "Σύνδεση με Google Fit",
