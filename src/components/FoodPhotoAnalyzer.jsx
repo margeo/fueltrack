@@ -1,9 +1,18 @@
 import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Capacitor } from "@capacitor/core";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { supabase } from "../supabaseClient";
 import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
 import AiLimitLock from "./AiLimitLock";
+
+// When we run inside a Capacitor native shell we prefer the native
+// camera/photos picker — it opens the platform camera UI, handles
+// permission prompts natively, and returns a ready-to-upload image.
+// The existing web flow (getUserMedia + file input) stays in place
+// and is still used when the app runs as a PWA in a browser.
+const IS_NATIVE = Capacitor.isNativePlatform();
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onShowAuth, onShowRegister }) {
   const { t, i18n } = useTranslation();
@@ -166,6 +175,45 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
     const file = new File([blob], `camera-${Date.now()}.jpg`, { type: "image/jpeg" });
     stopCamera();
     handleImage(file);
+  }
+
+  // Capacitor native camera/gallery picker. Opens the platform
+  // camera UI (or photo picker) and returns a File ready for the
+  // existing handleImage pipeline. Used only when IS_NATIVE.
+  async function pickPhotoNative(source) {
+    setCameraError("");
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 85,
+        resultType: CameraResultType.Base64,
+        source,
+        allowEditing: false,
+        correctOrientation: true,
+        saveToGallery: false,
+        width: 1280,
+      });
+      if (!photo?.base64String) return;
+      const format = (photo.format || "jpeg").toLowerCase();
+      const mime = format === "png" ? "image/png" : "image/jpeg";
+      // base64 → Uint8Array → Blob → File (so handleImage's existing
+      // FileReader/FormData paths keep working unchanged)
+      const binary = atob(photo.base64String);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mime });
+      const file = new File([blob], `camera-${Date.now()}.${format === "png" ? "png" : "jpg"}`, { type: mime });
+      handleImage(file);
+    } catch (err) {
+      // Capacitor throws on user-cancel with message "User cancelled
+      // photos app" or similar — treat those as silent dismissals.
+      const msg = String(err?.message || err || "").toLowerCase();
+      if (msg.includes("cancel")) return;
+      if (msg.includes("denied") || msg.includes("permission")) {
+        setCameraError(t("photo.cameraDenied"));
+        return;
+      }
+      setCameraError(t("photo.cameraError"));
+    }
   }
 
   // Stop camera on unmount
@@ -349,7 +397,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         {!limitReached && !cameraOn && !preview && (
           <>
             <div
-              onClick={() => fileRef.current?.click()}
+              onClick={() => {
+                if (IS_NATIVE) pickPhotoNative(CameraSource.Photos);
+                else fileRef.current?.click();
+              }}
               style={{
                 border: "2px dashed var(--border-color)",
                 borderRadius: 14,
@@ -367,7 +418,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             </div>
             <button
               type="button"
-              onClick={startCamera}
+              onClick={() => {
+                if (IS_NATIVE) pickPhotoNative(CameraSource.Camera);
+                else startCamera();
+              }}
               className="btn btn-light"
               style={{ width: "100%", marginBottom: 12, fontSize: 13 }}
             >
@@ -501,7 +555,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           {!limitReached && !preview && !loading && !cameraOn && (
             <button
               className="btn btn-dark"
-              onClick={() => fileRef.current?.click()}
+              onClick={() => {
+                if (IS_NATIVE) pickPhotoNative(CameraSource.Photos);
+                else fileRef.current?.click();
+              }}
               type="button"
               style={{ flex: 1 }}
             >

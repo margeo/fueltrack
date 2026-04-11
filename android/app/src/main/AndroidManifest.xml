@@ -32,4 +32,16 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Capacitor Camera plugin: take photos with the device camera and
+         read images from the gallery. READ_EXTERNAL_STORAGE is capped
+         at SDK 32 because Android 13+ uses READ_MEDIA_IMAGES instead. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <!-- Barcode scanning (Capacitor MLKit). Requires the camera feature
+         but we mark it as not required so the app can still be installed
+         on devices without a camera — barcode scanning just won't work. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>
