@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { supabase } from "../supabaseClient";
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
   const { t, i18n } = useTranslation();
@@ -7,7 +8,22 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const fileRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.access_token) return;
+      fetch("/.netlify/functions/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: "list-users" }),
+      }).then(res => { if (!cancelled) setIsAdmin(res.ok); }).catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleImage(file) {
     if (!file) return;
@@ -37,7 +53,8 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
         body: JSON.stringify({
           imageBase64: base64,
           mediaType: file.type || "image/jpeg",
-          language: i18n.language
+          language: i18n.language,
+          ...(selectedModel && { model: selectedModel })
         })
       });
 
@@ -113,8 +130,22 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>
-          📸 {t("photo.title")}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 700, fontSize: 18 }}>
+            📸 {t("photo.title")}
+          </div>
+          {isAdmin && (
+            <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_photo_model", e.target.value); }}
+              style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
+              <option value="">Gemini 2.5 Flash Lite (default) — $0.10/$0.40</option>
+              <option value="gemini-3.1">Gemini 3.1 Flash Lite (preview) — $0.10/$1.50</option>
+              <option value="gemini-flash">Gemini 2.5 Flash — $0.30/$2.50</option>
+              <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
+              <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
+              <option value="gpt4o-mini">GPT-4o Mini — $0.15/$0.60</option>
+              <option value="opus">Claude Opus 4.5 — $15/$75</option>
+            </select>
+          )}
         </div>
 
         {/* Upload area */}
@@ -236,6 +267,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose }) {
                 <strong>{result.estimatedGrams}g</strong>
               </div>
             </div>
+            {isAdmin && result.usage && (
+              <div style={{ fontSize: 10, color: "var(--text-muted)", textAlign: "right", marginTop: -4 }}>
+                in:{result.usage.inputTokens} out:{result.usage.outputTokens} · {result.usage.costUsd ? (result.usage.costUsd * 100).toFixed(2) + "¢" : "—"}{result.usage.model ? ` · ${result.usage.model}` : ""}
+              </div>
+            )}
           </div>
         )}
 
