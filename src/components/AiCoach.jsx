@@ -1211,6 +1211,11 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               </select>
             )}
           </div>
+          {isAdmin && (
+            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "monospace" }}>
+              📊 {dailyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.DAILY_FREE} daily · {monthlyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.MONTHLY_FREE} month · {lifetimeCount} lifetime{isDemo ? " · ∞ demo" : ""}{isPaid ? " · paid" : ""}
+            </div>
+          )}
         </div>
       </div>
       {hasLoaded && messages.length > 0 && !loading && !limitReached && (
