@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@capacitor-mlkit/barcode-scanning": "^8.0.1",
     "@capacitor/android": "^8.3.0",
+    "@capacitor/camera": "^8.0.2",
     "@capacitor/core": "^8.3.0",
     "@capacitor/ios": "^8.3.0",
     "@supabase/supabase-js": "^2.102.0",
