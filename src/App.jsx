@@ -6,6 +6,7 @@ import AuthScreen from "./components/AuthScreen";
 import BottomNav from "./components/BottomNav";
 import EditEntryModal from "./components/EditEntryModal";
 import ErrorBoundary from "./components/ErrorBoundary";
+import HelpModal from "./components/HelpModal";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
@@ -47,6 +48,7 @@ export default function App() {
   }, []);
 
   const [theme, setTheme] = useState(() => getInitialTheme());
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
 
   const [age, setAge] = useState(() => loadValue("ft_age", ""));
@@ -507,6 +509,9 @@ export default function App() {
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <button className="theme-toggle-btn" onClick={() => setShowHelpModal(true)} type="button" aria-label={t("help.title")}>
+              ℹ️
+            </button>
             <button className="theme-toggle-btn" onClick={() => i18n.changeLanguage(i18n.language === "el" ? "en" : "el")} type="button"
               style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               {i18n.language === "el" ? (
@@ -573,6 +578,10 @@ export default function App() {
           <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} isModal />
         </div>
       </div>
+    )}
+
+    {showHelpModal && (
+      <HelpModal activeTab={showProfile ? "profile" : activeTab} onClose={() => setShowHelpModal(false)} />
     )}
     </>
   );

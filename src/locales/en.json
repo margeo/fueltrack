@@ -9,6 +9,66 @@
     "exercise": "Exercise",
     "profile": "Profile"
   },
+  "help": {
+    "title": "Quick Guide",
+    "howTo": "How to use",
+    "tips": "Tips",
+    "profile": {
+      "howTo": [
+        "Fill in your age, gender, height and weight",
+        "Choose your goal (lose weight, gain muscle, maintain, fitness)",
+        "Pick a diet mode (balanced, keto, etc.)",
+        "Set food preferences and allergies for better AI suggestions",
+        "Complete your fitness profile (level, equipment, goals)"
+      ],
+      "tips": [
+        "The more complete your profile, the better the AI Coach advice",
+        "Update your weight regularly for accurate calorie calculation",
+        "Allergies are critical — the AI will never suggest foods you're allergic to"
+      ]
+    },
+    "summary": {
+      "howTo": [
+        "Check how many calories you have left for today",
+        "Track your macros (protein, carbs, fat)",
+        "See your last 7 days history",
+        "Ask the AI Coach for a meal plan, training plan, weekly review, or anything custom",
+        "Log a past day by tapping the calendar icon"
+      ],
+      "tips": [
+        "The streak rewards you for daily logging — keep it going!",
+        "The AI Coach scores your week from 1 to 10",
+        "Use the 'Today' button to quickly return to the current day"
+      ]
+    },
+    "food": {
+      "howTo": [
+        "Search food in the database",
+        "Scan a barcode to add food instantly",
+        "Take a photo to auto-recognize food and calories",
+        "Create a custom food with your own nutrition info",
+        "Mark foods as favorites for quick access"
+      ],
+      "tips": [
+        "Favorites appear at the top for instant adding",
+        "Recent foods are saved automatically",
+        "Adjust grams or portion before adding"
+      ]
+    },
+    "exercise": {
+      "howTo": [
+        "Pick an exercise from the list (cardio, gym, sports)",
+        "Set the duration — calories are calculated automatically",
+        "Add a custom exercise if it's not in the list",
+        "Mark favorites for quick access"
+      ],
+      "tips": [
+        "Exercise calories are added to your remaining calories for the day",
+        "Favorites appear first for quick access",
+        "Recent exercises are saved for one-tap re-adding"
+      ]
+    }
+  },
   "common": {
     "kcal": "kcal",
     "add": "Add",

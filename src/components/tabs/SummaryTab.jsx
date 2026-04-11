@@ -1,7 +1,7 @@
 // src/components/tabs/SummaryTab.jsx
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatDisplayDate, formatNumber } from "../../utils/helpers";
+import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
 
@@ -114,7 +114,7 @@ export default function SummaryTab({
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
   const [weightInput, setWeightInput] = useState("");
-  const [weightDate, setWeightDate] = useState(new Date().toISOString().slice(0, 10));
+  const [weightDate, setWeightDate] = useState(getTodayKey());
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
@@ -313,11 +313,11 @@ RULES:
             {isToday && <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.7 }}>· {t("common.today")}</span>}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
+            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
               📅
-              <input type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+              <input type="date" value={selectedDate} max={getTodayKey()} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
                 style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
             </span>
           </div>
@@ -444,7 +444,7 @@ RULES:
               <input className="input" type="number" step="0.1" placeholder="kg" inputMode="decimal"
                 value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
                 style={{ flex: 1, padding: "10px 12px" }} />
-              <input className="input" type="date" value={weightDate}
+              <input className="input" type="date" value={weightDate} max={getTodayKey()}
                 onChange={(e) => setWeightDate(e.target.value)}
                 style={{ flex: 1, padding: "10px 12px" }} />
               <button className="btn btn-dark" onClick={handleAddWeight} type="button"
@@ -522,11 +522,11 @@ RULES:
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
+            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
             <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
               📅
-              <input type="date" max={new Date().toISOString().slice(0, 10)} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+              <input type="date" max={getTodayKey()} onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
                 style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
             </span>
           </div>
