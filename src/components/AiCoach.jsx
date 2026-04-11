@@ -480,6 +480,7 @@ export default function AiCoach({
       if (nSnacks >= 1 && i === 0 && mainMealDefs.length > 1) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Morning Snack", target_calories: snackCal });
       if (nSnacks >= 2 && i === 1 && mainMealDefs.length > 2) mealDefs.push({ slot: `meal_${slotIdx++}`, role: "Afternoon Snack", target_calories: snackCal });
     });
+    const mealSlots = mealDefs.map(m => m.slot);
 
     const foodItemLabels = {
       chicken: isEn?"Chicken":"Κοτόπουλο", beef: isEn?"Beef":"Μοσχάρι", pork: isEn?"Pork":"Χοιρινό",
@@ -509,7 +510,37 @@ export default function AiCoach({
       language: isEn ? "English" : "Greek"
     };
 
-    return { userMessage: JSON.stringify(input) };
+    const slotRules = mealDefs.map(m => {
+      const isSnack = m.role.includes("Snack");
+      return `- "${m.slot}": ${isSnack ? "Light_Snack" : m.role} (~${m.target_calories}kcal)`;
+    }).join("\n");
+    const exampleMeals = mealDefs.map(m => `"${m.slot}":{"desc":"...","kcal":${m.target_calories}}`).join(",");
+
+    const langNote = isEn ? "All desc fields in English." : "All desc fields MUST be in Greek.";
+    const snackConstraints = mealDefs
+      .filter(m => m.role.includes("Snack"))
+      .map((m, i) => `${i + 1}. ${m.slot}: MUST be a light snack (yogurt, fruit, nuts). NO meat/pasta/rice.`)
+      .join("\n");
+    let ruleNum = mealDefs.filter(m => m.role.includes("Snack")).length + 1;
+    const systemPrompt = `You are a JSON Diet Generator. You MUST return a JSON object with exactly 7 days.
+Each day MUST contain EXACTLY ${mealSlots.length} meal slots: ${mealSlots.join(", ")}.
+
+CONSTRAINTS:
+${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. STRICT CALORIES: daily_total MUST be exactly ${targetCalories}kcal. Each meal kcal must be within ±50 of its target. The sum of all meals MUST equal daily_total.
+${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
+${ruleNum++}. ${langNote}
+${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
+${ruleNum++}. No leftovers. Unique meals each day. Respect input data.
+
+CALORIE TARGETS (strict — follow these numbers):
+${slotRules}
+daily_total: exactly ${targetCalories}kcal
+
+EXAMPLE (monday):
+{${exampleMeals},"daily_total":${targetCalories}}`;
+
+    const snackSlots = mealDefs.filter(m => m.role.includes("Snack")).map(m => m.slot);
+    return { systemPrompt, userMessage: JSON.stringify(input), mealSlots, snackSlots };
   }
 
   function buildTrainingPlanJSON() {
@@ -869,7 +900,7 @@ ${askChange}`;
       const startTime = Date.now();
       let reqBody;
       if (isMealPlan) {
-        const { userMessage } = buildMealPlanJSON();
+        const { userMessage, mealSlots: buildSlots } = buildMealPlanJSON();
         const isEn = i18n.language === "en";
         const inputData = JSON.parse(userMessage);
         // Use main meal slots from buildMealPlanJSON (respects mealsPerDay)
