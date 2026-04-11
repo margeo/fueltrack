@@ -1,6 +1,7 @@
 import { checkAiGate, incrementAiUsage } from "./_aiGate.js";
+import { withCors } from "./_cors.js";
 
-export async function handler(event) {
+export const handler = withCors(async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
     const { imageBase64, mediaType, language = "el", model: requestModel } = body;
@@ -191,4 +192,4 @@ All values are per 100g except estimatedGrams which is the estimated quantity sh
       body: JSON.stringify({ error: error.message || "Unknown error" })
     };
   }
-}
+});

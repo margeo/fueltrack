@@ -1,4 +1,6 @@
-export async function handler(event) {
+import { withCors } from "./_cors.js";
+
+export const handler = withCors(async function handler(event) {
   const code = event.queryStringParameters?.code;
   const redirectUri = "https://fueltrack.me/.netlify/functions/google-fit-callback";
 
@@ -40,4 +42,4 @@ export async function handler(event) {
       headers: { Location: `https://fueltrack.me/?fit_error=${encodeURIComponent(err.message)}` }
     };
   }
-}
+});

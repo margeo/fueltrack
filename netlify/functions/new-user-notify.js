@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
+import { withCors } from "./_cors.js";
 
-export async function handler(event) {
+export const handler = withCors(async function handler(event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
   }
@@ -62,4 +63,4 @@ export async function handler(event) {
     console.error("Email notification error:", error);
     return { statusCode: 500, body: JSON.stringify({ error: "Failed to send notification" }) };
   }
-}
+});
