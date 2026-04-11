@@ -24,12 +24,14 @@ import {
 } from "./utils/calorieLogic";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
+import { fetchCloudState, saveCloudColumn, seedCloudState } from "./utils/cloudSync";
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("login");
+  const [cloudHydrated, setCloudHydrated] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -179,6 +181,118 @@ export default function App() {
   useEffect(() => saveValue("ft_sessionDuration", sessionDuration), [sessionDuration]);
   useEffect(() => saveJSON("ft_fitnessGoals", fitnessGoals), [fitnessGoals]);
   useEffect(() => saveJSON("ft_exerciseCategories", exerciseCategories), [exerciseCategories]);
+
+  // =========================================================================
+  // CLOUD SYNC — Phase A2
+  // On login we fetch the user_state row from Supabase. If it exists we
+  // hydrate local state from it (cloud wins). If not, we seed the row from
+  // the current localStorage state. After that, every state change is
+  // debounced-written to the matching JSONB column.
+  // =========================================================================
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setCloudHydrated(false);
+      return;
+    }
+    let cancelled = false;
+
+    (async () => {
+      const cloud = await fetchCloudState(session.user.id);
+      if (cancelled) return;
+
+      if (cloud) {
+        // Cloud wins — override local state
+        if (cloud.profile && typeof cloud.profile === "object") {
+          const p = cloud.profile;
+          if (p.age !== undefined) setAge(p.age);
+          if (p.gender !== undefined) setGender(p.gender);
+          if (p.height !== undefined) setHeight(p.height);
+          if (p.weight !== undefined) setWeight(p.weight);
+          if (p.activity !== undefined) setActivity(p.activity);
+          if (p.goalType !== undefined) setGoalType(p.goalType);
+          if (p.mode !== undefined) setMode(p.mode);
+          if (p.targetWeightLoss !== undefined) setTargetWeightLoss(p.targetWeightLoss);
+          if (p.weeks !== undefined) setWeeks(p.weeks);
+        }
+        if (cloud.food_prefs && typeof cloud.food_prefs === "object") {
+          const f = cloud.food_prefs;
+          if (Array.isArray(f.foodCategories)) setFoodCategories(f.foodCategories);
+          if (Array.isArray(f.allergies)) setAllergies(f.allergies);
+          if (f.cookingLevel !== undefined) setCookingLevel(f.cookingLevel);
+          if (f.cookingTime !== undefined) setCookingTime(f.cookingTime);
+          if (typeof f.simpleMode === "boolean") setSimpleMode(f.simpleMode);
+          if (f.mealsPerDay !== undefined) setMealsPerDay(f.mealsPerDay);
+          if (f.snacksPerDay !== undefined) setSnacksPerDay(f.snacksPerDay);
+        }
+        if (cloud.fitness_prefs && typeof cloud.fitness_prefs === "object") {
+          const x = cloud.fitness_prefs;
+          if (x.fitnessLevel !== undefined) setFitnessLevel(x.fitnessLevel);
+          if (x.workoutLocation !== undefined) setWorkoutLocation(x.workoutLocation);
+          if (Array.isArray(x.equipment)) setEquipment(x.equipment);
+          if (x.limitations !== undefined) setLimitations(x.limitations);
+          if (x.workoutFrequency !== undefined) setWorkoutFrequency(x.workoutFrequency);
+          if (x.sessionDuration !== undefined) setSessionDuration(x.sessionDuration);
+          if (Array.isArray(x.fitnessGoals)) setFitnessGoals(x.fitnessGoals);
+          if (Array.isArray(x.exerciseCategories)) setExerciseCategories(x.exerciseCategories);
+        }
+        if (Array.isArray(cloud.custom_foods)) setCustomFoods(cloud.custom_foods);
+        if (Array.isArray(cloud.favorite_food_keys)) setFavoriteFoodKeys(cloud.favorite_food_keys);
+        if (Array.isArray(cloud.recent_foods)) setRecentFoods(cloud.recent_foods);
+        if (Array.isArray(cloud.favorite_exercise_keys)) setFavoriteExerciseKeys(cloud.favorite_exercise_keys);
+        if (Array.isArray(cloud.recent_exercises)) setRecentExercises(cloud.recent_exercises);
+        if (cloud.daily_logs && typeof cloud.daily_logs === "object") setDailyLogs(cloud.daily_logs);
+        if (Array.isArray(cloud.weight_log)) setWeightLog(cloud.weight_log);
+        if (Array.isArray(cloud.saved_plans)) setSavedPlans(cloud.saved_plans);
+      } else {
+        // No row yet — seed from current local state
+        seedCloudState(session.user.id, {
+          profile: { age, gender, height, weight, activity, goalType, mode, targetWeightLoss, weeks },
+          food_prefs: { foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealsPerDay, snacksPerDay },
+          fitness_prefs: { fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories },
+          custom_foods: customFoods,
+          favorite_food_keys: favoriteFoodKeys,
+          recent_foods: recentFoods,
+          favorite_exercise_keys: favoriteExerciseKeys,
+          recent_exercises: recentExercises,
+          daily_logs: dailyLogs,
+          weight_log: weightLog,
+          saved_plans: savedPlans
+        });
+      }
+
+      if (!cancelled) setCloudHydrated(true);
+    })();
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
+
+  // Grouped saves — each fires when any of its fields change
+  const uid = session?.user?.id;
+  useEffect(() => {
+    if (!cloudHydrated || !uid) return;
+    saveCloudColumn(uid, "profile", { age, gender, height, weight, activity, goalType, mode, targetWeightLoss, weeks });
+  }, [uid, cloudHydrated, age, gender, height, weight, activity, goalType, mode, targetWeightLoss, weeks]);
+
+  useEffect(() => {
+    if (!cloudHydrated || !uid) return;
+    saveCloudColumn(uid, "food_prefs", { foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealsPerDay, snacksPerDay });
+  }, [uid, cloudHydrated, foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealsPerDay, snacksPerDay]);
+
+  useEffect(() => {
+    if (!cloudHydrated || !uid) return;
+    saveCloudColumn(uid, "fitness_prefs", { fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories });
+  }, [uid, cloudHydrated, fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories]);
+
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "custom_foods", customFoods); }, [uid, cloudHydrated, customFoods]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "favorite_food_keys", favoriteFoodKeys); }, [uid, cloudHydrated, favoriteFoodKeys]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "recent_foods", recentFoods); }, [uid, cloudHydrated, recentFoods]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "favorite_exercise_keys", favoriteExerciseKeys); }, [uid, cloudHydrated, favoriteExerciseKeys]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "recent_exercises", recentExercises); }, [uid, cloudHydrated, recentExercises]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "daily_logs", dailyLogs); }, [uid, cloudHydrated, dailyLogs]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "weight_log", weightLog); }, [uid, cloudHydrated, weightLog]);
+  useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "saved_plans", savedPlans); }, [uid, cloudHydrated, savedPlans]);
 
   useEffect(() => {
     if (!hasSeenWelcome && activeTab !== "welcome") { setActiveTab("welcome"); return; }
