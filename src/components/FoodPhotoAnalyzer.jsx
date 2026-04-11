@@ -13,18 +13,20 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
-  const [usage, setUsage] = useState(() => getUsage(session?.user?.id));
+  const [, setUsageTick] = useState(0);
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const fileRef = useRef(null);
 
-  useEffect(() => {
-    function onUsageChange() { setUsage(getUsage(session?.user?.id)); }
-    window.addEventListener("ft-ai-usage-change", onUsageChange);
-    return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
-  }, [session]);
+  // Read fresh on every render so increments from other features (AI Coach) are visible immediately
+  const usage = getUsage(session?.user?.id);
 
   useEffect(() => {
-    setUsage(getUsage(session?.user?.id));
+    function onUsageChange() { setUsageTick(t => t + 1); }
+    window.addEventListener("ft-ai-usage-change", onUsageChange);
+    return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
+  }, []);
+
+  useEffect(() => {
     if (!session?.access_token || !session?.user?.id) return;
     let cancelled = false;
     supabase
@@ -52,7 +54,15 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
 
   async function handleImage(file) {
     if (!file) return;
-    if (limitReached) return;
+
+    // Re-read fresh from localStorage right before checking, in case another feature
+    // (e.g. AI Coach) incremented between the mount read and the user action.
+    const freshUsage = getUsage(session?.user?.id);
+    const freshState = computeLimitState({ usage: freshUsage, isPaid, isDemo, needsAccount });
+    if (freshState.limitReached) {
+      setUsageTick(t => t + 1);
+      return;
+    }
 
     setError("");
     setResult(null);
@@ -71,8 +81,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
     });
 
     setLoading(true);
-    const newUsage = incrementUsage(session?.user?.id);
-    setUsage(newUsage);
+    incrementUsage(session?.user?.id);
 
     try {
       const res = await fetch("/.netlify/functions/food-photo", {

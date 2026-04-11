@@ -1205,7 +1205,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           </div>
         </div>
       </div>
-      {hasLoaded && messages.length > 0 && !loading && (
+      {hasLoaded && messages.length > 0 && !loading && !limitReached && (
         <div style={{ textAlign: "right", marginBottom: 6 }}>
           <button type="button" onClick={() => setChatExpanded(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>
