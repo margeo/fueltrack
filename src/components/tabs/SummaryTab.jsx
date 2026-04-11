@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import AiCoach from "../AiCoach";
+import DatePickerModal from "../DatePickerModal";
 
 function exportToPDF(plan) {
   const lang = localStorage.getItem("ft_language") || (navigator.language?.startsWith("el") ? "el" : "en");
@@ -118,6 +119,7 @@ export default function SummaryTab({
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showWeightHistory, setShowWeightHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
@@ -315,11 +317,8 @@ RULES:
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
-            <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
-              📅
-              <input type="date" value={selectedDate} max={getTodayKey()} onChange={(e) => { const v = e.target.value; if (v && v <= getTodayKey()) setSelectedDate(v); }}
-                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
-            </span>
+            <button type="button" onClick={() => setShowDatePicker(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
         <div style={{ marginTop: 16, marginBottom: 12 }}>
@@ -524,11 +523,8 @@ RULES:
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
-            <span style={{ position: "relative", display: "inline-block", fontSize: 22, lineHeight: 1, cursor: "pointer" }}>
-              📅
-              <input type="date" max={getTodayKey()} onChange={(e) => { const v = e.target.value; if (v && v <= getTodayKey()) setSelectedDate(v); }}
-                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%", border: "none", padding: 0, background: "transparent" }} />
-            </span>
+            <button type="button" onClick={() => setShowDatePicker(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -570,6 +566,14 @@ RULES:
           })}
         </div>
       </div>
+
+      {showDatePicker && (
+        <DatePickerModal
+          selectedDate={selectedDate}
+          onSelect={(d) => setSelectedDate(d)}
+          onClose={() => setShowDatePicker(false)}
+        />
+      )}
     </>
   );
 }
