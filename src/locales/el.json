@@ -392,7 +392,8 @@
     "capture": "Λήψη",
     "cameraNotSupported": "Η κάμερα δεν υποστηρίζεται σε αυτόν τον browser.",
     "cameraDenied": "Δεν δόθηκε άδεια χρήσης κάμερας.",
-    "cameraError": "Δεν ήταν δυνατή η πρόσβαση στην κάμερα."
+    "cameraError": "Δεν ήταν δυνατή η πρόσβαση στην κάμερα.",
+    "switchCamera": "Εναλλαγή κάμερας"
   },
   "googleFit": {
     "connect": "Σύνδεση με Google Fit",

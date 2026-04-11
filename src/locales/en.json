@@ -392,7 +392,8 @@
     "capture": "Capture",
     "cameraNotSupported": "Camera not available on this browser.",
     "cameraDenied": "Camera permission denied.",
-    "cameraError": "Could not access the camera."
+    "cameraError": "Could not access the camera.",
+    "switchCamera": "Switch camera"
   },
   "googleFit": {
     "connect": "Connect to Google Fit",
