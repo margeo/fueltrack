@@ -1,7 +1,7 @@
 export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
-    const { imageBase64, mediaType } = body;
+    const { imageBase64, mediaType, language = "el" } = body;
 
     if (!imageBase64) {
       return {
@@ -10,9 +10,29 @@ export async function handler(event) {
       };
     }
 
-    const prompt = `Κοίτα αυτή τη φωτογραφία φαγητού και αναλύσε το περιεχόμενό της.
+    const isEn = language === "en";
 
-Απάντησε ΜΟΝΟ με ένα JSON object στην παρακάτω μορφή, χωρίς κανένα άλλο κείμενο:
+    const prompt = isEn
+      ? `Look at this food photo and analyze its contents.
+
+Reply ONLY with a JSON object in the exact format below, no other text:
+{
+  "name": "Food name in English",
+  "description": "Short description",
+  "estimatedGrams": 150,
+  "caloriesPer100g": 250,
+  "proteinPer100g": 15,
+  "carbsPer100g": 30,
+  "fatPer100g": 8,
+  "confidence": "high"
+}
+
+confidence must be one of: "high", "medium", "low".
+If you can't recognize the food, set confidence to "low" and estimate based on what you see.
+All values are per 100g except estimatedGrams which is the estimated quantity shown in the photo.`
+      : `Κοίτα αυτή τη φωτογραφία φαγητού και αναλύσε το περιεχόμενό της.
+
+Απάντησε ΜΟΝΟ με ένα JSON object στην παρακάτω ακριβή μορφή, χωρίς κανένα άλλο κείμενο:
 {
   "name": "Όνομα φαγητού στα ελληνικά",
   "description": "Σύντομη περιγραφή",
@@ -21,41 +41,37 @@ export async function handler(event) {
   "proteinPer100g": 15,
   "carbsPer100g": 30,
   "fatPer100g": 8,
-  "confidence": "high/medium/low"
+  "confidence": "high"
 }
 
+Το confidence πρέπει να είναι ένα από: "high", "medium", "low".
 Αν δεν μπορείς να αναγνωρίσεις το φαγητό, βάλε confidence: "low" και εκτίμησε με βάση αυτό που βλέπεις.
 Όλες οι τιμές είναι ανά 100g εκτός από το estimatedGrams που είναι η εκτιμώμενη ποσότητα στη φωτογραφία.`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const dataUrl = `data:${mediaType || "image/jpeg"};base64,${imageBase64}`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://fueltrack.me",
+        "X-Title": "FuelTrack"
       },
       body: JSON.stringify({
-        model: "claude-opus-4-5-20251101",
+        model: "google/gemini-2.5-flash-lite",
         max_tokens: 500,
+        temperature: 0.3,
         messages: [
           {
             role: "user",
             content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType || "image/jpeg",
-                  data: imageBase64
-                }
-              },
-              {
-                type: "text",
-                text: prompt
-              }
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: dataUrl } }
             ]
           }
-        ]
+        ],
+        response_format: { type: "json_object" }
       })
     });
 
@@ -65,11 +81,21 @@ export async function handler(event) {
     }
 
     const data = await response.json();
-    const text = data.content?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content || "";
 
-    // Parse JSON από την απάντηση
     const clean = text.replace(/```json|```/g, "").trim();
     const result = JSON.parse(clean);
+
+    const u = data.usage || {};
+    const inTok = u.prompt_tokens || 0;
+    const outTok = u.completion_tokens || 0;
+    const costUsd = (inTok * 0.10 / 1000000) + (outTok * 0.40 / 1000000);
+    result.usage = {
+      inputTokens: inTok,
+      outputTokens: outTok,
+      costUsd: Math.round(costUsd * 10000) / 10000,
+      model: "Gemini 2.5 Flash Lite"
+    };
 
     return {
       statusCode: 200,
