@@ -461,15 +461,22 @@ export default function AiCoach({
     const last = messages[messages.length - 1];
     if (last.role === "assistant") {
       setTimeout(() => {
+        // 1) Page-level scroll: bring the whole AI Coach section to
+        //    the top of the viewport
         coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        // Scroll the chat container so the last assistant message is
-        // at the top. lastAssistantRef is bound to the last assistant
-        // bubble and the bottom spacer ensures enough scroll headroom
-        // for short responses.
+        // 2) Chat-container scroll: bring the latest assistant bubble
+        //    to the top of the chat window. Using getBoundingClientRect
+        //    is more reliable than offsetTop inside a flex container,
+        //    and scrolling chatRef directly (not via scrollIntoView)
+        //    avoids fighting with the page-level scroll above.
         const msgEl = lastAssistantRef.current;
         const container = chatRef.current;
         if (msgEl && container) {
-          container.scrollTop = msgEl.offsetTop;
+          const msgRect = msgEl.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          const delta = msgRect.top - containerRect.top;
+          const targetScroll = container.scrollTop + delta;
+          container.scrollTo({ top: targetScroll, behavior: "smooth" });
         }
       }, 200);
     } else {
