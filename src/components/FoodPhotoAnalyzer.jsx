@@ -61,7 +61,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   }, [session]);
 
   const needsAccount = !session;
-  const limitState = computeLimitState({ usage, isPaid, isDemo, needsAccount });
+  const limitState = computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount });
   const { limitReached } = limitState;
 
   async function handleImage(file) {

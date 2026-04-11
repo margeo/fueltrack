@@ -13,6 +13,11 @@ export const AI_LIMITS = {
   MONTHLY_PAID: 500
 };
 
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
+
 let supabaseAdmin = null;
 function getAdmin() {
   if (!supabaseAdmin) {
@@ -24,8 +29,8 @@ function getAdmin() {
   return supabaseAdmin;
 }
 
-function computeLimitState({ usage, isPaid, isDemo }) {
-  const unlimited = !!isDemo;
+function computeLimitState({ usage, isPaid, isDemo, isAdmin }) {
+  const unlimited = !!isDemo || !!isAdmin;
   const { dailyCount = 0, monthlyCount = 0, lifetimeCount = 0 } = usage || {};
   const dailyLimitReached    = !unlimited && (isPaid ? dailyCount   >= AI_LIMITS.MONTHLY_PAID : dailyCount   >= AI_LIMITS.DAILY_FREE);
   const monthlyLimitReached  = !unlimited && (isPaid ? monthlyCount >= AI_LIMITS.MONTHLY_PAID : monthlyCount >= AI_LIMITS.MONTHLY_FREE);
@@ -78,9 +83,10 @@ export async function checkAiGate(event) {
     .maybeSingle();
   const isPaid = profile?.is_paid === true;
   const isDemo = profile?.is_demo === true;
+  const isAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase());
 
   const usage = await readUsage(admin, user.id);
-  const limitState = computeLimitState({ usage, isPaid, isDemo });
+  const limitState = computeLimitState({ usage, isPaid, isDemo, isAdmin });
 
   if (limitState.limitReached) {
     return {
@@ -95,7 +101,7 @@ export async function checkAiGate(event) {
     };
   }
 
-  return { ok: true, userId: user.id, isPaid, isDemo, usage, admin };
+  return { ok: true, userId: user.id, isPaid, isDemo, isAdmin, usage, admin };
 }
 
 /**
