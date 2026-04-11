@@ -76,8 +76,8 @@ export async function fetchUsage(uid) {
   }
 }
 
-export function computeLimitState({ usage, isPaid, isDemo, needsAccount }) {
-  const unlimited = !!isDemo;
+export function computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount }) {
+  const unlimited = !!isDemo || !!isAdmin;
   const { dailyCount = 0, monthlyCount = 0, lifetimeCount = 0 } = usage || {};
   const dailyLimitReached    = !unlimited && (isPaid ? dailyCount   >= AI_LIMITS.MONTHLY_PAID : dailyCount   >= AI_LIMITS.DAILY_FREE);
   const monthlyLimitReached  = !unlimited && (isPaid ? monthlyCount >= AI_LIMITS.MONTHLY_PAID : monthlyCount >= AI_LIMITS.MONTHLY_FREE);

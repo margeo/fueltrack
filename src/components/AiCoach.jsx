@@ -379,7 +379,7 @@ export default function AiCoach({
   }, [session]);
 
   const needsAccount = !session;
-  const limitState = computeLimitState({ usage, isPaid, isDemo, needsAccount });
+  const limitState = computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount });
   const { unlimited, limitReached, dailyLimitReached, monthlyLimitReached, lifetimeLimitReached, paidLimitReached } = limitState;
   const { dailyCount, monthlyCount, lifetimeCount } = usage;
 
@@ -1211,6 +1211,11 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               </select>
             )}
           </div>
+          {isAdmin && (
+            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "monospace" }}>
+              📊 {dailyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.DAILY_FREE} daily · {monthlyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.MONTHLY_FREE} month · {lifetimeCount} lifetime · ∞ admin{isDemo ? " · demo" : ""}{isPaid ? " · paid" : ""}
+            </div>
+          )}
         </div>
       </div>
       {hasLoaded && messages.length > 0 && !loading && !limitReached && (
