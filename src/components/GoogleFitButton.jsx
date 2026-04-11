@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "../utils/helpers";
+import { apiUrl } from "../utils/apiBase";
 
 export default function GoogleFitButton({ selectedDate, onAddExercise }) {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/.netlify/functions/google-fit-data?token=${encodeURIComponent(token)}&date=${selectedDate}`);
+      const res = await fetch(apiUrl(`/.netlify/functions/google-fit-data?token=${encodeURIComponent(token)}&date=${selectedDate}`));
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setFitData(data);

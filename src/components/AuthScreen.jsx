@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
+import { apiUrl } from "../utils/apiBase";
 
 export default function AuthScreen({ onSuccess, initialMode = "login", isModal = false }) {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
     } else {
       setMessage(t("auth.checkEmail"));
       // Notify admin of new signup (fire and forget)
-      fetch("/.netlify/functions/new-user-notify", {
+      fetch(apiUrl("/.netlify/functions/new-user-notify"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email })

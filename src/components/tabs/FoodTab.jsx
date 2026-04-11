@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MEALS, MEAL_KEYS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood, stripDiacritics } from "../../utils/helpers";
+import { apiUrl } from "../../utils/apiBase";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
 import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
@@ -245,7 +246,7 @@ export default function FoodTab({
   async function handleBarcodeResult(code) {
     setShowScanner(false); setBarcodeLoading(true); setBarcodeError("");
     try {
-      const res = await fetch(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`);
+      const res = await fetch(apiUrl(`/.netlify/functions/barcode-search?code=${encodeURIComponent(code)}`));
       const data = await res.json();
       if (!data.found) { setBarcodeError(t("food.barcodeNotFound", { code })); return; }
       setSelectedFood(normalizeFood(data));

@@ -1,6 +1,7 @@
 // src/hooks/useFoodSearch.js
 import { useEffect, useState } from "react";
 import { getCached, setCache } from "../utils/foodCache";
+import { apiUrl } from "../utils/apiBase";
 
 function removeAccents(str) {
   return str
@@ -29,7 +30,7 @@ function addAccents(str) {
 }
 
 async function fetchFromAPI(searchQ) {
-  const res = await fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`);
+  const res = await fetch(apiUrl(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`));
   if (!res.ok) return [];
   return res.json();
 }

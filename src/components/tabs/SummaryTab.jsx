@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
+import { apiUrl } from "../../utils/apiBase";
 import AiCoach from "../AiCoach";
 import DatePickerModal from "../DatePickerModal";
 
@@ -153,7 +154,7 @@ RULES:
 - Κάθε κατηγορία: emoji, name, items array [{name, quantity}]
 - Μόνο σύνολα, όχι ανά μέρα`;
 
-      const res = await fetch("/.netlify/functions/ai-coach", {
+      const res = await fetch(apiUrl("/.netlify/functions/ai-coach"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
