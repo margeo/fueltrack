@@ -11,61 +11,101 @@
   },
   "help": {
     "title": "Quick Guide",
-    "howTo": "How to use",
+    "howTo": "Features",
     "tips": "Tips",
     "profile": {
       "howTo": [
-        "Fill in your age, gender, height and weight",
-        "Choose your goal (lose weight, gain muscle, maintain, fitness)",
-        "Pick a diet mode (balanced, keto, etc.)",
-        "Set food preferences and allergies for better AI suggestions",
-        "Complete your fitness profile (level, equipment, goals)"
+        "Unit toggle (top right): switch between metric (kg/cm) and imperial (lb/ft)",
+        "Basic Info: enter your weight, height, age, gender, goal, activity level and diet mode",
+        "Goal details: if you chose lose or gain, set target weight change and timeline in weeks",
+        "Analysis section: see your maintenance TDEE, daily target calories, protein target and macro split",
+        "Food Preferences: pick preferred food categories (proteins, veggies, grains, dairy, etc.)",
+        "Cooking skill & time: tell the AI how much time and skill you have for cooking",
+        "Meals per day & snacks: set how many meals and snacks you eat daily (used in meal plans)",
+        "Allergies: mark foods you're allergic to — the AI will never suggest them",
+        "Simple grocery mode: toggle for shorter grocery lists with repeated meals",
+        "Fitness Profile: set your level, location (home/gym/outdoor), equipment and limitations",
+        "Workout schedule: set frequency (days/week) and session duration",
+        "Fitness goals & exercise categories: tell the AI what you want to focus on",
+        "Language selector: switch between Greek and English",
+        "Sign in / Sign out button at the bottom of the tab"
       ],
       "tips": [
-        "The more complete your profile, the better the AI Coach advice",
-        "Update your weight regularly for accurate calorie calculation",
-        "Allergies are critical — the AI will never suggest foods you're allergic to"
+        "The more complete your profile, the better the AI Coach advice will be",
+        "Update your weight regularly in the Summary tab for accurate calorie calculations",
+        "Allergies are critical — always double-check this section",
+        "Setting realistic weekly rate (e.g. 0.5 kg/week loss) gives healthier results",
+        "Diet mode (keto, Mediterranean, etc.) affects macro split and AI suggestions"
       ]
     },
     "summary": {
       "howTo": [
-        "Check how many calories you have left for today",
-        "Track your macros (protein, carbs, fat)",
-        "See your last 7 days history",
-        "Ask the AI Coach for a meal plan, training plan, weekly review, or anything custom",
-        "Log a past day by tapping the calendar icon"
+        "Hero card: greeting, today's date and a Today button if viewing a past day",
+        "Calendar icon (📅): log a past day by picking from the custom date picker (future dates are disabled)",
+        "Remaining calories: large number showing Target − Food + Exercise",
+        "Progress bar: your daily percentage toward the calorie goal",
+        "Macro bars: protein, carbs and fat with current values vs targets",
+        "Goal & diet mode badge at the bottom of the hero card",
+        "AI Coach: quick questions (meal plan, training plan, weekly review) or your own custom question",
+        "Meal Plan: view, expand/collapse, export as PDF or delete your saved plan",
+        "Grocery List: generated from your meal plan, export as PDF or delete",
+        "Training Plan: view, expand/collapse, export as PDF or delete",
+        "Weight tracking: enter today's weight with a date, see last weight and 30-day change",
+        "Weight history: view past entries (up to 10) with option to delete",
+        "Weight chart: visual trend over time",
+        "Streak badge: shows your current logging streak with an emoji",
+        "Last 7 Days: expandable rows with remaining, food, exercise, protein, carbs and fat per day"
       ],
       "tips": [
+        "Tap the 📅 icon to log a past day — future dates are disabled",
+        "The AI Coach's Weekly Review scores your week from 1 to 10",
         "The streak rewards you for daily logging — keep it going!",
-        "The AI Coach scores your week from 1 to 10",
-        "Use the 'Today' button to quickly return to the current day"
+        "Update your weight regularly for more accurate calorie targets",
+        "Tap a day in the 7-day history to see all its macros expanded"
       ]
     },
     "food": {
       "howTo": [
-        "Search food in the database",
-        "Scan a barcode to add food instantly",
-        "Take a photo to auto-recognize food and calories",
-        "Create a custom food with your own nutrition info",
-        "Mark foods as favorites for quick access"
+        "Food of the Day: total calories at top, grouped by meal (Breakfast, Lunch, Dinner, Snacks)",
+        "Edit or delete any entry directly from the list",
+        "Photo analyzer (📸): take a photo and AI recognizes the food and estimates calories",
+        "Barcode scanner (🔲): scan a product's barcode to add it instantly",
+        "Filter buttons: All, High Protein, Low Carb, Low Cal, Keto",
+        "Search box: type to find foods in the database (Greek and English)",
+        "Search results show name, brand, source badge and a star for favoriting",
+        "Add Food modal: choose portion or grams, quantity, meal category — see macros preview",
+        "Favorites card: one-tap add from your starred foods",
+        "Recent foods card: quick re-add from your last additions",
+        "Custom food form: create your own food with calories, protein, carbs, fat per 100g",
+        "Saved custom foods appear in their own list for reuse"
       ],
       "tips": [
-        "Favorites appear at the top for instant adding",
-        "Recent foods are saved automatically",
-        "Adjust grams or portion before adding"
+        "Favorites appear at the top for fastest adding",
+        "Recent foods are saved automatically — no need to search again",
+        "Photo analyzer uses AI vision — works best with clear photos",
+        "Adjust grams or portion before adding to get accurate calories",
+        "Custom foods are handy for homemade recipes you log often"
       ]
     },
     "exercise": {
       "howTo": [
-        "Pick an exercise from the list (cardio, gym, sports)",
-        "Set the duration — calories are calculated automatically",
-        "Add a custom exercise if it's not in the list",
-        "Mark favorites for quick access"
+        "Exercise of the Day: total calories burned and a list of all exercises logged today",
+        "Delete any exercise directly from the list",
+        "Apple Health / Google Fit buttons: connect to auto-import workouts (when available)",
+        "Search box: type to find exercises from the library",
+        "Category filters: All, Cardio 🏃, Gym 🏋️, Training 🔥, Sports ⚽",
+        "Exercise dropdown: shows calories per minute next to each exercise",
+        "Star button: mark an exercise as favorite for quick access later",
+        "Exercise selection card: set minutes with +/− buttons, see calorie preview",
+        "Favorites card: one-tap add with a default of 30 minutes",
+        "Recent exercises card: re-add your latest workouts",
+        "Custom exercise form: create your own with a name, minutes and calories per minute"
       ],
       "tips": [
-        "Exercise calories are added to your remaining calories for the day",
-        "Favorites appear first for quick access",
-        "Recent exercises are saved for one-tap re-adding"
+        "Exercise calories add back to your remaining calories for the day",
+        "Favorites load instantly with 30 minutes set as default",
+        "Custom exercises are useful for niche activities not in the library",
+        "Recent exercises save you from searching for the same workout twice"
       ]
     }
   },
