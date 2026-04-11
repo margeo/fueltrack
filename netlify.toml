@@ -7,3 +7,13 @@
 
 [functions."ai-coach"]
   timeout = 26
+
+# Redirect the default Netlify subdomain to the custom domain so
+# the app is only publicly accessible via fueltrack.me. This does not
+# affect branch/deploy previews (e.g. branch--site.netlify.app), since
+# those are different hostnames.
+[[redirects]]
+  from = "https://fueltrack-marios.netlify.app/*"
+  to = "https://fueltrack.me/:splat"
+  status = 301
+  force = true
