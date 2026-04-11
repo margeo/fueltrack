@@ -5,6 +5,7 @@ import { MODES } from "../data/modes";
 import { calculateStreak } from "../utils/streak";
 import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
+import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
 
@@ -338,26 +339,17 @@ export default function AiCoach({
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [dailyCount, setDailyCount] = useState(0);
-
-  const DAILY_LIMIT_FREE = 5;
-  const MONTHLY_LIMIT_FREE = 20;
-  const LIFETIME_LIMIT_FREE = 20;
-  const MONTHLY_LIMIT_PAID = 500;
-
-  const [monthlyCount, setMonthlyCount] = useState(0);
-  const [lifetimeCount, setLifetimeCount] = useState(0);
+  const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
 
   useEffect(() => {
-    const uid = session?.user?.id || "anon";
-    const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
-    const today = new Date().toISOString().slice(0, 10);
-    const month = today.slice(0, 7);
-    setDailyCount(stored.date === today ? (stored.count || 0) : 0);
-    setMonthlyCount(stored.month === month ? (stored.monthCount || 0) : 0);
-    setLifetimeCount(stored.lifetime || 0);
+    // Optimistic read from cache (immediate)
+    setUsage(getCachedUsage(session?.user?.id));
 
     if (!session?.user?.id) return;
+
+    // Authoritative read from Supabase
+    fetchUsage(session.user.id).then((fresh) => { if (fresh) setUsage(fresh); }).catch(() => {});
+
     supabase
       .from("profiles")
       .select("is_paid, is_demo")
@@ -375,42 +367,28 @@ export default function AiCoach({
     }).then(res => setIsAdmin(res.ok)).catch(() => {});
   }, [session]);
 
-  function incrementUsage() {
-    const uid = session?.user?.id || "anon";
-    const today = new Date().toISOString().slice(0, 10);
-    const month = today.slice(0, 7);
-    const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
-    const newDaily = dailyCount + 1;
-    const newMonthly = (stored.month === month ? (stored.monthCount || 0) : 0) + 1;
-    const newLifetime = (stored.lifetime || 0) + 1;
-    setDailyCount(newDaily);
-    setMonthlyCount(newMonthly);
-    setLifetimeCount(newLifetime);
-    localStorage.setItem("ft_ai_usage_" + uid, JSON.stringify({ date: today, count: newDaily, month, monthCount: newMonthly, lifetime: newLifetime }));
-    window.dispatchEvent(new CustomEvent("ft-ai-usage-change", { detail: { uid, usage: { dailyCount: newDaily, monthlyCount: newMonthly, lifetimeCount: newLifetime } } }));
-  }
-
+  // Cross-component sync (e.g. Food Photo Analyzer increments counter)
   useEffect(() => {
-    function onUsageChange() {
-      const uid = session?.user?.id || "anon";
-      const stored = JSON.parse(localStorage.getItem("ft_ai_usage_" + uid) || "{}");
-      const today = new Date().toISOString().slice(0, 10);
-      const month = today.slice(0, 7);
-      setDailyCount(stored.date === today ? (stored.count || 0) : 0);
-      setMonthlyCount(stored.month === month ? (stored.monthCount || 0) : 0);
-      setLifetimeCount(stored.lifetime || 0);
+    function onUsageChange(e) {
+      const detail = e?.detail;
+      if (detail?.usage) setUsage(detail.usage);
+      else setUsage(getCachedUsage(session?.user?.id));
     }
     window.addEventListener("ft-ai-usage-change", onUsageChange);
     return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
   }, [session]);
 
   const needsAccount = !session;
-  const unlimited = isDemo;
-  const dailyLimitReached = !unlimited && (isPaid ? dailyCount >= MONTHLY_LIMIT_PAID : dailyCount >= DAILY_LIMIT_FREE);
-  const monthlyLimitReached = !unlimited && (isPaid ? monthlyCount >= MONTHLY_LIMIT_PAID : monthlyCount >= MONTHLY_LIMIT_FREE);
-  const lifetimeLimitReached = !unlimited && !isPaid && lifetimeCount >= LIFETIME_LIMIT_FREE;
-  const paidLimitReached = isPaid && !unlimited && (dailyCount >= MONTHLY_LIMIT_PAID || monthlyCount >= MONTHLY_LIMIT_PAID);
-  const limitReached = needsAccount || dailyLimitReached || monthlyLimitReached || lifetimeLimitReached;
+  const limitState = computeLimitState({ usage, isPaid, isDemo, needsAccount });
+  const { unlimited, limitReached, dailyLimitReached, monthlyLimitReached, lifetimeLimitReached, paidLimitReached } = limitState;
+  const { dailyCount, monthlyCount, lifetimeCount } = usage;
+
+  // Apply new usage from backend response. Server is authoritative.
+  function applyServerUsage(serverUsage) {
+    if (!serverUsage) return;
+    setUsage(serverUsage);
+    setCachedUsage(session?.user?.id, serverUsage);
+  }
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -889,7 +867,6 @@ ${askChange}`;
     setLoading(true);
     setChatExpanded(true);
     coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    incrementUsage();
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const isMealPlan = text === t("aiCoach.q1");
@@ -990,14 +967,21 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         // Execute in parallel
         const fetches = [
-          fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(mealsReq) })
+          fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(mealsReq) })
         ];
-        if (snacksReq) fetches.push(fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(snacksReq) }));
+        if (snacksReq) fetches.push(fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(snacksReq) }));
 
         const responses = await Promise.all(fetches);
+        if (responses.some(r => r.status === 429)) {
+          const firstLimit = responses.find(r => r.status === 429);
+          const limitData = await firstLimit.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
         if (responses.some(r => !r.ok)) throw new Error("Connection error");
         const results = await Promise.all(responses.map(r => r.json()));
         if (results.some(r => r.error)) throw new Error(results.find(r => r.error)?.error);
+        results.forEach(r => { if (r.aiUsage) applyServerUsage(r.aiUsage); });
 
         const [mealsData, snacksData] = results;
 
@@ -1067,10 +1051,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: TRAINING_SCHEMA
         };
-        const tpResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(tpReq) });
+        const tpResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(tpReq) });
+        if (tpResponse.status === 429) {
+          const limitData = await tpResponse.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
         if (!tpResponse.ok) throw new Error(`Connection error (${tpResponse.status})`);
         const tpData = await tpResponse.json();
         if (tpData.error) throw new Error(tpData.error);
+        if (tpData.aiUsage) applyServerUsage(tpData.aiUsage);
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
         let trainingPlan = null;
@@ -1101,10 +1091,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: WEEKLY_REVIEW_SCHEMA
         };
-        const rResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rReq) });
+        const rResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(rReq) });
+        if (rResponse.status === 429) {
+          const limitData = await rResponse.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
         if (!rResponse.ok) throw new Error(`Connection error (${rResponse.status})`);
         const rData = await rResponse.json();
         if (rData.error) throw new Error(rData.error);
+        if (rData.aiUsage) applyServerUsage(rData.aiUsage);
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
         let reviewData = null;
@@ -1139,10 +1135,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: MACRO_INSIGHT_SCHEMA
         };
-        const maResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(maReq) });
+        const maResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(maReq) });
+        if (maResponse.status === 429) {
+          const limitData = await maResponse.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
         if (!maResponse.ok) throw new Error(`Connection error (${maResponse.status})`);
         const maData = await maResponse.json();
         if (maData.error) throw new Error(maData.error);
+        if (maData.aiUsage) applyServerUsage(maData.aiUsage);
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
         let aiInsight = null;
@@ -1165,12 +1167,18 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       }
       const response = await fetch("/.netlify/functions/ai-coach", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
         body: JSON.stringify(reqBody)
       });
+      if (response.status === 429) {
+        const limitData = await response.json().catch(() => ({}));
+        if (limitData.usage) applyServerUsage(limitData.usage);
+        throw new Error("limit_reached");
+      }
       if (!response.ok) throw new Error(`Connection error (${response.status})`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+      if (data.aiUsage) applyServerUsage(data.aiUsage);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       if (taskType === "general") {
@@ -1227,12 +1235,12 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             {needsAccount
               ? t("aiCoach.needsAccountDesc")
               : paidLimitReached
-              ? t("aiCoach.paidLimitDesc", { limit: MONTHLY_LIMIT_PAID })
+              ? t("aiCoach.paidLimitDesc", { limit: AI_LIMITS.MONTHLY_PAID })
               : lifetimeLimitReached
-              ? t("aiCoach.lifetimeLimitDesc", { limit: LIFETIME_LIMIT_FREE })
+              ? t("aiCoach.lifetimeLimitDesc", { limit: AI_LIMITS.LIFETIME_FREE })
               : monthlyLimitReached
-              ? t("aiCoach.monthlyLimitDesc", { limit: MONTHLY_LIMIT_FREE })
-              : t("aiCoach.limitDesc", { limit: DAILY_LIMIT_FREE })}
+              ? t("aiCoach.monthlyLimitDesc", { limit: AI_LIMITS.MONTHLY_FREE })
+              : t("aiCoach.limitDesc", { limit: AI_LIMITS.DAILY_FREE })}
           </div>
           {paidLimitReached && (
             <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>

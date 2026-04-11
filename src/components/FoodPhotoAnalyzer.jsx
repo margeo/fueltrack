@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
-import { getUsage, incrementUsage, computeLimitState } from "../utils/aiUsage";
+import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import AiLimitLock from "./AiLimitLock";
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onShowAuth, onShowRegister }) {
@@ -13,22 +13,34 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
-  const [, setUsageTick] = useState(0);
+  const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const fileRef = useRef(null);
 
-  // Read fresh on every render so increments from other features (AI Coach) are visible immediately
-  const usage = getUsage(session?.user?.id);
+  function applyServerUsage(serverUsage) {
+    if (!serverUsage) return;
+    setUsage(serverUsage);
+    setCachedUsage(session?.user?.id, serverUsage);
+  }
 
   useEffect(() => {
-    function onUsageChange() { setUsageTick(t => t + 1); }
+    function onUsageChange(e) {
+      const detail = e?.detail;
+      if (detail?.usage) setUsage(detail.usage);
+      else setUsage(getCachedUsage(session?.user?.id));
+    }
     window.addEventListener("ft-ai-usage-change", onUsageChange);
     return () => window.removeEventListener("ft-ai-usage-change", onUsageChange);
-  }, []);
+  }, [session]);
 
   useEffect(() => {
+    setUsage(getCachedUsage(session?.user?.id));
     if (!session?.access_token || !session?.user?.id) return;
     let cancelled = false;
+
+    // Authoritative read from Supabase
+    fetchUsage(session.user.id).then((fresh) => { if (!cancelled && fresh) setUsage(fresh); }).catch(() => {});
+
     supabase
       .from("profiles")
       .select("is_paid, is_demo")
@@ -54,15 +66,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
 
   async function handleImage(file) {
     if (!file) return;
-
-    // Re-read fresh from localStorage right before checking, in case another feature
-    // (e.g. AI Coach) incremented between the mount read and the user action.
-    const freshUsage = getUsage(session?.user?.id);
-    const freshState = computeLimitState({ usage: freshUsage, isPaid, isDemo, needsAccount });
-    if (freshState.limitReached) {
-      setUsageTick(t => t + 1);
-      return;
-    }
+    if (limitReached) return;
 
     setError("");
     setResult(null);
@@ -81,12 +85,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
     });
 
     setLoading(true);
-    incrementUsage(session?.user?.id);
 
     try {
       const res = await fetch("/.netlify/functions/food-photo", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
         body: JSON.stringify({
           imageBase64: base64,
           mediaType: file.type || "image/jpeg",
@@ -95,9 +98,18 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         })
       });
 
+      if (res.status === 429) {
+        const limitData = await res.json().catch(() => ({}));
+        if (limitData.usage) applyServerUsage(limitData.usage);
+        setPreview(null);
+        return;
+      }
+
       const data = await res.json();
 
       if (data.error) throw new Error(data.error);
+
+      if (data.aiUsage) applyServerUsage(data.aiUsage);
 
       setResult(data);
     } catch {
