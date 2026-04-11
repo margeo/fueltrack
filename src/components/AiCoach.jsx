@@ -482,7 +482,19 @@ export default function AiCoach({
         const containerRect = container.getBoundingClientRect();
         const delta = msgRect.top - containerRect.top;
         container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
-        coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Page-level scroll: bring the AI Coach section to the top of
+        // the viewport. scrollIntoView({behavior:"smooth"}) is flaky
+        // inside Capacitor's Android WebView — it silently no-ops on
+        // the first call after a new message — so we compute the
+        // target position manually and drive the document's scrolling
+        // element, which works reliably on both web and native.
+        const coachEl = coachTopRef.current;
+        if (coachEl) {
+          const coachRect = coachEl.getBoundingClientRect();
+          const scroller = document.scrollingElement || document.documentElement;
+          const targetTop = scroller.scrollTop + coachRect.top - 12;
+          scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+        }
       };
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
