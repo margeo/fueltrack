@@ -6,6 +6,7 @@ import { calculateStreak } from "../utils/streak";
 import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
+import { authedFetch } from "../utils/authFetch";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
 
@@ -360,9 +361,9 @@ export default function AiCoach({
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
-    fetch("/.netlify/functions/admin", {
+    authedFetch("/.netlify/functions/admin", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "list-users" }),
     }).then(res => setIsAdmin(res.ok)).catch(() => {});
   }, [session]);
@@ -967,9 +968,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         // Execute in parallel
         const fetches = [
-          fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(mealsReq) })
+          authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(mealsReq) })
         ];
-        if (snacksReq) fetches.push(fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(snacksReq) }));
+        if (snacksReq) fetches.push(authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(snacksReq) }));
 
         const responses = await Promise.all(fetches);
         if (responses.some(r => r.status === 429)) {
@@ -1051,7 +1052,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: TRAINING_SCHEMA
         };
-        const tpResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(tpReq) });
+        const tpResponse = await authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(tpReq) });
         if (tpResponse.status === 429) {
           const limitData = await tpResponse.json().catch(() => ({}));
           if (limitData.usage) applyServerUsage(limitData.usage);
@@ -1091,7 +1092,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: WEEKLY_REVIEW_SCHEMA
         };
-        const rResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(rReq) });
+        const rResponse = await authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rReq) });
         if (rResponse.status === 429) {
           const limitData = await rResponse.json().catch(() => ({}));
           if (limitData.usage) applyServerUsage(limitData.usage);
@@ -1135,7 +1136,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           jsonMode: true,
           customSchema: MACRO_INSIGHT_SCHEMA
         };
-        const maResponse = await fetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify(maReq) });
+        const maResponse = await authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(maReq) });
         if (maResponse.status === 429) {
           const limitData = await maResponse.json().catch(() => ({}));
           if (limitData.usage) applyServerUsage(limitData.usage);
@@ -1165,9 +1166,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           ...(selectedModel && { model: selectedModel })
         };
       }
-      const response = await fetch("/.netlify/functions/ai-coach", {
+      const response = await authedFetch("/.netlify/functions/ai-coach", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reqBody)
       });
       if (response.status === 429) {

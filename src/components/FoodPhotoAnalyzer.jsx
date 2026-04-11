@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
+import { authedFetch } from "../utils/authFetch";
 import AiLimitLock from "./AiLimitLock";
 
 export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onShowAuth, onShowRegister }) {
@@ -58,9 +59,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
-    fetch("/.netlify/functions/admin", {
+    authedFetch("/.netlify/functions/admin", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "list-users" }),
     }).then(res => { if (!cancelled) setIsAdmin(res.ok); }).catch(() => {});
     return () => { cancelled = true; };
@@ -196,9 +197,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
     setLoading(true);
 
     try {
-      const res = await fetch("/.netlify/functions/food-photo", {
+      const res = await authedFetch("/.netlify/functions/food-photo", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageBase64: base64,
           mediaType: file.type || "image/jpeg",
