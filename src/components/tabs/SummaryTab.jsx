@@ -141,15 +141,8 @@ export default function SummaryTab({
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
-    // Scroll 1 (identical to AiCoach line 496-501): page-level scroll
-    // brings the AI Coach section to the top of the viewport.
-    const coachEl = coachSectionRef.current;
-    if (coachEl) {
-      const scroller = document.scrollingElement || document.documentElement;
-      const coachRect = coachEl.getBoundingClientRect();
-      const targetTop = scroller.scrollTop + coachRect.top - 12;
-      scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-    }
+    // Scroll 1 — identical to AiCoach.jsx line 947
+    coachSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     try {
       const isEn = i18n.language === "en";
       const systemPrompt = isEn
@@ -185,17 +178,17 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
-        // Scroll 2 (identical to AiCoach line 504-508): double rAF +
-        // 300ms delay, then page-level scroll brings the grocery
-        // section title to the top of the viewport.
+        // Scroll 2 — identical to AiCoach.jsx lines 496-508
+        // (double rAF + 300ms + manual scrollTo)
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setTimeout(() => {
-              const el = groceryRef.current;
-              if (el) {
+              const groceryEl = groceryRef.current;
+              if (groceryEl) {
+                const groceryRect = groceryEl.getBoundingClientRect();
                 const scroller = document.scrollingElement || document.documentElement;
-                const elRect = el.getBoundingClientRect();
-                scroller.scrollTo({ top: scroller.scrollTop + elRect.top - 12, behavior: "smooth" });
+                const targetTop = scroller.scrollTop + groceryRect.top - 12;
+                scroller.scrollTo({ top: targetTop, behavior: "smooth" });
               }
             }, 300);
           });
