@@ -48,7 +48,7 @@ function PasswordResetModal({ onClose }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "var(--bg-body, #f3f4f6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div className="card" style={{ maxWidth: 380, width: "100%", margin: 0, position: "relative" }}>
         <button type="button" onClick={onClose}
           style={{ position: "absolute", top: 10, right: 10, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
