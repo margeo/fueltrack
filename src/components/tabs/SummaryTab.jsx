@@ -1,5 +1,5 @@
 // src/components/tabs/SummaryTab.jsx
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
@@ -133,12 +133,15 @@ export default function SummaryTab({
   });
   const [groceryLoading, setGroceryLoading] = useState(false);
   const [groceryExpanded, setGroceryExpanded] = useState(false);
+  const groceryRef = useRef(null);
 
   async function generateGroceryList(plan) {
     if (!plan?.content) return;
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
+    // Scroll 1: bring grocery section into view
+    groceryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     try {
       const isEn = i18n.language === "en";
       const systemPrompt = isEn
@@ -174,6 +177,8 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
+        // Scroll 2: after results loaded, scroll to show them
+        setTimeout(() => groceryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
         const textVersion = groceryData.categories.map(c =>
           `${c.emoji} ${c.name}\n${c.items.map(i => `${i.name}: ${i.quantity}`).join("\n")}`
         ).join("\n\n");
@@ -405,7 +410,7 @@ RULES:
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
+        <div ref={groceryRef} style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px", scrollMarginTop: 12 }}>
           <GrocerySection />
         </div>
 
