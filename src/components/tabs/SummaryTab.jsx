@@ -184,14 +184,13 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
-        // Scroll 2: after results, scroll so grocery content is visible
-        // but AI Coach header stays at top
+        // Scroll 2: after results, bring grocery list title to top
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setTimeout(() => {
-              if (coachSectionRef.current) {
+              if (groceryRef.current) {
                 const scroller = document.scrollingElement || document.documentElement;
-                const rect = coachSectionRef.current.getBoundingClientRect();
+                const rect = groceryRef.current.getBoundingClientRect();
                 scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
               }
             }, 300);
