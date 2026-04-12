@@ -134,17 +134,18 @@ export default function SummaryTab({
   const [groceryLoading, setGroceryLoading] = useState(false);
   const [groceryExpanded, setGroceryExpanded] = useState(false);
   const groceryRef = useRef(null);
+  const coachSectionRef = useRef(null);
 
   async function generateGroceryList(plan) {
     if (!plan?.content) return;
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
-    // Scroll 1: bring grocery section to top of viewport (same pattern as AiCoach)
+    // Scroll 1: bring AI Coach section header to top of viewport
     requestAnimationFrame(() => {
-      if (groceryRef.current) {
+      if (coachSectionRef.current) {
         const scroller = document.scrollingElement || document.documentElement;
-        const rect = groceryRef.current.getBoundingClientRect();
+        const rect = coachSectionRef.current.getBoundingClientRect();
         scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
       }
     });
@@ -183,13 +184,14 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
-        // Scroll 2: after results, bring grocery content to top
+        // Scroll 2: after results, scroll so grocery content is visible
+        // but AI Coach header stays at top
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setTimeout(() => {
-              if (groceryRef.current) {
+              if (coachSectionRef.current) {
                 const scroller = document.scrollingElement || document.documentElement;
-                const rect = groceryRef.current.getBoundingClientRect();
+                const rect = coachSectionRef.current.getBoundingClientRect();
                 scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
               }
             }, 300);
@@ -401,7 +403,7 @@ RULES:
       </div>
 
       {/* 2. AI COACH + PLANS (connected) */}
-      <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16 }}>
+      <div ref={coachSectionRef} style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, scrollMarginTop: 12 }}>
         <div style={{ padding: 16 }}>
           <AiCoach
             last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
