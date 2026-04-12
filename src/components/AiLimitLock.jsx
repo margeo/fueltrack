@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AI_LIMITS } from "../utils/aiUsage";
+import { openCheckout } from "../utils/stripe";
 
 export default function AiLimitLock({
   needsAccount,
@@ -11,6 +13,7 @@ export default function AiLimitLock({
   onShowRegister
 }) {
   const { t } = useTranslation();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const icon = needsAccount ? "🔒" : paidLimitReached ? "📊" : lifetimeLimitReached ? "🚀" : "⏳";
   const title = needsAccount
@@ -44,6 +47,25 @@ export default function AiLimitLock({
       {!needsAccount && !isPaid && (lifetimeLimitReached || monthlyLimitReached) && (
         <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
           {t("aiCoach.upgradeHint")}
+          <div style={{ marginTop: 12, textAlign: "center" }}>
+            <button
+              className="btn btn-dark"
+              type="button"
+              disabled={checkoutLoading}
+              onClick={async () => {
+                setCheckoutLoading(true);
+                try { await openCheckout(); }
+                catch { /* checkout tab opened or failed silently */ }
+                finally { setCheckoutLoading(false); }
+              }}
+              style={{ padding: "10px 24px", fontSize: 14 }}
+            >
+              {checkoutLoading ? t("common.loading") : t("aiCoach.subscribePro")}
+            </button>
+            <div className="muted" style={{ fontSize: 11, marginTop: 6 }}>
+              {t("aiCoach.subscribePrice")}
+            </div>
+          </div>
         </div>
       )}
       {needsAccount && onShowAuth && (

@@ -1,5 +1,24 @@
 apply plugin: 'com.android.application'
 
+// Release signing: reads keystore path and passwords from
+// ~/.gradle/gradle.properties (or the project's gradle.properties)
+// so that secrets stay out of version control.
+//
+// Required properties (set them ONCE on your build machine):
+//   FUELTRACK_STORE_FILE=/absolute/path/to/fueltrack-release.keystore
+//   FUELTRACK_STORE_PASSWORD=<keystore-password>
+//   FUELTRACK_KEY_ALIAS=fueltrack
+//   FUELTRACK_KEY_PASSWORD=<key-password>
+//
+// Generate the keystore (run once, SAVE IT SECURELY):
+//   keytool -genkeypair -v -keystore fueltrack-release.keystore \
+//     -alias fueltrack -keyalg RSA -keysize 2048 -validity 10000 \
+//     -storepass <password> -keypass <password> \
+//     -dname "CN=FuelTrack, O=FuelTrack, L=Athens, C=GR"
+
+def keystorePropertiesAvailable = project.hasProperty('FUELTRACK_STORE_FILE') &&
+        file(project.property('FUELTRACK_STORE_FILE')).exists()
+
 android {
     namespace = "me.fueltrack.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -8,7 +27,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +35,25 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+
+    if (keystorePropertiesAvailable) {
+        signingConfigs {
+            release {
+                storeFile file(project.property('FUELTRACK_STORE_FILE'))
+                storePassword project.property('FUELTRACK_STORE_PASSWORD')
+                keyAlias project.property('FUELTRACK_KEY_ALIAS')
+                keyPassword project.property('FUELTRACK_KEY_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (keystorePropertiesAvailable) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
