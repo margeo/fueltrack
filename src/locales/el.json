@@ -541,6 +541,10 @@
     "checkEmail": "Ελέγξτε το email σας για επιβεβαίωση!",
     "resetError": "Δεν ήταν δυνατή η αποστολή email.",
     "resetSent": "Email επαναφοράς στάλθηκε!",
+    "newPassword": "Ορισμός νέου κωδικού",
+    "newPasswordPlaceholder": "Νέος κωδικός",
+    "savePassword": "Αποθήκευση κωδικού",
+    "passwordChanged": "Ο κωδικός άλλαξε επιτυχώς!",
     "googleError": "Σφάλμα σύνδεσης με Google.",
     "logout": "Αποσύνδεση"
   },

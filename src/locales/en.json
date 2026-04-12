@@ -541,6 +541,10 @@
     "checkEmail": "Check your email for confirmation!",
     "resetError": "Could not send email.",
     "resetSent": "Reset email sent!",
+    "newPassword": "Set new password",
+    "newPasswordPlaceholder": "New password",
+    "savePassword": "Save password",
+    "passwordChanged": "Password changed successfully!",
     "googleError": "Error connecting with Google.",
     "logout": "Sign out"
   },

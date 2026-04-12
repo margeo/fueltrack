@@ -28,20 +28,72 @@ import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
 import { fetchCloudState, saveCloudColumn, seedCloudState } from "./utils/cloudSync";
 
+function PasswordResetModal({ onClose }) {
+  const { t } = useTranslation();
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (newPassword.length < 6) { setError(t("auth.passwordHint")); return; }
+    setLoading(true);
+    setError("");
+    const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+    if (err) { setError(err.message); }
+    else { setSuccess(true); setTimeout(onClose, 1500); }
+    setLoading(false);
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div className="card" style={{ maxWidth: 380, width: "100%", margin: 0 }}>
+        <h2 style={{ marginBottom: 16 }}>{t("auth.newPassword")}</h2>
+        {success ? (
+          <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: "12px 14px", color: "#166534", fontSize: 13 }}>
+            {t("auth.passwordChanged")}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", marginBottom: 12, color: "#b91c1c", fontSize: 13 }}>
+                {error}
+              </div>
+            )}
+            <input className="input" type="password" placeholder={t("auth.newPasswordPlaceholder")} value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)} required minLength={6} autoComplete="new-password"
+              style={{ width: "100%", marginBottom: 12 }} />
+            <button className="btn btn-dark" type="submit" disabled={loading}
+              style={{ width: "100%", padding: "14px", opacity: loading ? 0.6 : 1 }}>
+              {loading ? "..." : t("auth.savePassword")}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { t, i18n } = useTranslation();
   const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("login");
   const [showPlanChooser, setShowPlanChooser] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [cloudHydrated, setCloudHydrated] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === "PASSWORD_RECOVERY") {
+        setShowPasswordReset(true);
+        return;
+      }
       // Show plan chooser on first login (not seen before)
       if (session?.user && !localStorage.getItem("ft_plan_chosen")) {
         setShowPlanChooser(true);
@@ -700,6 +752,10 @@ export default function App() {
 
     {showPlanChooser && (
       <PlanChooser onContinue={() => setShowPlanChooser(false)} />
+    )}
+
+    {showPasswordReset && (
+      <PasswordResetModal onClose={() => setShowPasswordReset(false)} />
     )}
 
     {showAuthModal && (
