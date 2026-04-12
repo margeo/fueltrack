@@ -7,6 +7,7 @@ import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
+import { openCheckout } from "../utils/stripe";
 import AiUsageBadge from "./AiUsageBadge";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
@@ -381,6 +382,7 @@ export default function AiCoach({
   const [messages, setMessages] = useState([]);
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_ai_model") || "");
   const [isPaid, setIsPaid] = useState(false);
+  const [limitDismissed, setLimitDismissed] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
@@ -1326,8 +1328,12 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {limitReached && (
-        <div style={{ textAlign: "center", padding: "20px 0" }}>
+      {limitReached && !limitDismissed && (
+        <div style={{ textAlign: "center", padding: "20px 0", position: "relative" }}>
+          <button type="button" onClick={() => setLimitDismissed(true)}
+            style={{ position: "absolute", top: 4, right: 4, background: "transparent", border: "none", fontSize: 18, cursor: "pointer", color: "var(--text-muted)", padding: "4px 8px" }}>
+            ✕
+          </button>
           <div style={{ fontSize: 40, marginBottom: 12 }}>{needsAccount ? "🔒" : paidLimitReached ? "📊" : lifetimeLimitReached ? "🚀" : "⏳"}</div>
           <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
             {needsAccount ? t("aiCoach.needsAccountTitle")
@@ -1346,14 +1352,19 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ? t("aiCoach.monthlyLimitDesc", { limit: AI_LIMITS.MONTHLY_FREE })
               : t("aiCoach.limitDesc", { limit: AI_LIMITS.DAILY_FREE })}
           </div>
+          {!needsAccount && !isPaid && (
+            <div style={{ marginTop: 16 }}>
+              <button className="btn btn-dark" type="button"
+                onClick={async () => { try { await openCheckout(); } catch {} }}
+                style={{ padding: "10px 24px", fontSize: 14 }}>
+                {t("aiCoach.subscribePro")}
+              </button>
+              <div className="muted" style={{ fontSize: 11, marginTop: 6 }}>{t("aiCoach.subscribePrice")}</div>
+            </div>
+          )}
           {paidLimitReached && (
             <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
               {t("aiCoach.paidLimitExtra")}
-            </div>
-          )}
-          {!needsAccount && !isPaid && (lifetimeLimitReached || monthlyLimitReached) && (
-            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
-              {t("aiCoach.upgradeHint")}
             </div>
           )}
           {needsAccount && onShowAuth && (

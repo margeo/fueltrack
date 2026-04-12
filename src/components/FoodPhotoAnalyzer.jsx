@@ -40,6 +40,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const [cameraOn, setCameraOn] = useState(false);
+  const [limitDismissed, setLimitDismissed] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [videoDevices, setVideoDevices] = useState([]);
   const [currentDeviceIdx, setCurrentDeviceIdx] = useState(0);
@@ -371,7 +372,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           )}
         </div>
 
-        {limitReached && (
+        {limitReached && !limitDismissed && (
           <AiLimitLock
             needsAccount={limitState.limitReached && !session}
             paidLimitReached={limitState.paidLimitReached}
@@ -380,6 +381,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             isPaid={isPaid}
             onShowAuth={onShowAuth}
             onShowRegister={onShowRegister}
+            onDismiss={() => setLimitDismissed(true)}
           />
         )}
 
