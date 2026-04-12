@@ -141,14 +141,15 @@ export default function SummaryTab({
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
-    // Scroll 1: bring AI Coach section header to top of viewport
-    requestAnimationFrame(() => {
-      if (coachSectionRef.current) {
-        const scroller = document.scrollingElement || document.documentElement;
-        const rect = coachSectionRef.current.getBoundingClientRect();
-        scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
-      }
-    });
+    // Scroll 1 (identical to AiCoach line 496-501): page-level scroll
+    // brings the AI Coach section to the top of the viewport.
+    const coachEl = coachSectionRef.current;
+    if (coachEl) {
+      const scroller = document.scrollingElement || document.documentElement;
+      const coachRect = coachEl.getBoundingClientRect();
+      const targetTop = scroller.scrollTop + coachRect.top - 12;
+      scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+    }
     try {
       const isEn = i18n.language === "en";
       const systemPrompt = isEn
@@ -184,14 +185,17 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
-        // Scroll 2: after results, bring grocery list title to top
+        // Scroll 2 (identical to AiCoach line 504-508): double rAF +
+        // 300ms delay, then page-level scroll brings the grocery
+        // section title to the top of the viewport.
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setTimeout(() => {
-              if (groceryRef.current) {
+              const el = groceryRef.current;
+              if (el) {
                 const scroller = document.scrollingElement || document.documentElement;
-                const rect = groceryRef.current.getBoundingClientRect();
-                scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
+                const elRect = el.getBoundingClientRect();
+                scroller.scrollTo({ top: scroller.scrollTop + elRect.top - 12, behavior: "smooth" });
               }
             }, 300);
           });
