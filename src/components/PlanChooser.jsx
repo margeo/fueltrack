@@ -45,7 +45,7 @@ export default function PlanChooser({ onContinue }) {
               <span>{loading ? t("common.loading") : t("planChooser.proCta")}</span>
             </div>
             <div style={{ fontSize: 11, fontWeight: 400, marginTop: 2, opacity: 0.8 }}>
-              {t("planChooser.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
+              {t("aiCoach.subscribePrice")}
             </div>
           </button>
 
@@ -62,9 +62,6 @@ export default function PlanChooser({ onContinue }) {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <span>🆓</span>
               <span>{t("planChooser.freeCta")}</span>
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 400, marginTop: 2, opacity: 0.8 }}>
-              {t("planChooser.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
             </div>
           </button>
         </div>
