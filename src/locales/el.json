@@ -455,6 +455,12 @@
     "q3": "Πώς πάω αυτή την εβδομάδα;",
     "q4": "Ανάλυση μακροθρεπτικών"
   },
+  "usage": {
+    "today": "σήμερα",
+    "thisMonth": "αυτόν τον μήνα",
+    "total": "συνολικά",
+    "noRemaining": "εξαντλήθηκε"
+  },
   "modeGroups": {
     "balanced": "🥗 Ισορροπημένες",
     "highProtein": "🥩 High Protein",

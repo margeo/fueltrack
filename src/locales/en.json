@@ -455,6 +455,12 @@
     "q3": "How am I doing this week?",
     "q4": "Macro analysis"
   },
+  "usage": {
+    "today": "today",
+    "thisMonth": "this month",
+    "total": "total",
+    "noRemaining": "limit reached"
+  },
   "modeGroups": {
     "balanced": "🥗 Balanced",
     "highProtein": "🥩 High Protein",

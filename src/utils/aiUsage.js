@@ -86,3 +86,27 @@ export function computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount
   const limitReached = !!needsAccount || dailyLimitReached || monthlyLimitReached || lifetimeLimitReached;
   return { unlimited, limitReached, dailyLimitReached, monthlyLimitReached, lifetimeLimitReached, paidLimitReached };
 }
+
+// Returns a user-facing summary of remaining AI requests.
+// Used by the AiUsageBadge component to show "3/5 today" etc.
+export function computeRemainingRequests({ usage, isPaid, isDemo, isAdmin }) {
+  if (isDemo || isAdmin) return { label: "unlimited", remaining: Infinity, total: Infinity, warn: false };
+  const { dailyCount = 0, monthlyCount = 0, lifetimeCount = 0 } = usage || {};
+
+  if (isPaid) {
+    const remaining = Math.max(0, AI_LIMITS.MONTHLY_PAID - monthlyCount);
+    return { label: "monthly", used: monthlyCount, remaining, total: AI_LIMITS.MONTHLY_PAID, warn: remaining <= 50 };
+  }
+
+  // Free user: show the most restrictive active limit
+  const dailyRemaining    = Math.max(0, AI_LIMITS.DAILY_FREE    - dailyCount);
+  const monthlyRemaining  = Math.max(0, AI_LIMITS.MONTHLY_FREE  - monthlyCount);
+  const lifetimeRemaining = Math.max(0, AI_LIMITS.LIFETIME_FREE - lifetimeCount);
+
+  if (lifetimeRemaining <= 0) return { label: "lifetime", used: lifetimeCount, remaining: 0, total: AI_LIMITS.LIFETIME_FREE, warn: true };
+  if (monthlyRemaining <= 0)  return { label: "monthly",  used: monthlyCount,  remaining: 0, total: AI_LIMITS.MONTHLY_FREE,  warn: true };
+  if (dailyRemaining <= 0)    return { label: "daily",    used: dailyCount,    remaining: 0, total: AI_LIMITS.DAILY_FREE,    warn: true };
+
+  // Show daily as the most relevant for free users
+  return { label: "daily", used: dailyCount, remaining: dailyRemaining, total: AI_LIMITS.DAILY_FREE, warn: dailyRemaining <= 1 };
+}

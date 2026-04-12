@@ -7,6 +7,7 @@ import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from ".
 import { authedFetch } from "../utils/authFetch";
 import { hasNativePlugin } from "../utils/nativeCapabilities";
 import AiLimitLock from "./AiLimitLock";
+import AiUsageBadge from "./AiUsageBadge";
 
 // When we run inside a Capacitor native shell we prefer the native
 // camera/photos picker — it opens the platform camera UI, handles
@@ -354,8 +355,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>
-            📸 {t("photo.title")}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 18 }}>📸 {t("photo.title")}</span>
+            <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
           </div>
           {isAdmin && (
             <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_photo_model", e.target.value); }}

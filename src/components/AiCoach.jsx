@@ -7,6 +7,7 @@ import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
+import AiUsageBadge from "./AiUsageBadge";
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
 
@@ -1289,7 +1290,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
     <div ref={coachTopRef} style={{ scrollMarginTop: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
-          <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
+            <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
             <span className="muted" style={{ fontSize: 12 }}>{t("aiCoach.subtitle")}</span>
             {isAdmin && (
