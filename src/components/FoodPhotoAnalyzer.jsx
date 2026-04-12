@@ -83,9 +83,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
-    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "")
-      .split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
-    if (!cancelled) setIsAdmin(adminEmails.includes(session.user.email?.toLowerCase()));
+    authedFetch("/.netlify/functions/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }).then(res => res.json()).then(data => { if (!cancelled) setIsAdmin(data?.isAdmin === true); }).catch(() => {});
     return () => { cancelled = true; };
   }, [session]);
 

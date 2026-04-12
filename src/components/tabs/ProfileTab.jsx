@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../utils/calorieLogic";
 import { formatNumber } from "../../utils/helpers";
 import { apiUrl } from "../../utils/apiBase";
+import { authedFetch } from "../../utils/authFetch";
 import { EXERCISE_LIBRARY } from "../../data/constants";
 import { openCheckout, openCustomerPortal } from "../../utils/stripe";
 import { AI_LIMITS, getCachedUsage, computeRemainingRequests } from "../../utils/aiUsage";
@@ -133,12 +134,13 @@ export default function ProfileTab({
   const [expandedPrefs, setExpandedPrefs] = useState({});
 
   useEffect(() => {
-    if (!userEmail) return;
-    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "")
-      .split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
-    setIsAdmin(adminEmails.includes(userEmail.toLowerCase()));
+    if (!userEmail || !session?.access_token) return;
 
-    if (!session?.user?.id) return;
+    authedFetch("/.netlify/functions/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }).then(res => res.json()).then(data => setIsAdmin(data?.isAdmin === true)).catch(() => {});
+
     supabase
       .from("profiles")
       .select("is_paid, is_demo")

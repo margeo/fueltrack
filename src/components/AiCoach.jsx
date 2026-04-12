@@ -392,9 +392,10 @@ export default function AiCoach({
     setUsage(getCachedUsage(session?.user?.id));
 
     if (!session?.user?.id) return;
+    let cancelled = false;
 
     // Authoritative read from Supabase
-    fetchUsage(session.user.id).then((fresh) => { if (fresh) setUsage(fresh); }).catch(() => {});
+    fetchUsage(session.user.id).then((fresh) => { if (!cancelled && fresh) setUsage(fresh); }).catch(() => {});
 
     supabase
       .from("profiles")
@@ -402,17 +403,16 @@ export default function AiCoach({
       .eq("id", session.user.id)
       .single()
       .then(({ data }) => {
+        if (cancelled) return;
         setIsPaid(data?.is_paid === true);
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
-    // Admin check: compare the user's email against the known admin
-    // list. Previously this called /.netlify/functions/admin which
-    // returned 403 for non-admins, flooding the console with red
-    // errors. The env var VITE_ADMIN_EMAILS is set at build time.
-    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "")
-      .split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
-    setIsAdmin(adminEmails.includes(session.user.email?.toLowerCase()));
+    authedFetch("/.netlify/functions/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }).then(res => res.json()).then(data => { if (!cancelled) setIsAdmin(data?.isAdmin === true); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [session]);
 
   // Cross-component sync (e.g. Food Photo Analyzer increments counter)
