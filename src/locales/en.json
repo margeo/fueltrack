@@ -499,6 +499,14 @@
     "vegetarian": "No meat — with eggs and dairy",
     "vegan": "Exclusively plant-based diet"
   },
+  "planChooser": {
+    "title": "Welcome to FuelTrack!",
+    "subtitle": "Choose your plan to get started",
+    "proCta": "Start with Pro",
+    "proDesc": "$2.99/month — {{limit}} AI requests/month — cancel anytime",
+    "freeCta": "Continue with Free",
+    "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month"
+  },
   "subscription": {
     "freePlan": "Free Plan",
     "proPlan": "Pro Plan",

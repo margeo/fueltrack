@@ -8,6 +8,7 @@ import EditEntryModal from "./components/EditEntryModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
 import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
+import PlanChooser from "./components/PlanChooser";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
@@ -32,6 +33,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("login");
+  const [showPlanChooser, setShowPlanChooser] = useState(false);
   const [cloudHydrated, setCloudHydrated] = useState(false);
 
   useEffect(() => {
@@ -40,6 +42,10 @@ export default function App() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      // Show plan chooser on first login (not seen before)
+      if (session?.user && !localStorage.getItem("ft_plan_chosen")) {
+        setShowPlanChooser(true);
+      }
       if (session?.user) {
         supabase.from("profiles").upsert({
           id: session.user.id,
@@ -691,6 +697,10 @@ export default function App() {
       )}
 
     </div>
+
+    {showPlanChooser && (
+      <PlanChooser onContinue={() => setShowPlanChooser(false)} />
+    )}
 
     {showAuthModal && (
       <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
