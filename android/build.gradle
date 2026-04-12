@@ -22,6 +22,19 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Kotlin 1.8+ merged kotlin-stdlib-jdk7 / jdk8 into kotlin-stdlib.
+    // Some transitive deps (e.g. ML Kit) still pull in old jdk7/jdk8
+    // 1.6.x jars, causing "Duplicate class" build failures. Force
+    // everything to the same version so there are no overlapping JARs.
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && details.requested.name.startsWith('kotlin-stdlib')) {
+                details.useVersion '1.9.25'
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
