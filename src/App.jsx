@@ -49,7 +49,11 @@ function PasswordResetModal({ onClose }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div className="card" style={{ maxWidth: 380, width: "100%", margin: 0 }}>
+      <div className="card" style={{ maxWidth: 380, width: "100%", margin: 0, position: "relative" }}>
+        <button type="button" onClick={onClose}
+          style={{ position: "absolute", top: 10, right: 10, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          ✕
+        </button>
         <h2 style={{ marginBottom: 16 }}>{t("auth.newPassword")}</h2>
         {success ? (
           <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: "12px 14px", color: "#166534", fontSize: 13 }}>
