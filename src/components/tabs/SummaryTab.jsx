@@ -140,6 +140,14 @@ export default function SummaryTab({
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
+    // Scroll 1: bring grocery section to top of viewport (same pattern as AiCoach)
+    requestAnimationFrame(() => {
+      if (groceryRef.current) {
+        const scroller = document.scrollingElement || document.documentElement;
+        const rect = groceryRef.current.getBoundingClientRect();
+        scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
+      }
+    });
     try {
       const isEn = i18n.language === "en";
       const systemPrompt = isEn
@@ -175,6 +183,18 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
+        // Scroll 2: after results, bring grocery content to top
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              if (groceryRef.current) {
+                const scroller = document.scrollingElement || document.documentElement;
+                const rect = groceryRef.current.getBoundingClientRect();
+                scroller.scrollTo({ top: scroller.scrollTop + rect.top - 12, behavior: "smooth" });
+              }
+            }, 300);
+          });
+        });
         const textVersion = groceryData.categories.map(c =>
           `${c.emoji} ${c.name}\n${c.items.map(i => `${i.name}: ${i.quantity}`).join("\n")}`
         ).join("\n\n");
