@@ -1286,7 +1286,12 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       }
       setHasLoaded(true);
     } catch (err) {
-      setMessages(prev => [...prev, { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }]);
+      if (err?.message === "limit_reached") {
+        // Silently handled — the usage badge and limit screen already
+        // show the user that their requests are exhausted.
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", text: `❌ ${err.message || "Δεν ήταν δυνατή η σύνδεση."}`, error: true }]);
+      }
     } finally { setLoading(false); }
   }
 
