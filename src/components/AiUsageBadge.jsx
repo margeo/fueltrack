@@ -28,12 +28,6 @@ export default function AiUsageBadge({ session, isPaid, isDemo, isAdmin }) {
     : info.warn ? "#f59e0b"
     : "var(--text-muted)";
 
-  const periodLabel = info.label === "daily"
-    ? t("usage.today")
-    : info.label === "monthly"
-    ? t("usage.thisMonth")
-    : t("usage.total");
-
   return (
     <span style={{
       fontSize: 11,

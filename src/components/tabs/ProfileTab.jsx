@@ -789,16 +789,8 @@ export default function ProfileTab({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 22 }}>{isPaid ? "⭐" : "🆓"}</span>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  {isPaid ? t("subscription.proPlan") : t("subscription.freePlan")}
-                </div>
-                {isPaid && (
-                  <div className="muted" style={{ fontSize: 12 }}>
-                    {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
-                  </div>
-                )}
-                </div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>
+                {isPaid ? t("subscription.proPlan") : t("subscription.freePlan")}
               </div>
             </div>
           </div>
