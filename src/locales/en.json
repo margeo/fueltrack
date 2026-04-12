@@ -371,6 +371,7 @@
     "title": "Barcode Scanner",
     "cameraError": "Camera access was not allowed.",
     "updateRequired": "Barcode scanning requires an updated version of the app. Please reinstall FuelTrack from fueltrack.me.",
+    "installing": "Setting up barcode scanner for first use...",
     "hint": "Point at the product's barcode"
   },
   "photo": {

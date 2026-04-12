@@ -371,6 +371,7 @@
     "title": "Σκανάρισμα Barcode",
     "cameraError": "Δεν επιτράπηκε η πρόσβαση στην κάμερα.",
     "updateRequired": "Το σκανάρισμα barcode χρειάζεται νέα έκδοση της εφαρμογής. Κάνε επανεγκατάσταση του FuelTrack από το fueltrack.me.",
+    "installing": "Ρύθμιση σαρωτή barcode για πρώτη χρήση...",
     "hint": "Στόχευσε το barcode του προϊόντος"
   },
   "photo": {

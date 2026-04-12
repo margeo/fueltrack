@@ -43,6 +43,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
   const [error, setError] = useState(() =>
     IS_NATIVE_SHELL && !HAS_NATIVE_BARCODE ? t("barcode.updateRequired") : ""
   );
+  const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     // Stale APK: we already surfaced the error from useState. Don't
@@ -53,14 +54,41 @@ export default function BarcodeScanner({ onResult, onClose }) {
     }
 
     if (HAS_NATIVE_BARCODE) {
-      // On native we don't render the @zxing overlay at all. We just
-      // open the ML Kit full-screen scanner immediately. It returns
-      // the list of detected barcodes (or an empty list if the user
-      // cancelled). Errors fall back to onClose so the caller can
-      // reset its own UI state without a lingering modal.
+      // On native we use the ML Kit full-screen scanner. But first
+      // we need to ensure the Google Barcode Scanner module is
+      // downloaded — on fresh installs (especially emulators) it
+      // isn't available yet and scan() throws
+      // "The Google Barcode Scanner Module is not available".
       let cancelled = false;
       (async () => {
         try {
+          // Check if the ML Kit module is downloaded
+          const { available } = await MlkitBarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+          if (cancelled) return;
+
+          if (!available) {
+            // Trigger download and wait for completion
+            setInstalling(true);
+            await new Promise((resolve, reject) => {
+              const listener = MlkitBarcodeScanner.addListener(
+                "googleBarcodeScannerModuleInstallProgress",
+                (event) => {
+                  // state 4 = COMPLETED, 5 = FAILED, 3 = CANCELED
+                  if (event.state === 4) {
+                    listener.then(h => h.remove());
+                    resolve();
+                  } else if (event.state === 5 || event.state === 3) {
+                    listener.then(h => h.remove());
+                    reject(new Error("Module install failed"));
+                  }
+                }
+              );
+              MlkitBarcodeScanner.installGoogleBarcodeScannerModule().catch(reject);
+            });
+            if (cancelled) return;
+            setInstalling(false);
+          }
+
           const { barcodes } = await MlkitBarcodeScanner.scan({ formats: SCAN_FORMATS });
           if (cancelled) return;
           const code = barcodes?.[0]?.rawValue || barcodes?.[0]?.displayValue;
@@ -68,6 +96,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
           else onClose();
         } catch (err) {
           if (cancelled) return;
+          setInstalling(false);
           const msg = String(err?.message || err || "").toLowerCase();
           if (msg.includes("cancel")) {
             onClose();
@@ -98,10 +127,9 @@ export default function BarcodeScanner({ onResult, onClose }) {
 
   // On native the ML Kit modal covers the whole screen — no need to
   // render our own overlay. Only keep a minimal fallback for the rare
-  // error case. If we're on a stale native shell (HAS_NATIVE_BARCODE
-  // is false) we still render the overlay so the user can see the
-  // updateRequired error we set in the effect above.
-  if (HAS_NATIVE_BARCODE && !error) {
+  // error case, the stale-APK updateRequired message, or while we
+  // wait for the ML Kit module to download.
+  if (HAS_NATIVE_BARCODE && !error && !installing) {
     return null;
   }
 
@@ -122,7 +150,11 @@ export default function BarcodeScanner({ onResult, onClose }) {
         📷 {t("barcode.title")}
       </div>
 
-      {error ? (
+      {installing ? (
+        <div style={{ color: "rgba(255,255,255,0.8)", textAlign: "center", fontSize: 14 }}>
+          {t("barcode.installing")}
+        </div>
+      ) : error ? (
         <div style={{ color: "#fca5a5", textAlign: "center", fontSize: 14 }}>
           {error}
         </div>
