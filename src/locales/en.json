@@ -499,6 +499,15 @@
     "vegetarian": "No meat — with eggs and dairy",
     "vegan": "Exclusively plant-based diet"
   },
+  "subscription": {
+    "freePlan": "Free Plan",
+    "proPlan": "Pro Plan",
+    "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month",
+    "proDesc": "{{limit}} AI requests/month",
+    "used": "AI requests used",
+    "upgrade": "Upgrade to Pro",
+    "manage": "Manage subscription"
+  },
   "auth": {
     "subtitle": "Track → Plan → Achieve",
     "login": "Sign in",

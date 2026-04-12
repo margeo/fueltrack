@@ -5,6 +5,8 @@ import { calculateAppliedDailyDeficit, calculateSuggestedExercise } from "../../
 import { formatNumber } from "../../utils/helpers";
 import { apiUrl } from "../../utils/apiBase";
 import { EXERCISE_LIBRARY } from "../../data/constants";
+import { openCheckout, openCustomerPortal } from "../../utils/stripe";
+import { AI_LIMITS, getCachedUsage, computeRemainingRequests } from "../../utils/aiUsage";
 
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
 const COOKING_LEVELS = ["beginner", "intermediate", "advanced"];
@@ -112,7 +114,7 @@ export default function ProfileTab({
   mode, setMode, targetWeightLoss, setTargetWeightLoss,
   weeks, setWeeks, tdee, targetCalories,
   dailyDeficit, proteinTarget, profileComplete,
-  userEmail, userName, onShowAuth, onShowRegister,
+  session, userEmail, userName, onShowAuth, onShowRegister,
   foodCategories, setFoodCategories, allergies, setAllergies,
   cookingLevel, setCookingLevel, cookingTime, setCookingTime, simpleMode, setSimpleMode,
   mealsPerDay, setMealsPerDay, snacksPerDay, setSnacksPerDay,
@@ -124,21 +126,30 @@ export default function ProfileTab({
   const { t, i18n } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
   const [expandedPrefs, setExpandedPrefs] = useState({});
 
-  // Check admin status once
   useEffect(() => {
     if (!userEmail) return;
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) return;
-      fetch(apiUrl("/.netlify/functions/admin"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ action: "list-users" }),
-      }).then(res => setIsAdmin(res.ok)).catch(() => {});
-    });
-  }, [userEmail]);
+    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "")
+      .split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+    setIsAdmin(adminEmails.includes(userEmail.toLowerCase()));
+
+    if (!session?.user?.id) return;
+    supabase
+      .from("profiles")
+      .select("is_paid, is_demo")
+      .eq("id", session.user.id)
+      .single()
+      .then(({ data }) => {
+        setIsPaid(data?.is_paid === true);
+        setIsDemo(data?.is_demo === true);
+      })
+      .catch(() => {});
+  }, [userEmail, session]);
   const isImperial = units === "imperial";
 
   const [localAge, setLocalAge] = useState(age);
@@ -769,6 +780,73 @@ export default function ProfileTab({
           </select>
         </div>
       </div>
+
+      {/* SUBSCRIPTION */}
+      {userEmail && (
+        <div className="card">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 22 }}>{isPaid ? "⭐" : "🆓"}</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  {isPaid ? t("subscription.proPlan") : t("subscription.freePlan")}
+                </div>
+                <div className="muted" style={{ fontSize: 12 }}>
+                  {isPaid
+                    ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
+                    : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+                </div>
+              </div>
+            </div>
+          </div>
+          {(() => {
+            const usage = getCachedUsage(session?.user?.id);
+            const info = computeRemainingRequests({ usage, isPaid, isDemo, isAdmin });
+            if (info.remaining === Infinity) return null;
+            const pct = Math.round((info.used / info.total) * 100);
+            return (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                  <span className="muted">{t("subscription.used")}</span>
+                  <span style={{ fontWeight: 600 }}>{info.used} / {info.total}</span>
+                </div>
+                <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
+                  <div style={{
+                    width: `${Math.min(pct, 100)}%`,
+                    height: "100%",
+                    borderRadius: 6,
+                    background: pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "var(--color-accent)",
+                    transition: "width 0.3s ease"
+                  }} />
+                </div>
+              </div>
+            );
+          })()}
+          {!isPaid ? (
+            <button className="btn btn-dark" type="button" disabled={checkoutLoading}
+              onClick={async () => {
+                setCheckoutLoading(true);
+                try { await openCheckout(); }
+                catch {}
+                finally { setCheckoutLoading(false); }
+              }}
+              style={{ width: "100%", fontSize: 14, padding: "10px 0" }}>
+              {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
+            </button>
+          ) : (
+            <button className="btn btn-light" type="button"
+              onClick={async () => { try { await openCustomerPortal(); } catch {} }}
+              style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
+              {t("subscription.manage")}
+            </button>
+          )}
+          {!isPaid && (
+            <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 6 }}>
+              {t("aiCoach.subscribePrice")}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ACCOUNT */}
       {userEmail ? (
