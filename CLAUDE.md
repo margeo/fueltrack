@@ -18,6 +18,19 @@ A calorie & macro tracking web/mobile app. Users log food, exercise, and get AI-
 
 In `src/components/AiCoach.jsx` around line ~1021, there are functions related to meal plan generation including `buildMealPlanJSON()`. In PR #53, a previous session deleted what looked like "dead code" in this function and **broke the app** — it was reverted. The code is NOT dead. **Do a full runtime data-flow trace before modifying anything in the meal plan generation pipeline.**
 
+### ⛔ DO NOT break the dual-scroll pattern
+
+Both the AI Coach and the Grocery List use a **two-step scroll** that must be preserved:
+
+1. **Scroll 1 (on request):** Page-level scroll brings the AI Coach / plans section to the top of the viewport. Uses `document.scrollingElement.scrollTo()` (NOT `scrollIntoView` — it's flaky on Android WebView).
+2. **Scroll 2 (on response):** After results load, scrolls the specific content (last chat message / grocery list) to the top. Uses `requestAnimationFrame` + `setTimeout(300)` to wait for layout settle.
+
+**Files:**
+- `src/components/AiCoach.jsx` ~line 478-508 (chat scroll with double rAF + 300ms)
+- `src/components/tabs/SummaryTab.jsx` ~line 137-182 (grocery scroll, same pattern)
+
+These were broken and re-fixed multiple times. Do NOT simplify, refactor, or replace with `scrollIntoView`.
+
 ### ⛔ DO NOT amend commits
 
 Always create NEW commits. If a pre-commit hook fails, fix the issue and create a new commit. Never `--amend` — it can destroy the previous commit's work.
