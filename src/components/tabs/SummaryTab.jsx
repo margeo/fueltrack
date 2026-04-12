@@ -131,6 +131,7 @@ export default function SummaryTab({
   });
   const [groceryLoading, setGroceryLoading] = useState(false);
   const [groceryExpanded, setGroceryExpanded] = useState(false);
+  const [groceryError, setGroceryError] = useState(null);
   const groceryRef = useRef(null);
   const coachSectionRef = useRef(null);
 
@@ -139,6 +140,7 @@ export default function SummaryTab({
     setGroceryLoading(true);
     setGroceryList(null);
     setGroceryExpanded(true);
+    setGroceryError(null);
     // Scroll 1 — bring AI Coach section to top of viewport.
     // Uses document.scrollingElement.scrollTo() (NOT scrollIntoView)
     // because scrollIntoView silently no-ops on iOS Safari and
@@ -176,7 +178,9 @@ RULES:
           customSchema: GROCERY_SCHEMA
         })
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
       let groceryData = null;
       try {
         const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
@@ -187,12 +191,13 @@ RULES:
         setGroceryList(groceryData);
         onSavePlan?.({ type: "grocery", content: JSON.stringify(groceryData), date: new Date().toLocaleDateString("el-GR") });
       } else {
-        setGroceryList(null);
-        setGroceryExpanded(false);
+        throw new Error(isEn ? "Could not parse grocery data" : "Αποτυχία ανάλυσης δεδομένων");
       }
     } catch (e) {
+      console.error("Grocery list error:", e);
       setGroceryList(null);
       setGroceryExpanded(false);
+      setGroceryError(e.message || t("summary.groceryError"));
     } finally {
       setGroceryLoading(false);
       // Scroll 2 — after React renders, scroll grocery section to top.
@@ -313,6 +318,12 @@ RULES:
             <button className="btn btn-light" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
           ) : null}
         </div>
+        {groceryError && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", marginBottom: 8, fontSize: 12, color: "#b91c1c" }}>
+            {groceryError}
+            <button type="button" onClick={() => setGroceryError(null)} style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#b91c1c" }}>✕</button>
+          </div>
+        )}
         {groceryLoading ? (
           <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
         ) : groceryList && groceryExpanded ? (
