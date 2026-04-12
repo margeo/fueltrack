@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import { apiUrl } from "../../utils/apiBase";
+import { authedFetch } from "../../utils/authFetch";
 import AiCoach from "../AiCoach";
 import DatePickerModal from "../DatePickerModal";
 
