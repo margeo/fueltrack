@@ -34,6 +34,7 @@ function PasswordResetModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -61,9 +62,15 @@ function PasswordResetModal({ onClose }) {
                 {error}
               </div>
             )}
-            <input className="input" type="password" placeholder={t("auth.newPasswordPlaceholder")} value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)} required minLength={6} autoComplete="new-password"
-              style={{ width: "100%", marginBottom: 12 }} />
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <input className="input" type={showPassword ? "text" : "password"} placeholder={t("auth.newPasswordPlaceholder")} value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)} required minLength={6} autoComplete="new-password"
+                style={{ width: "100%", paddingRight: 40 }} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 18, padding: 4, color: "var(--text-muted)" }}>
+                {showPassword ? "\uD83D\uDE48" : "\uD83D\uDC41\uFE0F"}
+              </button>
+            </div>
             <button className="btn btn-dark" type="submit" disabled={loading}
               style={{ width: "100%", padding: "14px", opacity: loading ? 0.6 : 1 }}>
               {loading ? "..." : t("auth.savePassword")}
