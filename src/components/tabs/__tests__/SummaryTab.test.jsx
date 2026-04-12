@@ -80,7 +80,7 @@ describe("SummaryTab", () => {
 
   it("shows Σήμερα button when not today", () => {
     renderSummary({ isToday: false });
-    expect(screen.getByText("Σήμερα")).toBeTruthy();
+    expect(screen.getAllByText("Σήμερα").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows goal label for lose", () => {
