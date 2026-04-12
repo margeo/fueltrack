@@ -793,10 +793,11 @@ export default function ProfileTab({
                 <div style={{ fontWeight: 700, fontSize: 15 }}>
                   {isPaid ? t("subscription.proPlan") : t("subscription.freePlan")}
                 </div>
-                <div className="muted" style={{ fontSize: 12 }}>
-                  {isPaid
-                    ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
-                    : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+                {isPaid && (
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
+                  </div>
+                )}
                 </div>
               </div>
             </div>
