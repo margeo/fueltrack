@@ -136,25 +136,6 @@ export default function SummaryTab({
   const groceryRef = useRef(null);
   const coachSectionRef = useRef(null);
 
-  // Scroll 2 — identical to AiCoach useEffect([messages]) lines 464-508.
-  // Fires AFTER React renders the grocery content (not inline after setState).
-  useEffect(() => {
-    if (!groceryList || !groceryExpanded) return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const groceryEl = groceryRef.current;
-          if (groceryEl) {
-            const groceryRect = groceryEl.getBoundingClientRect();
-            const scroller = document.scrollingElement || document.documentElement;
-            const targetTop = scroller.scrollTop + groceryRect.top - 12;
-            scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-          }
-        }, 300);
-      });
-    });
-  }, [groceryList]);
-
   async function generateGroceryList(plan) {
     if (!plan?.content) return;
     setGroceryLoading(true);
@@ -210,6 +191,17 @@ RULES:
       setGroceryExpanded(false);
     } finally {
       setGroceryLoading(false);
+      // Scroll 2 — after React renders, scroll grocery to top
+      // Uses 500ms to ensure React has committed + layout settled
+      setTimeout(() => {
+        const groceryEl = groceryRef.current;
+        if (groceryEl) {
+          const groceryRect = groceryEl.getBoundingClientRect();
+          const scroller = document.scrollingElement || document.documentElement;
+          const targetTop = scroller.scrollTop + groceryRect.top - 12;
+          scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+        }
+      }, 500);
     }
   }
 
