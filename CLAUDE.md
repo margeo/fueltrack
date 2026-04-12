@@ -138,23 +138,23 @@ cd android && ./gradlew bundleRelease
 ## Pending Tasks (updated April 12, 2026)
 
 ### Εκκρεμούν — χρειάζονται τον Marios
-- [ ] Test barcode scanner on real Android device (emulator can't download ML Kit module)
-- [ ] Test plan chooser modal with a brand new account registration
-- [ ] Google Play verification (submitted, waiting 1-2 days)
-- [ ] Generate keystore + build signed AAB (after verification)
-- [ ] Stripe live mode: replace `sk_test_` → `sk_live_` in Netlify env vars
-- [ ] Upload AAB + screenshots to Play Store
+- [ ] **Barcode test σε πραγματικό κινητό** — Ο emulator δεν μπορεί να κατεβάσει το Google ML Kit barcode module. Σε πραγματικό Android κινητό θα κατέβει αυτόματα. Χρειάζεται USB debugging ή build APK και εγκατάσταση.
+- [ ] **Test plan chooser** — Φτιάξε νέο account (με νέο email) και δοκίμασε αν εμφανίζεται το "Welcome to FuelTrack! Choose your plan" modal μετά το πρώτο login.
+- [ ] **Google Play verification** — Υποβλήθηκε 12/4/2026, αναμονή 1-2 μέρες. Χρειάζεται ταυτοποίηση + Android device verification μέσω Play Console app.
+- [ ] **Keystore + signed AAB** — Μετά το verification: (1) δημιούργησε keystore αρχείο με keytool, (2) βάλε paths/passwords στο gradle.properties, (3) τρέξε `.\gradlew bundleRelease`, (4) upload AAB στο Play Console. **ΚΡΙΣΙΜΟ: αν χαθεί το keystore, δεν μπορείς ΠΟΤΕ να κάνεις update στο app.**
+- [ ] **Stripe live mode** — Στο Netlify dashboard, αντικατέστησε `STRIPE_SECRET_KEY` από `sk_test_...` σε `sk_live_...` (παίρνεις το live key από Stripe Dashboard → Developers → API keys). Επίσης δημιούργησε νέο live webhook endpoint και αντικατέστησε `STRIPE_WEBHOOK_SECRET`.
+- [ ] **Upload Play Store** — Screenshots (8 τύποι — λίστα στο `store-listing.md`), κείμενα (έτοιμα στο `store-listing.md`), content rating, privacy policy URL.
 
 ### Εκκρεμούν — code tasks
-- [ ] **Move grocery list into AiCoach component** — Currently grocery generation lives in `SummaryTab.jsx` separately from the AI Coach chat, causing scroll behavior mismatches. Should be refactored so grocery runs through the same `sendMessage()` → `messages[]` → `useEffect` scroll pipeline as weekly meal/training plans.
-- [ ] **#4 Meal plan single call (2→1)** — ⚠️ CAREFUL: PR #53 broke the app. Do full runtime trace first.
-- [ ] **#5 Grocery list input → JSON** — User inputs grocery list, AI returns structured JSON
-- [ ] **#6 Default model strategy** — Auto-switch to better model for complex plans
-- [ ] **#7 Meal plan variety** — Less repetition in generated meals
-- [ ] **#8 Simple groceries toggle** — Fewer items in grocery list
-- [ ] **#10 Barcode UX improvements** — After barcode scanner works on real device
-- [ ] **#19 Google OAuth login** — Google Sign-In via Supabase
-- [ ] **#27 Bundle size optimization** — Code-splitting, currently 1.19MB
+- [ ] **Move grocery list μέσα στο AiCoach** — Τώρα η δημιουργία grocery list γίνεται στο `SummaryTab.jsx` ξεχωριστά από τον AI Coach chat. Αυτό σημαίνει ότι δεν παίρνει αυτόματα τα dual scrolls (AI Coach header πάνω → απάντηση πάνω) που παίρνουν τα weekly meal/training plans. Πρέπει να μεταφερθεί μέσα στο AiCoach component ώστε να τρέχει μέσω του ίδιου `sendMessage()` → `messages[]` → `useEffect` scroll pipeline.
+- [ ] **#4 Meal plan: 2 API calls → 1** — Τώρα ο AI Coach κάνει 2 ξεχωριστά calls (ένα για meals, ένα για snacks) αντί για 1 call. Αυτό κοστίζει διπλά tokens και μπορεί να δώσει ασυνέπειες. ⚠️ ΠΡΟΣΟΧΗ: Στο PR #53 ένα προηγούμενο session διέγραψε "dead code" στο `buildMealPlanJSON()` και ΕΣΠΑΣΕ το app — revert-αρίστηκε. Πρέπει πρώτα full runtime data-flow trace πριν αγγίξεις κάτι.
+- [ ] **#5 Grocery list από user input** — Ο user γράφει σε ελεύθερο κείμενο τι θέλει να ψωνίσει (π.χ. "κοτόπουλο, ρύζι, ντομάτες, γιαούρτι") και το AI το μετατρέπει σε organized JSON λίστα με κατηγορίες (Κρέατα, Γαλακτοκομικά κλπ) και ποσότητες. Τώρα η grocery list δημιουργείται μόνο από meal plan.
+- [ ] **#6 Αυτόματη επιλογή AI model** — Τώρα χρησιμοποιείται πάντα Gemini 2.5 Flash Lite (φθηνό, $0.10/$0.40). Για πολύπλοκα tasks (meal plans 7 ημερών, training plans) θα πρέπει αυτόματα να χρησιμοποιεί ακριβότερο/καλύτερο model (π.χ. Gemini Flash $0.30/$2.50) για καλύτερα αποτελέσματα. Για απλές ερωτήσεις (analyze my day, quick chat) παραμένει το φθηνό.
+- [ ] **#7 Ποικιλία στα meal plans** — Τα generated meal plans επαναλαμβάνουν τα ίδια φαγητά (π.χ. Greek yogurt κάθε πρωί, chicken breast κάθε μεσημέρι). Χρειάζεται prompt improvement ή seed/randomization ώστε κάθε generate να δίνει διαφορετικά γεύματα.
+- [ ] **#8 Toggle "απλά υλικά"** — Υπάρχει ήδη toggle `simpleMode` στο UI. Όταν ενεργοποιημένο, η grocery list πρέπει να έχει λιγότερα/απλούστερα υλικά (π.χ. αντί 15 διαφορετικά λαχανικά, μόνο 5 βασικά). Χρειάζεται prompt adjustment.
+- [ ] **#10 Barcode UX βελτιώσεις** — Μετά που δουλέψει ο barcode scanner σε real device: UX polish, animation, error handling, ιστορικό σκαναρισμάτων.
+- [ ] **#19 Google OAuth login** — Τώρα υπάρχει μόνο email/password login. Πρόσθεση Google Sign-In μέσω Supabase Auth (χρειάζεται Google Cloud Console → OAuth consent screen → credentials → Supabase config).
+- [ ] **#27 Bundle size** — Το JS bundle είναι 1.19MB (331KB gzipped), Vite warning >500KB. Λύση: code-splitting με dynamic `import()` ώστε ο AI Coach, Food Photo κλπ φορτώνουν μόνο όταν ο user πατήσει το αντίστοιχο tab, όχι στο αρχικό load.
 
 ### Completed this session (April 12, 2026)
 - [x] Camera native plugin fix (stale APK detection via PluginHeaders)
