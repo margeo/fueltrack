@@ -504,7 +504,7 @@
     "proPlan": "Pro Plan",
     "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month",
     "proDesc": "{{limit}} AI requests/month",
-    "used": "AI requests used",
+    "used": "AI free requests used",
     "upgrade": "Upgrade to Pro",
     "manage": "Manage subscription"
   },
