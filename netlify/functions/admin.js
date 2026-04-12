@@ -61,6 +61,23 @@ export const handler = withCors(async function handler(event) {
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
     }
 
+    if (action === "reset-usage") {
+      const { userId } = body;
+      if (!userId) return { statusCode: 400, body: JSON.stringify({ error: "Missing userId" }) };
+      const { error } = await supabaseAdmin
+        .from("ai_usage")
+        .update({
+          daily_count: 0,
+          daily_date: new Date().toISOString().slice(0, 10),
+          monthly_count: 0,
+          monthly_month: new Date().toISOString().slice(0, 7),
+          lifetime_count: 0,
+        })
+        .eq("user_id", userId);
+      if (error) return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+      return { statusCode: 200, body: JSON.stringify({ success: true }) };
+    }
+
     return { statusCode: 400, body: JSON.stringify({ error: "Unknown action" }) };
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };

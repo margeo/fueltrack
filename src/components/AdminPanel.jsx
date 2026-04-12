@@ -59,6 +59,27 @@ export default function AdminPanel({ onClose, adminEmail }) {
     }
   }
 
+  async function resetUsage(userId) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(apiUrl("/.netlify/functions/admin"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ action: "reset-usage", userId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error);
+      }
+      alert("AI requests reset to 0");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+
   function getUserType(user) {
     if (adminEmail && (user.email || "").toLowerCase() === adminEmail.toLowerCase()) return "admin";
     if (user.is_paid) return "paid";
@@ -168,17 +189,30 @@ export default function AdminPanel({ onClose, adminEmail }) {
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   {type !== "admin" && (
-                    <button
-                      onClick={() => toggleFlag(user.id, "is_demo", user.is_demo)}
-                      style={{
-                        padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-                        border: "none", cursor: "pointer",
-                        background: user.is_demo ? "#60a5fa" : "var(--bg-btn-light)",
-                        color: user.is_demo ? "#1e3a5f" : "var(--text-muted)"
-                      }}
-                    >
-                      {user.is_demo ? "✓ Remove Demo" : "Grant Demo"}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => toggleFlag(user.id, "is_demo", user.is_demo)}
+                        style={{
+                          padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                          border: "none", cursor: "pointer",
+                          background: user.is_demo ? "#60a5fa" : "var(--bg-btn-light)",
+                          color: user.is_demo ? "#1e3a5f" : "var(--text-muted)"
+                        }}
+                      >
+                        {user.is_demo ? "✓ Remove Demo" : "Grant Demo"}
+                      </button>
+                      <button
+                        onClick={() => resetUsage(user.id)}
+                        style={{
+                          padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                          border: "none", cursor: "pointer",
+                          background: "var(--bg-btn-light)",
+                          color: "var(--text-muted)"
+                        }}
+                      >
+                        🔄 Reset AI
+                      </button>
+                    </>
                   )}
                   <span className="muted" style={{ fontSize: 11, marginLeft: "auto" }}>
                     {user.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
