@@ -1,10 +1,8 @@
 // src/components/tabs/SummaryTab.jsx
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
-import { apiUrl } from "../../utils/apiBase";
-import { authedFetch } from "../../utils/authFetch";
 import AiCoach from "../AiCoach";
 import DatePickerModal from "../DatePickerModal";
 
@@ -47,38 +45,6 @@ function exportGroceryToPDF(groceryData) {
   const win = window.open("", "_blank");
   if (win) { win.document.write(html); win.document.close(); }
 }
-
-const GROCERY_ITEM_SCHEMA = {
-  type: "object",
-  properties: { name: { type: "string" }, quantity: { type: "string" } },
-  required: ["name", "quantity"],
-  additionalProperties: false
-};
-const GROCERY_CATEGORY_SCHEMA = {
-  type: "object",
-  properties: {
-    emoji: { type: "string" },
-    name: { type: "string" },
-    items: { type: "array", items: GROCERY_ITEM_SCHEMA }
-  },
-  required: ["emoji", "name", "items"],
-  additionalProperties: false
-};
-const GROCERY_SCHEMA = {
-  type: "json_schema",
-  json_schema: {
-    name: "grocery_list",
-    strict: true,
-    schema: {
-      type: "object",
-      properties: {
-        categories: { type: "array", items: GROCERY_CATEGORY_SCHEMA }
-      },
-      required: ["categories"],
-      additionalProperties: false
-    }
-  }
-};
 
 function GroceryListView({ data }) {
   if (!data?.categories?.length) return null;
@@ -125,85 +91,12 @@ export default function SummaryTab({
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
-  const [groceryList, setGroceryList] = useState(() => {
+  const groceryList = (() => {
     if (!savedGrocery?.content) return null;
-    // Handle both old text format and new JSON format
     if (typeof savedGrocery.content === "object") return savedGrocery.content;
     try { return JSON.parse(savedGrocery.content); } catch { return null; }
-  });
-  const [groceryLoading, setGroceryLoading] = useState(false);
+  })();
   const [groceryExpanded, setGroceryExpanded] = useState(false);
-  const groceryRef = useRef(null);
-  const coachSectionRef = useRef(null);
-
-  async function generateGroceryList(plan) {
-    if (!plan?.content) return;
-    setGroceryLoading(true);
-    setGroceryList(null);
-    setGroceryExpanded(true);
-    // Scroll 1 — identical to AiCoach.jsx line 947
-    coachSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    try {
-      const isEn = i18n.language === "en";
-      const systemPrompt = isEn
-        ? `Extract a grocery list from a weekly meal plan. Return a JSON object.
-RULES:
-- Group into categories (Meat & Fish, Dairy & Eggs, Vegetables & Fruits, Grains & Legumes, Other)
-- Merge similar ingredients into one line with total quantity
-- Each category: emoji, name, items array [{name, quantity}]
-- Do not break down by day — totals only`
-        : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής. Επέστρεψε JSON.
-ΚΑΝΟΝΕΣ:
-- Ομαδοποίησε σε κατηγορίες (Κρέατα & Ψάρια, Γαλακτοκομικά & Αυγά, Λαχανικά & Φρούτα, Δημητριακά & Όσπρια, Άλλα)
-- Ενοποίησε παρόμοια υλικά σε μία γραμμή με συνολική ποσότητα
-- Κάθε κατηγορία: emoji, name, items array [{name, quantity}]
-- Μόνο σύνολα, όχι ανά μέρα`;
-
-      const res = await authedFetch("/.netlify/functions/ai-coach", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemPrompt,
-          messages: [{ role: "user", content: plan.content }],
-          jsonMode: true,
-          customSchema: GROCERY_SCHEMA
-        })
-      });
-      const data = await res.json();
-      let groceryData = null;
-      try {
-        const raw = typeof data.advice === "string" ? JSON.parse(data.advice) : data.advice;
-        groceryData = raw?.categories?.length ? raw : null;
-      } catch { /* parse failed */ }
-
-      if (groceryData) {
-        setGroceryList(groceryData);
-        const textVersion = groceryData.categories.map(c =>
-          `${c.emoji} ${c.name}\n${c.items.map(i => `${i.name}: ${i.quantity}`).join("\n")}`
-        ).join("\n\n");
-        onSavePlan?.({ type: "grocery", content: JSON.stringify(groceryData), date: new Date().toLocaleDateString("el-GR") });
-      } else {
-        setGroceryList(null);
-        setGroceryExpanded(false);
-      }
-    } catch (e) {
-      setGroceryList(null);
-      setGroceryExpanded(false);
-    } finally {
-      setGroceryLoading(false);
-      // Scroll 2 — after React renders, scroll grocery to top
-      // Uses 500ms to ensure React has committed + layout settled
-      setTimeout(() => {
-        const groceryEl = groceryRef.current;
-        if (groceryEl) {
-          const groceryRect = groceryEl.getBoundingClientRect();
-          const scroller = document.scrollingElement || document.documentElement;
-          const targetTop = scroller.scrollTop + groceryRect.top - 12;
-          scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-        }
-      }, 500);
-    }
-  }
 
   const streak = useMemo(() => calculateStreak(dailyLogs, targetCalories), [dailyLogs, targetCalories]);
   const sortedWeightLog = useMemo(() => [...(weightLog || [])].sort((a, b) => b.date.localeCompare(a.date)), [weightLog]);
@@ -290,27 +183,28 @@ RULES:
   function GrocerySection() {
     return (
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (groceryExpanded || groceryLoading || (!groceryList && mealPlan)) ? 8 : 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groceryExpanded || !groceryList ? 8 : 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>🛒 {t("summary.groceryList")}</span>
+            {groceryList && !groceryExpanded && savedGrocery?.date && (
+              <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {savedGrocery.date}
+              </span>
+            )}
           </div>
-          {groceryList ? (
+          {groceryList && (
             <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
               <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
               <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>📄 PDF</button>
-              <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+              <button className="btn btn-light" onClick={() => { onDeletePlan("grocery"); setGroceryExpanded(false); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
             </div>
-          ) : mealPlan && !groceryLoading ? (
-            <button className="btn btn-light" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
-          ) : null}
+          )}
         </div>
-        {groceryLoading ? (
-          <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
-        ) : groceryList && groceryExpanded ? (
+        {groceryList && groceryExpanded ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
             <GroceryListView data={groceryList} />
           </div>
-        ) : !groceryList && !groceryLoading ? (
+        ) : !groceryList ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
             <div className="muted" style={{ fontSize: 12 }}>{mealPlan ? t("summary.groceryReady") : t("summary.groceryNeedPlan")}</div>
           </div>
@@ -395,7 +289,7 @@ RULES:
       </div>
 
       {/* 2. AI COACH + PLANS (connected) */}
-      <div ref={coachSectionRef} style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, scrollMarginTop: 12 }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, scrollMarginTop: 12 }}>
         <div style={{ padding: 16 }}>
           <AiCoach
             last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
@@ -420,7 +314,7 @@ RULES:
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 
-        <div ref={groceryRef} style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px", scrollMarginTop: 12 }}>
+        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
           <GrocerySection />
         </div>
 

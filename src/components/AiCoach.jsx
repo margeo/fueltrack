@@ -10,7 +10,7 @@ import { authedFetch } from "../utils/authFetch";
 import { openCheckout } from "../utils/stripe";
 import AiUsageBadge from "./AiUsageBadge";
 
-const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
+const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4", "aiCoach.q5"];
 
 function formatAiText(text) {
   if (!text) return text;
@@ -53,6 +53,38 @@ const TRAINING_SCHEMA = {
       type: "object",
       properties: Object.fromEntries(DAY_KEYS.map(d => [d, TRAINING_DAY_SCHEMA])),
       required: DAY_KEYS,
+      additionalProperties: false
+    }
+  }
+};
+
+const GROCERY_ITEM_SCHEMA = {
+  type: "object",
+  properties: { name: { type: "string" }, quantity: { type: "string" } },
+  required: ["name", "quantity"],
+  additionalProperties: false
+};
+const GROCERY_CATEGORY_SCHEMA = {
+  type: "object",
+  properties: {
+    emoji: { type: "string" },
+    name: { type: "string" },
+    items: { type: "array", items: GROCERY_ITEM_SCHEMA }
+  },
+  required: ["emoji", "name", "items"],
+  additionalProperties: false
+};
+const GROCERY_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "grocery_list",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        categories: { type: "array", items: GROCERY_CATEGORY_SCHEMA }
+      },
+      required: ["categories"],
       additionalProperties: false
     }
   }
@@ -302,6 +334,24 @@ function TrainingPlanView({ data, lang }) {
     </div>
   );
 }
+function GroceryListView({ data }) {
+  if (!data?.categories?.length) return null;
+  return (
+    <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+      {data.categories.map((cat, ci) => (
+        <div key={ci}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginTop: ci > 0 ? 12 : 0, marginBottom: 4, paddingBottom: 3, borderBottom: "1px solid var(--border-soft)" }}>
+            {cat.emoji} {cat.name}
+          </div>
+          {cat.items.map((item, ii) => (
+            <div key={ii} style={{ padding: "2px 0 2px 8px" }}>{item.name}: {item.quantity}</div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const MEAL_METADATA = {
   breakfast: { label: { el: "Πρωινό", en: "Breakfast" }, emoji: "🌅" },
   morning_snack: { label: { el: "Σνακ", en: "Snack" }, emoji: "🍎" },
@@ -371,7 +421,7 @@ export default function AiCoach({
   totalCalories, totalProtein, totalCarbs, totalFat, exerciseValue,
   remainingCalories, macroTargets,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, userName, onShowAuth, onShowRegister,
+  savedPlans, onSavePlan, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
   mealsPerDay, snacksPerDay,
   fitnessLevel, workoutLocation, equipment, limitations,
@@ -931,7 +981,7 @@ ${askChange}`;
 
   function buildMessages(chatMessage) {
     // Keep custom chat (plain text), skip preset JSON responses (meal plan, training, etc.)
-    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "macro_analysis_json"];
+    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "macro_analysis_json", "grocery_list_json"];
     const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !SKIP_TYPES.includes(msg.msgType)).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
@@ -951,10 +1001,11 @@ ${askChange}`;
     const isTrainingPlan = text === t("aiCoach.q2");
     const isWeeklyReview = text === t("aiCoach.q3");
     const isMacroAnalysis = text === t("aiCoach.q4");
-    const isPreset = isMealPlan || isTrainingPlan || isWeeklyReview || isMacroAnalysis;
+    const isGroceryList = text === t("aiCoach.q5");
+    const isPreset = isMealPlan || isTrainingPlan || isWeeklyReview || isMacroAnalysis || isGroceryList;
 
     if (text) { setMessages(prev => [...prev, { role: "user", text, ...(isPreset && { isPreset: true }) }]); setInput(""); }
-    const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMacroAnalysis ? "macro_analysis" : "general";
+    const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMacroAnalysis ? "macro_analysis" : isGroceryList ? "grocery_list" : "general";
 
     const isEn = i18n.language === "en";
     let effectiveMessage;
@@ -1236,6 +1287,62 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         setMessages(prev => [...prev, { role: "assistant", macroData: { macros, targets, aiInsight }, msgType: "macro_analysis_json", elapsed, usage: maData.usage }]);
         setHasLoaded(true);
         return;
+      } else if (isGroceryList) {
+        // Grocery list — requires a saved meal plan
+        const mealPlan = savedPlans?.find(p => p.type === "meal");
+        if (!mealPlan?.content) {
+          setMessages(prev => [...prev, { role: "assistant", text: t("aiCoach.groceryNeedPlan"), error: true }]);
+          setHasLoaded(true);
+          return;
+        }
+        const groceryPrompt = isEn
+          ? `Extract a grocery list from a weekly meal plan. Return a JSON object.
+RULES:
+- Group into categories (Meat & Fish, Dairy & Eggs, Vegetables & Fruits, Grains & Legumes, Other)
+- Merge similar ingredients into one line with total quantity
+- Each category: emoji, name, items array [{name, quantity}]
+- Do not break down by day — totals only`
+          : `Εξήγαγε λίστα σούπερ μάρκετ από εβδομαδιαίο πρόγραμμα διατροφής. Επέστρεψε JSON.
+ΚΑΝΟΝΕΣ:
+- Ομαδοποίησε σε κατηγορίες (Κρέατα & Ψάρια, Γαλακτοκομικά & Αυγά, Λαχανικά & Φρούτα, Δημητριακά & Όσπρια, Άλλα)
+- Ενοποίησε παρόμοια υλικά σε μία γραμμή με συνολική ποσότητα
+- Κάθε κατηγορία: emoji, name, items array [{name, quantity}]
+- Μόνο σύνολα, όχι ανά μέρα`;
+
+        const gReq = {
+          systemPrompt: groceryPrompt,
+          messages: [{ role: "user", content: mealPlan.content }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: GROCERY_SCHEMA
+        };
+        const gResponse = await authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gReq) });
+        if (gResponse.status === 429) {
+          const limitData = await gResponse.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
+        if (!gResponse.ok) throw new Error(`Connection error (${gResponse.status})`);
+        const gData = await gResponse.json();
+        if (gData.error) throw new Error(gData.error);
+        if (gData.aiUsage) applyServerUsage(gData.aiUsage);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let groceryData = null;
+        try {
+          const raw = typeof gData.advice === "string" ? JSON.parse(gData.advice) : gData.advice;
+          groceryData = raw?.categories?.length ? raw : null;
+        } catch { /* parse failed */ }
+
+        if (groceryData) {
+          const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
+          onSavePlan?.({ type: "grocery", content: JSON.stringify(groceryData), date: dateStr });
+          setMessages(prev => [...prev, { role: "assistant", groceryData, msgType: "grocery_list_json", elapsed, usage: gData.usage }]);
+        } else {
+          setMessages(prev => [...prev, { role: "assistant", text: isEn ? "⚠️ The grocery list could not be generated. Please try again." : "⚠️ Η λίστα σούπερ μάρκετ δεν ολοκληρώθηκε. Δοκίμασε ξανά.", error: true, elapsed, usage: gData.usage }]);
+        }
+        setHasLoaded(true);
+        return;
       } else {
         reqBody = {
           systemPrompt: buildSystemPrompt(taskType),
@@ -1469,6 +1576,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ) : msg.msgType === "macro_analysis_json" && msg.macroData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <MacroAnalysisView macros={msg.macroData.macros} targets={msg.macroData.targets} aiInsight={msg.macroData.aiInsight} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "grocery_list_json" && msg.groceryData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <GroceryListView data={msg.groceryData} />
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
