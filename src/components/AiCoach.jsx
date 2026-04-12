@@ -606,15 +606,15 @@ export default function AiCoach({
 Each day MUST contain EXACTLY ${mealSlots.length} meal slots: ${mealSlots.join(", ")}.
 
 CONSTRAINTS:
-${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. STRICT CALORIES: daily_total MUST be exactly ${targetCalories}kcal. Each meal kcal must be within ±50 of its target. The sum of all meals MUST equal daily_total.
+${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. CALORIE ACCURACY: "kcal" must reflect the REAL nutritional value of the described food at the stated portion, NOT the target. Calculate calories from the actual ingredients and grams. The daily_total must be the SUM of the individual meal kcal values. Aim for daily_total near ${targetCalories}kcal but accuracy of individual meals matters more than hitting the exact target.
 ${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
 ${ruleNum++}. ${langNote}
-${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer).
+${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer = real calories of that food).
 ${ruleNum++}. No leftovers. Unique meals each day. Respect input data.
 
-CALORIE TARGETS (strict — follow these numbers):
+CALORIE TARGETS (aim for these, but kcal must be real food values):
 ${slotRules}
-daily_total: exactly ${targetCalories}kcal
+daily_total: sum of all meal kcal (aim near ${targetCalories}kcal)
 
 EXAMPLE (monday):
 {${exampleMeals},"daily_total":${targetCalories}}`;
