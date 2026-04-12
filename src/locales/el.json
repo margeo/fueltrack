@@ -459,7 +459,8 @@
     "today": "σήμερα",
     "thisMonth": "αυτόν τον μήνα",
     "total": "συνολικά",
-    "noRemaining": "εξαντλήθηκε"
+    "remaining": "απομένουν",
+    "noRemaining": "Δεν απομένουν ερωτήματα"
   },
   "modeGroups": {
     "balanced": "🥗 Ισορροπημένες",

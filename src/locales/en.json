@@ -459,7 +459,8 @@
     "today": "today",
     "thisMonth": "this month",
     "total": "total",
-    "noRemaining": "limit reached"
+    "remaining": "left",
+    "noRemaining": "No requests left"
   },
   "modeGroups": {
     "balanced": "🥗 Balanced",

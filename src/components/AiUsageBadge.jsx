@@ -39,13 +39,16 @@ export default function AiUsageBadge({ session, isPaid, isDemo, isAdmin }) {
       fontSize: 11,
       fontWeight: 600,
       color,
+      background: info.remaining <= 0 ? "rgba(239,68,68,0.1)" : info.warn ? "rgba(245,158,11,0.1)" : "var(--bg-soft)",
+      padding: "2px 8px",
+      borderRadius: 20,
       display: "inline-flex",
       alignItems: "center",
       gap: 3,
     }}>
       {info.remaining <= 0
-        ? `${t("usage.noRemaining")}`
-        : `${info.used}/${info.total} ${periodLabel}`
+        ? `⛔ ${t("usage.noRemaining")}`
+        : `⚡ ${info.remaining} ${t("usage.remaining")}`
       }
     </span>
   );
