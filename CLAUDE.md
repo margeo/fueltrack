@@ -135,6 +135,57 @@ cd android && ./gradlew bundleRelease
 3. **ML Kit barcode on emulator** — Google Barcode Scanner Module can't download on emulator. Works on real devices. The code calls `installGoogleBarcodeScannerModule()` automatically on first use.
 4. **Calorie accuracy** — Flash Lite sometimes puts target calories instead of actual food calories (item #9, needs prompt fix).
 
+## Pending Tasks (updated April 12, 2026)
+
+### Εκκρεμούν — χρειάζονται τον Marios
+- [ ] Test barcode scanner on real Android device (emulator can't download ML Kit module)
+- [ ] Test plan chooser modal with a brand new account registration
+- [ ] Google Play verification (submitted, waiting 1-2 days)
+- [ ] Generate keystore + build signed AAB (after verification)
+- [ ] Stripe live mode: replace `sk_test_` → `sk_live_` in Netlify env vars
+- [ ] Upload AAB + screenshots to Play Store
+
+### Εκκρεμούν — code tasks
+- [ ] **Move grocery list into AiCoach component** — Currently grocery generation lives in `SummaryTab.jsx` separately from the AI Coach chat, causing scroll behavior mismatches. Should be refactored so grocery runs through the same `sendMessage()` → `messages[]` → `useEffect` scroll pipeline as weekly meal/training plans.
+- [ ] **#4 Meal plan single call (2→1)** — ⚠️ CAREFUL: PR #53 broke the app. Do full runtime trace first.
+- [ ] **#5 Grocery list input → JSON** — User inputs grocery list, AI returns structured JSON
+- [ ] **#6 Default model strategy** — Auto-switch to better model for complex plans
+- [ ] **#7 Meal plan variety** — Less repetition in generated meals
+- [ ] **#8 Simple groceries toggle** — Fewer items in grocery list
+- [ ] **#10 Barcode UX improvements** — After barcode scanner works on real device
+- [ ] **#19 Google OAuth login** — Google Sign-In via Supabase
+- [ ] **#27 Bundle size optimization** — Code-splitting, currently 1.19MB
+
+### Completed this session (April 12, 2026)
+- [x] Camera native plugin fix (stale APK detection via PluginHeaders)
+- [x] Barcode scanner ML Kit module auto-install
+- [x] Kotlin stdlib duplicate class fix
+- [x] Stripe integration (checkout, webhook, portal)
+- [x] Google Play Console signup
+- [x] Remove server.url for production
+- [x] Release signing config in gradle
+- [x] AI usage badge ("⚡ 2 left")
+- [x] Subscription section in Profile tab
+- [x] Plan chooser (Free vs Pro) after first login
+- [x] Subscribe to Pro CTA on limit screens
+- [x] Admin panel: Reset AI button
+- [x] Fix 403 admin check errors (new check-admin endpoint)
+- [x] Fix 2 pre-existing test failures (276/276 pass)
+- [x] Calorie accuracy prompt fix (#9)
+- [x] iOS Safari popup blocker fix for Stripe checkout
+- [x] Grocery list auth fix (authedFetch)
+- [x] limit_reached error suppression in chat
+- [x] CI workflow fix (stop GitHub email notifications)
+- [x] PayPal enabled in Stripe
+- [x] CLAUDE.md created
+- [x] Store listing texts (EN + EL)
+
+### Stripe Keys (test mode — in Netlify env vars)
+- `STRIPE_PRICE_ID`: `price_1TLHgyKV5fcTURUn53ScTvv8`
+- Webhook endpoint: `https://fueltrack.me/.netlify/functions/stripe-webhook`
+- Webhook events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+- Supabase: `stripe_customer_id` column added to profiles table
+
 ## Deployment
 
 - **Web**: Push to `main` → Netlify auto-deploys to fueltrack.me
