@@ -136,6 +136,25 @@ export default function SummaryTab({
   const groceryRef = useRef(null);
   const coachSectionRef = useRef(null);
 
+  // Scroll 2 — identical to AiCoach useEffect([messages]) lines 464-508.
+  // Fires AFTER React renders the grocery content (not inline after setState).
+  useEffect(() => {
+    if (!groceryList || !groceryExpanded) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const groceryEl = groceryRef.current;
+          if (groceryEl) {
+            const groceryRect = groceryEl.getBoundingClientRect();
+            const scroller = document.scrollingElement || document.documentElement;
+            const targetTop = scroller.scrollTop + groceryRect.top - 12;
+            scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+          }
+        }, 300);
+      });
+    });
+  }, [groceryList]);
+
   async function generateGroceryList(plan) {
     if (!plan?.content) return;
     setGroceryLoading(true);
@@ -178,21 +197,6 @@ RULES:
 
       if (groceryData) {
         setGroceryList(groceryData);
-        // Scroll 2 — identical to AiCoach.jsx lines 496-508
-        // (double rAF + 300ms + manual scrollTo)
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              const groceryEl = groceryRef.current;
-              if (groceryEl) {
-                const groceryRect = groceryEl.getBoundingClientRect();
-                const scroller = document.scrollingElement || document.documentElement;
-                const targetTop = scroller.scrollTop + groceryRect.top - 12;
-                scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-              }
-            }, 300);
-          });
-        });
         const textVersion = groceryData.categories.map(c =>
           `${c.emoji} ${c.name}\n${c.items.map(i => `${i.name}: ${i.quantity}`).join("\n")}`
         ).join("\n\n");
