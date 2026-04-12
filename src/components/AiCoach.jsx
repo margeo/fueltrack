@@ -404,11 +404,13 @@ export default function AiCoach({
         setIsDemo(data?.is_demo === true);
       })
       .catch(() => {});
-    authedFetch("/.netlify/functions/admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "list-users" }),
-    }).then(res => setIsAdmin(res.ok)).catch(() => {});
+    // Admin check: compare the user's email against the known admin
+    // list. Previously this called /.netlify/functions/admin which
+    // returned 403 for non-admins, flooding the console with red
+    // errors. The env var VITE_ADMIN_EMAILS is set at build time.
+    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "")
+      .split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+    setIsAdmin(adminEmails.includes(session.user.email?.toLowerCase()));
   }, [session]);
 
   // Cross-component sync (e.g. Food Photo Analyzer increments counter)
