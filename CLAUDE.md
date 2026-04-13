@@ -144,19 +144,40 @@ cd android && ./gradlew bundleRelease
 - [ ] **Keystore + signed AAB** — Μετά το verification: (1) δημιούργησε keystore αρχείο με keytool, (2) βάλε paths/passwords στο gradle.properties, (3) τρέξε `.\gradlew bundleRelease`, (4) upload AAB στο Play Console. **ΚΡΙΣΙΜΟ: αν χαθεί το keystore, δεν μπορείς ΠΟΤΕ να κάνεις update στο app.**
 - [ ] **Stripe live mode** — Στο Netlify dashboard, αντικατέστησε `STRIPE_SECRET_KEY` από `sk_test_...` σε `sk_live_...` (παίρνεις το live key από Stripe Dashboard → Developers → API keys). Επίσης δημιούργησε νέο live webhook endpoint και αντικατέστησε `STRIPE_WEBHOOK_SECRET`.
 - [ ] **Upload Play Store** — Screenshots (8 τύποι — λίστα στο `store-listing.md`), κείμενα (έτοιμα στο `store-listing.md`), content rating, privacy policy URL.
+- [ ] **Resend DNS verification** — Τα DNS records (DKIM, SPF) προστέθηκαν στο GreenGeeks. Πρέπει να γίνει Reverify στο resend.com → Domains. Μετά setup SMTP στο Supabase.
+- [ ] **Supabase SMTP setup** — Μετά Resend verify: Supabase Dashboard → Project Settings → Auth → SMTP → Host: smtp.resend.com, Port: 465, User: resend, Password: Resend API key, Sender: noreply@fueltrack.me
+- [ ] **Apple App Store review** — Submitted 13/4/2026, αναμονή 1-2 μέρες. Build 3 με σωστό icon.
 
 ### Εκκρεμούν — code tasks
-- [ ] **Move grocery list μέσα στο AiCoach** — Τώρα η δημιουργία grocery list γίνεται στο `SummaryTab.jsx` ξεχωριστά από τον AI Coach chat. Αυτό σημαίνει ότι δεν παίρνει αυτόματα τα dual scrolls (AI Coach header πάνω → απάντηση πάνω) που παίρνουν τα weekly meal/training plans. Πρέπει να μεταφερθεί μέσα στο AiCoach component ώστε να τρέχει μέσω του ίδιου `sendMessage()` → `messages[]` → `useEffect` scroll pipeline.
+- [ ] **#7 Ποικιλία στα meal plans** — Τα generated meal plans επαναλαμβάνουν τα ίδια φαγητά (π.χ. Greek yogurt κάθε πρωί, chicken breast κάθε μεσημέρι). Χρειάζεται prompt improvement ή seed/randomization ώστε κάθε generate να δίνει διαφορετικά γεύματα.
+- [ ] **#8 Toggle "απλά υλικά"** — Υπάρχει ήδη toggle `simpleMode` στο UI. Όταν ενεργοποιημένο, η grocery list πρέπει να έχει λιγότερα/απλούστερα υλικά (π.χ. αντί 15 διαφορετικά λαχανικά, μόνο 5 βασικά). Χρειάζεται prompt adjustment.
 - [ ] **#4 Meal plan: 2 API calls → 1** — Τώρα ο AI Coach κάνει 2 ξεχωριστά calls (ένα για meals, ένα για snacks) αντί για 1 call. Αυτό κοστίζει διπλά tokens και μπορεί να δώσει ασυνέπειες. ⚠️ ΠΡΟΣΟΧΗ: Στο PR #53 ένα προηγούμενο session διέγραψε "dead code" στο `buildMealPlanJSON()` και ΕΣΠΑΣΕ το app — revert-αρίστηκε. Πρέπει πρώτα full runtime data-flow trace πριν αγγίξεις κάτι.
 - [ ] **#5 Grocery list από user input** — Ο user γράφει σε ελεύθερο κείμενο τι θέλει να ψωνίσει (π.χ. "κοτόπουλο, ρύζι, ντομάτες, γιαούρτι") και το AI το μετατρέπει σε organized JSON λίστα με κατηγορίες (Κρέατα, Γαλακτοκομικά κλπ) και ποσότητες. Τώρα η grocery list δημιουργείται μόνο από meal plan.
 - [ ] **#6 Αυτόματη επιλογή AI model** — Τώρα χρησιμοποιείται πάντα Gemini 2.5 Flash Lite (φθηνό, $0.10/$0.40). Για πολύπλοκα tasks (meal plans 7 ημερών, training plans) θα πρέπει αυτόματα να χρησιμοποιεί ακριβότερο/καλύτερο model (π.χ. Gemini Flash $0.30/$2.50) για καλύτερα αποτελέσματα. Για απλές ερωτήσεις (analyze my day, quick chat) παραμένει το φθηνό.
-- [ ] **#7 Ποικιλία στα meal plans** — Τα generated meal plans επαναλαμβάνουν τα ίδια φαγητά (π.χ. Greek yogurt κάθε πρωί, chicken breast κάθε μεσημέρι). Χρειάζεται prompt improvement ή seed/randomization ώστε κάθε generate να δίνει διαφορετικά γεύματα.
-- [ ] **#8 Toggle "απλά υλικά"** — Υπάρχει ήδη toggle `simpleMode` στο UI. Όταν ενεργοποιημένο, η grocery list πρέπει να έχει λιγότερα/απλούστερα υλικά (π.χ. αντί 15 διαφορετικά λαχανικά, μόνο 5 βασικά). Χρειάζεται prompt adjustment.
 - [ ] **#10 Barcode UX βελτιώσεις** — Μετά που δουλέψει ο barcode scanner σε real device: UX polish, animation, error handling, ιστορικό σκαναρισμάτων.
 - [ ] **#19 Google OAuth login** — Τώρα υπάρχει μόνο email/password login. Πρόσθεση Google Sign-In μέσω Supabase Auth (χρειάζεται Google Cloud Console → OAuth consent screen → credentials → Supabase config).
 - [ ] **#27 Bundle size** — Το JS bundle είναι 1.19MB (331KB gzipped), Vite warning >500KB. Λύση: code-splitting με dynamic `import()` ώστε ο AI Coach, Food Photo κλπ φορτώνουν μόνο όταν ο user πατήσει το αντίστοιχο tab, όχι στο αρχικό load.
 
-### Completed this session (April 12, 2026)
+### Completed session April 13, 2026
+- [x] Grocery list scroll fix (document.scrollingElement + double rAF pattern)
+- [x] Grocery list iPhone fix (error handling instead of silent fail)
+- [x] Password reset form (detect PASSWORD_RECOVERY event, show modal)
+- [x] Password reset modal: show/hide password toggle + X close button + opaque background
+- [x] Email templates branded (FuelTrack colors + logo) for Supabase
+- [x] Resend DNS records added to GreenGeeks (DKIM, SPF) — pending verification
+- [x] Apple Developer Account setup
+- [x] App Store Connect: FuelTrack - Diet & Fitness created
+- [x] App Privacy configured (Email, Health, Fitness, User ID, Product Interaction)
+- [x] Bundle ID registered: me.fueltrack.app
+- [x] MacinCloud setup + iOS project created
+- [x] iOS build succeeded (removed camera/barcode plugins for iOS compatibility)
+- [x] AppDelegate.swift fixed for Xcode 16.2
+- [x] Native plugin check skipped on iOS (nativeCapabilities.js)
+- [x] App icon fixed (AppIcon-512@2x.png)
+- [x] iOS app uploaded to App Store Connect (build 3)
+- [x] Submitted for App Store review
+
+### Completed session April 12, 2026
 - [x] Camera native plugin fix (stale APK detection via PluginHeaders)
 - [x] Barcode scanner ML Kit module auto-install
 - [x] Kotlin stdlib duplicate class fix
