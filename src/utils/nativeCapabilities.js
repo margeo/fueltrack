@@ -44,7 +44,7 @@ import { Capacitor } from "@capacitor/core";
 // node_modules/@capacitor/camera/dist/esm/index.js and
 // node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/index.js
 // when Phase A3 landed.
-export const REQUIRED_NATIVE_PLUGINS = ["Camera", "BarcodeScanner"];
+export const REQUIRED_NATIVE_PLUGINS = Capacitor.getPlatform() === "android" ? ["Camera", "BarcodeScanner"] : [];
 
 // Reads window.Capacitor.PluginHeaders defensively. The field is
 // typed as readonly PluginHeader[] in @capacitor/core's internal
