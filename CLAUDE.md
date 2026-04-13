@@ -158,6 +158,16 @@ cd android && ./gradlew bundleRelease
 - [ ] **#19 Google OAuth login** — Τώρα υπάρχει μόνο email/password login. Πρόσθεση Google Sign-In μέσω Supabase Auth (χρειάζεται Google Cloud Console → OAuth consent screen → credentials → Supabase config).
 - [ ] **#27 Bundle size** — Το JS bundle είναι 1.19MB (331KB gzipped), Vite warning >500KB. Λύση: code-splitting με dynamic `import()` ώστε ο AI Coach, Food Photo κλπ φορτώνουν μόνο όταν ο user πατήσει το αντίστοιχο tab, όχι στο αρχικό load.
 
+### Εκκρεμούν — future features
+- [ ] **Google Fit integration** — Ο κώδικας υπάρχει (`src/components/GoogleFitButton.jsx`), χρειάζεται testing + Google Cloud Console OAuth setup.
+- [ ] **Apple Health integration** — iOS only, χρειάζεται Capacitor plugin (`@capacitor/health`). Μόνο αφού κυκλοφορήσει η iOS app.
+- [ ] **PDF export βελτίωση** — Βελτίωση εμφάνισης/formatting του exported PDF (meal plans, food log).
+- [ ] **Push notifications** — FCM (Firebase Cloud Messaging) setup για reminders (π.χ. "Δεν έχεις καταγράψει γεύμα σήμερα").
+- [ ] **Offline mode** — IndexedDB caching ώστε η app να δουλεύει χωρίς internet (food search, logging). Sync μετά.
+- [ ] **Social features** — Friends, challenges, shared meal plans, leaderboard streak.
+- [ ] **Apple Sign-In** — Login με Apple ID (απαιτείται από Apple αν έχεις Google/Facebook login).
+- [ ] **Facebook login** — Πρόσθεση Facebook Sign-In μέσω Supabase Auth.
+
 ### Completed session April 13, 2026
 - [x] Grocery list scroll fix (document.scrollingElement + double rAF pattern)
 - [x] Grocery list iPhone fix (error handling instead of silent fail)
