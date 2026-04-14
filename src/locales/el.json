@@ -543,6 +543,7 @@
     "registerError": "Σφάλμα εγγραφής. Δοκίμασε ξανά.",
     "emailExists": "Υπάρχει ήδη λογαριασμός με αυτό το email.",
     "checkEmail": "Ελέγξτε το email σας για επιβεβαίωση!",
+    "postConfirmSignup": "Το email επιβεβαιώθηκε! Κάνε σύνδεση με τον κωδικό σου.",
     "resetError": "Δεν ήταν δυνατή η αποστολή email.",
     "resetSent": "Email επαναφοράς στάλθηκε!",
     "newPassword": "Ορισμός νέου κωδικού",

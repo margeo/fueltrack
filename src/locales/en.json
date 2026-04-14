@@ -543,6 +543,7 @@
     "registerError": "Registration failed. Try again.",
     "emailExists": "An account with this email already exists.",
     "checkEmail": "Check your email for confirmation!",
+    "postConfirmSignup": "Email verified successfully! Please sign in with your password.",
     "resetError": "Could not send email.",
     "resetSent": "Reset email sent!",
     "newPassword": "Set new password",

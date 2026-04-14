@@ -92,15 +92,50 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("login");
+  const [postConfirmEmail, setPostConfirmEmail] = useState("");
+  const [postConfirmMessage, setPostConfirmMessage] = useState("");
   const [showPlanChooser, setShowPlanChooser] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [cloudHydrated, setCloudHydrated] = useState(false);
 
   useEffect(() => {
+    // Detect post-confirm redirect: the user just clicked the signup
+    // confirmation link in their email, which Supabase auto-signed them
+    // into. We explicitly sign them out and require them to log in with
+    // their password so a stolen confirmation link on its own cannot
+    // grant access to the account.
+    const params = new URLSearchParams(window.location.search);
+    const postConfirm = params.get("post_confirm");
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (postConfirm === "signup" && session?.user) {
+        const email = session.user.email;
+        supabase.auth.signOut().then(() => {
+          history.replaceState(null, "", window.location.pathname);
+          setPostConfirmEmail(email || "");
+          setPostConfirmMessage(t("auth.postConfirmSignup"));
+          setAuthInitialMode("login");
+          setShowAuthModal(true);
+        });
+        return;
+      }
       setSession(session);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // If we are in the post-confirm flow, ignore the transient
+      // SIGNED_IN that Supabase fires while processing the hash.
+      const stillPostConfirm = new URLSearchParams(window.location.search).get("post_confirm") === "signup";
+      if (stillPostConfirm && event === "SIGNED_IN" && session?.user) {
+        const email = session.user.email;
+        supabase.auth.signOut().then(() => {
+          history.replaceState(null, "", window.location.pathname);
+          setPostConfirmEmail(email || "");
+          setPostConfirmMessage(t("auth.postConfirmSignup"));
+          setAuthInitialMode("login");
+          setShowAuthModal(true);
+        });
+        return;
+      }
       setSession(session);
       if (event === "PASSWORD_RECOVERY") {
         setShowPasswordReset(true);
@@ -810,7 +845,13 @@ export default function App() {
       <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
         <div style={{ position: "relative", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, width: "100%", maxWidth: 400 }}>
-          <AuthScreen onSuccess={() => setShowAuthModal(false)} initialMode={authInitialMode} isModal />
+          <AuthScreen
+            onSuccess={() => { setShowAuthModal(false); setPostConfirmEmail(""); setPostConfirmMessage(""); }}
+            initialMode={authInitialMode}
+            isModal
+            prefilledEmail={postConfirmEmail}
+            postConfirmMessage={postConfirmMessage}
+          />
         </div>
       </div>
     )}
