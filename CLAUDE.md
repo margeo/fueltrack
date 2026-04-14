@@ -166,6 +166,7 @@ cd android && ./gradlew bundleRelease
 - [x] **Resend DNS verification** — DNS records (DKIM, SPF) προστέθηκαν στο Netlify DNS (NS1). Verified 13/4/2026.
 - [x] **Supabase SMTP setup** — Custom SMTP ενεργοποιήθηκε: smtp.resend.com:465, sender: noreply@fueltrack.me
 - [ ] **Apple App Store review** — Submitted 13/4/2026, αναμονή 1-2 μέρες. Build 3 με σωστό icon.
+- [ ] **Apple & Google Privacy Policy update** — Ενημέρωση privacy policy URL (`https://fueltrack.me/privacy.html`) στο App Store Connect (App Privacy) και Google Play Console (App content → Privacy policy + Data safety section).
 
 ### Εκκρεμούν — code tasks
 - [ ] **#7 Ποικιλία στα meal plans** — Τα generated meal plans επαναλαμβάνουν τα ίδια φαγητά (π.χ. Greek yogurt κάθε πρωί, chicken breast κάθε μεσημέρι). Χρειάζεται prompt improvement ή seed/randomization ώστε κάθε generate να δίνει διαφορετικά γεύματα.
@@ -190,6 +191,29 @@ cd android && ./gradlew bundleRelease
 - [ ] **Analytics / Επισκεψιμότητα** — Setup analytics (Google Analytics ή Plausible/PostHog) για tracking επισκέψεων, ενεργών χρηστών, conversions (free→pro), retention.
 - [ ] **ASO (App Store Optimization)** — Βελτιστοποίηση keywords, screenshots, description στο App Store & Google Play.
 - [ ] **Marketing & Promotion** — Στρατηγική προώθησης: paid ads, social media, reviews/ratings campaigns.
+
+### Completed session April 14, 2026
+- [x] Expand/collapse on Food Profile, Exercise Profile, Your Target sections
+- [x] "Your Target" card with Goal + Analysis subcategories
+- [x] Rename "Fitness Profile" → "Exercise Profile"
+- [x] Tagline "Plan → Track → Achieve!" in header and welcome screen
+- [x] Subscription section merged into Account card (PRO/FREE badge)
+- [x] Language selector with SVG flags in Account card
+- [x] € instead of $ everywhere
+- [x] "Ai Coach" → "Coach" in all user-facing text
+- [x] "AI queries/requests" → "Coach requests"
+- [x] Header redesign: EN/EL text, ☀️/🌙, ℹ️ controls
+- [x] Tab reorder: Dashboard, Food, Exercise, Profile
+- [x] Expand/collapse on all tabs (Dashboard, Food, Exercise) with sessionStorage persistence
+- [x] Collapsible Macros section in hero card
+- [x] Exercise favorites + button adds directly (30min default)
+- [x] Food/Exercise: shorter card titles (Add, Favorites, Recent, Custom)
+- [x] CI workflow: only runs on main pushes and PRs
+- [x] Dev branch setup: dev.fueltrack.me deploys from `dev` branch
+- [x] Deleted old branches (staging, claude/*, revert-*)
+- [x] Comprehensive privacy policy (no named third parties, regional sections)
+- [x] Welcome screen: SVG Greek flag, scroll to top on Get Started
+- [x] Profile incomplete hint moved inside Profile card
 
 ### Completed session April 13, 2026
 - [x] Grocery list scroll fix (document.scrollingElement + double rAF pattern)
