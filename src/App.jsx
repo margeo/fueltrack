@@ -708,7 +708,6 @@ export default function App() {
             </div>
           </div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>Plan → Track → Achieve!</div>
-          {showProfile && <p>{t("app.fillProfile")}</p>}
         </div>
 
         <NativeStaleBuildBanner />
