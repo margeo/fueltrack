@@ -550,7 +550,7 @@ export default function App() {
     setSavedPlans((prev) => prev.filter((p) => p.type !== type));
   }
 
-  function startOnboarding() { setHasSeenWelcome(true); setActiveTab("profile"); }
+  function startOnboarding() { setHasSeenWelcome(true); setActiveTab("profile"); window.scrollTo(0, 0); }
   function goToSummaryAfterProfile() { if (!profileComplete) return; setActiveTab("summary"); }
 
   const bmr = useMemo(() => calculateBMR({ age, gender, height, weight }), [age, gender, height, weight]);
