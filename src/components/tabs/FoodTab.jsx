@@ -337,11 +337,11 @@ export default function FoodTab({
           {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
             <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button"
-              style={{ fontSize: 13, padding: "8px 0", flex: 1, textAlign: "center" }}>
+              style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center" }}>
               📸 {t("food.photo")}
             </button>
             <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button"
-              style={{ fontSize: 13, padding: "8px 0", flex: 1, textAlign: "center" }}>
+              style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center" }}>
               🔲 {t("food.barcode")}
             </button>
           </div>
