@@ -883,8 +883,8 @@ export default function ProfileTab({
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
             <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 8px" }}>
-              <option value="el">{t("profile.greek")}</option>
-              <option value="en">English</option>
+              <option value="el">🇬🇷 {t("profile.greek")}</option>
+              <option value="en">🇬🇧 English</option>
             </select>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
@@ -909,8 +909,8 @@ export default function ProfileTab({
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
             <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 8px" }}>
-              <option value="el">{t("profile.greek")}</option>
-              <option value="en">English</option>
+              <option value="el">🇬🇷 {t("profile.greek")}</option>
+              <option value="en">🇬🇧 English</option>
             </select>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn btn-dark" onClick={onShowAuth} type="button"
