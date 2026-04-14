@@ -336,68 +336,88 @@ export default function ProfileTab({
         </div>
       </div>
 
-      {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
-      {showGoalFields && (
-        <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>{t("profile.yourGoal")}</div>
-          <div className="grid-2 profile-grid-compact">
-            <label className="profile-field">
-              <div className="profile-label">{goalType === "lose" ? t("profile.wantToLose") : t("profile.wantToGain")}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input className="input" inputMode="decimal" value={localTargetWeightLoss}
-                  onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                  onBlur={() => { const kg = isImperial ? lbsToKg(localTargetWeightLoss) : localTargetWeightLoss; setTargetWeightLoss(kg); flashSaved(); }} />
-                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{isImperial ? "lbs" : t("common.kilos")}</span>
-              </div>
-            </label>
-            <label className="profile-field">
-              <div className="profile-label">{t("profile.inWeeks")}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input className="input" inputMode="numeric" value={localWeeks}
-                  onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => { setWeeks(localWeeks); flashSaved(); }} />
-                <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.weeks")}</span>
-              </div>
-            </label>
+      {/* ΣΤΟΧΟΣ & ΑΝΑΛΥΣΗ */}
+      <div className="card">
+        {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
+        {showGoalFields && (<>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.goal_section ? 10 : 0 }}>
+            <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>🎯 {t("profile.yourGoal")}</span>
+            <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, goal_section: !prev.goal_section }))}
+              style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+              {expandedPrefs.goal_section ? "▲ Collapse" : "▼ Expand"}
+            </button>
           </div>
-          <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
-        </div>
-      )}
-
-
-      {/* ΑΝΑΛΥΣΗ */}
-      <CollapsibleSection title={t("common.analysis")} icon="📊">
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {[
-            [t("profile.maintenance"), `${formatNumber(tdee)} kcal`],
-            [t("profile.dailyTarget"), `${formatNumber(targetCalories)} kcal`],
-            ...(goalType === "lose" && appliedDeficit > 0 ? [[t("profile.dailyDeficit"), `${formatNumber(appliedDeficit)} kcal`]] : []),
-            ...(goalType === "gain" ? [[t("profile.dailySurplus"), "300 kcal"]] : []),
-            [t("profile.proteinTarget"), `${formatNumber(proteinTarget || 0)} g`],
-            [t("profile.macroSplit"), `${currentMode.proteinPercent}P / ${currentMode.carbsPercent}C / ${currentMode.fatPercent}F %`],
-          ].map(([label, value], i, arr) => (
-            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none", fontSize: 13 }}>
-              <span className="muted">{label}</span>
-              <strong>{value}</strong>
+          {expandedPrefs.goal_section && (
+            <div style={{ marginBottom: 16 }}>
+              <div className="grid-2 profile-grid-compact">
+                <label className="profile-field">
+                  <div className="profile-label">{goalType === "lose" ? t("profile.wantToLose") : t("profile.wantToGain")}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input className="input" inputMode="decimal" value={localTargetWeightLoss}
+                      onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
+                      onBlur={() => { const kg = isImperial ? lbsToKg(localTargetWeightLoss) : localTargetWeightLoss; setTargetWeightLoss(kg); flashSaved(); }} />
+                    <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{isImperial ? "lbs" : t("common.kilos")}</span>
+                  </div>
+                </label>
+                <label className="profile-field">
+                  <div className="profile-label">{t("profile.inWeeks")}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input className="input" inputMode="numeric" value={localWeeks}
+                      onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => { setWeeks(localWeeks); flashSaved(); }} />
+                    <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.weeks")}</span>
+                  </div>
+                </label>
+              </div>
+              <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
             </div>
-          ))}
+          )}
+          <div style={{ borderTop: "1px solid var(--border-soft)", marginBottom: 16 }} />
+        </>)}
 
-          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-soft)" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>{t("profile.summaryTitle")}</div>
-            {[
-              [t("profile.goalLabel"), getGoalLabel()],
-              [t("profile.dietLabel"), currentMode.label],
-              [t("profile.activityLabel"), getActivityLabel()],
-              ...(goalType === "lose" && kilosPerWeek > 0 ? [[t("profile.rateLabel"), `${formatNumber(Math.round(kilosPerWeek * 10) / 10)} ${t("profile.kgPerWeek")}`]] : []),
-              ...(currentMode.fastingHours ? [[t("profile.eatingWindow"), `${currentMode.eatingWindowHours} ${t("common.hours")}`]] : []),
-            ].map(([label, value], i, arr) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
-                <span className="muted">{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
+        {/* ΑΝΑΛΥΣΗ */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.analysis_section ? 10 : 0 }}>
+          <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>📊 {t("common.analysis")}</span>
+          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, analysis_section: !prev.analysis_section }))}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {expandedPrefs.analysis_section ? "▲ Collapse" : "▼ Expand"}
+          </button>
         </div>
-      </CollapsibleSection>
+        {expandedPrefs.analysis_section && (
+          <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+              {[
+                [t("profile.maintenance"), `${formatNumber(tdee)} kcal`],
+                [t("profile.dailyTarget"), `${formatNumber(targetCalories)} kcal`],
+                ...(goalType === "lose" && appliedDeficit > 0 ? [[t("profile.dailyDeficit"), `${formatNumber(appliedDeficit)} kcal`]] : []),
+                ...(goalType === "gain" ? [[t("profile.dailySurplus"), "300 kcal"]] : []),
+                [t("profile.proteinTarget"), `${formatNumber(proteinTarget || 0)} g`],
+                [t("profile.macroSplit"), `${currentMode.proteinPercent}P / ${currentMode.carbsPercent}C / ${currentMode.fatPercent}F %`],
+              ].map(([label, value], i, arr) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none", fontSize: 13 }}>
+                  <span className="muted">{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-soft)" }}>
+                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>{t("profile.summaryTitle")}</div>
+                {[
+                  [t("profile.goalLabel"), getGoalLabel()],
+                  [t("profile.dietLabel"), currentMode.label],
+                  [t("profile.activityLabel"), getActivityLabel()],
+                  ...(goalType === "lose" && kilosPerWeek > 0 ? [[t("profile.rateLabel"), `${formatNumber(Math.round(kilosPerWeek * 10) / 10)} ${t("profile.kgPerWeek")}`]] : []),
+                  ...(currentMode.fastingHours ? [[t("profile.eatingWindow"), `${currentMode.eatingWindowHours} ${t("common.hours")}`]] : []),
+                ].map(([label, value], i, arr) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
+                    <span className="muted">{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ */}
       <div className="card">

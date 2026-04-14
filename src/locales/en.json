@@ -24,7 +24,7 @@
         "Meals per day & snacks: set how many meals and snacks you eat daily (used in meal plans)",
         "Allergies: mark foods you're allergic to — the AI will never suggest them",
         "Simple grocery mode: toggle for shorter grocery lists with repeated meals",
-        "Fitness Profile: set your level, location (home/gym/outdoor), equipment and limitations",
+        "Exercise Profile: set your level, location (home/gym/outdoor), equipment and limitations",
         "Workout schedule: set frequency (days/week) and session duration",
         "Fitness goals & exercise categories: tell the AI what you want to focus on",
         "Language selector: switch between Greek and English",
@@ -618,7 +618,7 @@
     "simpleGroceriesDesc": "Repeats meals during the week so the grocery list stays relatively short"
   },
   "exercisePrefs": {
-    "title": "Fitness Profile",
+    "title": "Exercise Profile",
     "subtitle": "Helps the Ai Coach suggest exercises suitable for you",
     "fitnessLevel": "Fitness level",
     "level": {
