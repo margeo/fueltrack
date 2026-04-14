@@ -804,11 +804,16 @@ export default function ProfileTab({
         </>)}
       </div>
 
-      {/* SUBSCRIPTION */}
-      {userEmail && (
-        <div className="card">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>{t("subscription.sectionTitle")}</span>
+      {/* ACCOUNT */}
+      {userEmail ? (
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {/* Section 1: User info */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px" }}>
+            <span style={{ fontSize: 24 }}>👤</span>
+            <div style={{ flex: 1 }}>
+              {userName && <div style={{ fontWeight: 700, fontSize: 14 }}>{userName}</div>}
+              <div className="muted" style={{ fontSize: 12 }}>{userEmail}</div>
+            </div>
             <span style={{
               padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
               background: isPaid ? "linear-gradient(135deg, #f59e0b, #d97706)" : "var(--bg-soft)",
@@ -818,69 +823,61 @@ export default function ProfileTab({
               {isPaid ? "⭐ PRO" : "FREE"}
             </span>
           </div>
-          {(() => {
-            const usage = getCachedUsage(session?.user?.id);
-            const info = computeRemainingRequests({ usage, isPaid, isDemo, isAdmin });
-            if (info.remaining === Infinity) return null;
-            const pct = Math.round((info.used / info.total) * 100);
-            return (
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, marginBottom: 4 }}>
-                  <span className="muted">{t("subscription.aiRequests")}</span>
-                  <span style={{ fontWeight: 600, marginLeft: 6 }}>{info.used} / {info.total}</span>
+          <div style={{ borderTop: "1px solid var(--border-soft)" }} />
+          {/* Section 2: Subscription */}
+          <div style={{ padding: "12px 16px" }}>
+            {(() => {
+              const usage = getCachedUsage(session?.user?.id);
+              const info = computeRemainingRequests({ usage, isPaid, isDemo, isAdmin });
+              if (info.remaining === Infinity) return null;
+              const pct = Math.round((info.used / info.total) * 100);
+              return (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, marginBottom: 4 }}>
+                    <span className="muted">{t("subscription.aiRequests")}</span>
+                    <span style={{ fontWeight: 600, marginLeft: 6 }}>{info.used} / {info.total}</span>
+                  </div>
+                  <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
+                    <div style={{
+                      width: `${Math.min(pct, 100)}%`,
+                      height: "100%",
+                      borderRadius: 6,
+                      background: pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "var(--color-accent)",
+                      transition: "width 0.3s ease"
+                    }} />
+                  </div>
                 </div>
-                <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
-                  <div style={{
-                    width: `${Math.min(pct, 100)}%`,
-                    height: "100%",
-                    borderRadius: 6,
-                    background: pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "var(--color-accent)",
-                    transition: "width 0.3s ease"
-                  }} />
-                </div>
+              );
+            })()}
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+              {isPaid
+                ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
+                : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+            </div>
+            {!isPaid ? (<>
+              <button className="btn btn-dark" type="button" disabled={checkoutLoading}
+                onClick={async () => {
+                  setCheckoutLoading(true);
+                  try { await openCheckout(); }
+                  catch {}
+                  finally { setCheckoutLoading(false); }
+                }}
+                style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
+                {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
+              </button>
+              <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 4 }}>
+                {t("aiCoach.subscribePrice")}
               </div>
-            );
-          })()}
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>
-            {isPaid
-              ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
-              : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
-          </div>
-          {!isPaid ? (<>
-            <button className="btn btn-dark" type="button" disabled={checkoutLoading}
-              onClick={async () => {
-                setCheckoutLoading(true);
-                try { await openCheckout(); }
-                catch {}
-                finally { setCheckoutLoading(false); }
-              }}
-              style={{ width: "100%", fontSize: 14, padding: "10px 0" }}>
-              {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
-            </button>
-            <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 6 }}>
-              {t("aiCoach.subscribePrice")}
-            </div>
-          </>) : (
-            <button className="btn btn-light" type="button"
-              onClick={async () => { try { await openCustomerPortal(); } catch {} }}
-              style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
-              {t("subscription.manage")}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ACCOUNT */}
-      {userEmail ? (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px" }}>
-            <span style={{ fontSize: 24 }}>👤</span>
-            <div>
-              {userName && <div style={{ fontWeight: 700, fontSize: 14 }}>{userName}</div>}
-              <div className="muted" style={{ fontSize: 12 }}>{userEmail}</div>
-            </div>
+            </>) : (
+              <button className="btn btn-light" type="button"
+                onClick={async () => { try { await openCustomerPortal(); } catch {} }}
+                style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
+                {t("subscription.manage")}
+              </button>
+            )}
           </div>
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
+          {/* Section 3: Language + Actions */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-flex", alignItems: "center" }}>{i18n.language === "el" ? (
