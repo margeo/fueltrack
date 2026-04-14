@@ -662,6 +662,8 @@ export default function App() {
     onAddCustomFood: (food, opts = {}) => {
       const normalized = normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" });
       setCustomFoods((prev) => [normalized, ...prev]);
+      const entry = createFoodEntry(normalized, 100, "Σνακ");
+      updateCurrentDay((current) => ({ ...current, entries: [entry, ...current.entries] }));
       saveRecentFood(normalized, 100, "Σνακ");
       if (opts.favorite) {
         const key = `${normalized.name.toLowerCase()}|${(normalized.brand || "").toLowerCase()}`;
