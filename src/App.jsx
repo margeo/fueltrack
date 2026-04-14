@@ -446,17 +446,24 @@ export default function App() {
     saveRecentExercise(exercise, minutes);
   }
 
-  function addCustomExercise() {
+  function addCustomExercise(opts = {}) {
     const minutes = Math.max(Number(customExerciseMinutes) || 0, 1);
     const rate = Math.max(Number(customExerciseRate) || 0, 0.1);
-    if (!customExerciseName.trim()) return;
+    const cleanName = customExerciseName.trim();
+    if (!cleanName) return;
     const newExercise = {
       id: Date.now() + Math.random(),
-      name: `${customExerciseName.trim()} ${minutes} λεπτά`,
+      name: `${cleanName} ${minutes} λεπτά`,
       minutes, caloriesPerMinute: rate,
       calories: Math.round(rate * minutes)
     };
     updateCurrentDay((current) => ({ ...current, exercises: [newExercise, ...current.exercises] }));
+    const baseExercise = { name: cleanName, caloriesPerMinute: rate, icon: "✏️", category: "Custom" };
+    saveRecentExercise(baseExercise, minutes);
+    if (opts.favorite) {
+      const key = cleanName.toLowerCase();
+      setFavoriteExerciseKeys((prev) => (prev.includes(key) ? prev : [key, ...prev]));
+    }
     setCustomExerciseName(""); setCustomExerciseMinutes(""); setCustomExerciseRate("");
   }
 
@@ -600,12 +607,30 @@ export default function App() {
   const isToday = selectedDate === getTodayKey();
 
   const favoriteFoods = useMemo(() => {
-    return foods.filter((food) => isFavorite(food)).slice(0, 8);
-  }, [foods, favoriteFoodKeys]);
+    const pool = [...foods, ...customFoods];
+    const seen = new Set();
+    const unique = [];
+    for (const food of pool) {
+      const key = `${(food.name || "").toLowerCase()}|${(food.brand || "").toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(food);
+    }
+    return unique.filter((food) => isFavorite(food)).slice(0, 8);
+  }, [foods, customFoods, favoriteFoodKeys]);
 
   const favoriteExercises = useMemo(() => {
-    return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise(e));
-  }, [favoriteExerciseKeys]);
+    const pool = [...EXERCISE_LIBRARY, ...recentExercises.map((r) => r.exercise).filter(Boolean)];
+    const seen = new Set();
+    const unique = [];
+    for (const ex of pool) {
+      const key = (ex.name || "").toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(ex);
+    }
+    return unique.filter((e) => isFavoriteExercise(e));
+  }, [favoriteExerciseKeys, recentExercises]);
 
   const summaryProps = {
     selectedDate, setSelectedDate, isToday,
@@ -634,7 +659,15 @@ export default function App() {
 
   const foodProps = {
     foods, customFoods,
-    onAddCustomFood: (food) => setCustomFoods((prev) => [normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" }), ...prev]),
+    onAddCustomFood: (food, opts = {}) => {
+      const normalized = normalizeFood({ ...food, id: `custom-${Date.now()}`, source: "custom" });
+      setCustomFoods((prev) => [normalized, ...prev]);
+      saveRecentFood(normalized, 100, "Σνακ");
+      if (opts.favorite) {
+        const key = `${normalized.name.toLowerCase()}|${(normalized.brand || "").toLowerCase()}`;
+        setFavoriteFoodKeys((prev) => (prev.includes(key) ? prev : [key, ...prev]));
+      }
+    },
     onDeleteCustomFood: (id) => setCustomFoods((prev) => prev.filter((f) => f.id !== id)),
     recentFoods, favoriteFoods,
     isFavorite, toggleFavorite,

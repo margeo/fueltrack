@@ -28,6 +28,7 @@ export default function ExerciseTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
+  const [customExerciseFavorite, setCustomExerciseFavorite] = useState(false);
   const [addExOpen, _setAddExOpen] = useState(() => sessionStorage.getItem('ft_ex_add') === 'true');
   const [favExOpen, _setFavExOpen] = useState(() => sessionStorage.getItem('ft_ex_fav') === 'true');
   const [recentExOpen, _setRecentExOpen] = useState(() => sessionStorage.getItem('ft_ex_recent') === 'true');
@@ -54,8 +55,20 @@ export default function ExerciseTab({
   const selectedExercise = EXERCISE_LIBRARY.find((e) => e.name === selectedExerciseName) || null;
 
   const favoriteExercises = useMemo(() => {
-    return EXERCISE_LIBRARY.filter((e) => isFavoriteExercise?.(e));
-  }, [favoriteExerciseKeys]);
+    const pool = [
+      ...EXERCISE_LIBRARY,
+      ...(Array.isArray(recentExercises) ? recentExercises.map((r) => r.exercise).filter(Boolean) : [])
+    ];
+    const seen = new Set();
+    const unique = [];
+    for (const ex of pool) {
+      const key = (ex.name || "").toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(ex);
+    }
+    return unique.filter((e) => isFavoriteExercise?.(e));
+  }, [favoriteExerciseKeys, recentExercises]);
 
   function handleAddExercise() {
     if (!selectedExercise) return;
@@ -287,7 +300,22 @@ export default function ExerciseTab({
             <input className="input" placeholder={t("exercise.minutesLabel")} inputMode="numeric" value={customExerciseMinutes} onChange={(e) => setCustomExerciseMinutes(e.target.value)} />
             <input className="input" placeholder={t("exercise.kcalPerMin")} inputMode="decimal" value={customExerciseRate} onChange={(e) => setCustomExerciseRate(e.target.value)} />
           </div>
-          <button className="btn btn-dark" onClick={addCustomExercise} type="button">{t("common.add")}</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="btn btn-dark"
+              onClick={() => { addCustomExercise({ favorite: customExerciseFavorite }); setCustomExerciseFavorite(false); }}
+              type="button"
+              style={{ flex: 1 }}>
+              {t("common.add")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCustomExerciseFavorite((prev) => !prev)}
+              title={customExerciseFavorite ? t("exercise.removeFavorite") : t("exercise.addFavorite")}
+              style={{ padding: "10px 14px", background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, cursor: "pointer", fontSize: 18, flexShrink: 0, color: customExerciseFavorite ? "#d97706" : "var(--text-muted)" }}>
+              {customExerciseFavorite ? "⭐" : "☆"}
+            </button>
+          </div>
         </div>
         )}
       </div>

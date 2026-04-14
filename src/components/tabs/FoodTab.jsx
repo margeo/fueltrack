@@ -181,6 +181,7 @@ export default function FoodTab({
   const [newProtein, setNewProtein] = useState("");
   const [newCarbs, setNewCarbs] = useState("");
   const [newFat, setNewFat] = useState("");
+  const [newFavorite, setNewFavorite] = useState(false);
 
   const { results: databaseResults, loading: databaseLoading } = useFoodSearch(query);
 
@@ -245,8 +246,9 @@ export default function FoodTab({
       proteinPer100g: Number(newProtein) || 0,
       carbsPer100g: Number(newCarbs) || 0,
       fatPer100g: Number(newFat) || 0
-    });
+    }, { favorite: newFavorite });
     setNewName(""); setNewCalories(""); setNewProtein(""); setNewCarbs(""); setNewFat("");
+    setNewFavorite(false);
     setSavedFeedback(true);
     setTimeout(() => setSavedFeedback(false), 2000);
   }
@@ -502,9 +504,18 @@ export default function FoodTab({
             <input className="input" placeholder={t("common.carbs")} inputMode="decimal" value={newCarbs} onChange={(e) => setNewCarbs(e.target.value)} />
             <input className="input" placeholder={t("common.fat")} inputMode="decimal" value={newFat} onChange={(e) => setNewFat(e.target.value)} />
           </div>
-          <button className="btn btn-dark" onClick={handleAddCustomFood} type="button">
-            {savedFeedback ? `✅ ${t("common.saved")}` : t("common.save")}
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn btn-dark" onClick={handleAddCustomFood} type="button" style={{ flex: 1 }}>
+              {savedFeedback ? `✅ ${t("common.saved")}` : t("common.save")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setNewFavorite((prev) => !prev)}
+              title={newFavorite ? t("food.removeFavorite") : t("food.addFavorite")}
+              style={{ padding: "10px 14px", background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, cursor: "pointer", fontSize: 18, flexShrink: 0, color: newFavorite ? "#d97706" : "var(--text-muted)" }}>
+              {newFavorite ? "⭐" : "☆"}
+            </button>
+          </div>
         </div>
 
         {customFoods.length > 0 && (
