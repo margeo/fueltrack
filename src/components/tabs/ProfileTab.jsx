@@ -854,29 +854,29 @@ export default function ProfileTab({
                 ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
                 : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
             </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
-              {!isPaid ? (<>
-                <span className="muted" style={{ fontSize: 11, marginRight: "auto" }}>
-                  {t("aiCoach.subscribePrice")}
-                </span>
-                <button className="btn btn-dark" type="button" disabled={checkoutLoading}
-                  onClick={async () => {
-                    setCheckoutLoading(true);
-                    try { await openCheckout(); }
-                    catch {}
-                    finally { setCheckoutLoading(false); }
-                  }}
-                  style={{ fontSize: 12, padding: "6px 14px", whiteSpace: "nowrap" }}>
-                  {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
-                </button>
-              </>) : (
+            {!isPaid ? (<>
+              <button className="btn btn-dark" type="button" disabled={checkoutLoading}
+                onClick={async () => {
+                  setCheckoutLoading(true);
+                  try { await openCheckout(); }
+                  catch {}
+                  finally { setCheckoutLoading(false); }
+                }}
+                style={{ width: "100%", fontSize: 14, padding: "10px 0" }}>
+                {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
+              </button>
+              <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 4 }}>
+                {t("aiCoach.subscribePrice")}
+              </div>
+            </>) : (
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
                 <button className="btn btn-light" type="button"
                   onClick={async () => { try { await openCustomerPortal(); } catch {} }}
                   style={{ fontSize: 12, padding: "6px 8px" }}>
                   {t("subscription.manage")}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           {/* Section 3: Language + Actions */}
