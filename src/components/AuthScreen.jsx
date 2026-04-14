@@ -52,6 +52,10 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email })
       }).catch(() => {});
+      // Auto-close the sign-up modal after a short delay so the user
+      // goes check their inbox. The success banner stays visible long
+      // enough to read (~2.5s).
+      setTimeout(() => { onSuccess?.(); }, 2500);
     }
     setLoading(false);
   }
