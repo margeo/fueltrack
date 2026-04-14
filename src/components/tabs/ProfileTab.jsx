@@ -836,9 +836,9 @@ export default function ProfileTab({
             const pct = Math.round((info.used / info.total) * 100);
             return (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                <div style={{ fontSize: 12, marginBottom: 4 }}>
                   <span className="muted">{t("subscription.aiRequests")}</span>
-                  <span style={{ fontWeight: 600 }}>{info.used} / {info.total}</span>
+                  <span style={{ fontWeight: 600, marginLeft: 6 }}>{info.used} / {info.total}</span>
                 </div>
                 <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
                   <div style={{

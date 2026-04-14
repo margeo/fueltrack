@@ -514,7 +514,7 @@
     "proPlan": "Pro Πλάνο",
     "freeDesc": "Δωρεάν πλάνο: {{daily}} AI ερωτήματα/μέρα, {{monthly}}/μήνα",
     "proDesc": "Pro πλάνο: {{limit}} AI ερωτήματα/μήνα",
-    "aiRequests": "AI ερωτήματα",
+    "aiRequests": "Ερωτήματα:",
     "upgrade": "Αναβάθμιση σε Pro",
     "manage": "Διαχείριση συνδρομής"
   },
