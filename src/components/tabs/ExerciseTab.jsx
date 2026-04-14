@@ -218,14 +218,14 @@ export default function ExerciseTab({
             {favoriteExercises.map((exercise) => (
               <div key={exercise.name}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
-                <button className="btn btn-dark" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); }} type="button"
+                <button className="btn btn-dark" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); setAddExOpen(true); }} type="button"
                   style={{ padding: "4px 10px", fontSize: 12, margin: "0 0 0 8px", flexShrink: 0 }}>+</button>
                 <div style={{ flex: 1, minWidth: 0, padding: "8px 0", overflow: "hidden" }}>
                   <div style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{exercise.icon} {t("exerciseNames." + exercise.name, { defaultValue: exercise.name })}</div>
                   <div className="muted" style={{ fontSize: 11 }}>{exercise.category} · {exercise.caloriesPerMinute} {t("exercise.kcalPerMin")}</div>
                 </div>
                 <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
-                  <button className="btn btn-light" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); }} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
+                  <button className="btn btn-light" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); setAddExOpen(true); }} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✏️</button>
                   <button onClick={() => toggleFavoriteExercise?.(exercise)} type="button"
                     style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#d97706" }}>⭐</button>
                 </div>
@@ -257,7 +257,7 @@ export default function ExerciseTab({
                   <div className="muted" style={{ fontSize: 11 }}>{item.minutes} {t("common.minutes")} · {Math.round(item.exercise.caloriesPerMinute * item.minutes)} kcal</div>
                 </div>
                 <div style={{ display: "flex", gap: 4, flexShrink: 0, paddingRight: 8, alignItems: "center" }}>
-                  <button onClick={() => { setSelectedExerciseName(item.exercise.name); setSelectedMinutes(String(item.minutes)); }} type="button"
+                  <button onClick={() => { setSelectedExerciseName(item.exercise.name); setSelectedMinutes(String(item.minutes)); setAddExOpen(true); }} type="button"
                     style={{ padding: "4px 8px", fontSize: 11, borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", color: "var(--text-muted)" }}>✏️</button>
                   <button onClick={() => toggleFavoriteExercise?.(item.exercise)} type="button"
                     style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavoriteExercise?.(item.exercise) ? "#d97706" : "var(--text-muted)" }}>

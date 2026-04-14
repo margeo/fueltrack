@@ -228,7 +228,7 @@ export default function FoodTab({
   const topSearchResults = useMemo(() => visibleFoods.slice(0, 8), [visibleFoods]);
   const showAutocomplete = query.trim().length >= 2;
 
-  function handleFoodSelect(food) { setSelectedFood(food); setQuery(""); }
+  function handleFoodSelect(food) { setSelectedFood(food); setQuery(""); setAddFoodOpen(true); }
 
   function handleAdd(food, gramsValue, meal) {
     const entry = createFoodEntry(food, gramsValue, meal);

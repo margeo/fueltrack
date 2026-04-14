@@ -391,6 +391,8 @@ RULES:
           </div>
         </div>
 
+        <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
+
         {/* MACROS — collapsible */}
         <div style={{ marginTop: 10 }}>
           <button type="button" onClick={() => { const key = 'ft_sum_macros'; const cur = sessionStorage.getItem(key) === 'true'; sessionStorage.setItem(key, !cur); setMacrosOpen(!cur); }}
