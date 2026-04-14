@@ -219,6 +219,13 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
             </div>
           </form>
         )}
+
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+            style={{ color: "var(--text-muted)", fontSize: 12 }}>
+            {t("common.privacyPolicy")}
+          </a>
+        </div>
       </div>
     </div>
   );
