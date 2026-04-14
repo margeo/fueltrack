@@ -521,32 +521,6 @@ export default function FoodTab({
           </div>
         </div>
 
-        {customFoods.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--text-muted)" }}>{t("food.myCustomFoods")}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {customFoods.map((food) => (
-                <div key={food.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
-                    <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g)} kcal · P{formatNumber(food.proteinPer100g)}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 4, flexShrink: 0, alignItems: "center" }}>
-                    <button className="btn btn-dark" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
-                    <button
-                      onClick={() => toggleFavorite(food)}
-                      type="button"
-                      title={isFavorite(food) ? t("food.removeFavorite") : t("food.addFavorite")}
-                      style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavorite(food) ? "#d97706" : "var(--text-muted)" }}>
-                      {isFavorite(food) ? "⭐" : "☆"}
-                    </button>
-                    <button className="btn btn-light" onClick={() => onDeleteCustomFood(food.id)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✕</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         </>)}
       </div>
     </>
