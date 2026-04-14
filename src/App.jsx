@@ -691,12 +691,10 @@ export default function App() {
     <>
     <div className="app-shell">
       <div className="app-container">
-        <div className="app-header" style={{ flexDirection: "column", alignItems: "stretch" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <h1 style={{ display: "flex", alignItems: "baseline", gap: 8 }}><img src="/icon-192.png" alt="" style={{ width: 28, height: 28, borderRadius: 6, alignSelf: "center" }} />FuelTrack <span style={{ fontSize: 16, marginLeft: 8 }}>Plan → Track → Achieve!</span></h1>
-          </div>
-          {showProfile && <p>{t("app.fillProfile")}</p>}
-          <div style={{ display: "flex", gap: 6, alignItems: "center", justifyContent: "flex-end" }}>
+        <div className="app-header" style={{ flexDirection: "column", alignItems: "stretch", gap: 2 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h1 style={{ display: "flex", alignItems: "center", gap: 8, margin: 0 }}><img src="/icon-192.png" alt="" style={{ width: 28, height: 28, borderRadius: 6 }} />FuelTrack</h1>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button className="theme-toggle-btn" onClick={() => setShowHelpModal(true)} type="button" aria-label={t("help.title")}>
               ℹ️
             </button>
@@ -711,7 +709,10 @@ export default function App() {
             <button className="theme-toggle-btn" onClick={toggleTheme} type="button">
               {theme === "dark" ? "☀️" : "🌙"}
             </button>
+            </div>
           </div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>Plan → Track → Achieve!</div>
+          {showProfile && <p>{t("app.fillProfile")}</p>}
         </div>
 
         <NativeStaleBuildBanner />
