@@ -9,6 +9,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -26,6 +27,10 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
 
   async function handleRegister(e) {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError(t("auth.passwordMismatch"));
+      return;
+    }
     setLoading(true);
     setError("");
     const { error, data } = await supabase.auth.signUp({
@@ -117,7 +122,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
               </div>
 
               <div style={{ marginTop: 16, textAlign: "center" }}>
-                <button type="button" onClick={() => { setMode("forgot"); setError(""); setMessage(""); }}
+                <button type="button" onClick={() => { setMode("forgot"); setError(""); setMessage(""); setConfirmPassword(""); }}
                   style={{ background: "none", border: "none", color: "var(--color-accent)", cursor: "pointer", fontSize: 13 }}>
                   {t("auth.forgotPassword")}
                 </button>
@@ -126,7 +131,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
 
             <div style={{ textAlign: "center", marginTop: 16, fontSize: 14 }}>
               <span className="muted">{t("auth.noAccount")} </span>
-              <button type="button" onClick={() => { setMode("register"); setError(""); setMessage(""); }}
+              <button type="button" onClick={() => { setMode("register"); setError(""); setMessage(""); setConfirmPassword(""); }}
                 style={{ background: "none", border: "none", color: "var(--color-accent)", cursor: "pointer", fontWeight: 700, fontSize: 14 }}>
                 {t("auth.registerLink")}
               </button>
@@ -158,6 +163,8 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
                     {showPassword ? "🙈" : "👁️"}
                   </button>
                 </div>
+                <input className="input" type={showPassword ? "text" : "password"} placeholder={t("auth.confirmPassword")} value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} autoComplete="new-password" />
                 <div className="muted" style={{ fontSize: 12 }}>{t("auth.passwordHint")}</div>
                 <button className="btn btn-dark" type="submit" disabled={loading}
                   style={{ width: "100%", padding: "14px", opacity: loading ? 0.6 : 1 }}>
@@ -168,7 +175,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
 
             <div style={{ textAlign: "center", marginTop: 16, fontSize: 14 }}>
               <span className="muted">{t("auth.hasAccount")} </span>
-              <button type="button" onClick={() => { setMode("login"); setError(""); setMessage(""); }}
+              <button type="button" onClick={() => { setMode("login"); setError(""); setMessage(""); setConfirmPassword(""); }}
                 style={{ background: "none", border: "none", color: "var(--color-accent)", cursor: "pointer", fontWeight: 700, fontSize: 14 }}>
                 {t("auth.loginLink")}
               </button>
@@ -198,7 +205,7 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
             </div>
 
             <div style={{ textAlign: "center", marginTop: 16, fontSize: 14 }}>
-              <button type="button" onClick={() => { setMode("login"); setError(""); setMessage(""); }}
+              <button type="button" onClick={() => { setMode("login"); setError(""); setMessage(""); setConfirmPassword(""); }}
                 style={{ background: "none", border: "none", color: "var(--color-accent)", cursor: "pointer", fontWeight: 700, fontSize: 14 }}>
                 {t("auth.backToLogin")}
               </button>

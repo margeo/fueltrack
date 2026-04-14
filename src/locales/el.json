@@ -526,6 +526,8 @@
     "registerBtn": "Δημιουργία λογαριασμού",
     "name": "Το όνομά σου",
     "password": "Κωδικός",
+    "confirmPassword": "Επιβεβαίωση κωδικού",
+    "passwordMismatch": "Οι κωδικοί δεν ταιριάζουν.",
     "passwordHint": "Τουλάχιστον 6 χαρακτήρες",
     "or": "ή",
     "google": "Συνέχεια με Google",
