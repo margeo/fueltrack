@@ -248,9 +248,8 @@ export default function ProfileTab({
         </div>
 
         {!profileComplete && (
-          <div style={{ background: "var(--bg-input)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid var(--border-color)" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t("profile.fillProfile")}</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{t("profile.fillProfileDesc")}</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>
+            {t("profile.fillProfileDesc")}
           </div>
         )}
 
