@@ -123,6 +123,7 @@ export default function SummaryTab({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
+  const [macrosOpen, setMacrosOpen] = useState(() => sessionStorage.getItem('ft_sum_macros') === 'true');
   const [progressOpen, _setProgressOpen] = useState(() => sessionStorage.getItem('ft_sum_progress') === 'true');
   const [historyOpen, _setHistoryOpen] = useState(() => sessionStorage.getItem('ft_sum_history') === 'true');
   const setProgressOpen = (v) => { _setProgressOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_sum_progress', n); return n; }); };
@@ -389,10 +390,16 @@ RULES:
             </div>
           </div>
         </div>
-        <div className="progress-outer"><div className="progress-inner" style={{ width: `${progress}%` }} /></div>
 
-        {/* MACROS — compact inline */}
-        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* MACROS — collapsible */}
+        <div style={{ marginTop: 10 }}>
+          <button type="button" onClick={() => { const key = 'ft_sum_macros'; const cur = sessionStorage.getItem(key) === 'true'; sessionStorage.setItem(key, !cur); setMacrosOpen(!cur); }}
+            style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.08)", cursor: "pointer", color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 700 }}>
+            <span>Macros</span>
+            <span style={{ fontSize: 11 }}>{macrosOpen ? "▲" : "▼"}</span>
+          </button>
+          {macrosOpen && (
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {[
             { label: "Protein", value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
             { label: "Carbs", value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },
@@ -406,6 +413,8 @@ RULES:
               <div style={{ width: 75, fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "right", flexShrink: 0 }}>{m.value}</div>
             </div>
           ))}
+          </div>
+          )}
         </div>
 
         {/* Goal badge */}
