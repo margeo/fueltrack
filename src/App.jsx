@@ -699,10 +699,10 @@ export default function App() {
                 style={{ fontSize: 13, fontWeight: 700, padding: "4px 8px", minWidth: 0 }}>
                 {i18n.language === "el" ? "EL" : "EN"}
               </button>
-              <button className="theme-toggle-btn" onClick={toggleTheme} type="button" style={{ fontSize: 16 }}>
+              <button className="theme-toggle-btn" onClick={toggleTheme} type="button" style={{ fontSize: 13, padding: "4px 8px" }}>
                 {theme === "dark" ? "☀️" : "🌙"}
               </button>
-              <button className="theme-toggle-btn" onClick={() => setShowHelpModal(true)} type="button" aria-label={t("help.title")} style={{ fontSize: 16 }}>
+              <button className="theme-toggle-btn" onClick={() => setShowHelpModal(true)} type="button" aria-label={t("help.title")} style={{ fontSize: 13, padding: "4px 8px" }}>
                 ℹ️
               </button>
             </div>
