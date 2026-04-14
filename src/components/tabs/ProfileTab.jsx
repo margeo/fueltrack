@@ -852,12 +852,12 @@ export default function ProfileTab({
               </div>
             );
           })()}
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>
+            {isPaid
+              ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
+              : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+          </div>
           {!isPaid ? (<>
-            <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
-              </div>
-            </div>
             <button className="btn btn-dark" type="button" disabled={checkoutLoading}
               onClick={async () => {
                 setCheckoutLoading(true);
@@ -871,18 +871,13 @@ export default function ProfileTab({
             <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 6 }}>
               {t("aiCoach.subscribePrice")}
             </div>
-          </>) : (<>
-            <div style={{ background: "linear-gradient(135deg, #fffbeb, #fef3c7)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid #fde68a" }}>
-              <div style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
-                {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
-              </div>
-            </div>
+          </>) : (
             <button className="btn btn-light" type="button"
               onClick={async () => { try { await openCustomerPortal(); } catch {} }}
               style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
               {t("subscription.manage")}
             </button>
-          </>)}
+          )}
         </div>
       )}
 
