@@ -303,7 +303,13 @@ export default function ExerciseTab({
           <div style={{ display: "flex", gap: 8 }}>
             <button
               className="btn btn-dark"
-              onClick={() => { addCustomExercise({ favorite: customExerciseFavorite }); setCustomExerciseFavorite(false); }}
+              onClick={() => {
+                const wasFavorite = customExerciseFavorite;
+                addCustomExercise({ favorite: wasFavorite });
+                setCustomExerciseFavorite(false);
+                if (wasFavorite) setFavExOpen(true);
+                setRecentExOpen(true);
+              }}
               type="button"
               style={{ flex: 1 }}>
               {t("common.add")}
