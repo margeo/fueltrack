@@ -403,14 +403,12 @@ export default function ProfileTab({
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h2 style={{ margin: 0 }}>🥗 {t("foodPrefs.title")}</h2>
-          <button type="button" onClick={() => {
-            const foodKeys = [...FOOD_CATEGORIES.map(c => "food_" + c.key), "allergies", "cooking_prefs"];
-            const allOpen = foodKeys.every(k => expandedPrefs[k]);
-            setExpandedPrefs(prev => { const next = { ...prev }; foodKeys.forEach(k => { next[k] = !allOpen; }); return next; });
-          }} style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
-            {FOOD_CATEGORIES.every(c => expandedPrefs["food_" + c.key]) ? "▲ Collapse" : "▼ Expand"}
+          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section }))}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {expandedPrefs.food_section ? "▲ Collapse" : "▼ Expand"}
           </button>
         </div>
+        {expandedPrefs.food_section && (<>
         <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("foodPrefs.subtitle")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {FOOD_CATEGORIES.map((cat) => {
@@ -588,20 +586,19 @@ export default function ProfileTab({
             </div>
           ); })()}
         </div>
+        </>)}
       </div>
 
       {/* ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h2 style={{ margin: 0 }}>💪 {t("exercisePrefs.title")}</h2>
-          <button type="button" onClick={() => {
-            const exKeys = ["ex_level", "ex_location", "ex_equipment", "ex_schedule", "ex_goals", "ex_cat_Cardio", "ex_cat_Gym", "ex_cat_Training", "ex_cat_Sports", "ex_limitations"];
-            const allOpen = exKeys.every(k => expandedPrefs[k]);
-            setExpandedPrefs(prev => { const next = { ...prev }; exKeys.forEach(k => { next[k] = !allOpen; }); return next; });
-          }} style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
-            {["ex_level", "ex_location", "ex_equipment", "ex_schedule", "ex_goals"].every(k => expandedPrefs[k]) ? "▲ Collapse" : "▼ Expand"}
+          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section }))}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {expandedPrefs.fitness_section ? "▲ Collapse" : "▼ Expand"}
           </button>
         </div>
+        {expandedPrefs.fitness_section && (<>
         <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("exercisePrefs.subtitle")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {[
@@ -770,6 +767,7 @@ export default function ProfileTab({
             </div>
           ); })()}
         </div>
+        </>)}
       </div>
 
       {/* ΓΛΩΣΣΑ */}
