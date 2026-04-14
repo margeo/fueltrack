@@ -3,17 +3,17 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import { apiUrl } from "../utils/apiBase";
 
-export default function AuthScreen({ onSuccess, initialMode = "login", isModal = false }) {
+export default function AuthScreen({ onSuccess, initialMode = "login", isModal = false, prefilledEmail = "", postConfirmMessage = "" }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState(initialMode); // login | register | forgot
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(postConfirmMessage || "");
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -35,7 +35,10 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
     setError("");
     const { error, data } = await supabase.auth.signUp({
       email, password,
-      options: { data: { full_name: name.trim() } }
+      options: {
+        data: { full_name: name.trim() },
+        emailRedirectTo: `${window.location.origin}/?post_confirm=signup`
+      }
     });
     if (error) {
       setError(error.message?.includes("already") ? t("auth.emailExists") : t("auth.registerError"));
