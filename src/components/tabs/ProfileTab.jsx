@@ -883,7 +883,11 @@ export default function ProfileTab({
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 16 }}>{i18n.language === "el" ? "🇬🇷" : "🇬🇧"}</span>
+              <span style={{ display: "inline-flex", alignItems: "center" }}>{i18n.language === "el" ? (
+                <svg width="20" height="14" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
+              ) : (
+                <svg width="20" height="14" viewBox="0 0 60 30"><clipPath id="gbp"><rect width="60" height="30"/></clipPath><g clipPath="url(#gbp)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
+              )}</span>
               <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 8px" }}>
                 <option value="el">{t("profile.greek")}</option>
                 <option value="en">English</option>
@@ -912,7 +916,11 @@ export default function ProfileTab({
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 16 }}>{i18n.language === "el" ? "🇬🇷" : "🇬🇧"}</span>
+              <span style={{ display: "inline-flex", alignItems: "center" }}>{i18n.language === "el" ? (
+                <svg width="20" height="14" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
+              ) : (
+                <svg width="20" height="14" viewBox="0 0 60 30"><clipPath id="gbp"><rect width="60" height="30"/></clipPath><g clipPath="url(#gbp)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
+              )}</span>
               <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 8px" }}>
                 <option value="el">{t("profile.greek")}</option>
                 <option value="en">English</option>
