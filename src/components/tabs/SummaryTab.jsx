@@ -123,8 +123,10 @@ export default function SummaryTab({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
-  const [progressOpen, setProgressOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [progressOpen, _setProgressOpen] = useState(() => sessionStorage.getItem('ft_sum_progress') === 'true');
+  const [historyOpen, _setHistoryOpen] = useState(() => sessionStorage.getItem('ft_sum_history') === 'true');
+  const setProgressOpen = (v) => { _setProgressOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_sum_progress', n); return n; }); };
+  const setHistoryOpen = (v) => { _setHistoryOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_sum_history', n); return n; }); };
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
   const [groceryList, setGroceryList] = useState(() => {
     if (!savedGrocery?.content) return null;

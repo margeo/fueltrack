@@ -168,10 +168,14 @@ export default function FoodTab({
   const [barcodeError, setBarcodeError] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
 
-  const [addFoodOpen, setAddFoodOpen] = useState(false);
-  const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [recentOpen, setRecentOpen] = useState(false);
-  const [customOpen, setCustomOpen] = useState(false);
+  const [addFoodOpen, _setAddFoodOpen] = useState(() => sessionStorage.getItem('ft_food_add') === 'true');
+  const [favoritesOpen, _setFavoritesOpen] = useState(() => sessionStorage.getItem('ft_food_fav') === 'true');
+  const [recentOpen, _setRecentOpen] = useState(() => sessionStorage.getItem('ft_food_recent') === 'true');
+  const [customOpen, _setCustomOpen] = useState(() => sessionStorage.getItem('ft_food_custom') === 'true');
+  const setAddFoodOpen = (v) => { _setAddFoodOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_food_add', n); return n; }); };
+  const setFavoritesOpen = (v) => { _setFavoritesOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_food_fav', n); return n; }); };
+  const setRecentOpen = (v) => { _setRecentOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_food_recent', n); return n; }); };
+  const setCustomOpen = (v) => { _setCustomOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_food_custom', n); return n; }); };
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
   const [newProtein, setNewProtein] = useState("");

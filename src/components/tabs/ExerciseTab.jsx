@@ -28,10 +28,14 @@ export default function ExerciseTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
-  const [addExOpen, setAddExOpen] = useState(false);
-  const [favExOpen, setFavExOpen] = useState(false);
-  const [recentExOpen, setRecentExOpen] = useState(false);
-  const [customExOpen, setCustomExOpen] = useState(false);
+  const [addExOpen, _setAddExOpen] = useState(() => sessionStorage.getItem('ft_ex_add') === 'true');
+  const [favExOpen, _setFavExOpen] = useState(() => sessionStorage.getItem('ft_ex_fav') === 'true');
+  const [recentExOpen, _setRecentExOpen] = useState(() => sessionStorage.getItem('ft_ex_recent') === 'true');
+  const [customExOpen, _setCustomExOpen] = useState(() => sessionStorage.getItem('ft_ex_custom') === 'true');
+  const setAddExOpen = (v) => { _setAddExOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_ex_add', n); return n; }); };
+  const setFavExOpen = (v) => { _setFavExOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_ex_fav', n); return n; }); };
+  const setRecentExOpen = (v) => { _setRecentExOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_ex_recent', n); return n; }); };
+  const setCustomExOpen = (v) => { _setCustomExOpen(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_ex_custom', n); return n; }); };
 
   const filteredExercises = useMemo(() => {
     let list = activeCategory === "all"
