@@ -526,6 +526,8 @@
     "registerBtn": "Create account",
     "name": "Your name",
     "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "Passwords don't match.",
     "passwordHint": "At least 6 characters",
     "or": "or",
     "google": "Continue with Google",
