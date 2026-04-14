@@ -28,7 +28,7 @@ export default function ExerciseTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
-  const [addExOpen, setAddExOpen] = useState(true);
+  const [addExOpen, setAddExOpen] = useState(false);
   const [favExOpen, setFavExOpen] = useState(false);
   const [recentExOpen, setRecentExOpen] = useState(false);
   const [customExOpen, setCustomExOpen] = useState(false);
@@ -195,7 +195,7 @@ export default function ExerciseTab({
       {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favExOpen ? 10 : 0 }}>
-          <h2 style={{ margin: 0 }}>⭐ {t("exercise.favoritesTitle")}</h2>
+          <h2 style={{ margin: 0 }}>{t("exercise.favoritesTitle")} ⭐</h2>
           <button type="button" onClick={() => setFavExOpen(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {favExOpen ? "▲ Collapse" : "▼ Expand"}

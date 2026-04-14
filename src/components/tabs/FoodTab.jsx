@@ -168,7 +168,7 @@ export default function FoodTab({
   const [barcodeError, setBarcodeError] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
 
-  const [addFoodOpen, setAddFoodOpen] = useState(true);
+  const [addFoodOpen, setAddFoodOpen] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
@@ -402,7 +402,7 @@ export default function FoodTab({
       {/* ΑΓΑΠΗΜΕΝΑ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favoritesOpen ? 10 : 0 }}>
-          <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")} {favoriteFoods.length > 0 && <span className="muted" style={{ fontSize: 12, fontWeight: 400 }}>({favoriteFoods.length})</span>}</h2>
+          <h2 style={{ margin: 0 }}>{t("food.favoritesTitle")} ⭐ {favoriteFoods.length > 0 && <span className="muted" style={{ fontSize: 12, fontWeight: 400 }}>({favoriteFoods.length})</span>}</h2>
           <button type="button" onClick={() => setFavoritesOpen(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {favoritesOpen ? "▲ Collapse" : "▼ Expand"}
