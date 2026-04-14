@@ -336,87 +336,101 @@ export default function ProfileTab({
         </div>
       </div>
 
-      {/* ΣΤΟΧΟΣ & ΑΝΑΛΥΣΗ */}
+      {/* YOUR TARGET */}
       <div className="card">
-        {/* Ο ΣΤΟΧΟΣ ΣΟΥ */}
-        {showGoalFields && (<>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.goal_section ? 10 : 0 }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>🎯 {t("profile.yourGoal")}</span>
-            <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, goal_section: !prev.goal_section }))}
-              style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
-              {expandedPrefs.goal_section ? "▲ Collapse" : "▼ Expand"}
-            </button>
-          </div>
-          {expandedPrefs.goal_section && (
-            <div style={{ marginBottom: 16 }}>
-              <div className="grid-2 profile-grid-compact">
-                <label className="profile-field">
-                  <div className="profile-label">{goalType === "lose" ? t("profile.wantToLose") : t("profile.wantToGain")}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input className="input" inputMode="decimal" value={localTargetWeightLoss}
-                      onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
-                      onBlur={() => { const kg = isImperial ? lbsToKg(localTargetWeightLoss) : localTargetWeightLoss; setTargetWeightLoss(kg); flashSaved(); }} />
-                    <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{isImperial ? "lbs" : t("common.kilos")}</span>
-                  </div>
-                </label>
-                <label className="profile-field">
-                  <div className="profile-label">{t("profile.inWeeks")}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input className="input" inputMode="numeric" value={localWeeks}
-                      onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => { setWeeks(localWeeks); flashSaved(); }} />
-                    <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.weeks")}</span>
-                  </div>
-                </label>
-              </div>
-              <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
-            </div>
-          )}
-          <div style={{ borderTop: "1px solid var(--border-soft)", marginBottom: 16 }} />
-        </>)}
-
-        {/* ΑΝΑΛΥΣΗ */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.analysis_section ? 10 : 0 }}>
-          <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>📊 {t("common.analysis")}</span>
-          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, analysis_section: !prev.analysis_section }))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <h2 style={{ margin: 0 }}>🎯 {t("profile.yourTarget")}</h2>
+          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section }))}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
-            {expandedPrefs.analysis_section ? "▲ Collapse" : "▼ Expand"}
+            {expandedPrefs.target_section ? "▲ Collapse" : "▼ Expand"}
           </button>
         </div>
-        {expandedPrefs.analysis_section && (
-          <div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {[
-                [t("profile.maintenance"), `${formatNumber(tdee)} kcal`],
-                [t("profile.dailyTarget"), `${formatNumber(targetCalories)} kcal`],
-                ...(goalType === "lose" && appliedDeficit > 0 ? [[t("profile.dailyDeficit"), `${formatNumber(appliedDeficit)} kcal`]] : []),
-                ...(goalType === "gain" ? [[t("profile.dailySurplus"), "300 kcal"]] : []),
-                [t("profile.proteinTarget"), `${formatNumber(proteinTarget || 0)} g`],
-                [t("profile.macroSplit"), `${currentMode.proteinPercent}P / ${currentMode.carbsPercent}C / ${currentMode.fatPercent}F %`],
-              ].map(([label, value], i, arr) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none", fontSize: 13 }}>
-                  <span className="muted">{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              ))}
-
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-soft)" }}>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>{t("profile.summaryTitle")}</div>
-                {[
-                  [t("profile.goalLabel"), getGoalLabel()],
-                  [t("profile.dietLabel"), currentMode.label],
-                  [t("profile.activityLabel"), getActivityLabel()],
-                  ...(goalType === "lose" && kilosPerWeek > 0 ? [[t("profile.rateLabel"), `${formatNumber(Math.round(kilosPerWeek * 10) / 10)} ${t("profile.kgPerWeek")}`]] : []),
-                  ...(currentMode.fastingHours ? [[t("profile.eatingWindow"), `${currentMode.eatingWindowHours} ${t("common.hours")}`]] : []),
-                ].map(([label, value], i, arr) => (
-                  <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
-                    <span className="muted">{label}</span>
-                    <strong>{value}</strong>
+        {expandedPrefs.target_section && (<>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {/* Your Goal subcategory */}
+          {showGoalFields && (() => { const isOpen = expandedPrefs.goal_section; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, goal_section: !prev.goal_section }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>⚖️ {t("profile.yourGoal")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {targetWeightLoss && weeks && <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{targetWeightLoss}kg / {weeks}w</span>}
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px" }}>
+                  <div className="grid-2 profile-grid-compact">
+                    <label className="profile-field">
+                      <div className="profile-label">{goalType === "lose" ? t("profile.wantToLose") : t("profile.wantToGain")}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <input className="input" inputMode="decimal" value={localTargetWeightLoss}
+                          onChange={(e) => setLocalTargetWeightLoss(e.target.value)}
+                          onBlur={() => { const kg = isImperial ? lbsToKg(localTargetWeightLoss) : localTargetWeightLoss; setTargetWeightLoss(kg); flashSaved(); }} />
+                        <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{isImperial ? "lbs" : t("common.kilos")}</span>
+                      </div>
+                    </label>
+                    <label className="profile-field">
+                      <div className="profile-label">{t("profile.inWeeks")}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <input className="input" inputMode="numeric" value={localWeeks}
+                          onChange={(e) => setLocalWeeks(e.target.value)} onBlur={() => { setWeeks(localWeeks); flashSaved(); }} />
+                        <span className="muted" style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("common.weeks")}</span>
+                      </div>
+                    </label>
                   </div>
-                ))}
-              </div>
+                  <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          ); })()}
+          {/* Analysis subcategory */}
+          {(() => { const isOpen = expandedPrefs.analysis_section; return (
+            <div>
+              <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, analysis_section: !prev.analysis_section }))}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span>📊 {t("common.analysis")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ background: "var(--color-accent)", color: "var(--bg-card)", borderRadius: 10, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>{formatNumber(targetCalories)} kcal</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div style={{ padding: "8px 4px 4px" }}>
+                  {[
+                    [t("profile.maintenance"), `${formatNumber(tdee)} kcal`],
+                    [t("profile.dailyTarget"), `${formatNumber(targetCalories)} kcal`],
+                    ...(goalType === "lose" && appliedDeficit > 0 ? [[t("profile.dailyDeficit"), `${formatNumber(appliedDeficit)} kcal`]] : []),
+                    ...(goalType === "gain" ? [[t("profile.dailySurplus"), "300 kcal"]] : []),
+                    [t("profile.proteinTarget"), `${formatNumber(proteinTarget || 0)} g`],
+                    [t("profile.macroSplit"), `${currentMode.proteinPercent}P / ${currentMode.carbsPercent}C / ${currentMode.fatPercent}F %`],
+                  ].map(([label, value], i, arr) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none", fontSize: 13 }}>
+                      <span className="muted">{label}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-soft)" }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>{t("profile.summaryTitle")}</div>
+                    {[
+                      [t("profile.goalLabel"), getGoalLabel()],
+                      [t("profile.dietLabel"), currentMode.label],
+                      [t("profile.activityLabel"), getActivityLabel()],
+                      ...(goalType === "lose" && kilosPerWeek > 0 ? [[t("profile.rateLabel"), `${formatNumber(Math.round(kilosPerWeek * 10) / 10)} ${t("profile.kgPerWeek")}`]] : []),
+                      ...(currentMode.fastingHours ? [[t("profile.eatingWindow"), `${currentMode.eatingWindowHours} ${t("common.hours")}`]] : []),
+                    ].map(([label, value], i, arr) => (
+                      <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
+                        <span className="muted">{label}</span>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ); })()}
+        </div>
+        </>)}
       </div>
 
       {/* ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ */}
