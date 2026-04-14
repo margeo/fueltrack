@@ -26,7 +26,7 @@
         "Simple grocery mode: toggle for shorter grocery lists with repeated meals",
         "Exercise Profile: set your level, location (home/gym/outdoor), equipment and limitations",
         "Workout schedule: set frequency (days/week) and session duration",
-        "Fitness goals & exercise categories: tell the AI what you want to focus on",
+        "Fitness goals & exercise categories: tell the app what you want to focus on",
         "Language selector: switch between Greek and English",
         "Sign in / Sign out button at the bottom of the tab"
       ],
@@ -35,7 +35,7 @@
         "Update your weight regularly in the Summary tab for accurate calorie calculations",
         "Allergies are critical — always double-check this section",
         "Setting realistic weekly rate (e.g. 0.5 kg/week loss) gives healthier results",
-        "Diet mode (keto, Mediterranean, etc.) affects macro split and AI suggestions"
+        "Diet mode (keto, Mediterranean, etc.) affects macro split and Coach suggestions"
       ]
     },
     "summary": {
@@ -68,7 +68,7 @@
       "howTo": [
         "Food of the Day: total calories at top, grouped by meal (Breakfast, Lunch, Dinner, Snacks)",
         "Edit or delete any entry directly from the list",
-        "Photo analyzer (📸): take a photo and AI recognizes the food and estimates calories",
+        "Photo analyzer (📸): take a photo and it recognizes the food and estimates calories",
         "Barcode scanner (🔲): scan a product's barcode to add it instantly",
         "Filter buttons: All, High Protein, Low Carb, Low Cal, Keto",
         "Search box: type to find foods in the database (Greek and English)",
@@ -82,7 +82,7 @@
       "tips": [
         "Favorites appear at the top for fastest adding",
         "Recent foods are saved automatically — no need to search again",
-        "Photo analyzer uses AI vision — works best with clear photos",
+        "Photo analyzer uses smart vision — works best with clear photos",
         "Adjust grams or portion before adding to get accurate calories",
         "Custom foods are handy for homemade recipes you log often"
       ]
@@ -428,18 +428,18 @@
     "proFeature3": "Real-time food suggestions",
     "proFeature4": "Daily progress analysis",
     "createAccount": "Create free account",
-    "freeNote": "Free accounts include limited requests. Upgrade to Pro for full access.",
+    "freeNote": "Free accounts include limited Coach requests. Upgrade to Pro for full access.",
     "needsAccountTitle": "Create a free account",
     "needsAccountDesc": "Sign up to use the Coach — it's free!",
     "limitTitle": "Daily limit reached",
-    "limitDesc": "You've used all {{limit}} requests for today. Try again tomorrow!",
+    "limitDesc": "You've used all {{limit}} Coach requests for today. Try again tomorrow!",
     "monthlyLimitDesc": "You've reached the monthly limit of {{limit}} queries. Resets next month.",
     "lifetimeLimitTitle": "Free trial ended",
-    "lifetimeLimitDesc": "You've used all {{limit}} free requests. Upgrade to Pro for continued access.",
+    "lifetimeLimitDesc": "You've used all {{limit}} free Coach requests. Upgrade to Pro for continued access.",
     "paidLimitTitle": "Monthly limit reached",
-    "paidLimitDesc": "You've used all {{limit}} requests for this month. Resets next month.",
+    "paidLimitDesc": "You've used all {{limit}} Coach requests for this month. Resets next month.",
     "paidLimitExtra": "Need more? You can add an extra 500 requests/month for just €2.99.",
-    "upgradeHint": "Upgrade to Pro (€2.99/month) for 500 requests per month!",
+    "upgradeHint": "Upgrade to Pro (€2.99/month) for 500 Coach requests per month!",
     "subscribePro": "Subscribe to Pro",
     "subscribePrice": "€2.99/month — cancel anytime",
     "simpleMode": "Simple groceries",
