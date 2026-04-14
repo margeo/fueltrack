@@ -804,17 +804,6 @@ export default function ProfileTab({
         </>)}
       </div>
 
-      {/* ΓΛΩΣΣΑ */}
-      <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>{t("profile.language")}</span>
-          <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto" }}>
-            <option value="el">{t("profile.greek")}</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-      </div>
-
       {/* SUBSCRIPTION */}
       {userEmail && (
         <div className="card">
@@ -887,6 +876,13 @@ export default function ProfileTab({
           <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
           {userName && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 2 }}>{userName}</div>}
           <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{userEmail}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, padding: "0 12px" }}>
+            <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t("profile.language")}</span>
+            <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 13 }}>
+              <option value="el">{t("profile.greek")}</option>
+              <option value="en">English</option>
+            </select>
+          </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
               style={{ fontSize: 13, padding: "10px 24px" }}>
@@ -904,6 +900,13 @@ export default function ProfileTab({
         <div className="card" style={{ textAlign: "center" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 14 }}>{t("profile.loginHint")}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, padding: "0 12px" }}>
+            <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t("profile.language")}</span>
+            <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 13 }}>
+              <option value="el">{t("profile.greek")}</option>
+              <option value="en">English</option>
+            </select>
+          </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button className="btn btn-dark" onClick={onShowAuth} type="button"
               style={{ fontSize: 13, padding: "10px 24px" }}>
