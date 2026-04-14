@@ -855,7 +855,7 @@ export default function ProfileTab({
           {!isPaid ? (<>
             <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
               <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                {t("subscription.freeDesc", { daily: AI_LIMITS.FREE.daily, monthly: AI_LIMITS.FREE.monthly })}
+                {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
               </div>
             </div>
             <button className="btn btn-dark" type="button" disabled={checkoutLoading}
@@ -874,7 +874,7 @@ export default function ProfileTab({
           </>) : (<>
             <div style={{ background: "linear-gradient(135deg, #fffbeb, #fef3c7)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid #fde68a" }}>
               <div style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
-                {t("subscription.proDesc", { limit: AI_LIMITS.PAID.monthly })}
+                {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
               </div>
             </div>
             <button className="btn btn-light" type="button"
