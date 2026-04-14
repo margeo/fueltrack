@@ -218,7 +218,7 @@ export default function ExerciseTab({
             {favoriteExercises.map((exercise) => (
               <div key={exercise.name}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
-                <button className="btn btn-dark" onClick={() => { setSelectedExerciseName(exercise.name); setSelectedMinutes("30"); setAddExOpen(true); }} type="button"
+                <button className="btn btn-dark" onClick={() => addExerciseByMinutes(exercise, "30")} type="button"
                   style={{ padding: "4px 10px", fontSize: 12, margin: "0 0 0 8px", flexShrink: 0 }}>+</button>
                 <div style={{ flex: 1, minWidth: 0, padding: "8px 0", overflow: "hidden" }}>
                   <div style={{ fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{exercise.icon} {t("exerciseNames." + exercise.name, { defaultValue: exercise.name })}</div>
