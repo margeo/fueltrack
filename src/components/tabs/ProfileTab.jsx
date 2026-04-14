@@ -826,29 +826,6 @@ export default function ProfileTab({
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           {/* Section 2: Subscription */}
           <div style={{ padding: "12px 16px" }}>
-            {(() => {
-              const usage = getCachedUsage(session?.user?.id);
-              const info = computeRemainingRequests({ usage, isPaid, isDemo, isAdmin });
-              if (info.remaining === Infinity) return null;
-              const pct = Math.round((info.used / info.total) * 100);
-              return (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 12, marginBottom: 4 }}>
-                    <span className="muted">{t("subscription.aiRequests")}</span>
-                    <span style={{ fontWeight: 600, marginLeft: 6 }}>{info.used} / {info.total}</span>
-                  </div>
-                  <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
-                    <div style={{
-                      width: `${Math.min(pct, 100)}%`,
-                      height: "100%",
-                      borderRadius: 6,
-                      background: pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "var(--color-accent)",
-                      transition: "width 0.3s ease"
-                    }} />
-                  </div>
-                </div>
-              );
-            })()}
             {!isPaid ? (<>
               <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
                 {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
