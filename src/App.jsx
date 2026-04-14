@@ -272,6 +272,14 @@ export default function App() {
   useEffect(() => saveJSON("ft_savedPlans", savedPlans), [savedPlans]);
   useEffect(() => saveJSON("ft_recentExercises", recentExercises), [recentExercises]);
   useEffect(() => saveValue("ft_hasSeenWelcome", hasSeenWelcome ? "true" : "false"), [hasSeenWelcome]);
+  // Scroll to top whenever the Welcome screen is showing so it always
+  // opens at the top of the viewport instead of whatever scroll
+  // position the previous view left behind.
+  useEffect(() => {
+    if (!hasSeenWelcome) {
+      window.scrollTo(0, 0);
+    }
+  }, [hasSeenWelcome]);
   useEffect(() => saveJSON("ft_foodCategories", foodCategories), [foodCategories]);
   useEffect(() => saveJSON("ft_allergies", allergies), [allergies]);
   useEffect(() => saveValue("ft_cookingLevel", cookingLevel), [cookingLevel]);
