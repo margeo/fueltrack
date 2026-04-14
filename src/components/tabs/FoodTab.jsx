@@ -240,15 +240,18 @@ export default function FoodTab({
 
   function handleAddCustomFood() {
     if (!newName.trim() || !newCalories) return;
+    const wasFavorite = newFavorite;
     onAddCustomFood({
       name: newName.trim(),
       caloriesPer100g: Number(newCalories) || 0,
       proteinPer100g: Number(newProtein) || 0,
       carbsPer100g: Number(newCarbs) || 0,
       fatPer100g: Number(newFat) || 0
-    }, { favorite: newFavorite });
+    }, { favorite: wasFavorite });
     setNewName(""); setNewCalories(""); setNewProtein(""); setNewCarbs(""); setNewFat("");
     setNewFavorite(false);
+    if (wasFavorite) setFavoritesOpen(true);
+    setRecentOpen(true);
     setSavedFeedback(true);
     setTimeout(() => setSavedFeedback(false), 2000);
   }
@@ -528,8 +531,15 @@ export default function FoodTab({
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{food.name}</span>
                     <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>{formatNumber(food.caloriesPer100g)} kcal · P{formatNumber(food.proteinPer100g)}</span>
                   </div>
-                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0, alignItems: "center" }}>
                     <button className="btn btn-dark" onClick={() => handleFoodSelect(food)} type="button" style={{ padding: "4px 10px", fontSize: 12 }}>+</button>
+                    <button
+                      onClick={() => toggleFavorite(food)}
+                      type="button"
+                      title={isFavorite(food) ? t("food.removeFavorite") : t("food.addFavorite")}
+                      style={{ padding: "4px 6px", background: "none", border: "none", cursor: "pointer", fontSize: 16, color: isFavorite(food) ? "#d97706" : "var(--text-muted)" }}>
+                      {isFavorite(food) ? "⭐" : "☆"}
+                    </button>
                     <button className="btn btn-light" onClick={() => onDeleteCustomFood(food.id)} type="button" style={{ padding: "4px 8px", fontSize: 11 }}>✕</button>
                   </div>
                 </div>
