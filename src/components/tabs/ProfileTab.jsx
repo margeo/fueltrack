@@ -131,7 +131,10 @@ export default function ProfileTab({
   const [isDemo, setIsDemo] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
-  const [expandedPrefs, setExpandedPrefs] = useState({});
+  const [expandedPrefs, _setExpandedPrefs] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('ft_profile_prefs') || '{}'); } catch { return {}; }
+  });
+  const setExpandedPrefs = (v) => { _setExpandedPrefs(p => { const n = typeof v === 'function' ? v(p) : v; sessionStorage.setItem('ft_profile_prefs', JSON.stringify(n)); return n; }); };
 
   useEffect(() => {
     if (!userEmail || !session?.access_token) return;
