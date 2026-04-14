@@ -396,7 +396,7 @@ RULES:
         {/* MACROS — collapsible */}
         <div style={{ marginTop: 10 }}>
           <button type="button" onClick={() => { const key = 'ft_sum_macros'; const cur = sessionStorage.getItem(key) === 'true'; sessionStorage.setItem(key, !cur); setMacrosOpen(!cur); }}
-            style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.08)", cursor: "pointer", color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 700 }}>
+            style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 16, border: "none", background: "rgba(255,255,255,0.08)", cursor: "pointer", color: "rgba(255,255,255,0.9)", fontSize: 18, fontWeight: 700 }}>
             <span>Macros</span>
             <span style={{ fontSize: 11 }}>{macrosOpen ? "▲" : "▼"}</span>
           </button>
