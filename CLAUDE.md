@@ -39,6 +39,18 @@ Always create NEW commits. If a pre-commit hook fails, fix the issue and create 
 
 Check the task description for your branch name. Push only there unless explicitly told otherwise.
 
+### ⛔ Dev-first workflow — NEVER push directly to main
+
+The production app (fueltrack.me) is live and visible to real users. **All code changes go to the `dev` branch first.**
+
+- **Dev branch**: `dev` → auto-deploys to `dev.fueltrack.me`
+- **Production branch**: `main` → auto-deploys to `fueltrack.me`
+
+**Workflow:**
+1. All changes are developed and pushed to `dev`
+2. Marios tests at the dev URL
+3. **Only when Marios explicitly says** "πέρνα το στο main" / "push to production" → merge `dev` into `main`
+
 ## Architecture
 
 ### Web vs Native
@@ -74,6 +86,13 @@ Payments go through Stripe Checkout on the web. The native app does NOT have a b
 - `src/utils/stripe.js` — frontend helpers
 
 **Env vars** (Netlify): `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`
+
+### Netlify Access
+
+- **Site name**: `fueltrack-marios`
+- **Site ID**: `a8c157d9-9ef2-44f0-8813-c680074181dc`
+- **DNS**: Managed via Netlify DNS (nameservers: `dns{1-4}.p08.nsone.net`)
+- **Branch deploys**: `dev` branch → `dev.fueltrack.me`
 
 ## Key Files
 
@@ -144,8 +163,8 @@ cd android && ./gradlew bundleRelease
 - [ ] **Keystore + signed AAB** — Μετά το verification: (1) δημιούργησε keystore αρχείο με keytool, (2) βάλε paths/passwords στο gradle.properties, (3) τρέξε `.\gradlew bundleRelease`, (4) upload AAB στο Play Console. **ΚΡΙΣΙΜΟ: αν χαθεί το keystore, δεν μπορείς ΠΟΤΕ να κάνεις update στο app.**
 - [ ] **Stripe live mode** — Στο Netlify dashboard, αντικατέστησε `STRIPE_SECRET_KEY` από `sk_test_...` σε `sk_live_...` (παίρνεις το live key από Stripe Dashboard → Developers → API keys). Επίσης δημιούργησε νέο live webhook endpoint και αντικατέστησε `STRIPE_WEBHOOK_SECRET`.
 - [ ] **Upload Play Store** — Screenshots (8 τύποι — λίστα στο `store-listing.md`), κείμενα (έτοιμα στο `store-listing.md`), content rating, privacy policy URL.
-- [ ] **Resend DNS verification** — Τα DNS records (DKIM, SPF) προστέθηκαν στο GreenGeeks. Πρέπει να γίνει Reverify στο resend.com → Domains. Μετά setup SMTP στο Supabase.
-- [ ] **Supabase SMTP setup** — Μετά Resend verify: Supabase Dashboard → Project Settings → Auth → SMTP → Host: smtp.resend.com, Port: 465, User: resend, Password: Resend API key, Sender: noreply@fueltrack.me
+- [x] **Resend DNS verification** — DNS records (DKIM, SPF) προστέθηκαν στο Netlify DNS (NS1). Verified 13/4/2026.
+- [x] **Supabase SMTP setup** — Custom SMTP ενεργοποιήθηκε: smtp.resend.com:465, sender: noreply@fueltrack.me
 - [ ] **Apple App Store review** — Submitted 13/4/2026, αναμονή 1-2 μέρες. Build 3 με σωστό icon.
 
 ### Εκκρεμούν — code tasks
@@ -168,6 +187,9 @@ cd android && ./gradlew bundleRelease
 - [ ] **Social features** — Friends, challenges, shared meal plans, leaderboard streak.
 - [ ] **Apple Sign-In** — Login με Apple ID (απαιτείται από Apple αν έχεις Google/Facebook login).
 - [ ] **Facebook login** — Πρόσθεση Facebook Sign-In μέσω Supabase Auth.
+- [ ] **Analytics / Επισκεψιμότητα** — Setup analytics (Google Analytics ή Plausible/PostHog) για tracking επισκέψεων, ενεργών χρηστών, conversions (free→pro), retention.
+- [ ] **ASO (App Store Optimization)** — Βελτιστοποίηση keywords, screenshots, description στο App Store & Google Play.
+- [ ] **Marketing & Promotion** — Στρατηγική προώθησης: paid ads, social media, reviews/ratings campaigns.
 
 ### Completed session April 13, 2026
 - [x] Grocery list scroll fix (document.scrollingElement + double rAF pattern)
@@ -220,7 +242,8 @@ cd android && ./gradlew bundleRelease
 
 ## Deployment
 
-- **Web**: Push to `main` → Netlify auto-deploys to fueltrack.me
+- **Dev**: Push to `dev` → Netlify deploys to `dev.fueltrack.me` (test here first!)
+- **Production**: Merge `dev` → `main` (only when Marios approves) → Netlify deploys to fueltrack.me
 - **Android**: `npm run build` → `npx cap sync android` → Android Studio Build → Run
 - **Play Store**: `./gradlew bundleRelease` → upload AAB to Google Play Console (verification pending as of April 2026)
 
