@@ -28,6 +28,10 @@ export default function ExerciseTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseName, setSelectedExerciseName] = useState("");
   const [selectedMinutes, setSelectedMinutes] = useState("30");
+  const [addExOpen, setAddExOpen] = useState(true);
+  const [favExOpen, setFavExOpen] = useState(false);
+  const [recentExOpen, setRecentExOpen] = useState(false);
+  const [customExOpen, setCustomExOpen] = useState(false);
 
   const filteredExercises = useMemo(() => {
     let list = activeCategory === "all"
@@ -92,16 +96,21 @@ export default function ExerciseTab({
 
       {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addExOpen ? 12 : 0, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>{t("exercise.addTitle")}</h2>
-          <div style={{ display: "flex", gap: 6 }}>
+          <button type="button" onClick={() => setAddExOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {addExOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {addExOpen && (<>
+        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
             <button className="btn btn-dark" type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center", opacity: 0.5 }}
               onClick={() => alert(t("exercise.appleHealthSoon"))}>
               🍎 Health
             </button>
             <GoogleFitButton selectedDate={selectedDate} onAddExercise={handleAddFromFit} />
-          </div>
         </div>
 
         {/* Search */}
@@ -180,11 +189,19 @@ export default function ExerciseTab({
         {filteredExercises.length === 0 && (
           <div className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>{t("exercise.noExercisesFound")}</div>
         )}
+      </>)}
       </div>
 
       {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
       <div className="card">
-        <h2 style={{ marginBottom: 10 }}>⭐ {t("exercise.favoritesTitle")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favExOpen ? 10 : 0 }}>
+          <h2 style={{ margin: 0 }}>⭐ {t("exercise.favoritesTitle")}</h2>
+          <button type="button" onClick={() => setFavExOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {favExOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {favExOpen && (<>
         {favoriteExercises.length === 0 ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
             <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t("exercise.noFavorites")}</div>
@@ -212,12 +229,20 @@ export default function ExerciseTab({
             ))}
           </div>
         )}
+        </>)}
       </div>
 
       {/* ΠΡΟΣΦΑΤΑ */}
       {recentExercises && recentExercises.length > 0 && (
         <div className="card">
-          <h2>{t("common.recent")}</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentExOpen ? 10 : 0 }}>
+            <h2 style={{ margin: 0 }}>{t("common.recent")}</h2>
+            <button type="button" onClick={() => setRecentExOpen(prev => !prev)}
+              style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+              {recentExOpen ? "▲ Collapse" : "▼ Expand"}
+            </button>
+          </div>
+          {recentExOpen && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {recentExercises.slice(0, 6).map((item) => (
               <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-soft)", borderRadius: 8, border: "1px solid var(--border-soft)", overflow: "hidden", minHeight: 40 }}>
@@ -238,12 +263,20 @@ export default function ExerciseTab({
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
       {/* CUSTOM ΑΣΚΗΣΗ */}
       <div className="card">
-        <h2>{t("exercise.customExercise")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customExOpen ? 10 : 0 }}>
+          <h2 style={{ margin: 0 }}>{t("exercise.customExercise")}</h2>
+          <button type="button" onClick={() => setCustomExOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {customExOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {customExOpen && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input className="input" placeholder={t("exercise.exerciseName")} value={customExerciseName} onChange={(e) => setCustomExerciseName(e.target.value)} />
           <div style={{ display: "flex", gap: 8 }}>
@@ -252,6 +285,7 @@ export default function ExerciseTab({
           </div>
           <button className="btn btn-dark" onClick={addCustomExercise} type="button">{t("common.add")}</button>
         </div>
+        )}
       </div>
     </>
   );

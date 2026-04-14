@@ -168,6 +168,10 @@ export default function FoodTab({
   const [barcodeError, setBarcodeError] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
 
+  const [addFoodOpen, setAddFoodOpen] = useState(true);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [recentOpen, setRecentOpen] = useState(false);
+  const [customOpen, setCustomOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCalories, setNewCalories] = useState("");
   const [newProtein, setNewProtein] = useState("");
@@ -321,8 +325,15 @@ export default function FoodTab({
 
       {/* ΠΡΟΣΘΗΚΗ ΦΑΓΗΤΟΥ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addFoodOpen ? 12 : 0, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>{t("food.addTitle")}</h2>
+          <button type="button" onClick={() => setAddFoodOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {addFoodOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {addFoodOpen && (<>
+        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
             <button className="btn btn-dark" onClick={() => setShowPhotoAnalyzer(true)} type="button"
@@ -385,16 +396,19 @@ export default function FoodTab({
             ))}
           </div>
         )}
+        </>)}
       </div>
 
       {/* ΑΓΑΠΗΜΕΝΑ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")}</h2>
-          {favoriteFoods.length > 0 && (
-            <span className="muted" style={{ fontSize: 12 }}>{t("food.foodsCount", { count: favoriteFoods.length })}</span>
-          )}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favoritesOpen ? 10 : 0 }}>
+          <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")} {favoriteFoods.length > 0 && <span className="muted" style={{ fontSize: 12, fontWeight: 400 }}>({favoriteFoods.length})</span>}</h2>
+          <button type="button" onClick={() => setFavoritesOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {favoritesOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
         </div>
+        {favoritesOpen && (<>
 
         {favoriteFoods.length === 0 ? (
           <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "14px 16px", border: "1px dashed var(--border-color)" }}>
@@ -423,12 +437,20 @@ export default function FoodTab({
             ))}
           </div>
         )}
+        </>)}
       </div>
 
       {/* ΠΡΟΣΦΑΤΑ */}
       {recentFoods.length > 0 && (
         <div className="card">
-          <h2>{t("common.recent")}</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentOpen ? 10 : 0 }}>
+            <h2 style={{ margin: 0 }}>{t("common.recent")}</h2>
+            <button type="button" onClick={() => setRecentOpen(prev => !prev)}
+              style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+              {recentOpen ? "▲ Collapse" : "▼ Expand"}
+            </button>
+          </div>
+          {recentOpen && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {recentFoods.slice(0, 6).map((item) => {
               const cal = createFoodEntry(item.food, item.grams, item.mealType);
@@ -452,12 +474,20 @@ export default function FoodTab({
               );
             })}
           </div>
+          )}
         </div>
       )}
 
       {/* CUSTOM ΦΑΓΗΤΟ */}
       <div className="card">
-        <h2>{t("food.customFood")}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customOpen ? 10 : 0 }}>
+          <h2 style={{ margin: 0 }}>{t("food.customFood")}</h2>
+          <button type="button" onClick={() => setCustomOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {customOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {customOpen && (<>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input className="input" placeholder={t("food.name")} value={newName} onChange={(e) => setNewName(e.target.value)} />
           <div style={{ display: "flex", gap: 8 }}>
@@ -492,6 +522,7 @@ export default function FoodTab({
             </div>
           </div>
         )}
+        </>)}
       </div>
     </>
   );

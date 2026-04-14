@@ -123,6 +123,8 @@ export default function SummaryTab({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWeightChart, setShowWeightChart] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState(null);
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const savedGrocery = savedPlans?.find(p => p.type === "grocery");
   const [groceryList, setGroceryList] = useState(() => {
     if (!savedGrocery?.content) return null;
@@ -353,7 +355,7 @@ RULES:
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
-            <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
+            <span style={{ fontSize: 11, opacity: 0.7 }}>{i18n.language === "en" ? "Log data for past days" : "Καταγραφή προηγούμενων ημερών"}</span>
             <button type="button" onClick={() => setShowDatePicker(true)}
               style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
           </div>
@@ -451,8 +453,14 @@ RULES:
 
       {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
-        <h2>{t("summary.progress")}</h2>
-
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: progressOpen ? 10 : 0 }}>
+          <h2 style={{ margin: 0 }}>{t("summary.progress")}</h2>
+          <button type="button" onClick={() => setProgressOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {progressOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {progressOpen && (<>
         {/* Εισαγωγή βάρους — collapsible */}
         <button className="btn btn-light" onClick={() => setShowWeightInput(!showWeightInput)} type="button"
           style={{ width: "100%", marginBottom: showWeightInput ? 10 : 12, fontSize: 12 }}>
@@ -551,18 +559,24 @@ RULES:
             {streak}<span className="muted" style={{ fontSize: 14, fontWeight: 400, marginLeft: 4 }}>{t("common.days")}</span>
           </div>
         </div>
+        </>)}
       </div>
 
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: historyOpen ? 10 : 0 }}>
           <h2 style={{ margin: 0 }}>{t("summary.last7")}</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log past day" : "Καταγραφή προηγούμενης ημέρας"}</span>
-            <button type="button" onClick={() => setShowDatePicker(true)}
-              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
-          </div>
+          <button type="button" onClick={() => setHistoryOpen(prev => !prev)}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {historyOpen ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {historyOpen && (<>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          {!isToday && <button className="btn btn-light" onClick={() => setSelectedDate(getTodayKey())} type="button" style={{ fontSize: 12, padding: "6px 10px" }}>{t("common.today")}</button>}
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{i18n.language === "en" ? "Log data for past days" : "Καταγραφή προηγούμενων ημερών"}</span>
+          <button type="button" onClick={() => setShowDatePicker(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}>📅</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {last7Days.map((day) => {
@@ -602,6 +616,7 @@ RULES:
             );
           })}
         </div>
+        </>)}
       </div>
 
       {showDatePicker && (
