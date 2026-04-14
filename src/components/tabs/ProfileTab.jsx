@@ -849,12 +849,10 @@ export default function ProfileTab({
                 </div>
               );
             })()}
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
-              {isPaid
-                ? t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })
-                : t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
-            </div>
             {!isPaid ? (<>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+                {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+              </div>
               <button className="btn btn-dark" type="button" disabled={checkoutLoading}
                 onClick={async () => {
                   setCheckoutLoading(true);
@@ -869,10 +867,13 @@ export default function ProfileTab({
                 {t("aiCoach.subscribePrice")}
               </div>
             </>) : (
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                  {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
+                </span>
                 <button className="btn btn-light" type="button"
                   onClick={async () => { try { await openCustomerPortal(); } catch {} }}
-                  style={{ fontSize: 12, padding: "6px 8px" }}>
+                  style={{ fontSize: 12, padding: "6px 8px", whiteSpace: "nowrap" }}>
                   {t("subscription.manage")}
                 </button>
               </div>
