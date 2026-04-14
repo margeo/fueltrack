@@ -109,10 +109,13 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (postConfirm === "signup" && session?.user) {
-        const email = session.user.email;
         supabase.auth.signOut().then(() => {
           history.replaceState(null, "", window.location.pathname);
-          setPostConfirmEmail(email || "");
+          // Deliberately do NOT pre-fill the email. The confirmation
+          // link only proves that whoever has the inbox can receive
+          // mail — it does NOT authenticate them. Pre-filling would
+          // give a would-be attacker half the credentials for free.
+          setPostConfirmEmail("");
           setPostConfirmMessage(t("auth.postConfirmSignup"));
           setAuthInitialMode("login");
           setShowAuthModal(true);
@@ -126,10 +129,9 @@ export default function App() {
       // SIGNED_IN that Supabase fires while processing the hash.
       const stillPostConfirm = new URLSearchParams(window.location.search).get("post_confirm") === "signup";
       if (stillPostConfirm && event === "SIGNED_IN" && session?.user) {
-        const email = session.user.email;
         supabase.auth.signOut().then(() => {
           history.replaceState(null, "", window.location.pathname);
-          setPostConfirmEmail(email || "");
+          setPostConfirmEmail("");
           setPostConfirmMessage(t("auth.postConfirmSignup"));
           setAuthInitialMode("login");
           setShowAuthModal(true);
