@@ -76,7 +76,7 @@ export default function GoogleFitButton({ selectedDate, onAddExercise }) {
         className="btn btn-dark"
         onClick={handleConnect}
         type="button"
-        style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center" }}
+        style={{ fontSize: 13, padding: "8px 0", flex: 1, textAlign: "center" }}
       >
         🏃 Google Fit
       </button>

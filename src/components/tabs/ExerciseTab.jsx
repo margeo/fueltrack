@@ -106,7 +106,7 @@ export default function ExerciseTab({
         {addExOpen && (<>
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
             <button className="btn btn-dark" type="button"
-              style={{ fontSize: 13, padding: "8px 0", width: 90, textAlign: "center", opacity: 0.5 }}
+              style={{ fontSize: 13, padding: "8px 0", flex: 1, textAlign: "center", opacity: 0.5 }}
               onClick={() => alert(t("exercise.appleHealthSoon"))}>
               🍎 Health
             </button>
