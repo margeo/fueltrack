@@ -693,7 +693,7 @@ export default function App() {
       <div className="app-container">
         <div className="app-header">
           <div className="app-header-left">
-            <h1 style={{ display: "flex", alignItems: "center", gap: 8 }}><img src="/icon-192.png" alt="" style={{ width: 28, height: 28, borderRadius: 6 }} />FuelTrack <span style={{ fontSize: 16, fontWeight: 700, alignSelf: "flex-end" }}>Plan → Track → Achieve!</span></h1>
+            <h1 style={{ display: "flex", alignItems: "baseline", gap: 8 }}><img src="/icon-192.png" alt="" style={{ width: 28, height: 28, borderRadius: 6, alignSelf: "center" }} />FuelTrack <span style={{ fontSize: 16 }}>Plan → Track → Achieve!</span></h1>
             {showProfile && <p>{t("app.fillProfile")}</p>}
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
