@@ -512,8 +512,8 @@
     "sectionTitle": "Συνδρομή",
     "freePlan": "Δωρεάν Πλάνο",
     "proPlan": "Pro Πλάνο",
-    "freeDesc": "Δωρεάν πλάνο: {{daily}} AI ερωτήματα/μέρα, {{monthly}}/μήνα",
-    "proDesc": "Pro πλάνο: {{limit}} AI ερωτήματα/μήνα",
+    "freeDesc": "Δωρεάν πλάνο: {{daily}} ερωτήματα/μέρα, {{monthly}}/μήνα",
+    "proDesc": "Pro πλάνο: {{limit}} ερωτήματα/μήνα",
     "aiRequests": "Ερωτήματα:",
     "upgrade": "Αναβάθμιση σε Pro",
     "manage": "Διαχείριση συνδρομής"

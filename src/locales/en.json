@@ -504,16 +504,16 @@
     "title": "Welcome to FuelTrack!",
     "subtitle": "Choose your plan to get started",
     "proCta": "Start with Pro",
-    "proDesc": "$2.99/month — {{limit}} AI requests/month — cancel anytime",
+    "proDesc": "€2.99/month — {{limit}} requests/month — cancel anytime",
     "freeCta": "Continue with Free",
-    "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month"
+    "freeDesc": "{{daily}} requests/day · {{monthly}}/month"
   },
   "subscription": {
     "sectionTitle": "Subscription",
     "freePlan": "Free Plan",
     "proPlan": "Pro Plan",
-    "freeDesc": "Free plan: {{daily}} AI requests/day, {{monthly}}/month",
-    "proDesc": "Pro plan: {{limit}} AI requests/month",
+    "freeDesc": "Free plan: {{daily}} requests/day, {{monthly}}/month",
+    "proDesc": "Pro plan: {{limit}} requests/month",
     "aiRequests": "Requests used:",
     "upgrade": "Upgrade to Pro",
     "manage": "Manage subscription"
