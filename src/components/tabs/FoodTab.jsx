@@ -166,7 +166,6 @@ export default function FoodTab({
   const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState("");
-  const [savedFeedback, setSavedFeedback] = useState(false);
 
   const [addFoodOpen, _setAddFoodOpen] = useState(() => sessionStorage.getItem('ft_food_add') === 'true');
   const [favoritesOpen, _setFavoritesOpen] = useState(() => sessionStorage.getItem('ft_food_fav') === 'true');
@@ -252,8 +251,6 @@ export default function FoodTab({
     setNewFavorite(false);
     if (wasFavorite) setFavoritesOpen(true);
     setRecentOpen(true);
-    setSavedFeedback(true);
-    setTimeout(() => setSavedFeedback(false), 2000);
   }
 
   async function handleBarcodeResult(code) {
@@ -509,7 +506,7 @@ export default function FoodTab({
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn btn-dark" onClick={handleAddCustomFood} type="button" style={{ flex: 1 }}>
-              {savedFeedback ? `✅ ${t("common.saved")}` : t("common.save")}
+              {t("common.add")}
             </button>
             <button
               type="button"
