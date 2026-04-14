@@ -406,7 +406,7 @@ export default function FoodTab({
       {/* ΑΓΑΠΗΜΕΝΑ */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favoritesOpen ? 10 : 0 }}>
-          <h2 style={{ margin: 0 }}>{t("food.favoritesTitle")} ⭐</h2>
+          <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")}</h2>
           <button type="button" onClick={() => setFavoritesOpen(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {favoritesOpen ? "▲ Collapse" : "▼ Expand"}
