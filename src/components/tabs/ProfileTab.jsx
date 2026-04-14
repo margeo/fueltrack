@@ -895,7 +895,7 @@ export default function ProfileTab({
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
-                style={{ fontSize: 12, padding: "6px 14px" }}>
+                style={{ fontSize: 12, padding: "6px 8px" }}>
                 {t("auth.logout")}
               </button>
               {isAdmin && (
