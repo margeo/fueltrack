@@ -9,6 +9,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
 import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import PlanChooser from "./components/PlanChooser";
+import VerifyEmailScreen from "./components/VerifyEmailScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
 import FoodTab from "./components/tabs/FoodTab";
@@ -721,6 +722,11 @@ export default function App() {
   const showWelcome = !hasSeenWelcome;
   const showProfile = hasSeenWelcome && !profileComplete;
   const appReady = hasSeenWelcome && profileComplete;
+
+  const needsEmailVerify = !!session?.user && !session.user.email_confirmed_at;
+  if (needsEmailVerify) {
+    return <VerifyEmailScreen email={session.user.email} />;
+  }
 
   return (
     <>
