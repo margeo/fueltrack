@@ -550,6 +550,17 @@
     "googleError": "Error connecting with Google.",
     "logout": "Sign out"
   },
+  "verifyEmail": {
+    "title": "Verify your email",
+    "intro": "We sent you a confirmation link. Click it to activate your account and start using FuelTrack.",
+    "spamHint": "No email yet? Check your spam / promotions folder. Delivery usually takes less than a minute.",
+    "iVerified": "I verified — continue",
+    "resend": "Resend email",
+    "resendSuccess": "Email sent again. Check your inbox.",
+    "resendError": "Could not resend email. Try again in a bit.",
+    "notYetError": "Your email is not verified yet. Click the link we sent you first.",
+    "logout": "Use a different account"
+  },
   "foodPrefs": {
     "title": "Food Profile",
     "subtitle": "Tap what you like — helps the Coach give you better suggestions",
