@@ -509,11 +509,12 @@
     "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month"
   },
   "subscription": {
+    "sectionTitle": "Subscription",
     "freePlan": "Free Plan",
     "proPlan": "Pro Plan",
-    "freeDesc": "{{daily}} AI requests/day · {{monthly}}/month",
-    "proDesc": "{{limit}} AI requests/month",
-    "used": "AI free requests used",
+    "freeDesc": "Free plan: {{daily}} AI requests/day, {{monthly}}/month",
+    "proDesc": "Pro plan: {{limit}} AI requests/month",
+    "aiRequests": "AI requests used",
     "upgrade": "Upgrade to Pro",
     "manage": "Manage subscription"
   },

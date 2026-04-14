@@ -509,11 +509,12 @@
     "freeDesc": "{{daily}} AI ερωτήματα/μέρα · {{monthly}}/μήνα"
   },
   "subscription": {
+    "sectionTitle": "Συνδρομή",
     "freePlan": "Δωρεάν Πλάνο",
     "proPlan": "Pro Πλάνο",
-    "freeDesc": "{{daily}} AI ερωτήματα/μέρα · {{monthly}}/μήνα",
-    "proDesc": "{{limit}} AI ερωτήματα/μήνα",
-    "used": "Δωρεάν AI ερωτήματα",
+    "freeDesc": "Δωρεάν πλάνο: {{daily}} AI ερωτήματα/μέρα, {{monthly}}/μήνα",
+    "proDesc": "Pro πλάνο: {{limit}} AI ερωτήματα/μήνα",
+    "aiRequests": "AI ερωτήματα",
     "upgrade": "Αναβάθμιση σε Pro",
     "manage": "Διαχείριση συνδρομής"
   },

@@ -819,12 +819,15 @@ export default function ProfileTab({
       {userEmail && (
         <div className="card">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 22 }}>{isPaid ? "⭐" : "🆓"}</span>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>
-                {isPaid ? t("subscription.proPlan") : t("subscription.freePlan")}
-              </div>
-            </div>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t("subscription.sectionTitle")}</span>
+            <span style={{
+              padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+              background: isPaid ? "linear-gradient(135deg, #f59e0b, #d97706)" : "var(--bg-soft)",
+              color: isPaid ? "white" : "var(--text-muted)",
+              border: isPaid ? "none" : "1px solid var(--border-color)"
+            }}>
+              {isPaid ? "⭐ PRO" : "FREE"}
+            </span>
           </div>
           {(() => {
             const usage = getCachedUsage(session?.user?.id);
@@ -834,7 +837,7 @@ export default function ProfileTab({
             return (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                  <span className="muted">{t("subscription.used")}</span>
+                  <span className="muted">{t("subscription.aiRequests")}</span>
                   <span style={{ fontWeight: 600 }}>{info.used} / {info.total}</span>
                 </div>
                 <div style={{ background: "var(--bg-soft)", borderRadius: 6, height: 6, overflow: "hidden" }}>
@@ -849,7 +852,12 @@ export default function ProfileTab({
               </div>
             );
           })()}
-          {!isPaid ? (
+          {!isPaid ? (<>
+            <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid var(--border-soft)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                {t("subscription.freeDesc", { daily: AI_LIMITS.FREE.daily, monthly: AI_LIMITS.FREE.monthly })}
+              </div>
+            </div>
             <button className="btn btn-dark" type="button" disabled={checkoutLoading}
               onClick={async () => {
                 setCheckoutLoading(true);
@@ -860,18 +868,21 @@ export default function ProfileTab({
               style={{ width: "100%", fontSize: 14, padding: "10px 0" }}>
               {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
             </button>
-          ) : (
+            <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 6 }}>
+              {t("aiCoach.subscribePrice")}
+            </div>
+          </>) : (<>
+            <div style={{ background: "linear-gradient(135deg, #fffbeb, #fef3c7)", borderRadius: 10, padding: "10px 12px", marginBottom: 12, border: "1px solid #fde68a" }}>
+              <div style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+                {t("subscription.proDesc", { limit: AI_LIMITS.PAID.monthly })}
+              </div>
+            </div>
             <button className="btn btn-light" type="button"
               onClick={async () => { try { await openCustomerPortal(); } catch {} }}
               style={{ width: "100%", fontSize: 13, padding: "8px 0" }}>
               {t("subscription.manage")}
             </button>
-          )}
-          {!isPaid && (
-            <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 6 }}>
-              {t("aiCoach.subscribePrice")}
-            </div>
-          )}
+          </>)}
         </div>
       )}
 
