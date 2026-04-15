@@ -165,7 +165,7 @@
     "retry": "Try again"
   },
   "welcome": {
-    "hero": "Plan → Track → Achieve!",
+    "hero": "Welcome to FuelTrack!",
     "heroSub": "Tell me your goal and I'll take it from here — what to eat, what exercise to do, how to get where you want.",
     "goalFirst": "Goal-first approach",
     "goalFirstDesc": "Pick a goal — weight loss, muscle gain or maintenance — and the app auto-adjusts calories, macros and suggestions.",

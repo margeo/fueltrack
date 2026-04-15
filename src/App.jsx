@@ -9,6 +9,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
 import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import PlanChooser from "./components/PlanChooser";
+import SloganBanner from "./components/SloganBanner";
 import VerifyEmailScreen from "./components/VerifyEmailScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
@@ -793,12 +794,12 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>Plan → Track → Achieve!</div>
         </div>
 
         <NativeStaleBuildBanner />
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
+        {(showProfile || appReady) && <SloganBanner />}
         {showProfile && <ProfileTab {...profileProps} />}
 
         {appReady && activeTab === "summary" && (
