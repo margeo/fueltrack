@@ -154,9 +154,16 @@ cd android && ./gradlew bundleRelease
 3. **ML Kit barcode on emulator** — Google Barcode Scanner Module can't download on emulator. Works on real devices. The code calls `installGoogleBarcodeScannerModule()` automatically on first use.
 4. **Calorie accuracy** — Flash Lite sometimes puts target calories instead of actual food calories (item #9, needs prompt fix).
 
-## Pending Tasks (updated April 12, 2026)
+## Pending Tasks (updated April 15, 2026)
 
 ### Εκκρεμούν — χρειάζονται τον Marios
+- [ ] **iOS Apple review resubmit (URGENT)** — Version 1.0 build 3 rejected 14/4/2026 για 2 issues: (a) 5.1.1 Account Deletion — **FIXED in code** (`src/components/DeleteAccountModal.jsx` + `netlify/functions/delete-account.js`, Delete my account link δίπλα στο Privacy Policy στο Profile tab), (b) 2.1 App Completeness (Upgrade to Pro button not working on iOS native) — **FIXED in code** μέσω Apple IAP (StoreKit 2) — βλ. iOS IAP section πιο κάτω.
+  - **Το resubmit απαιτεί νέο iOS build (4)** που περιέχει τον νέο κώδικα, και σύνδεση με το subscription product στο App Store Connect.
+  - Στο App Store Connect (iOS Submission page) υπάρχει "Respond to Apple" message thread — εκεί γράφουμε τι φτιάξαμε και submit build 4.
+- [ ] **Paid Apps Agreement** — Requested 15/4/2026, status **Processing**. Απαιτείται **Active** πριν το sandbox IAP testing δουλέψει. Παίρνει ~24h. Check: App Store Connect → Business → Agreements.
+- [ ] **Small Business Program** — Applied 15/4/2026, waiting approval email. 15% commission αντί 30% για όλα τα iOS IAP sales. Must-have πριν το πρώτο sale.
+- [ ] **Sandbox Tester → στο iPhone** — Created 15/4/2026 με email `mariosgeorgiadis.sandbox@gmail.com` + password που όρισε ο Marios (NOT stored — αν ξεχαστεί, delete + recreate). Για testing: iPhone Settings → App Store → Sandbox Account → Sign In με αυτά.
+- [ ] **MacinCloud iOS build 4** — Όταν Paid Apps = Active: `git pull origin main && npm install && npx cap sync ios && npx cap open ios`. Στο Xcode: bump build 3→4, Archive, Upload to TestFlight.
 - [ ] **Barcode test σε πραγματικό κινητό** — Ο emulator δεν μπορεί να κατεβάσει το Google ML Kit barcode module. Σε πραγματικό Android κινητό θα κατέβει αυτόματα. Χρειάζεται USB debugging ή build APK και εγκατάσταση.
 - [ ] **Test plan chooser** — Φτιάξε νέο account (με νέο email) και δοκίμασε αν εμφανίζεται το "Welcome to FuelTrack! Choose your plan" modal μετά το πρώτο login.
 - [ ] **Google Play verification** — Υποβλήθηκε 12/4/2026, αναμονή 1-2 μέρες. Χρειάζεται ταυτοποίηση + Android device verification μέσω Play Console app.
@@ -165,8 +172,38 @@ cd android && ./gradlew bundleRelease
 - [ ] **Upload Play Store** — Screenshots (8 τύποι — λίστα στο `store-listing.md`), κείμενα (έτοιμα στο `store-listing.md`), content rating, privacy policy URL.
 - [x] **Resend DNS verification** — DNS records (DKIM, SPF) προστέθηκαν στο Netlify DNS (NS1). Verified 13/4/2026.
 - [x] **Supabase SMTP setup** — Custom SMTP ενεργοποιήθηκε: smtp.resend.com:465, sender: noreply@fueltrack.me
-- [ ] **Apple App Store review** — Submitted 13/4/2026, αναμονή 1-2 μέρες. Build 3 με σωστό icon.
 - [ ] **Apple & Google Privacy Policy update** — Ενημέρωση privacy policy URL (`https://fueltrack.me/privacy.html`) στο App Store Connect (App Privacy) και Google Play Console (App content → Privacy policy + Data safety section).
+
+### iOS IAP (Apple StoreKit 2) — ✅ Infrastructure ready, απαιτεί build 4 για να ενεργοποιηθεί
+
+**Γιατί χρειάστηκε**: Apple 2.1 rejection — απαγορεύει external Stripe checkout σε iOS native app. Raised rejection 14/4/2026. Επιλέξαμε **Option B (full Apple IAP)** με **€2.99 pricing parity** και Small Business Program (15%).
+
+**Package**: `@capgo/native-purchases@8.3.3` (MIT, free, Capacitor 8 compatible, native StoreKit 2 με JWS). Εγκαταστάθηκε 15/4/2026. Κρατήσαμε Stripe για web/Android. **ΜΗΝ** downgrade Capacitor ή αντικαταστήσεις το plugin — τα άλλα options (squareetlabs, capgo-purchases) δεν υποστηρίζουν v8.
+
+**Backend validation**: `@apple/app-store-server-library@3.0.0` (Apple's official, MIT). Verify-άρει JWS signatures αυτόματα με Apple root CA chain. Δεν χρειάζεται manual crypto — δεν το ξαναγράφεις εσύ.
+
+**Κρίσιμα αρχεία:**
+- `src/utils/iosIAP.js` — wrapper γύρω από @capgo/native-purchases. Product ID `me.fueltrack.app.pro_monthly` (hardcoded, πρέπει να match App Store Connect ακριβώς). `isIosIapAvailable()` gate — μηδέν risk για web/Android.
+- `src/utils/subscription.js` — platform dispatcher. `startProMonthlyPurchase()` → iOS: StoreKit + POST JWS στο backend validator. web/Android: `openCheckout()` (Stripe). `openManageSubscription(source)` → iOS: `NativePurchases.manageSubscriptions()`. Άλλο: Stripe portal. **ΟΛΕΣ οι subscription actions** στο UI πρέπει να πάνε από εδώ — όχι direct Stripe call.
+- `netlify/functions/ios-validate-receipt.js` — client-authenticated POST. Τρέχει verification PRODUCTION πρώτα, SANDBOX fallback (match Apple's pattern). Enforce: bundleId, productId, appAccountToken (= Supabase user id), expiresDate. Γράφει στο `profiles.is_paid`, `subscription_source='ios'`, `ios_original_transaction_id`.
+- `netlify/functions/ios-store-notification.js` — App Store Server Notifications v2 webhook. Lookup user via `ios_original_transaction_id`. `PAID_EFFECT` map: SUBSCRIBED/DID_RENEW → true, EXPIRED/REVOKE/REFUND → false. **Πάντα** επιστρέφει 200 (Apple retries σε άλλο status).
+- `netlify/functions/_appleCerts.js` — reads base64-encoded Apple root CAs από env vars. Only G3 cert needed για StoreKit 2 — το Inc RSA legacy cert όχι.
+- `supabase/migrations/003_ios_subscription.sql` — `subscription_source TEXT CHECK (...)` + `ios_original_transaction_id TEXT` + index στο profiles. **Έχει τρέξει στο Supabase**.
+- `src/components/tabs/ProfileTab.jsx` — fetches `subscription_source` από profiles, passes στο `openManageSubscription(source)`. ⚠️ Νέα state `subscriptionSource`.
+- `src/components/AiLimitLock.jsx`, `src/components/PlanChooser.jsx` — χρησιμοποιούν `startProMonthlyPurchase()` αντί `openCheckout()` direct.
+
+**Netlify env vars (already set 15/4/2026):**
+- `RESEND_API_KEY` — για όλα τα transactional emails
+- `APPLE_ROOT_CA_G3_B64` — base64 του AppleRootCA-G3.cer (cert είναι public)
+- `APPLE_BUNDLE_ID` = `me.fueltrack.app`
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — already existed
+
+**App Store Connect setup (done 15/4/2026):**
+- Subscription Group: `FuelTrack Pro`
+- Subscription: `FuelTrack Pro Monthly` με Product ID `me.fueltrack.app.pro_monthly` (1 month, €2.99 base, 175 countries)
+- Localizations EN + EL (Prepare for Submission)
+- Review screenshot + notes uploaded
+- **Server Notifications URLs** (Production + Sandbox): `https://fueltrack.me/.netlify/functions/ios-store-notification` (V2)
 
 ### Εκκρεμούν — code tasks
 - [ ] **#7 Ποικιλία στα meal plans** — Τα generated meal plans επαναλαμβάνουν τα ίδια φαγητά (π.χ. Greek yogurt κάθε πρωί, chicken breast κάθε μεσημέρι). Χρειάζεται prompt improvement ή seed/randomization ώστε κάθε generate να δίνει διαφορετικά γεύματα.
@@ -174,6 +211,7 @@ cd android && ./gradlew bundleRelease
 - [ ] **#4 Meal plan: 2 API calls → 1** — Τώρα ο AI Coach κάνει 2 ξεχωριστά calls (ένα για meals, ένα για snacks) αντί για 1 call. Αυτό κοστίζει διπλά tokens και μπορεί να δώσει ασυνέπειες. ⚠️ ΠΡΟΣΟΧΗ: Στο PR #53 ένα προηγούμενο session διέγραψε "dead code" στο `buildMealPlanJSON()` και ΕΣΠΑΣΕ το app — revert-αρίστηκε. Πρέπει πρώτα full runtime data-flow trace πριν αγγίξεις κάτι.
 - [ ] **#5 Grocery list από user input** — Ο user γράφει σε ελεύθερο κείμενο τι θέλει να ψωνίσει (π.χ. "κοτόπουλο, ρύζι, ντομάτες, γιαούρτι") και το AI το μετατρέπει σε organized JSON λίστα με κατηγορίες (Κρέατα, Γαλακτοκομικά κλπ) και ποσότητες. Τώρα η grocery list δημιουργείται μόνο από meal plan. (Θέλει σκέψη — αν χρειάζεται τελικά.)
 - [ ] **Tab headers/info polish** — Οι πληροφορίες στο πάνω μέρος κάθε tab (Summary, Food, Exercise, Profile) είναι πρόχειρα φτιαγμένες. Χρειάζεται UI/UX βελτίωση — καλύτερο layout, spacing, typography, consistency μεταξύ tabs.
+- [ ] **SMTP env cleanup** — Όταν iOS IAP επιβεβαιωθεί ότι δουλεύει σε sandbox, διέγραψε τα ΑΧΡΗΣΙΜΟΠΟΙΗΤΑ `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` env vars στο Netlify (τα αντικατέστησε το `RESEND_API_KEY` στις 15/4/2026).
 
 - [ ] **#10 Barcode UX βελτιώσεις** — Μετά που δουλέψει ο barcode scanner σε real device: UX polish, animation, error handling, ιστορικό σκαναρισμάτων.
 - [ ] **#19 Google OAuth login** — Τώρα υπάρχει μόνο email/password login. Πρόσθεση Google Sign-In μέσω Supabase Auth (χρειάζεται Google Cloud Console → OAuth consent screen → credentials → Supabase config).
@@ -191,6 +229,17 @@ cd android && ./gradlew bundleRelease
 - [ ] **Analytics / Επισκεψιμότητα** — Setup analytics (Google Analytics ή Plausible/PostHog) για tracking επισκέψεων, ενεργών χρηστών, conversions (free→pro), retention.
 - [ ] **ASO (App Store Optimization)** — Βελτιστοποίηση keywords, screenshots, description στο App Store & Google Play.
 - [ ] **Marketing & Promotion** — Στρατηγική προώθησης: paid ads, social media, reviews/ratings campaigns.
+
+### Completed session April 15, 2026
+- [x] **Duplicate admin emails → fixed**: migrated `new-user-notify.js` από GreenGeeks SMTP (ams201.greengeeks.net, έκανε duplicate delivery) σε Resend HTTP API με Idempotency-Key. Admin email subject/body πλέον σε Αγγλικά.
+- [x] **`nodemailer` dependency removed** from package.json (μόνο new-user-notify το χρησιμοποιούσε).
+- [x] **Welcome email (Apple-friendly approach)**: δεν στέλνουμε ξεχωριστό welcome email. Αντί αυτού, το Supabase "Confirm signup" email template στο Supabase Dashboard επεκτάθηκε να λέει "Welcome to FuelTrack! ... Once confirmed, you'll get: AI meal plans, barcode scanning, photo meal analysis, tracking". Απλό, καμία νέα υποδομή.
+- [x] **Account deletion (Apple 5.1.1 compliance)**: `netlify/functions/delete-account.js` (admin.deleteUser → CASCADE delete from profiles/user_state/ai_usage) + `src/components/DeleteAccountModal.jsx` (type-DELETE confirmation) + link "Delete my account" δίπλα στο "Privacy Policy" στο Profile footer. Translations EN + EL.
+- [x] **Slogan banner removed** από όλους τους 4 tabs (SloganBanner.jsx deleted).
+- [x] **iOS IAP full infrastructure**: βλ. "iOS IAP" section. 4 steps (DB migration, plugin install, frontend dispatcher, backend validation + webhook).
+- [x] **App Store Connect setup για iOS IAP**: DSA compliance (trader), Legal entity info, Paid Apps Agreement requested, Banking info, Small Business Program applied, Subscription product με €2.99 pricing σε 175 countries, Server Notifications URLs, Sandbox tester created.
+- [x] **Netlify env vars**: `RESEND_API_KEY`, `APPLE_ROOT_CA_G3_B64`, `APPLE_BUNDLE_ID`.
+- [x] **CLAUDE.md session context** for resuming.
 
 ### Completed session April 14, 2026
 - [x] Expand/collapse on Food Profile, Exercise Profile, Your Target sections
