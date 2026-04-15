@@ -402,6 +402,51 @@ RULES:
           </button>
           {macrosOpen && (
           <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          {/*
+            Calorie donut — visualises remaining vs target. Uses the
+            already-computed `progress` (0–100+) for the filled arc and
+            `remainingCalories` for the centre number so it cannot drift
+            from the big summary row above.
+          */}
+          {(() => {
+            const size = 170;
+            const stroke = 14;
+            const radius = (size - stroke) / 2;
+            const circumference = 2 * Math.PI * radius;
+            const filledPct = Math.max(0, Math.min(progress, 100));
+            const dashOffset = circumference * (1 - filledPct / 100);
+            const over = progress > 100;
+            const arcColor = over ? "#f87171" : "rgba(255,255,255,0.92)";
+            const remainColor = over ? "#fca5a5" : "rgba(255,255,255,0.95)";
+            return (
+              <div style={{ display: "flex", justifyContent: "center", padding: "4px 0 14px" }}>
+                <svg width={size} height={size} role="img" aria-label="remaining calories">
+                  <circle cx={size / 2} cy={size / 2} r={radius}
+                    stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} fill="none" />
+                  <circle cx={size / 2} cy={size / 2} r={radius}
+                    stroke={arcColor} strokeWidth={stroke} fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
+                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    style={{ transition: "stroke-dashoffset 0.4s ease" }}
+                  />
+                  <text x={size / 2} y={size / 2 - 6} textAnchor="middle" fill={remainColor}
+                    fontSize={30} fontWeight={800} style={{ fontFamily: "inherit" }}>
+                    {formatNumber(Math.max(remainingCalories, 0))}
+                  </text>
+                  <text x={size / 2} y={size / 2 + 16} textAnchor="middle" fill="rgba(255,255,255,0.6)"
+                    fontSize={11} fontWeight={600} style={{ fontFamily: "inherit", letterSpacing: 0.4, textTransform: "uppercase" }}>
+                    {t("summary.remaining")}
+                  </text>
+                  <text x={size / 2} y={size / 2 + 32} textAnchor="middle" fill="rgba(255,255,255,0.5)"
+                    fontSize={10} style={{ fontFamily: "inherit" }}>
+                    / {formatNumber(targetCalories)} kcal
+                  </text>
+                </svg>
+              </div>
+            );
+          })()}
           {[
             { label: "Protein", value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
             { label: "Carbs", value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },

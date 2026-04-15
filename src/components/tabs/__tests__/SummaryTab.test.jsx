@@ -63,7 +63,8 @@ describe("SummaryTab", () => {
 
   it("displays remaining calories", () => {
     renderSummary({ remainingCalories: 1000 });
-    expect(screen.getByText("1.000")).toBeTruthy();
+    // Number appears twice: summary hero row + donut centre.
+    expect(screen.getAllByText("1.000").length).toBeGreaterThanOrEqual(1);
   });
 
   it("displays target calories", () => {
@@ -154,19 +155,21 @@ describe("SummaryTab", () => {
 
   it("remaining color is green when above 100", () => {
     renderSummary({ remainingCalories: 500 });
-    const remainingEl = screen.getByText("500");
+    // First match is the summary hero row div (DOM order); the donut
+    // <text> comes after and uses SVG fill, not CSS color.
+    const remainingEl = screen.getAllByText("500")[0];
     expect(remainingEl.style.color).toBe("rgb(134, 239, 172)"); // #86efac
   });
 
   it("remaining color is red when below -150", () => {
     renderSummary({ remainingCalories: -200 });
-    const remainingEl = screen.getByText("-200");
+    const remainingEl = screen.getAllByText("-200")[0];
     expect(remainingEl.style.color).toBe("rgb(252, 165, 165)"); // #fca5a5
   });
 
   it("remaining color is yellow when near zero", () => {
     renderSummary({ remainingCalories: 50 });
-    const remainingEl = screen.getByText("50");
+    const remainingEl = screen.getAllByText("50")[0];
     expect(remainingEl.style.color).toBe("rgb(253, 230, 138)"); // #fde68a
   });
 
