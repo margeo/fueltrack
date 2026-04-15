@@ -432,15 +432,21 @@ RULES:
             const calDashOffset = calCircumference * (1 - calFilledPct / 100);
             const calArcColor = getRemainingColor();
 
-            // ------- Macro pie (filled target distribution, no outer
-            // ring — it was more confusing than informative) -------
+            // ------- Macro pie (filled target distribution + outer
+            //         ring showing actual-eaten intake distribution).
+            // Both live inside CHART_SIZE so the macro pie stays
+            // visually identical in footprint to the calorie donut.
+            // -----------------------------------------------------
             const pTarget = macroTargets?.proteinGrams || 0;
             const cTarget = macroTargets?.carbsGrams || 0;
             const fTarget = macroTargets?.fatGrams || 0;
             const targetKcal = pTarget * 4 + cTarget * 4 + fTarget * 9;
             const actualKcal = (totalProtein || 0) * 4 + (totalCarbs || 0) * 4 + (totalFat || 0) * 9;
             const showMacroPie = targetKcal > 0;
-            const pieR = (CHART_SIZE - 4) / 2;
+            const ringStroke = 8;
+            const ringGap = 3;
+            const pieR = (CHART_SIZE / 2) - ringStroke - ringGap - 2; // inner filled pie
+            const ringR = (CHART_SIZE / 2) - (ringStroke / 2) - 2;    // outer ring centreline
 
             const polar = (angleDeg, r) => {
               const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -453,13 +459,20 @@ RULES:
               const largeArc = sliceAngle > 180 ? 1 : 0;
               return `M ${cx} ${cx} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
             };
+            const arcPath = (startAngle, sliceAngle, r) => {
+              const endAngle = startAngle + sliceAngle;
+              const [x1, y1] = polar(startAngle, r);
+              const [x2, y2] = polar(endAngle, r);
+              const largeArc = sliceAngle > 180 ? 1 : 0;
+              return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
+            };
 
             let macroPie = null;
             if (showMacroPie) {
               const sliceData = [
-                { color: "#3b82f6", kcal: pTarget * 4 },
-                { color: "#f59e0b", kcal: cTarget * 4 },
-                { color: "#ef4444", kcal: fTarget * 9 },
+                { color: "#3b82f6", kcal: pTarget * 4, actualKcal: (totalProtein || 0) * 4 },
+                { color: "#f59e0b", kcal: cTarget * 4, actualKcal: (totalCarbs || 0) * 4 },
+                { color: "#ef4444", kcal: fTarget * 9, actualKcal: (totalFat || 0) * 9 },
               ];
               let cumulativeAngle = 0;
               const slices = sliceData.map((s, i) => {
@@ -471,7 +484,7 @@ RULES:
                 const path = slicePath(startAngle, sliceAngle, pieR);
                 cumulativeAngle += sliceAngle;
                 return (
-                  <g key={i}>
+                  <g key={`s-${i}`}>
                     <path d={path} fill={s.color} stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
                     {pct >= 8 && (
                       <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
@@ -483,8 +496,36 @@ RULES:
                   </g>
                 );
               });
+
+              // Outer ring — same-macro colour arcs whose lengths encode
+              // each macro's share of the kcal EATEN today (vs. the inner
+              // pie which encodes the TARGET share). When the outer
+              // arcs mirror the inner slices the day's intake matches
+              // the macro goal; a visible mismatch means one macro is
+              // drifting and the corresponding 👉 tip on row 1 will
+              // explain which way.
+              let ringSegments = null;
+              if (actualKcal > 0) {
+                let ringCum = 0;
+                ringSegments = sliceData.map((s, i) => {
+                  const segAngle = (s.actualKcal / actualKcal) * 360;
+                  if (segAngle <= 0.1) return null;
+                  const startAngle = ringCum;
+                  const path = arcPath(startAngle, Math.max(segAngle - 0.5, 0.1), ringR);
+                  ringCum += segAngle;
+                  return (
+                    <path key={`r-${i}`} d={path}
+                      stroke={s.color} strokeWidth={ringStroke} fill="none"
+                      strokeLinecap="butt" />
+                  );
+                });
+              }
+
               macroPie = (
-                <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="macro target distribution">
+                <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="macro target distribution with intake ring">
+                  <circle cx={cx} cy={cx} r={ringR}
+                    stroke="rgba(255,255,255,0.12)" strokeWidth={ringStroke} fill="none" />
+                  {ringSegments}
                   {slices}
                 </svg>
               );
@@ -537,7 +578,7 @@ RULES:
               { emoji: "🥑", label: "Fat",     cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
             ];
 
-            const sideColStyle = { display: "flex", flexDirection: "column", gap: 10, flex: "1 1 160px", minWidth: 150, maxWidth: 240 };
+            const sideColStyle = { display: "flex", flexDirection: "column", gap: 8, flex: "1 1 140px", minWidth: 140, maxWidth: 210 };
 
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0 10px" }}>
@@ -569,8 +610,8 @@ RULES:
                   </svg>
                   <div style={sideColStyle}>
                     {displayTips.map((tipText, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, lineHeight: 1.4, color: "rgba(255,255,255,0.92)" }}>
-                        <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "rgba(255,255,255,0.9)" }}>
+                        <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                         <span>{tipText}</span>
                       </div>
                     ))}
@@ -582,17 +623,17 @@ RULES:
                   {macroPie}
                   <div style={sideColStyle}>
                     {macroList.map((m) => (
-                      <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+                      <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12 }}>
                           <span style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700 }}>
                             {m.emoji} {m.label}
                           </span>
-                          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>
                             {formatNumber(m.cur)}g
                             <span style={{ color: "rgba(255,255,255,0.4)" }}> / {formatNumber(m.tgt)}g</span>
                           </span>
                         </div>
-                        <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
+                        <div style={{ height: 7, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
                           <div className={m.cls} style={{ height: "100%", borderRadius: 999, transition: "width 0.3s ease", width: `${m.pct}%` }} />
                         </div>
                       </div>
