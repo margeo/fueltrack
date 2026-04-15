@@ -149,7 +149,7 @@ cd android && ./gradlew bundleRelease
 
 ## Known Issues
 
-1. **2 pre-existing test failures** — `ProfileTab > shows fasting info` and `SummaryTab > shows Σήμερα button`. Not regressions, not blocking deployment.
+1. **26 pre-existing test failures** (as of April 15, 2026) — FoodTab, ExerciseTab, ProfileTab, SummaryTab, WelcomeScreen test files broke during the April 14 UI overhaul (collapsible cards, tab reorder, i18n key rename from "Γράψε φαγητό" et al). Tests weren't updated to match new markup. Not regressions from any single commit — the CI has been failing on every `main` push since April 14. Netlify deploys regardless. Fix requires updating test selectors (placeholders, button labels, tab order); ~2-3 hours of careful grep-and-replace. Until then, CI failure emails can be ignored.
 2. **Bundle size** — 1.19 MB / 331 KB gzipped. Vite warns at >500KB. Needs code-splitting (item #27).
 3. **ML Kit barcode on emulator** — Google Barcode Scanner Module can't download on emulator. Works on real devices. The code calls `installGoogleBarcodeScannerModule()` automatically on first use.
 4. **Calorie accuracy** — Flash Lite sometimes puts target calories instead of actual food calories (item #9, needs prompt fix).
