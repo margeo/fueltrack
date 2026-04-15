@@ -583,7 +583,7 @@ RULES:
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0 10px" }}>
                 {/* Row 1 — calorie donut + tips */}
-                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, justifyContent: "space-between", flexWrap: "wrap", padding: "0 8px" }}>
                   <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="remaining calories">
                     <circle cx={cx} cy={cx} r={calRadius}
                       stroke="rgba(255,255,255,0.15)" strokeWidth={calStroke} fill="none" />
@@ -619,7 +619,7 @@ RULES:
                 </div>
 
                 {/* Row 2 — macro pie + per-macro bars list */}
-                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, justifyContent: "space-between", flexWrap: "wrap", padding: "0 8px" }}>
                   {macroPie}
                   <div style={sideColStyle}>
                     {macroList.map((m) => (
