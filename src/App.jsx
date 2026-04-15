@@ -26,6 +26,7 @@ import {
   calculateBMR, calculateTDEE, calculateDailyDeficit,
   calculateTargetCalories, calculateProteinTarget, calculateMacroTargets
 } from "./utils/calorieLogic";
+import { apiUrl } from "./utils/apiBase";
 import { loadJSON, loadValue, saveJSON, saveValue } from "./utils/storage";
 import { getInitialTheme, applyTheme } from "./utils/theme";
 import { fetchCloudState, saveCloudColumn, seedCloudState } from "./utils/cloudSync";
@@ -108,8 +109,25 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const postConfirm = params.get("post_confirm");
 
+    // Sends the admin "new signup" notification. We fire this only
+    // after the user actually confirms their email (below) so the
+    // info@ inbox doesn't fill up with abandoned registrations that
+    // never clicked the confirmation link.
+    const notifyAdminOfNewSignup = (user) => {
+      if (!user) return;
+      const name = user.user_metadata?.full_name || "";
+      const email = user.email || "";
+      if (!email) return;
+      fetch(apiUrl("/.netlify/functions/new-user-notify"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      }).catch(() => {});
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (postConfirm === "signup" && session?.user) {
+        notifyAdminOfNewSignup(session.user);
         supabase.auth.signOut().then(() => {
           history.replaceState(null, "", window.location.pathname);
           // Deliberately do NOT pre-fill the email. The confirmation
@@ -130,6 +148,7 @@ export default function App() {
       // SIGNED_IN that Supabase fires while processing the hash.
       const stillPostConfirm = new URLSearchParams(window.location.search).get("post_confirm") === "signup";
       if (stillPostConfirm && event === "SIGNED_IN" && session?.user) {
+        notifyAdminOfNewSignup(session.user);
         supabase.auth.signOut().then(() => {
           history.replaceState(null, "", window.location.pathname);
           setPostConfirmEmail("");

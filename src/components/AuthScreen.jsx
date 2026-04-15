@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
-import { apiUrl } from "../utils/apiBase";
 
 export default function AuthScreen({ onSuccess, initialMode = "login", isModal = false, prefilledEmail = "", postConfirmMessage = "" }) {
   const { t } = useTranslation();
@@ -46,15 +45,12 @@ export default function AuthScreen({ onSuccess, initialMode = "login", isModal =
       setError(t("auth.emailExists"));
     } else {
       setMessage(t("auth.checkEmail"));
-      // Notify admin of new signup (fire and forget)
-      fetch(apiUrl("/.netlify/functions/new-user-notify"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email })
-      }).catch(() => {});
       // Auto-close the sign-up modal after a short delay so the user
       // goes check their inbox. The success banner stays visible long
-      // enough to read (~2.5s).
+      // enough to read (~2.5s). The admin "new signup" notification
+      // fires from App.jsx only AFTER the user actually confirms
+      // their email, so we don't spam info@fueltrack.me with every
+      // abandoned signup attempt.
       setTimeout(() => { onSuccess?.(); }, 2500);
     }
     setLoading(false);
