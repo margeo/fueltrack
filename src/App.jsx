@@ -9,7 +9,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
 import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import PlanChooser from "./components/PlanChooser";
-import SloganBanner from "./components/SloganBanner";
 import VerifyEmailScreen from "./components/VerifyEmailScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
@@ -818,7 +817,6 @@ export default function App() {
         <NativeStaleBuildBanner />
 
         {showWelcome && <WelcomeScreen onStart={startOnboarding} />}
-        {(showProfile || appReady) && <SloganBanner />}
         {showProfile && <ProfileTab {...profileProps} />}
 
         {appReady && activeTab === "summary" && (

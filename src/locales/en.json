@@ -519,9 +519,7 @@
     "manage": "Manage subscription"
   },
   "deleteAccount": {
-    "sectionTitle": "Danger zone",
-    "sectionDesc": "Permanently delete your account and all associated data.",
-    "triggerBtn": "Delete my account",
+    "link": "Delete my account",
     "title": "Delete account",
     "warning": "This action cannot be undone. Your account and all related data will be permanently deleted.",
     "item1": "All profile data, food logs, and saved plans",

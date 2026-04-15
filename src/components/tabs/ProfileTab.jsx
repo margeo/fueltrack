@@ -943,31 +943,18 @@ export default function ProfileTab({
         </div>
       )}
 
-      {/* Danger zone — Apple 5.1.1(v) requires in-app account deletion. */}
-      {userEmail && (
-        <div className="card" style={{ padding: "14px 16px", borderColor: "#fecaca", background: "var(--bg-card)" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 4 }}>
-            ⚠️ {t("deleteAccount.sectionTitle")}
-          </div>
-          <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
-            {t("deleteAccount.sectionDesc")}
-          </div>
-          <button type="button" onClick={() => setShowDeleteAccount(true)}
-            style={{
-              background: "transparent", color: "#dc2626",
-              border: "1px solid #dc2626", borderRadius: 10,
-              fontSize: 13, padding: "8px 14px", fontWeight: 700, cursor: "pointer"
-            }}>
-            {t("deleteAccount.triggerBtn")}
-          </button>
-        </div>
-      )}
-
-      <div style={{ textAlign: "center", marginTop: 4, marginBottom: 16 }}>
+      <div style={{ textAlign: "center", marginTop: 4, marginBottom: 16, display: "flex", gap: 12, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
         <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
           style={{ color: "var(--text-muted)", fontSize: 12 }}>
           {t("common.privacyPolicy")}
         </a>
+        {userEmail && (<>
+          <span style={{ color: "var(--text-muted)", fontSize: 12 }}>·</span>
+          <button type="button" onClick={() => setShowDeleteAccount(true)}
+            style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 12, textDecoration: "underline", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+            {t("deleteAccount.link")}
+          </button>
+        </>)}
       </div>
 
       {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} adminEmail={userEmail} />}
