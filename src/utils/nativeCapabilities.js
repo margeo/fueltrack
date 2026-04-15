@@ -42,9 +42,14 @@ import { Capacitor } from "@capacitor/core";
 
 // registerPlugin() names, not npm package names. Cross-checked against
 // node_modules/@capacitor/camera/dist/esm/index.js and
-// node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/index.js
-// when Phase A3 landed.
-export const REQUIRED_NATIVE_PLUGINS = Capacitor.getPlatform() === "android" ? ["Camera", "BarcodeScanner"] : [];
+// node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/index.js and
+// node_modules/@capgo/native-purchases/dist/esm/index.js when the
+// respective features landed.
+const PLATFORM = Capacitor.getPlatform();
+export const REQUIRED_NATIVE_PLUGINS =
+  PLATFORM === "android" ? ["Camera", "BarcodeScanner"] :
+  PLATFORM === "ios"     ? ["NativePurchases"] :
+  [];
 
 // Reads window.Capacitor.PluginHeaders defensively. The field is
 // typed as readonly PluginHeader[] in @capacitor/core's internal
