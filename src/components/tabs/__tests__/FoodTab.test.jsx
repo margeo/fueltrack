@@ -1,6 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import FoodTab from "../FoodTab";
+
+// FoodTab's four cards (Add, Favorites, Recent, Custom) became
+// collapsible in the April 14 overhaul, with open state persisted in
+// per-card sessionStorage keys (default all collapsed). Tests assume
+// the cards are open, so seed the keys before every test.
+beforeEach(() => {
+  sessionStorage.setItem("ft_food_add", "true");
+  sessionStorage.setItem("ft_food_fav", "true");
+  sessionStorage.setItem("ft_food_recent", "true");
+  sessionStorage.setItem("ft_food_custom", "true");
+});
 
 // Mock useFoodSearch hook
 vi.mock("../../../hooks/useFoodSearch", () => ({
@@ -108,7 +119,7 @@ describe("FoodTab", () => {
 
   it("renders custom food form", () => {
     renderFoodTab();
-    expect(screen.getByText("Custom φαγητό")).toBeTruthy();
+    expect(screen.getByText(/Custom$/)).toBeTruthy();
     expect(screen.getByPlaceholderText("Όνομα")).toBeTruthy();
     expect(screen.getByPlaceholderText("kcal/100g")).toBeTruthy();
   });
@@ -129,7 +140,7 @@ describe("FoodTab", () => {
 
   it("does not show recent section when no recent foods", () => {
     renderFoodTab({ recentFoods: [] });
-    expect(screen.queryByText("Πρόσφατα")).toBeNull();
+    expect(screen.queryByText(/Πρόσφατα/)).toBeNull();
   });
 
   it("shows recent foods when they exist", () => {
@@ -141,6 +152,6 @@ describe("FoodTab", () => {
         mealType: "Πρωινό",
       }],
     });
-    expect(screen.getByText("Πρόσφατα")).toBeTruthy();
+    expect(screen.getByText(/Πρόσφατα/)).toBeTruthy();
   });
 });
