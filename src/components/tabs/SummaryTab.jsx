@@ -415,69 +415,54 @@ RULES:
                 the pie and the list without re-mapping.
           */}
           {(() => {
-            // Single shared diameter so the two donuts sit as equal
-            // visual weights — calorie arc on row 1, macro pie +
-            // outer ring on row 2.
+            // Symmetrical two-row layout:
+            //   Row 1 — calorie donut on the left, 👉 tips on the right
+            //   Row 2 — macro target pie on the left, per-macro bars
+            //           with current/target grams on the right
+            // Both pies render at the same visible diameter so the
+            // rows read as equal-weight pairs.
             const CHART_SIZE = 150;
+            const cx = CHART_SIZE / 2;
 
             // ------- Calorie donut -------
-            const calSize = CHART_SIZE;
-            const calCx = calSize / 2;
             const calStroke = 12;
-            const calRadius = (calSize - calStroke) / 2;
+            const calRadius = (CHART_SIZE - calStroke) / 2;
             const calCircumference = 2 * Math.PI * calRadius;
             const calFilledPct = Math.max(0, Math.min(progress, 100));
             const calDashOffset = calCircumference * (1 - calFilledPct / 100);
             const calArcColor = getRemainingColor();
 
-            // ------- Macro pie (inner filled = target, outer ring = actual eaten) -------
+            // ------- Macro pie (filled target distribution, no outer
+            // ring — it was more confusing than informative) -------
             const pTarget = macroTargets?.proteinGrams || 0;
             const cTarget = macroTargets?.carbsGrams || 0;
             const fTarget = macroTargets?.fatGrams || 0;
             const targetKcal = pTarget * 4 + cTarget * 4 + fTarget * 9;
             const actualKcal = (totalProtein || 0) * 4 + (totalCarbs || 0) * 4 + (totalFat || 0) * 9;
             const showMacroPie = targetKcal > 0;
-
-            const pieSize = CHART_SIZE;
-            const pieCx = pieSize / 2;
-            const pieCy = pieSize / 2;
-            const ringStroke = 10;
-            const ringOuter = (pieSize - 4) / 2;
-            const pieR = ringOuter - ringStroke - 4;
-            const ringR = ringOuter - ringStroke / 2;
+            const pieR = (CHART_SIZE - 4) / 2;
 
             const polar = (angleDeg, r) => {
               const rad = ((angleDeg - 90) * Math.PI) / 180;
-              return [pieCx + r * Math.cos(rad), pieCy + r * Math.sin(rad)];
+              return [cx + r * Math.cos(rad), cx + r * Math.sin(rad)];
             };
-
-            // Slice path (for filled inner pie)
             const slicePath = (startAngle, sliceAngle, r) => {
               const endAngle = startAngle + sliceAngle;
               const [x1, y1] = polar(startAngle, r);
               const [x2, y2] = polar(endAngle, r);
               const largeArc = sliceAngle > 180 ? 1 : 0;
-              return `M ${pieCx} ${pieCy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-            };
-
-            // Arc path (for outer stroke ring segment)
-            const arcPath = (startAngle, sliceAngle, r) => {
-              const endAngle = startAngle + sliceAngle;
-              const [x1, y1] = polar(startAngle, r);
-              const [x2, y2] = polar(endAngle, r);
-              const largeArc = sliceAngle > 180 ? 1 : 0;
-              return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
+              return `M ${cx} ${cx} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
             };
 
             let macroPie = null;
             if (showMacroPie) {
-              const targetSlices = [
-                { color: "#3b82f6", kcal: pTarget * 4, actualKcal: (totalProtein || 0) * 4 },
-                { color: "#f59e0b", kcal: cTarget * 4, actualKcal: (totalCarbs || 0) * 4 },
-                { color: "#ef4444", kcal: fTarget * 9, actualKcal: (totalFat || 0) * 9 },
+              const sliceData = [
+                { color: "#3b82f6", kcal: pTarget * 4 },
+                { color: "#f59e0b", kcal: cTarget * 4 },
+                { color: "#ef4444", kcal: fTarget * 9 },
               ];
               let cumulativeAngle = 0;
-              const innerSlices = targetSlices.map((s, i) => {
+              const slices = sliceData.map((s, i) => {
                 const sliceAngle = (s.kcal / targetKcal) * 360;
                 const startAngle = cumulativeAngle;
                 const labelAngle = startAngle + sliceAngle / 2;
@@ -486,7 +471,7 @@ RULES:
                 const path = slicePath(startAngle, sliceAngle, pieR);
                 cumulativeAngle += sliceAngle;
                 return (
-                  <g key={`inner-${i}`}>
+                  <g key={i}>
                     <path d={path} fill={s.color} stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
                     {pct >= 8 && (
                       <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
@@ -498,39 +483,53 @@ RULES:
                   </g>
                 );
               });
-
-              // Outer ring: each macro's actual-eaten kcal as a share of
-              // the day's total-eaten kcal. So the ring reads the SAME
-              // balance question as the inner pie, but for what the user
-              // has actually eaten so far today — makes it obvious at a
-              // glance if today's intake deviates from the target split.
-              let ringSegments = null;
-              if (actualKcal > 0) {
-                let ringCum = 0;
-                ringSegments = targetSlices.map((s, i) => {
-                  const segAngle = (s.actualKcal / actualKcal) * 360;
-                  if (segAngle <= 0) return null;
-                  const startAngle = ringCum;
-                  const path = arcPath(startAngle, segAngle - 0.5, ringR);
-                  ringCum += segAngle;
-                  return (
-                    <path key={`ring-${i}`} d={path}
-                      stroke={s.color} strokeWidth={ringStroke} fill="none"
-                      strokeLinecap="butt" />
-                  );
-                });
-              }
-
               macroPie = (
-                <svg width={pieSize} height={pieSize} role="img" aria-label="macro target distribution">
-                  {/* Empty outer ring background — visible when nothing eaten */}
-                  <circle cx={pieCx} cy={pieCy} r={ringR}
-                    stroke="rgba(255,255,255,0.12)" strokeWidth={ringStroke} fill="none" />
-                  {ringSegments}
-                  {innerSlices}
+                <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="macro target distribution">
+                  {slices}
                 </svg>
               );
             }
+
+            // ------- Rule-based tips (no AI) -------
+            // Up to three short pointers derived from the already-
+            // computed state: calorie remaining vs target, macro-split
+            // drift vs target, and exercise bonus. Priority order: any
+            // imbalance first, then the neutral calorie/exercise line,
+            // so the user always sees the most actionable tip first.
+            const tips = [];
+            if (actualKcal > 120 && targetKcal > 0) {
+              const actualCarbsPct = (totalCarbs * 4) / actualKcal;
+              const actualFatPct = (totalFat * 9) / actualKcal;
+              const actualProtPct = (totalProtein * 4) / actualKcal;
+              const targetCarbsPct = (cTarget * 4) / targetKcal;
+              const targetFatPct = (fTarget * 9) / targetKcal;
+              const targetProtPct = (pTarget * 4) / targetKcal;
+              if (actualCarbsPct > targetCarbsPct + 0.12) {
+                tips.push(t("summary.tips.highCarbs"));
+              }
+              if (actualFatPct > targetFatPct + 0.12) {
+                tips.push(t("summary.tips.highFat"));
+              }
+              if (actualProtPct < targetProtPct - 0.10 && totalProtein < pTarget * 0.6) {
+                tips.push(t("summary.tips.lowProtein"));
+              }
+            }
+            if (remainingCalories > 200) {
+              tips.push(t("summary.tips.eatMore", { kcal: formatNumber(remainingCalories) }));
+            } else if (remainingCalories >= 50 && remainingCalories <= 200) {
+              tips.push(t("summary.tips.almostThere", { kcal: formatNumber(remainingCalories) }));
+            } else if (remainingCalories < -150) {
+              tips.push(t("summary.tips.overBudget", { kcal: formatNumber(Math.abs(remainingCalories)) }));
+            } else {
+              tips.push(t("summary.tips.onTarget"));
+            }
+            if ((exerciseValue || 0) >= 150) {
+              tips.push(t("summary.tips.exerciseBonus", { kcal: formatNumber(exerciseValue) }));
+            }
+            if (tips.length === 0) {
+              tips.push(t("summary.tips.onTrack"));
+            }
+            const displayTips = tips.slice(0, 3);
 
             const macroList = [
               { emoji: "🥩", label: "Protein", cur: totalProtein, tgt: pTarget, pct: proteinPercent, cls: "macro-bar-protein" },
@@ -538,43 +537,50 @@ RULES:
               { emoji: "🥑", label: "Fat",     cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
             ];
 
+            const sideColStyle = { display: "flex", flexDirection: "column", gap: 10, flex: "1 1 160px", minWidth: 150, maxWidth: 240 };
+
             return (
-              <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "4px 0 10px" }}>
-                {/* Row 1 — calorie donut, centred */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <svg width={calSize} height={calSize} role="img" aria-label="remaining calories">
-                    <circle cx={calCx} cy={calCx} r={calRadius}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0 10px" }}>
+                {/* Row 1 — calorie donut + tips */}
+                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+                  <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="remaining calories">
+                    <circle cx={cx} cy={cx} r={calRadius}
                       stroke="rgba(255,255,255,0.15)" strokeWidth={calStroke} fill="none" />
-                    <circle cx={calCx} cy={calCx} r={calRadius}
+                    <circle cx={cx} cy={cx} r={calRadius}
                       stroke={calArcColor} strokeWidth={calStroke} fill="none"
                       strokeLinecap="round"
                       strokeDasharray={calCircumference}
                       strokeDashoffset={calDashOffset}
-                      transform={`rotate(-90 ${calCx} ${calCx})`}
+                      transform={`rotate(-90 ${cx} ${cx})`}
                       style={{ transition: "stroke-dashoffset 0.4s ease" }}
                     />
-                    <text x={calCx} y={calCx - 4} textAnchor="middle" fill="rgba(255,255,255,0.95)"
+                    <text x={cx} y={cx - 4} textAnchor="middle" fill="rgba(255,255,255,0.95)"
                       fontSize={28} fontWeight={800} style={{ fontFamily: "inherit" }}>
                       {formatNumber(Math.max(remainingCalories, 0))}
                     </text>
-                    <text x={calCx} y={calCx + 14} textAnchor="middle" fill="rgba(255,255,255,0.6)"
+                    <text x={cx} y={cx + 14} textAnchor="middle" fill="rgba(255,255,255,0.6)"
                       fontSize={10} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.5, textTransform: "uppercase" }}>
                       {t("summary.remaining")}
                     </text>
-                    <text x={calCx} y={calCx + 30} textAnchor="middle" fill="rgba(255,255,255,0.55)"
+                    <text x={cx} y={cx + 30} textAnchor="middle" fill="rgba(255,255,255,0.55)"
                       fontSize={10} style={{ fontFamily: "inherit" }}>
                       / {formatNumber(targetCalories)}
                     </text>
                   </svg>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 4, letterSpacing: 0.5, textTransform: "uppercase" }}>
-                    Calories
+                  <div style={sideColStyle}>
+                    {displayTips.map((tipText, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, lineHeight: 1.4, color: "rgba(255,255,255,0.92)" }}>
+                        <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+                        <span>{tipText}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Row 2 — macro pie on left, per-macro list on right */}
+                {/* Row 2 — macro pie + per-macro bars list */}
                 <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
                   {macroPie}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: "1 1 160px", minWidth: 150, maxWidth: 220 }}>
+                  <div style={sideColStyle}>
                     {macroList.map((m) => (
                       <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
