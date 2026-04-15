@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AI_LIMITS } from "../utils/aiUsage";
-import { openCheckout } from "../utils/stripe";
+import { startProMonthlyPurchase } from "../utils/subscription";
 
 export default function AiLimitLock({
   needsAccount,
@@ -54,8 +54,8 @@ export default function AiLimitLock({
             disabled={checkoutLoading}
             onClick={async () => {
               setCheckoutLoading(true);
-              try { await openCheckout(); }
-              catch { /* checkout tab opened or failed silently */ }
+              try { await startProMonthlyPurchase(); }
+              catch { /* purchase cancelled or tab opened; no UI feedback needed here */ }
               finally { setCheckoutLoading(false); }
             }}
             style={{ padding: "10px 24px", fontSize: 14 }}

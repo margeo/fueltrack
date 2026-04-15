@@ -6,7 +6,7 @@ import { formatNumber } from "../../utils/helpers";
 import { apiUrl } from "../../utils/apiBase";
 import { authedFetch } from "../../utils/authFetch";
 import { EXERCISE_LIBRARY } from "../../data/constants";
-import { openCheckout, openCustomerPortal } from "../../utils/stripe";
+import { startProMonthlyPurchase, openManageSubscription } from "../../utils/subscription";
 import { AI_LIMITS, getCachedUsage, computeRemainingRequests } from "../../utils/aiUsage";
 
 const ALLERGY_OPTIONS = ["dairy", "gluten", "nuts", "eggs", "soy", "shellfish", "fish"];
@@ -130,6 +130,7 @@ export default function ProfileTab({
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const [subscriptionSource, setSubscriptionSource] = useState(null);
   const [isDemo, setIsDemo] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
@@ -148,12 +149,13 @@ export default function ProfileTab({
 
     supabase
       .from("profiles")
-      .select("is_paid, is_demo")
+      .select("is_paid, is_demo, subscription_source")
       .eq("id", session.user.id)
       .single()
       .then(({ data }) => {
         setIsPaid(data?.is_paid === true);
         setIsDemo(data?.is_demo === true);
+        setSubscriptionSource(data?.subscription_source ?? null);
       })
       .catch(() => {});
   }, [userEmail, session]);
@@ -859,7 +861,7 @@ export default function ProfileTab({
               <button className="btn btn-dark" type="button" disabled={checkoutLoading}
                 onClick={async () => {
                   setCheckoutLoading(true);
-                  try { await openCheckout(); }
+                  try { await startProMonthlyPurchase(); }
                   catch {}
                   finally { setCheckoutLoading(false); }
                 }}
@@ -875,7 +877,7 @@ export default function ProfileTab({
                   {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
                 </span>
                 <button className="btn btn-light" type="button"
-                  onClick={async () => { try { await openCustomerPortal(); } catch {} }}
+                  onClick={async () => { try { await openManageSubscription(subscriptionSource); } catch {} }}
                   style={{ fontSize: 12, padding: "6px 8px", whiteSpace: "nowrap" }}>
                   {t("subscription.manage")}
                 </button>

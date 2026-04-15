@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { openCheckout } from "../utils/stripe";
+import { startProMonthlyPurchase } from "../utils/subscription";
 import { AI_LIMITS } from "../utils/aiUsage";
 
 // Shown once after first login. User picks Free or Pro.
@@ -33,7 +33,7 @@ export default function PlanChooser({ onContinue }) {
             disabled={loading}
             onClick={async () => {
               setLoading(true);
-              try { await openCheckout(); } catch { /* ignore */ }
+              try { await startProMonthlyPurchase(); } catch { /* ignore */ }
               finally { setLoading(false); }
               localStorage.setItem("ft_plan_chosen", "1");
               onContinue();
