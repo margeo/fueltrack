@@ -403,47 +403,109 @@ RULES:
           {macrosOpen && (
           <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {/*
-            Calorie donut — visualises remaining vs target. Uses the
-            already-computed `progress` (0–100+) for the filled arc and
-            `remainingCalories` for the centre number so it cannot drift
-            from the big summary row above.
+            Two donuts side-by-side above the macro bars:
+              1. Calorie donut — remaining vs target. Arc colour
+                 mirrors getRemainingColor() so the visual matches
+                 the big "Remaining" number above the hero card.
+              2. Macro target pie — three filled slices showing the
+                 user's protein/carbs/fat target distribution
+                 (kcal-weighted, since fat is 9 kcal/g and the others
+                 are 4). Slice colours mirror the macro-bar-* CSS
+                 classes from index.css for visual continuity with
+                 the bars below.
           */}
           {(() => {
-            const size = 170;
-            const stroke = 14;
+            const size = 140;
+            const cx = size / 2;
+            const cy = size / 2;
+
+            // ------- Calorie donut -------
+            const stroke = 12;
             const radius = (size - stroke) / 2;
             const circumference = 2 * Math.PI * radius;
             const filledPct = Math.max(0, Math.min(progress, 100));
             const dashOffset = circumference * (1 - filledPct / 100);
-            const over = progress > 100;
-            const arcColor = over ? "#f87171" : "rgba(255,255,255,0.92)";
-            const remainColor = over ? "#fca5a5" : "rgba(255,255,255,0.95)";
+            const arcColor = getRemainingColor();
+
+            // ------- Macro target pie -------
+            const pTarget = macroTargets?.proteinGrams || 0;
+            const cTarget = macroTargets?.carbsGrams || 0;
+            const fTarget = macroTargets?.fatGrams || 0;
+            const totalMacroKcal = pTarget * 4 + cTarget * 4 + fTarget * 9;
+            const showMacroPie = totalMacroKcal > 0;
+
+            let macroPie = null;
+            if (showMacroPie) {
+              const pieR = (size - 4) / 2;
+              const polar = (angleDeg, r = pieR) => {
+                const rad = ((angleDeg - 90) * Math.PI) / 180;
+                return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+              };
+              const sliceData = [
+                { color: "#3b82f6", kcal: pTarget * 4 }, // protein — matches .macro-bar-protein
+                { color: "#f59e0b", kcal: cTarget * 4 }, // carbs — matches .macro-bar-carbs
+                { color: "#ef4444", kcal: fTarget * 9 }, // fat — matches .macro-bar-fat
+              ];
+              let cumulativeAngle = 0;
+              const renderedSlices = sliceData.map((s, i) => {
+                const sliceAngle = (s.kcal / totalMacroKcal) * 360;
+                const startAngle = cumulativeAngle;
+                const endAngle = startAngle + sliceAngle;
+                const [x1, y1] = polar(startAngle);
+                const [x2, y2] = polar(endAngle);
+                const largeArc = sliceAngle > 180 ? 1 : 0;
+                const path = `M ${cx} ${cy} L ${x1} ${y1} A ${pieR} ${pieR} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                const labelAngle = startAngle + sliceAngle / 2;
+                const [lx, ly] = polar(labelAngle, pieR * 0.62);
+                const pct = Math.round((s.kcal / totalMacroKcal) * 100);
+                cumulativeAngle = endAngle;
+                return (
+                  <g key={i}>
+                    <path d={path} fill={s.color} stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+                    {pct >= 8 && (
+                      <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+                        fill="white" fontSize={11} fontWeight={800}
+                        style={{ pointerEvents: "none" }}>
+                        {pct}%
+                      </text>
+                    )}
+                  </g>
+                );
+              });
+              macroPie = (
+                <svg width={size} height={size} role="img" aria-label="macro target distribution">
+                  {renderedSlices}
+                </svg>
+              );
+            }
+
             return (
-              <div style={{ display: "flex", justifyContent: "center", padding: "4px 0 14px" }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: 14, padding: "4px 0 14px", flexWrap: "wrap" }}>
                 <svg width={size} height={size} role="img" aria-label="remaining calories">
-                  <circle cx={size / 2} cy={size / 2} r={radius}
+                  <circle cx={cx} cy={cy} r={radius}
                     stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} fill="none" />
-                  <circle cx={size / 2} cy={size / 2} r={radius}
+                  <circle cx={cx} cy={cy} r={radius}
                     stroke={arcColor} strokeWidth={stroke} fill="none"
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={dashOffset}
-                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    transform={`rotate(-90 ${cx} ${cy})`}
                     style={{ transition: "stroke-dashoffset 0.4s ease" }}
                   />
-                  <text x={size / 2} y={size / 2 - 6} textAnchor="middle" fill={remainColor}
-                    fontSize={30} fontWeight={800} style={{ fontFamily: "inherit" }}>
+                  <text x={cx} y={cy - 4} textAnchor="middle" fill="rgba(255,255,255,0.95)"
+                    fontSize={24} fontWeight={800} style={{ fontFamily: "inherit" }}>
                     {formatNumber(Math.max(remainingCalories, 0))}
                   </text>
-                  <text x={size / 2} y={size / 2 + 16} textAnchor="middle" fill="rgba(255,255,255,0.6)"
-                    fontSize={11} fontWeight={600} style={{ fontFamily: "inherit", letterSpacing: 0.4, textTransform: "uppercase" }}>
+                  <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(255,255,255,0.6)"
+                    fontSize={9} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.6, textTransform: "uppercase" }}>
                     {t("summary.remaining")}
                   </text>
-                  <text x={size / 2} y={size / 2 + 32} textAnchor="middle" fill="rgba(255,255,255,0.5)"
-                    fontSize={10} style={{ fontFamily: "inherit" }}>
-                    / {formatNumber(targetCalories)} kcal
+                  <text x={cx} y={cy + 28} textAnchor="middle" fill="rgba(255,255,255,0.5)"
+                    fontSize={9} style={{ fontFamily: "inherit" }}>
+                    / {formatNumber(targetCalories)}
                   </text>
                 </svg>
+                {macroPie}
               </div>
             );
           })()}
