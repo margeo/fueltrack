@@ -415,10 +415,15 @@ RULES:
                 the pie and the list without re-mapping.
           */}
           {(() => {
+            // Single shared diameter so the two donuts sit as equal
+            // visual weights — calorie arc on row 1, macro pie +
+            // outer ring on row 2.
+            const CHART_SIZE = 150;
+
             // ------- Calorie donut -------
-            const calSize = 180;
+            const calSize = CHART_SIZE;
             const calCx = calSize / 2;
-            const calStroke = 14;
+            const calStroke = 12;
             const calRadius = (calSize - calStroke) / 2;
             const calCircumference = 2 * Math.PI * calRadius;
             const calFilledPct = Math.max(0, Math.min(progress, 100));
@@ -433,7 +438,7 @@ RULES:
             const actualKcal = (totalProtein || 0) * 4 + (totalCarbs || 0) * 4 + (totalFat || 0) * 9;
             const showMacroPie = targetKcal > 0;
 
-            const pieSize = 160;
+            const pieSize = CHART_SIZE;
             const pieCx = pieSize / 2;
             const pieCy = pieSize / 2;
             const ringStroke = 10;
@@ -548,15 +553,15 @@ RULES:
                       transform={`rotate(-90 ${calCx} ${calCx})`}
                       style={{ transition: "stroke-dashoffset 0.4s ease" }}
                     />
-                    <text x={calCx} y={calCx - 6} textAnchor="middle" fill="rgba(255,255,255,0.95)"
-                      fontSize={34} fontWeight={800} style={{ fontFamily: "inherit" }}>
+                    <text x={calCx} y={calCx - 4} textAnchor="middle" fill="rgba(255,255,255,0.95)"
+                      fontSize={28} fontWeight={800} style={{ fontFamily: "inherit" }}>
                       {formatNumber(Math.max(remainingCalories, 0))}
                     </text>
-                    <text x={calCx} y={calCx + 16} textAnchor="middle" fill="rgba(255,255,255,0.6)"
-                      fontSize={11} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                    <text x={calCx} y={calCx + 14} textAnchor="middle" fill="rgba(255,255,255,0.6)"
+                      fontSize={10} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.5, textTransform: "uppercase" }}>
                       {t("summary.remaining")}
                     </text>
-                    <text x={calCx} y={calCx + 34} textAnchor="middle" fill="rgba(255,255,255,0.55)"
+                    <text x={calCx} y={calCx + 30} textAnchor="middle" fill="rgba(255,255,255,0.55)"
                       fontSize={10} style={{ fontFamily: "inherit" }}>
                       / {formatNumber(targetCalories)}
                     </text>
