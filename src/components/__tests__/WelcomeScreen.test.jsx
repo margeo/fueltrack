@@ -5,13 +5,13 @@ import WelcomeScreen from "../WelcomeScreen";
 describe("WelcomeScreen", () => {
   it("renders the main heading", () => {
     render(<WelcomeScreen onStart={vi.fn()} />);
-    expect(screen.getByText(/Καταγραφή → Πλάνο → Αποτέλεσμα/)).toBeTruthy();
+    expect(screen.getByText(/Καλώς ήρθες στο FuelTrack/)).toBeTruthy();
   });
 
   it("renders all 4 feature cards", () => {
     render(<WelcomeScreen onStart={vi.fn()} />);
     expect(screen.getByText("Goal-first προσέγγιση")).toBeTruthy();
-    expect(screen.getByText("Ai Coach που σε ξέρει")).toBeTruthy();
+    expect(screen.getByText("Coach που σε ξέρει")).toBeTruthy();
     expect(screen.getByText("Ελληνικά φαγητά & μερίδες")).toBeTruthy();
     expect(screen.getByText("Γρήγορο & απλό")).toBeTruthy();
   });
