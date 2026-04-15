@@ -119,9 +119,11 @@ describe("SummaryTab", () => {
 
   it("renders macro bars section", () => {
     renderSummary();
-    expect(screen.getByText("Protein")).toBeTruthy();
-    expect(screen.getByText("Carbs")).toBeTruthy();
-    expect(screen.getByText("Fat")).toBeTruthy();
+    // Labels are rendered with a leading emoji (e.g. "🥩 Protein"),
+    // so assert containment rather than exact text.
+    expect(screen.getByText(/Protein/)).toBeTruthy();
+    expect(screen.getByText(/Carbs/)).toBeTruthy();
+    expect(screen.getByText(/Fat/)).toBeTruthy();
   });
 
   it("shows macro values with targets", () => {
@@ -129,12 +131,17 @@ describe("SummaryTab", () => {
       totalProtein: 80,
       macroTargets: { proteinGrams: 144, carbsGrams: 200, fatGrams: 67 },
     });
-    expect(screen.getByText(/80.*144/)).toBeTruthy();
+    // Current and target grams render as siblings ("80g" + " / 144g"),
+    // so getByText with a single regex won't span both nodes. Query
+    // each piece independently.
+    expect(screen.getByText(/80g/)).toBeTruthy();
+    expect(screen.getByText(/144g/)).toBeTruthy();
   });
 
   it("shows protein in macro bars", () => {
     renderSummary({ proteinTarget: 144, totalProtein: 80 });
-    expect(screen.getByText(/80.*144/)).toBeTruthy();
+    expect(screen.getByText(/80g/)).toBeTruthy();
+    expect(screen.getByText(/144g/)).toBeTruthy();
   });
 
   it("renders plans section", () => {

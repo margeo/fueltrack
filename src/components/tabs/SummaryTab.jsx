@@ -401,70 +401,91 @@ RULES:
             <span style={{ fontSize: 11 }}>{macrosOpen ? "▲" : "▼"}</span>
           </button>
           {macrosOpen && (
-          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12 }}>
           {/*
-            Two donuts side-by-side above the macro bars:
-              1. Calorie donut — remaining vs target. Arc colour
-                 mirrors getRemainingColor() so the visual matches
-                 the big "Remaining" number above the hero card.
-              2. Macro target pie — three filled slices showing the
-                 user's protein/carbs/fat target distribution
-                 (kcal-weighted, since fat is 9 kcal/g and the others
-                 are 4). Slice colours mirror the macro-bar-* CSS
-                 classes from index.css for visual continuity with
-                 the bars below.
+            Hero-card Macros layout:
+              Row 1 — calorie donut centred. Arc colour mirrors
+                getRemainingColor() so it tracks the big "Remaining"
+                number above the hero card.
+              Row 2 — macro target pie on the left, per-macro list
+                on the right. Each list row shows emoji + label +
+                current/target grams plus a thin coloured progress
+                bar. Slice colours and bar classes share
+                #3b82f6 / #f59e0b / #ef4444 so eyes can jump between
+                the pie and the list without re-mapping.
           */}
           {(() => {
-            const size = 140;
-            const cx = size / 2;
-            const cy = size / 2;
-
             // ------- Calorie donut -------
-            const stroke = 12;
-            const radius = (size - stroke) / 2;
-            const circumference = 2 * Math.PI * radius;
-            const filledPct = Math.max(0, Math.min(progress, 100));
-            const dashOffset = circumference * (1 - filledPct / 100);
-            const arcColor = getRemainingColor();
+            const calSize = 180;
+            const calCx = calSize / 2;
+            const calStroke = 14;
+            const calRadius = (calSize - calStroke) / 2;
+            const calCircumference = 2 * Math.PI * calRadius;
+            const calFilledPct = Math.max(0, Math.min(progress, 100));
+            const calDashOffset = calCircumference * (1 - calFilledPct / 100);
+            const calArcColor = getRemainingColor();
 
-            // ------- Macro target pie -------
+            // ------- Macro pie (inner filled = target, outer ring = actual eaten) -------
             const pTarget = macroTargets?.proteinGrams || 0;
             const cTarget = macroTargets?.carbsGrams || 0;
             const fTarget = macroTargets?.fatGrams || 0;
-            const totalMacroKcal = pTarget * 4 + cTarget * 4 + fTarget * 9;
-            const showMacroPie = totalMacroKcal > 0;
+            const targetKcal = pTarget * 4 + cTarget * 4 + fTarget * 9;
+            const actualKcal = (totalProtein || 0) * 4 + (totalCarbs || 0) * 4 + (totalFat || 0) * 9;
+            const showMacroPie = targetKcal > 0;
+
+            const pieSize = 160;
+            const pieCx = pieSize / 2;
+            const pieCy = pieSize / 2;
+            const ringStroke = 10;
+            const ringOuter = (pieSize - 4) / 2;
+            const pieR = ringOuter - ringStroke - 4;
+            const ringR = ringOuter - ringStroke / 2;
+
+            const polar = (angleDeg, r) => {
+              const rad = ((angleDeg - 90) * Math.PI) / 180;
+              return [pieCx + r * Math.cos(rad), pieCy + r * Math.sin(rad)];
+            };
+
+            // Slice path (for filled inner pie)
+            const slicePath = (startAngle, sliceAngle, r) => {
+              const endAngle = startAngle + sliceAngle;
+              const [x1, y1] = polar(startAngle, r);
+              const [x2, y2] = polar(endAngle, r);
+              const largeArc = sliceAngle > 180 ? 1 : 0;
+              return `M ${pieCx} ${pieCy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            };
+
+            // Arc path (for outer stroke ring segment)
+            const arcPath = (startAngle, sliceAngle, r) => {
+              const endAngle = startAngle + sliceAngle;
+              const [x1, y1] = polar(startAngle, r);
+              const [x2, y2] = polar(endAngle, r);
+              const largeArc = sliceAngle > 180 ? 1 : 0;
+              return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
+            };
 
             let macroPie = null;
             if (showMacroPie) {
-              const pieR = (size - 4) / 2;
-              const polar = (angleDeg, r = pieR) => {
-                const rad = ((angleDeg - 90) * Math.PI) / 180;
-                return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
-              };
-              const sliceData = [
-                { color: "#3b82f6", kcal: pTarget * 4 }, // protein — matches .macro-bar-protein
-                { color: "#f59e0b", kcal: cTarget * 4 }, // carbs — matches .macro-bar-carbs
-                { color: "#ef4444", kcal: fTarget * 9 }, // fat — matches .macro-bar-fat
+              const targetSlices = [
+                { color: "#3b82f6", kcal: pTarget * 4, actualKcal: (totalProtein || 0) * 4 },
+                { color: "#f59e0b", kcal: cTarget * 4, actualKcal: (totalCarbs || 0) * 4 },
+                { color: "#ef4444", kcal: fTarget * 9, actualKcal: (totalFat || 0) * 9 },
               ];
               let cumulativeAngle = 0;
-              const renderedSlices = sliceData.map((s, i) => {
-                const sliceAngle = (s.kcal / totalMacroKcal) * 360;
+              const innerSlices = targetSlices.map((s, i) => {
+                const sliceAngle = (s.kcal / targetKcal) * 360;
                 const startAngle = cumulativeAngle;
-                const endAngle = startAngle + sliceAngle;
-                const [x1, y1] = polar(startAngle);
-                const [x2, y2] = polar(endAngle);
-                const largeArc = sliceAngle > 180 ? 1 : 0;
-                const path = `M ${cx} ${cy} L ${x1} ${y1} A ${pieR} ${pieR} 0 ${largeArc} 1 ${x2} ${y2} Z`;
                 const labelAngle = startAngle + sliceAngle / 2;
                 const [lx, ly] = polar(labelAngle, pieR * 0.62);
-                const pct = Math.round((s.kcal / totalMacroKcal) * 100);
-                cumulativeAngle = endAngle;
+                const pct = Math.round((s.kcal / targetKcal) * 100);
+                const path = slicePath(startAngle, sliceAngle, pieR);
+                cumulativeAngle += sliceAngle;
                 return (
-                  <g key={i}>
+                  <g key={`inner-${i}`}>
                     <path d={path} fill={s.color} stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
                     {pct >= 8 && (
                       <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
-                        fill="white" fontSize={11} fontWeight={800}
+                        fill="white" fontSize={13} fontWeight={800}
                         style={{ pointerEvents: "none" }}>
                         {pct}%
                       </text>
@@ -472,56 +493,104 @@ RULES:
                   </g>
                 );
               });
+
+              // Outer ring: each macro's actual-eaten kcal as a share of
+              // the day's total-eaten kcal. So the ring reads the SAME
+              // balance question as the inner pie, but for what the user
+              // has actually eaten so far today — makes it obvious at a
+              // glance if today's intake deviates from the target split.
+              let ringSegments = null;
+              if (actualKcal > 0) {
+                let ringCum = 0;
+                ringSegments = targetSlices.map((s, i) => {
+                  const segAngle = (s.actualKcal / actualKcal) * 360;
+                  if (segAngle <= 0) return null;
+                  const startAngle = ringCum;
+                  const path = arcPath(startAngle, segAngle - 0.5, ringR);
+                  ringCum += segAngle;
+                  return (
+                    <path key={`ring-${i}`} d={path}
+                      stroke={s.color} strokeWidth={ringStroke} fill="none"
+                      strokeLinecap="butt" />
+                  );
+                });
+              }
+
               macroPie = (
-                <svg width={size} height={size} role="img" aria-label="macro target distribution">
-                  {renderedSlices}
+                <svg width={pieSize} height={pieSize} role="img" aria-label="macro target distribution">
+                  {/* Empty outer ring background — visible when nothing eaten */}
+                  <circle cx={pieCx} cy={pieCy} r={ringR}
+                    stroke="rgba(255,255,255,0.12)" strokeWidth={ringStroke} fill="none" />
+                  {ringSegments}
+                  {innerSlices}
                 </svg>
               );
             }
 
+            const macroList = [
+              { emoji: "🥩", label: "Protein", cur: totalProtein, tgt: pTarget, pct: proteinPercent, cls: "macro-bar-protein" },
+              { emoji: "🍞", label: "Carbs",   cur: totalCarbs,   tgt: cTarget, pct: carbsPercent,   cls: "macro-bar-carbs" },
+              { emoji: "🥑", label: "Fat",     cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
+            ];
+
             return (
-              <div style={{ display: "flex", justifyContent: "center", gap: 14, padding: "4px 0 14px", flexWrap: "wrap" }}>
-                <svg width={size} height={size} role="img" aria-label="remaining calories">
-                  <circle cx={cx} cy={cy} r={radius}
-                    stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} fill="none" />
-                  <circle cx={cx} cy={cy} r={radius}
-                    stroke={arcColor} strokeWidth={stroke} fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={dashOffset}
-                    transform={`rotate(-90 ${cx} ${cy})`}
-                    style={{ transition: "stroke-dashoffset 0.4s ease" }}
-                  />
-                  <text x={cx} y={cy - 4} textAnchor="middle" fill="rgba(255,255,255,0.95)"
-                    fontSize={24} fontWeight={800} style={{ fontFamily: "inherit" }}>
-                    {formatNumber(Math.max(remainingCalories, 0))}
-                  </text>
-                  <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(255,255,255,0.6)"
-                    fontSize={9} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.6, textTransform: "uppercase" }}>
-                    {t("summary.remaining")}
-                  </text>
-                  <text x={cx} y={cy + 28} textAnchor="middle" fill="rgba(255,255,255,0.5)"
-                    fontSize={9} style={{ fontFamily: "inherit" }}>
-                    / {formatNumber(targetCalories)}
-                  </text>
-                </svg>
-                {macroPie}
+              <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "4px 0 10px" }}>
+                {/* Row 1 — calorie donut, centred */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <svg width={calSize} height={calSize} role="img" aria-label="remaining calories">
+                    <circle cx={calCx} cy={calCx} r={calRadius}
+                      stroke="rgba(255,255,255,0.15)" strokeWidth={calStroke} fill="none" />
+                    <circle cx={calCx} cy={calCx} r={calRadius}
+                      stroke={calArcColor} strokeWidth={calStroke} fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={calCircumference}
+                      strokeDashoffset={calDashOffset}
+                      transform={`rotate(-90 ${calCx} ${calCx})`}
+                      style={{ transition: "stroke-dashoffset 0.4s ease" }}
+                    />
+                    <text x={calCx} y={calCx - 6} textAnchor="middle" fill="rgba(255,255,255,0.95)"
+                      fontSize={34} fontWeight={800} style={{ fontFamily: "inherit" }}>
+                      {formatNumber(Math.max(remainingCalories, 0))}
+                    </text>
+                    <text x={calCx} y={calCx + 16} textAnchor="middle" fill="rgba(255,255,255,0.6)"
+                      fontSize={11} fontWeight={700} style={{ fontFamily: "inherit", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                      {t("summary.remaining")}
+                    </text>
+                    <text x={calCx} y={calCx + 34} textAnchor="middle" fill="rgba(255,255,255,0.55)"
+                      fontSize={10} style={{ fontFamily: "inherit" }}>
+                      / {formatNumber(targetCalories)}
+                    </text>
+                  </svg>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 4, letterSpacing: 0.5, textTransform: "uppercase" }}>
+                    Calories
+                  </div>
+                </div>
+
+                {/* Row 2 — macro pie on left, per-macro list on right */}
+                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+                  {macroPie}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: "1 1 160px", minWidth: 150, maxWidth: 220 }}>
+                    {macroList.map((m) => (
+                      <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+                          <span style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700 }}>
+                            {m.emoji} {m.label}
+                          </span>
+                          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                            {formatNumber(m.cur)}g
+                            <span style={{ color: "rgba(255,255,255,0.4)" }}> / {formatNumber(m.tgt)}g</span>
+                          </span>
+                        </div>
+                        <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
+                          <div className={m.cls} style={{ height: "100%", borderRadius: 999, transition: "width 0.3s ease", width: `${m.pct}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             );
           })()}
-          {[
-            { label: "Protein", value: `${formatNumber(totalProtein)}g / ${formatNumber(macroTargets?.proteinGrams || 0)}g`, pct: proteinPercent, cls: "macro-bar-protein" },
-            { label: "Carbs", value: `${formatNumber(totalCarbs)}g / ${formatNumber(macroTargets?.carbsGrams || 0)}g`, pct: carbsPercent, cls: "macro-bar-carbs" },
-            { label: "Fat", value: `${formatNumber(totalFat)}g / ${formatNumber(macroTargets?.fatGrams || 0)}g`, pct: fatPercent, cls: "macro-bar-fat" },
-          ].map((m) => (
-            <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 50, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", flexShrink: 0 }}>{m.label}</div>
-              <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 999, overflow: "hidden" }}>
-                <div className={m.cls} style={{ height: "100%", borderRadius: 999, transition: "width 0.3s ease", width: `${m.pct}%` }} />
-              </div>
-              <div style={{ width: 75, fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "right", flexShrink: 0 }}>{m.value}</div>
-            </div>
-          ))}
           </div>
           )}
         </div>
