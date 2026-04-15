@@ -1,6 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ProfileTab from "../ProfileTab";
+
+// ProfileTab's Your Target / Food Profile / Exercise Profile cards are
+// collapsible, with open state persisted in sessionStorage under
+// "ft_profile_prefs" (default all collapsed). Tests that assert on
+// goal fields and warning banners need Your Target and the Goal
+// subsection expanded — pre-seed sessionStorage in beforeEach.
+beforeEach(() => {
+  sessionStorage.setItem(
+    "ft_profile_prefs",
+    JSON.stringify({ target_section: true, goal_section: true, analysis_section: true })
+  );
+});
 
 const defaultProps = {
   age: "30", setAge: vi.fn(),
@@ -55,12 +67,14 @@ describe("ProfileTab", () => {
 
   it("shows incomplete profile message when not complete", () => {
     renderProfile({ profileComplete: false });
-    expect(screen.getByText(/Συμπλήρωσε το προφίλ σου/)).toBeTruthy();
+    // ProfileTab renders t("app.fillProfile") which reads
+    // "Ξεκίνα συμπληρώνοντας το προφίλ σου" from the current locale.
+    expect(screen.getByText(/συμπληρώνοντας το προφίλ σου/)).toBeTruthy();
   });
 
   it("does not show incomplete message when profile is complete", () => {
     renderProfile({ profileComplete: true });
-    expect(screen.queryByText(/Συμπλήρωσε το προφίλ σου/)).toBeNull();
+    expect(screen.queryByText(/συμπληρώνοντας το προφίλ σου/)).toBeNull();
   });
 
   it("renders weight input with current value", () => {
