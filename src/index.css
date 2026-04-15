@@ -442,4 +442,17 @@ select {
 .summary-history-remaining-positive { color: #166534; font-weight: 700; }
 .summary-history-remaining-negative { color: #b91c1c; font-weight: 700; }
 
+/* Onboarding hint: briefly glow the first required field on a
+   brand-new profile so the user sees where to start. No auto-focus,
+   so the mobile keyboard is not forced open. */
+@keyframes ft-onboarding-glow {
+  0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.0); border-color: var(--border-color); }
+  30%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.35); border-color: #10b981; }
+  60%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.35); border-color: #10b981; }
+  100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.0); border-color: var(--border-color); }
+}
+.input.ft-onboarding-hint {
+  animation: ft-onboarding-glow 3s ease-in-out 2;
+}
+
 /* Exercise tab */

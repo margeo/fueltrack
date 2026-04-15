@@ -167,6 +167,22 @@ export default function ProfileTab({
   const [showSaved, setShowSaved] = useState(false);
   const savedTimer = useRef(null);
 
+  // Onboarding hint: when a new user lands on Profile with an empty
+  // profile, the bottom tabs are hidden (appReady is gated on
+  // profileComplete). Without a cue, the user can be confused about
+  // why the nav disappeared. Scroll to top and briefly glow the first
+  // required field so the intent — "fill this in first" — is obvious.
+  // No auto-focus: we deliberately avoid popping the mobile keyboard.
+  const weightFieldRef = useRef(null);
+  const [showWeightGlow, setShowWeightGlow] = useState(false);
+  useEffect(() => {
+    if (profileComplete) return;
+    window.scrollTo(0, 0);
+    setShowWeightGlow(true);
+    const timer = setTimeout(() => setShowWeightGlow(false), 3200);
+    return () => clearTimeout(timer);
+  }, [profileComplete]);
+
   useEffect(() => { setLocalAge(age); }, [age]);
   useEffect(() => {
     setLocalHeight(height);
@@ -257,7 +273,12 @@ export default function ProfileTab({
         <div className="grid-2 profile-grid-compact">
           <label className="profile-field">
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{isImperial ? t("profile.weightLbs") : t("profile.weight")}</div>
-            <input className="input" placeholder={isImperial ? "lbs" : "kg"} inputMode="decimal" value={localWeight}
+            <input
+              ref={weightFieldRef}
+              className={`input${showWeightGlow ? " ft-onboarding-hint" : ""}`}
+              placeholder={isImperial ? "lbs" : "kg"}
+              inputMode="decimal"
+              value={localWeight}
               onChange={(e) => setLocalWeight(e.target.value)}
               onBlur={() => { const kg = isImperial ? lbsToKg(localWeight) : localWeight; setWeight(kg); flashSaved(); }}
               style={inputStyle} />
