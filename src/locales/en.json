@@ -518,6 +518,19 @@
     "upgrade": "Upgrade to Pro",
     "manage": "Manage subscription"
   },
+  "deleteAccount": {
+    "sectionTitle": "Danger zone",
+    "sectionDesc": "Permanently delete your account and all associated data.",
+    "triggerBtn": "Delete my account",
+    "title": "Delete account",
+    "warning": "This action cannot be undone. Your account and all related data will be permanently deleted.",
+    "item1": "All profile data, food logs, and saved plans",
+    "item2": "AI usage history and limits",
+    "item3": "Subscription is NOT cancelled automatically — manage it first if active",
+    "typePrompt": "Type {{word}} below to confirm",
+    "confirmBtn": "Delete forever",
+    "error": "Failed to delete account. Please try again."
+  },
   "auth": {
     "subtitle": "Plan → Track → Achieve!",
     "login": "Sign in",

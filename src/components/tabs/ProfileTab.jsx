@@ -30,6 +30,7 @@ const SESSION_DURATIONS = ["15", "30", "45", "60"];
 const FITNESS_GOALS = ["strength", "endurance", "flexibility", "weight_loss", "muscle", "general"];
 import { MODE_GROUPS, MODES } from "../../data/modes";
 import AdminPanel from "../AdminPanel";
+import DeleteAccountModal from "../DeleteAccountModal";
 import { supabase } from "../../supabaseClient";
 
 // Unit conversion helpers
@@ -126,6 +127,7 @@ export default function ProfileTab({
 }) {
   const { t, i18n } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
@@ -941,6 +943,26 @@ export default function ProfileTab({
         </div>
       )}
 
+      {/* Danger zone — Apple 5.1.1(v) requires in-app account deletion. */}
+      {userEmail && (
+        <div className="card" style={{ padding: "14px 16px", borderColor: "#fecaca", background: "var(--bg-card)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 4 }}>
+            ⚠️ {t("deleteAccount.sectionTitle")}
+          </div>
+          <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
+            {t("deleteAccount.sectionDesc")}
+          </div>
+          <button type="button" onClick={() => setShowDeleteAccount(true)}
+            style={{
+              background: "transparent", color: "#dc2626",
+              border: "1px solid #dc2626", borderRadius: 10,
+              fontSize: 13, padding: "8px 14px", fontWeight: 700, cursor: "pointer"
+            }}>
+            {t("deleteAccount.triggerBtn")}
+          </button>
+        </div>
+      )}
+
       <div style={{ textAlign: "center", marginTop: 4, marginBottom: 16 }}>
         <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
           style={{ color: "var(--text-muted)", fontSize: 12 }}>
@@ -949,6 +971,7 @@ export default function ProfileTab({
       </div>
 
       {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} adminEmail={userEmail} />}
+      {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
     </>
   );
 }
