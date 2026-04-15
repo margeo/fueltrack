@@ -1,6 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import SummaryTab from "../SummaryTab";
+
+// SummaryTab's hero card has a collapsible Macros section whose open
+// state is read from sessionStorage key "ft_sum_macros" (default false).
+// Tests that assert on macro bars need that section expanded, so pre-
+// seed sessionStorage before every test to keep assertions stable.
+beforeEach(() => {
+  sessionStorage.setItem("ft_sum_macros", "true");
+});
 
 // Mock AiCoach
 vi.mock("../../AiCoach", () => ({
