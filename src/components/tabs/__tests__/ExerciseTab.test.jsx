@@ -1,6 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ExerciseTab from "../ExerciseTab";
+
+// ExerciseTab's four cards (Add, Favorites, Recent, Custom) became
+// collapsible in the April 14 overhaul, with open state persisted in
+// per-card sessionStorage keys (default all collapsed). Tests assume
+// the cards are open, so seed the keys before every test.
+beforeEach(() => {
+  sessionStorage.setItem("ft_ex_add", "true");
+  sessionStorage.setItem("ft_ex_fav", "true");
+  sessionStorage.setItem("ft_ex_recent", "true");
+  sessionStorage.setItem("ft_ex_custom", "true");
+});
 
 // Mock GoogleFitButton
 vi.mock("../../GoogleFitButton", () => ({
@@ -95,7 +106,7 @@ describe("ExerciseTab", () => {
 
   it("renders custom exercise form", () => {
     renderExerciseTab();
-    expect(screen.getByText("Custom άσκηση")).toBeTruthy();
+    expect(screen.getByText(/Custom$/)).toBeTruthy();
     expect(screen.getByPlaceholderText("Όνομα άσκησης")).toBeTruthy();
     expect(screen.getByPlaceholderText("Λεπτά")).toBeTruthy();
     expect(screen.getByPlaceholderText("kcal/λεπτό")).toBeTruthy();
