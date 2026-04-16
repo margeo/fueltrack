@@ -46,14 +46,23 @@
       "highCarbs": "High on carbs today — ease up on bread, rice, pasta",
       "highFat": "High on fat today — go lighter on oils and cheese",
       "lowProtein": "Low on protein — add chicken, fish or Greek yogurt",
+      "allMacrosBalanced": "Well-balanced macros today ✨",
+      "highProteinDay": "Great protein day 💪",
       "exerciseBonus": "Exercise earned you +{{kcal}} kcal today",
+      "noExerciseWeek": "No movement this week — even a 20 min walk counts",
+      "exerciseConsistent": "{{days}} active days this week 🔥",
       "onTrack": "You're on track — keep it up",
       "streakProud": "{{days}} day streak — keep it rolling 🔥",
       "streakWeek": "Full week logged ({{days}} days) — nice work ✨",
       "skipBreakfast": "Don't skip breakfast — fuel up",
       "eveningUnderfed": "Still short on food for the day — have a proper dinner",
       "fastingEatNow": "Eating window is open — don't forget to fuel up",
-      "weekLowProtein": "Low on protein most of the week — prioritise chicken, fish, eggs"
+      "hydration": "Stay hydrated — aim for 2 L of water today 💧",
+      "weekLowProtein": "Low on protein most of the week — prioritise chicken, fish, eggs",
+      "weekendOvershoot": "Weekends are running hot — keep Sat/Sun closer to your target",
+      "loseOverTarget": "Over target — a tighter dinner keeps weight loss on track",
+      "gainUnderTarget": "Gaining means eating — add a snack or boost dinner portions",
+      "weighIn": "No weight logged in {{days}} days — update to keep targets accurate"
     },
     "summary": {
       "howTo": [
@@ -212,17 +221,6 @@
     "carbsLabel": "Carbs",
     "fatLabel": "Fat",
     "proteinRemaining": "Protein remaining:",
-    "tips": {
-      "eatMore": "You can eat ~{{kcal}} kcal more",
-      "almostThere": "Almost there — {{kcal}} kcal left",
-      "onTarget": "Right on target today",
-      "overBudget": "You're over by {{kcal}} kcal today",
-      "highCarbs": "High on carbs today — ease up on bread, rice, pasta",
-      "highFat": "High on fat today — go lighter on oils and cheese",
-      "lowProtein": "Low on protein — add chicken, fish or Greek yogurt",
-      "exerciseBonus": "Exercise earned you +{{kcal}} kcal today",
-      "onTrack": "You're on track — keep it up"
-    },
     "myPlans": "My plans",
     "plansDisclaimer": "General suggestions — not a substitute for a specialist. Consult a doctor if you have conditions or allergies.",
     "mealPlan": "Meal plan",

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import { authedFetch } from "../../utils/authFetch";
+import { buildLiveTips } from "../../utils/liveTips";
 import AiCoach from "../AiCoach";
 import DatePickerModal from "../DatePickerModal";
 
@@ -531,46 +532,32 @@ RULES:
               );
             }
 
-            // ------- Rule-based tips (no AI) -------
-            // Up to three short pointers derived from the already-
-            // computed state: calorie remaining vs target, macro-split
-            // drift vs target, and exercise bonus. Priority order: any
-            // imbalance first, then the neutral calorie/exercise line,
-            // so the user always sees the most actionable tip first.
-            const tips = [];
-            if (actualKcal > 120 && targetKcal > 0) {
-              const actualCarbsPct = (totalCarbs * 4) / actualKcal;
-              const actualFatPct = (totalFat * 9) / actualKcal;
-              const actualProtPct = (totalProtein * 4) / actualKcal;
-              const targetCarbsPct = (cTarget * 4) / targetKcal;
-              const targetFatPct = (fTarget * 9) / targetKcal;
-              const targetProtPct = (pTarget * 4) / targetKcal;
-              if (actualCarbsPct > targetCarbsPct + 0.12) {
-                tips.push(t("summary.tips.highCarbs"));
-              }
-              if (actualFatPct > targetFatPct + 0.12) {
-                tips.push(t("summary.tips.highFat"));
-              }
-              if (actualProtPct < targetProtPct - 0.10 && totalProtein < pTarget * 0.6) {
-                tips.push(t("summary.tips.lowProtein"));
-              }
-            }
-            if (remainingCalories > 200) {
-              tips.push(t("summary.tips.eatMore", { kcal: formatNumber(remainingCalories) }));
-            } else if (remainingCalories >= 50 && remainingCalories <= 200) {
-              tips.push(t("summary.tips.almostThere", { kcal: formatNumber(remainingCalories) }));
-            } else if (remainingCalories < -150) {
-              tips.push(t("summary.tips.overBudget", { kcal: formatNumber(Math.abs(remainingCalories)) }));
-            } else {
-              tips.push(t("summary.tips.onTarget"));
-            }
-            if ((exerciseValue || 0) >= 150) {
-              tips.push(t("summary.tips.exerciseBonus", { kcal: formatNumber(exerciseValue) }));
-            }
-            if (tips.length === 0) {
-              tips.push(t("summary.tips.onTrack"));
-            }
-            const displayTips = tips.slice(0, 3);
+            // Rule-based live-state tips — shared helper so the
+            // Dashboard, Coach hero, AiLimitLock, Food/Exercise empty
+            // states all read from the same set of rules. See
+            // src/utils/liveTips.js for the rule list + tag taxonomy.
+            const displayTips = buildLiveTips({
+              t,
+              formatNumber,
+              remainingCalories,
+              totalCalories,
+              totalProtein,
+              totalCarbs,
+              totalFat,
+              exerciseValue,
+              targetCalories,
+              proteinTarget: pTarget,
+              carbsTarget: cTarget,
+              fatTarget: fTarget,
+              goalType,
+              mode,
+              isToday,
+              last7Days,
+              streak,
+              weightLog,
+              surface: "DASHBOARD",
+              max: 3,
+            });
 
             const macroList = [
               { emoji: "🥩", label: "Protein", cur: totalProtein, tgt: pTarget, pct: proteinPercent, cls: "macro-bar-protein" },
