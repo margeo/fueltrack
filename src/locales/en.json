@@ -58,7 +58,13 @@
     "suggestDumbbells": "Strength day today",
     "suggestGym": "Gym session today",
     "suggestOutdoor": "Outdoor cardio or a brisk walk",
-    "suggestAnyMove": "Any movement counts — even 20 min"
+    "suggestAnyMove": "Any movement counts — even 20 min",
+    "suggestUserProteins": "From your protein picks today: {{items}}",
+    "suggestUserVeggies": "Add veggies you like: {{items}}",
+    "suggestUserCarbs": "Carbs from your picks: {{items}}",
+    "suggestUserDairy": "Dairy from your picks: {{items}}",
+    "suggestUserCooking": "Stick with {{method}} — your preferred cooking style",
+    "suggestSetFoodPrefs": "Set food preferences in Profile to get tailored ideas"
   },
   "help": {
     "title": "Quick Guide",

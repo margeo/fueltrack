@@ -275,31 +275,57 @@ export function buildLiveTips({
     candidates.push(emit(t("tips.sessionDurationHint", { mins: sessionDuration }), TIP_TAGS.EXERCISE_PROFILE));
   }
 
-  // 12. FOOD SUGGESTIONS (for the FOOD_ADD surface — concrete meal ideas)
+  // 12. FOOD SUGGESTIONS (FOOD_ADD surface — drawn directly from
+  // the user's Food Profile picks so the nudge always references
+  // categories / items they've actually marked as preferred.)
+  const PROTEIN_ITEMS = ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"];
+  const VEGGIE_ITEMS = ["salads", "cooked_veggies", "soups"];
+  const CARB_ITEMS = ["rice", "pasta", "bread", "potatoes", "oats"];
+  const DAIRY_ITEMS = ["yogurt", "cheese", "milk"];
+  const COOKING_METHODS = ["grilled", "oven", "boiled", "fried", "raw"];
   const foodCats = Array.isArray(foodCategories) ? foodCategories : [];
-  const hasVeggies = foodCats.some((c) => /veggies|salads|cooked_veggies|soups/i.test(String(c)));
-  const hasProteins = foodCats.some((c) => /proteins|chicken|beef|fish|eggs|legumes|tofu/i.test(String(c)));
-  const hasDairy = foodCats.some((c) => /dairy|yogurt|cheese|milk/i.test(String(c)));
+
+  const localizeItem = (key) => {
+    const localized = t(`foodPrefs.item.${key}`, { defaultValue: "" });
+    return localized || key;
+  };
+  const formatPicks = (keys) => keys.slice(0, 2).map(localizeItem).join(", ");
+
+  const userProteins = foodCats.filter((c) => PROTEIN_ITEMS.includes(c));
+  const userVeggies = foodCats.filter((c) => VEGGIE_ITEMS.includes(c));
+  const userCarbs = foodCats.filter((c) => CARB_ITEMS.includes(c));
+  const userDairy = foodCats.filter((c) => DAIRY_ITEMS.includes(c));
+  const userCooking = foodCats.filter((c) => COOKING_METHODS.includes(c));
+
   if (simpleMode) {
     candidates.push(emit(t("tips.suggestSimpleBatch"), TIP_TAGS.SUGGESTION_FOOD));
   }
-  if (cookingLevel === "beginner" && cookingTime === "quick") {
-    candidates.push(emit(t("tips.suggestBeginnerQuick"), TIP_TAGS.SUGGESTION_FOOD));
-  } else if (cookingLevel === "beginner") {
+  if (userProteins.length > 0) {
+    candidates.push(emit(t("tips.suggestUserProteins", { items: formatPicks(userProteins) }), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (userVeggies.length > 0) {
+    candidates.push(emit(t("tips.suggestUserVeggies", { items: formatPicks(userVeggies) }), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (userCarbs.length > 0) {
+    candidates.push(emit(t("tips.suggestUserCarbs", { items: formatPicks(userCarbs) }), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (userDairy.length > 0) {
+    candidates.push(emit(t("tips.suggestUserDairy", { items: formatPicks(userDairy) }), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (userCooking.length > 0) {
+    candidates.push(emit(t("tips.suggestUserCooking", { method: formatPicks(userCooking) }), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (cookingLevel === "beginner") {
     candidates.push(emit(t("tips.suggestBeginner"), TIP_TAGS.SUGGESTION_FOOD));
-  } else if (cookingTime === "quick") {
+  }
+  if (cookingTime === "quick") {
     candidates.push(emit(t("tips.suggestQuick"), TIP_TAGS.SUGGESTION_FOOD));
   }
-  if (hasVeggies) {
-    candidates.push(emit(t("tips.suggestVeggies"), TIP_TAGS.SUGGESTION_FOOD));
+  // Empty-profile fallback — points the user back to Profile to fill in preferences.
+  if (foodCats.length === 0 && !simpleMode && !cookingLevel && !cookingTime) {
+    candidates.push(emit(t("tips.suggestSetFoodPrefs"), TIP_TAGS.SUGGESTION_FOOD));
   }
-  if (hasProteins && cookingLevel !== "beginner") {
-    candidates.push(emit(t("tips.suggestProtein"), TIP_TAGS.SUGGESTION_FOOD));
-  }
-  if (hasDairy) {
-    candidates.push(emit(t("tips.suggestDairy"), TIP_TAGS.SUGGESTION_FOOD));
-  }
-  // Fallback suggestion when no profile signals
+  // Last-resort fallback so the surface is never empty.
   candidates.push(emit(t("tips.suggestBalanced"), TIP_TAGS.SUGGESTION_FOOD));
 
   // 13. EXERCISE SUGGESTIONS (for the EXERCISE_ADD surface — concrete workout ideas)

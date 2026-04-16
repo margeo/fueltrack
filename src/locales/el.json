@@ -58,7 +58,13 @@
     "suggestDumbbells": "Μέρα δύναμης σήμερα",
     "suggestGym": "Μέρα gym σήμερα",
     "suggestOutdoor": "Εξωτερικά — cardio ή γρήγορο περπάτημα",
-    "suggestAnyMove": "Κάθε κίνηση μετράει — ακόμα και 20'"
+    "suggestAnyMove": "Κάθε κίνηση μετράει — ακόμα και 20'",
+    "suggestUserProteins": "Από τις πρωτεΐνες που προτιμάς: {{items}}",
+    "suggestUserVeggies": "Πρόσθεσε λαχανικά που σου αρέσουν: {{items}}",
+    "suggestUserCarbs": "Υδατάνθρακες από τις επιλογές σου: {{items}}",
+    "suggestUserDairy": "Γαλακτοκομικά από τις επιλογές σου: {{items}}",
+    "suggestUserCooking": "Μείνε σε {{method}} — προτιμώμενος τρόπος μαγειρέματος",
+    "suggestSetFoodPrefs": "Ορίσε διατροφικές προτιμήσεις στο Profile για στοχευμένες ιδέες"
   },
   "help": {
     "title": "Γρήγορος Οδηγός",
