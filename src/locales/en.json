@@ -69,16 +69,533 @@
     "title": "Quick Guide",
     "howTo": "Features",
     "profile": {
-      "content": "What it shows\nBasic info\nweight / height / age / gender\ngoal (lose / maintain / gain)\nactivity level\ndiet mode\n→ used in every calculation\nYour Target\nkg you want to lose/gain\ntimeframe (weeks)\n→ sets your daily deficit / surplus\nAnalysis\nTDEE (maintenance)\nDaily target kcal\nDaily deficit / surplus\nProtein target (g)\nMacro split (%)\n→ these are the \"numbers\" that drive the whole app\n\nFood Profile\nFood picks (proteins, carbs, dairy etc.)\n→ shape meal plans & suggestions\nCooking style\n(grilled, oven, fried etc.)\nCooking skill & time\n→ controls how \"complex\" meals will be\nMeals per day\n→ structures the meal plan (e.g. 3 meals + snacks)\nAllergies / intolerances\n→ excluded from suggestions (critical)\nSimple groceries\n→ reuse meals → shorter shopping list\n\nExercise Profile\nFitness level\nWhere you work out\n(home / gym / outdoor)\nEquipment available\n→ filters exercises\nWorkout frequency & duration\n→ training plan structure\nFitness goals\n(strength, weight loss, etc.)\nLimitations / injuries\n→ unsuitable exercises avoided\n\nAccount\nLanguage (EN/GR)\nSubscription / plan\nSign out\n\nWhat you can do\nSet a goal (kg + time)\nSee exactly how many calories you need\nAdjust diet & macros\nDefine what you eat → better meal plans\nDefine your training setup → proper workouts\n\n💡 Tips\nAnalysis is the core — if it's wrong, everything else will be off\nRealistic rate: ~0.5–1 kg/week\nActivity level greatly impacts TDEE → set it correctly\nAllergies = must (blocks wrong suggestions)\nThe more complete the profile → the more accurate the Coach"
+      "sections": [
+        {
+          "heading": "What it shows",
+          "items": [
+            {
+              "title": "Basic info",
+              "sub": [
+                "weight / height / age / gender",
+                "goal (lose / maintain / gain)",
+                "activity level",
+                "diet mode"
+              ],
+              "footer": "→ used in every calculation"
+            },
+            {
+              "title": "Your Target",
+              "sub": [
+                "kg you want to lose/gain",
+                "timeframe (weeks)"
+              ],
+              "footer": "→ sets your **daily deficit / surplus**"
+            },
+            {
+              "title": "Analysis",
+              "sub": [
+                "TDEE (maintenance)",
+                "Daily target kcal",
+                "Daily deficit / surplus",
+                "Protein target (g)",
+                "Macro split (%)"
+              ],
+              "footer": "→ these are the \"numbers\" that drive the whole app"
+            }
+          ]
+        },
+        {
+          "heading": "Food Profile",
+          "items": [
+            {
+              "title": "Food picks (proteins, carbs, dairy etc.)",
+              "body": "→ shape **meal plans & suggestions**"
+            },
+            {
+              "title": "Cooking style",
+              "body": "(grilled, oven, fried etc.)"
+            },
+            {
+              "title": "Cooking skill & time",
+              "body": "→ controls how \"complex\" meals will be"
+            },
+            {
+              "title": "Meals per day",
+              "body": "→ structures the meal plan (e.g. 3 meals + snacks)"
+            },
+            {
+              "title": "Allergies / intolerances",
+              "body": "→ excluded from suggestions (critical)"
+            },
+            {
+              "title": "Simple groceries",
+              "body": "→ reuse meals → shorter shopping list"
+            }
+          ]
+        },
+        {
+          "heading": "Exercise Profile",
+          "items": [
+            {
+              "title": "Fitness level"
+            },
+            {
+              "title": "Where you work out",
+              "body": "(home / gym / outdoor)"
+            },
+            {
+              "title": "Equipment available",
+              "body": "→ filters exercises"
+            },
+            {
+              "title": "Workout frequency & duration",
+              "body": "→ **training plan** structure"
+            },
+            {
+              "title": "Fitness goals",
+              "body": "(strength, weight loss, etc.)"
+            },
+            {
+              "title": "Limitations / injuries",
+              "body": "→ unsuitable exercises avoided"
+            }
+          ]
+        },
+        {
+          "heading": "Account",
+          "items": [
+            {
+              "li": "Language (EN/GR)"
+            },
+            {
+              "li": "Subscription / plan"
+            },
+            {
+              "li": "Sign out"
+            }
+          ]
+        },
+        {
+          "heading": "What you can do",
+          "items": [
+            {
+              "li": "Set a **goal** (kg + time)"
+            },
+            {
+              "li": "See exactly **how many calories you need**"
+            },
+            {
+              "li": "Adjust **diet & macros**"
+            },
+            {
+              "li": "Define what you eat → better **meal plans**"
+            },
+            {
+              "li": "Define your **training setup** → proper workouts"
+            }
+          ]
+        },
+        {
+          "heading": "💡 Tips",
+          "items": [
+            {
+              "li": "**Analysis** is the core — if it's wrong, everything else will be off"
+            },
+            {
+              "li": "Realistic rate: **~0.5–1 kg/week**"
+            },
+            {
+              "li": "Activity level greatly impacts TDEE → set it correctly"
+            },
+            {
+              "li": "Allergies = must (blocks wrong suggestions)"
+            },
+            {
+              "li": "The more complete the profile → the more accurate the Coach"
+            }
+          ]
+        }
+      ]
     },
     "summary": {
-      "content": "What it shows\nRemaining (calories) = Target − Food + Exercise\nShows how much you can still eat. Goes negative when you exceed the target.\nCalories donut (circle)\nVisual day progress. Fills as you eat. As you approach the target → intensity/color shifts.\nMacro distribution (pie)\nProtein / Carbs / Fat\n→ shows how your intake is split relative to the target.\nMacro bars\nExact amount (g) vs target for each macro.\nAuto tips (👉 Tips)\nGenerated live from:\nmacros imbalance\ncalories\ntime of day\nstreak\nUpdate as you log.\nStreak 🔥\nConsecutive days of logging.\nIf you miss a day → reset.\nCoach\nQuick actions: Meal Plan, Training Plan, Weekly Review\nCustom questions\nWhatever is generated is saved here\nSaved Plans (Meal / Grocery / Training)\nExpand / Collapse\nExport PDF\nDelete\nWeight tracking\nLog weight by date\n30-day trend\nAutomatically affects calorie targets\nHistory (past days)\nRemaining / Food / Exercise\nExpand for macros\n📅 Date picker\nLog a past day\nFuture disabled\n\nWhat you can do\nCheck at a glance whether you're within your calorie target\nSee if your macros are properly distributed\nGet live guidance from the tips\nCreate meal / training plans\nTrack weight progress & consistency\nLog or edit past days\n\n💡 Tips\nIf Remaining drops very low/negative → reduce intake or add exercise\nIf macros are off → fix the next meal, not the whole day\nStreak = consistency metric, not performance\nWeight: update 1–2 times/week for accurate targeting\nUse the Weekly Review for a quick weekly check"
+      "sections": [
+        {
+          "heading": "What it shows",
+          "items": [
+            {
+              "title": "Remaining (calories) = Target − Food + Exercise",
+              "body": "Shows how much you can still eat. Goes negative when you exceed the target."
+            },
+            {
+              "title": "Calories donut (circle)",
+              "body": "Visual day progress. Fills as you eat. As you approach the target → intensity/color shifts."
+            },
+            {
+              "title": "Macro distribution (pie)",
+              "body": "Protein / Carbs / Fat\n→ shows how your intake is split relative to the target."
+            },
+            {
+              "title": "Macro bars",
+              "body": "Exact amount (g) vs target for each macro."
+            },
+            {
+              "title": "Auto tips (👉 Tips)",
+              "body": "Generated live from:",
+              "sub": [
+                "macros imbalance",
+                "calories",
+                "time of day",
+                "streak"
+              ],
+              "footer": "Update as you log."
+            },
+            {
+              "title": "Streak 🔥",
+              "body": "Consecutive days of logging.\nIf you miss a day → reset."
+            },
+            {
+              "title": "Coach",
+              "sub": [
+                "Quick actions: Meal Plan, Training Plan, Weekly Review",
+                "Custom questions",
+                "Whatever is generated is saved here"
+              ]
+            },
+            {
+              "title": "Saved Plans (Meal / Grocery / Training)",
+              "sub": [
+                "Expand / Collapse",
+                "Export PDF",
+                "Delete"
+              ]
+            },
+            {
+              "title": "Weight tracking",
+              "sub": [
+                "Log weight by date",
+                "30-day trend",
+                "Automatically affects calorie targets"
+              ]
+            },
+            {
+              "title": "History (past days)",
+              "sub": [
+                "Remaining / Food / Exercise",
+                "Expand for macros"
+              ]
+            },
+            {
+              "title": "📅 Date picker",
+              "sub": [
+                "Log a past day",
+                "Future disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "What you can do",
+          "items": [
+            {
+              "li": "Check at a glance whether you're **within your calorie target**"
+            },
+            {
+              "li": "See if your **macros are properly distributed**"
+            },
+            {
+              "li": "Get **live guidance** from the tips"
+            },
+            {
+              "li": "Create **meal / training plans**"
+            },
+            {
+              "li": "Track **weight progress & consistency**"
+            },
+            {
+              "li": "Log or edit **past days**"
+            }
+          ]
+        },
+        {
+          "heading": "💡 Tips",
+          "items": [
+            {
+              "li": "If **Remaining** drops very low/negative → reduce intake or add exercise"
+            },
+            {
+              "li": "If **macros are off** → fix the next meal, not the whole day"
+            },
+            {
+              "li": "**Streak = consistency metric**, not performance"
+            },
+            {
+              "li": "Weight: update **1–2 times/week** for accurate targeting"
+            },
+            {
+              "li": "Use the **Weekly Review** for a quick weekly check"
+            }
+          ]
+        }
+      ]
     },
     "food": {
-      "content": "What it shows\nFood of the Day\nEverything you've eaten today, grouped by meal (Breakfast / Lunch / Snack etc.) + total calories.\nEntries list\nEach food with kcal + macros.\n✏️ edit → change quantity/meal\n❌ delete → remove\n\nAdd food\nSearch\nFood database (GR + EN).\nFilters:\nHigh Protein\nLow Carb\nLow Cal\nKeto\n📸 Photo\nAI food recognition → estimates kcal/macros\n(approximate, not always exact)\n🔲 Barcode\nScan a packaged product → instant add\n(real device only)\nBefore Add\nset grams / portion\npick meal\npreview macros\n\nSpeed sections\nFavorites ⭐\nOne-tap add for foods you eat often\nRecent\nQuick re-add from recent\nCustom food\nCreate your own entry (per 100g):\nkcal / protein / carbs / fat\nUseful for:\nhome-cooked meals\nrepeated meals\n\nWhat you can do\nFast daily logging\nEdit quantities / meals\nReuse foods without search\nAdd via photo / barcode\nCreate custom entries\n\n💡 Tips\nAlways check grams before adding (accuracy issue #1)\nUse favorites for speed\nPhoto → cleaner image, one plate at a time works best\nCustom → set it up once, then it's 1-click"
+      "sections": [
+        {
+          "heading": "What it shows",
+          "items": [
+            {
+              "title": "Food of the Day",
+              "body": "Everything you've eaten today, grouped by meal (Breakfast / Lunch / Snack etc.) + total calories."
+            },
+            {
+              "title": "Entries list",
+              "body": "Each food with kcal + macros.",
+              "sub": [
+                "✏️ edit → change quantity/meal",
+                "❌ delete → remove"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Add food",
+          "items": [
+            {
+              "title": "Search",
+              "body": "Food database (GR + EN).",
+              "sub": [
+                {
+                  "text": "Filters:",
+                  "sub": [
+                    "High Protein",
+                    "Low Carb",
+                    "Low Cal",
+                    "Keto"
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "📸 Photo",
+              "body": "AI food recognition → estimates kcal/macros",
+              "note": "(approximate, not always exact)"
+            },
+            {
+              "title": "🔲 Barcode",
+              "body": "Scan a packaged product → instant add",
+              "note": "(real device only)"
+            },
+            {
+              "title": "Before Add",
+              "sub": [
+                "set **grams / portion**",
+                "pick **meal**",
+                "preview **macros**"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Speed sections",
+          "items": [
+            {
+              "title": "Favorites ⭐",
+              "body": "One-tap add for foods you eat often"
+            },
+            {
+              "title": "Recent",
+              "body": "Quick re-add from recent"
+            }
+          ]
+        },
+        {
+          "heading": "Custom food",
+          "items": [
+            {
+              "li": "Create your own entry (per 100g):",
+              "sub": [
+                "kcal / protein / carbs / fat"
+              ]
+            },
+            {
+              "li": "Useful for:",
+              "sub": [
+                "home-cooked meals",
+                "repeated meals"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "What you can do",
+          "items": [
+            {
+              "li": "**Fast** food logging"
+            },
+            {
+              "li": "Edit quantities / meals"
+            },
+            {
+              "li": "Use **favorites & recent** for speed"
+            },
+            {
+              "li": "Add foods via **photo or barcode**"
+            },
+            {
+              "li": "Create **custom entries** for homemade meals"
+            }
+          ]
+        },
+        {
+          "heading": "💡 Tips",
+          "items": [
+            {
+              "li": "Use **favorites** for what you eat often → huge speed boost"
+            },
+            {
+              "li": "**Recent** saves you from repeat search"
+            },
+            {
+              "li": "Always check **grams before adding** (accuracy)"
+            },
+            {
+              "li": "Photo works best with a clear image / one plate"
+            },
+            {
+              "li": "Custom foods = best solution for recipes you repeat"
+            }
+          ]
+        }
+      ]
     },
     "exercise": {
-      "content": "What it shows\nExercise today (total kcal)\nTotal calories burned + the day's exercise list\nEntries list\nEach exercise with:\nduration (minutes)\nkcal burned\n❌ delete → remove entry\n\nAdd exercise\nSearch\nFind an exercise from the library\nCategories\nCardio\nGym\nTraining\nSports\nExercise dropdown\nShows kcal/min for each exercise\n→ basis for the calorie calculation\nBefore Add\nset minutes\npreview kcal\n\nIntegrations\nHealth / Google Fit\nAuto-import workouts (when connected)\n\nSpeed sections\nFavorites ⭐\nOne-tap add (default duration ~30min)\nRecent\nQuick re-add from recent workouts\nCustom exercise\nCreate your own exercise:\nname\nminutes\nkcal/min\nUseful for:\nactivities outside the library\n\nWhat you can do\nLog workouts and duration\nSee how many calories you're burning\nDirectly affect your remaining calories\nUse favorites/recent for speed\nAdd custom activities\n\n💡 Tips\nLonger duration = more kcal (linear with kcal/min)\nExercise kcal add back to your daily allowance\nFavorites = fastest logging for repeated workouts\nCustom → set a realistic kcal/min for accurate results"
+      "sections": [
+        {
+          "heading": "What it shows",
+          "items": [
+            {
+              "title": "Exercise today (total kcal)",
+              "body": "Total calories burned + the day's exercise list"
+            },
+            {
+              "title": "Entries list",
+              "body": "Each exercise with:",
+              "sub": [
+                "duration (minutes)",
+                "kcal burned",
+                "❌ delete → remove entry"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Add exercise",
+          "items": [
+            {
+              "title": "Search",
+              "body": "Find an exercise from the library"
+            },
+            {
+              "title": "Categories",
+              "sub": [
+                "Cardio",
+                "Gym",
+                "Training",
+                "Sports"
+              ]
+            },
+            {
+              "title": "Exercise dropdown",
+              "body": "Shows **kcal/min** for each exercise\n→ basis for the calorie calculation"
+            },
+            {
+              "title": "Before Add",
+              "sub": [
+                "set **minutes**",
+                "preview **kcal**"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Integrations",
+          "items": [
+            {
+              "title": "Health / Google Fit",
+              "body": "Auto-import workouts (when connected)"
+            }
+          ]
+        },
+        {
+          "heading": "Speed sections",
+          "items": [
+            {
+              "title": "Favorites ⭐",
+              "body": "One-tap add (default duration ~30min)"
+            },
+            {
+              "title": "Recent",
+              "body": "Quick re-add from recent workouts"
+            }
+          ]
+        },
+        {
+          "heading": "Custom exercise",
+          "items": [
+            {
+              "li": "Create your own exercise:",
+              "sub": [
+                "name",
+                "minutes",
+                "kcal/min"
+              ]
+            },
+            {
+              "li": "Useful for:",
+              "sub": [
+                "activities outside the library"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "What you can do",
+          "items": [
+            {
+              "li": "Log workouts and duration"
+            },
+            {
+              "li": "See how many calories you're burning"
+            },
+            {
+              "li": "Directly affect your **remaining calories**"
+            },
+            {
+              "li": "Use favorites/recent for speed"
+            },
+            {
+              "li": "Add custom activities"
+            }
+          ]
+        },
+        {
+          "heading": "💡 Tips",
+          "items": [
+            {
+              "li": "More **duration** = more kcal (linear with kcal/min)"
+            },
+            {
+              "li": "Exercise kcal **are added back** to your daily allowance"
+            },
+            {
+              "li": "Favorites = fastest logging for repeated workouts"
+            },
+            {
+              "li": "Custom → set a realistic kcal/min for accurate results"
+            }
+          ]
+        }
+      ]
     },
     "tips": "Tips"
   },
