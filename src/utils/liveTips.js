@@ -24,6 +24,8 @@ export const TIP_TAGS = {
   WEIGHT: "weight",             // weigh-in reminders / plateau
   POSITIVE: "positive",         // purely encouraging — safe for paywall / limit screens
   NEUTRAL: "neutral",           // informational fallback
+  FOOD_PROFILE: "foodProfile",  // driven by food-profile choices (allergies, cooking level, meals/day, simpleMode)
+  EXERCISE_PROFILE: "exerciseProfile", // driven by exercise-profile choices (level, location, equipment, limitations, frequency)
 };
 
 // Keyed taxonomy so surfaces can request "only these tags" without
@@ -39,8 +41,8 @@ export const TIP_SURFACES = {
     TIP_TAGS.WEIGHT, TIP_TAGS.POSITIVE,
   ],
   PAYWALL: [TIP_TAGS.POSITIVE, TIP_TAGS.STREAK],
-  FOOD_EMPTY: [TIP_TAGS.TIMING, TIP_TAGS.HYDRATION, TIP_TAGS.CALORIE, TIP_TAGS.POSITIVE],
-  EXERCISE: [TIP_TAGS.EXERCISE, TIP_TAGS.POSITIVE],
+  FOOD_EMPTY: [TIP_TAGS.TIMING, TIP_TAGS.HYDRATION, TIP_TAGS.CALORIE, TIP_TAGS.POSITIVE, TIP_TAGS.FOOD_PROFILE],
+  EXERCISE: [TIP_TAGS.EXERCISE, TIP_TAGS.POSITIVE, TIP_TAGS.EXERCISE_PROFILE],
 };
 
 export function buildLiveTips({
@@ -66,6 +68,22 @@ export function buildLiveTips({
   last7Days = [],
   streak = 0,
   weightLog = [],
+  // food profile (from Profile tab → Food Profile section)
+  foodCategories = [],
+  allergies = [],
+  cookingLevel = "",
+  cookingTime = "",
+  simpleMode = false,
+  mealsPerDay = "",
+  todayMealsLogged = 0,
+  // exercise profile (from Profile tab → Exercise Profile section)
+  fitnessLevel = "",
+  workoutLocation = "",
+  equipment = [],
+  limitations = "",
+  workoutFrequency = "",
+  sessionDuration = "",
+  todayExerciseMinutes = 0,
   // presentation
   surface = "DASHBOARD",
   max = 3,
@@ -204,6 +222,48 @@ export function buildLiveTips({
         candidates.push(emit(t("tips.weighIn", { days: daysSince }), TIP_TAGS.WEIGHT));
       }
     }
+  }
+
+  // 10. FOOD PROFILE-AWARE (Food tab empty state / related)
+  if (Array.isArray(allergies) && allergies.length > 0) {
+    candidates.push(emit(t("tips.allergyReminder"), TIP_TAGS.FOOD_PROFILE));
+  }
+  if (simpleMode) {
+    candidates.push(emit(t("tips.simpleModeHint"), TIP_TAGS.FOOD_PROFILE));
+  }
+  if (cookingLevel === "beginner" && todayMealsLogged === 0) {
+    candidates.push(emit(t("tips.beginnerCook"), TIP_TAGS.FOOD_PROFILE));
+  } else if (cookingTime === "quick") {
+    candidates.push(emit(t("tips.quickCookingHint"), TIP_TAGS.FOOD_PROFILE));
+  }
+  if (mealsPerDay && Number(mealsPerDay) > 0 && todayMealsLogged < Number(mealsPerDay) && isToday) {
+    const mealsLeft = Number(mealsPerDay) - todayMealsLogged;
+    if (mealsLeft > 0) {
+      candidates.push(emit(t("tips.mealsLeft", { count: mealsLeft }), TIP_TAGS.FOOD_PROFILE));
+    }
+  }
+
+  // 11. EXERCISE PROFILE-AWARE (Exercise tab hero / related)
+  if (limitations && String(limitations).trim().length > 0) {
+    candidates.push(emit(t("tips.limitationAware"), TIP_TAGS.EXERCISE_PROFILE));
+  }
+  if (workoutLocation === "home" && (!Array.isArray(equipment) || equipment.length === 0 || equipment.includes("none"))) {
+    candidates.push(emit(t("tips.homeNoEquipment"), TIP_TAGS.EXERCISE_PROFILE));
+  }
+  if (fitnessLevel === "beginner" && todayExerciseMinutes === 0 && isToday) {
+    candidates.push(emit(t("tips.beginnerFitness"), TIP_TAGS.EXERCISE_PROFILE));
+  }
+  if (workoutFrequency && Number(workoutFrequency) > 0 && Array.isArray(last7Days)) {
+    const activeDaysWeek = last7Days.slice(0, 7).filter((d) => d && (d.exercise || 0) >= 50).length;
+    const target = Number(workoutFrequency);
+    if (activeDaysWeek < target) {
+      const left = target - activeDaysWeek;
+      candidates.push(emit(t("tips.workoutsLeft", { done: activeDaysWeek, target }), TIP_TAGS.EXERCISE_PROFILE));
+      void left;
+    }
+  }
+  if (sessionDuration && Number(sessionDuration) > 0 && todayExerciseMinutes === 0 && isToday) {
+    candidates.push(emit(t("tips.sessionDurationHint", { mins: sessionDuration }), TIP_TAGS.EXERCISE_PROFILE));
   }
 
   // FALLBACK

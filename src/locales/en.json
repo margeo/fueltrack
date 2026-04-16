@@ -62,7 +62,17 @@
       "weekendOvershoot": "Weekends are running hot — keep Sat/Sun closer to your target",
       "loseOverTarget": "Over target — a tighter dinner keeps weight loss on track",
       "gainUnderTarget": "Gaining means eating — add a snack or boost dinner portions",
-      "weighIn": "No weight logged in {{days}} days — update to keep targets accurate"
+      "weighIn": "No weight logged in {{days}} days — update to keep targets accurate",
+      "allergyReminder": "Heads up — check labels for your marked allergens",
+      "simpleModeHint": "Simple mode is on — batch-cook 2-3 meals for the week",
+      "beginnerCook": "Cooking beginner? Try no-cook meals: yogurt, salads, sandwiches",
+      "quickCookingHint": "Short on time — stock pre-cooked proteins for quick assembly",
+      "mealsLeft": "{{count}} more meal(s) to hit your daily target",
+      "limitationAware": "Mind your noted limitation — pick low-impact options today",
+      "homeNoEquipment": "No equipment at home? Try push-ups, squats, planks, lunges",
+      "beginnerFitness": "Start with a 20-minute session — consistency beats intensity",
+      "workoutsLeft": "{{done}}/{{target}} workouts done this week — one more session counts",
+      "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum"
     },
     "summary": {
       "howTo": [
