@@ -29,10 +29,22 @@ function addAccents(str) {
   return map[str.toLowerCase()] || str;
 }
 
-async function fetchFromAPI(searchQ) {
-  const res = await fetch(apiUrl(`/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}`));
+async function fetchFromAPI(searchQ, debug) {
+  const url = apiUrl(
+    `/.netlify/functions/food-search?q=${encodeURIComponent(searchQ)}${debug ? "&debug=1" : ""}`
+  );
+  const res = await fetch(url);
   if (!res.ok) return [];
-  return res.json();
+  const data = await res.json();
+  // Debug mode responds with { foods, debug }; production stays a flat array
+  if (data && typeof data === "object" && Array.isArray(data.foods)) {
+    if (data.debug) {
+      // eslint-disable-next-line no-console
+      console.info(`[food-search debug] q="${searchQ}"`, data.debug);
+    }
+    return data.foods;
+  }
+  return Array.isArray(data) ? data : [];
 }
 
 function mergeAndDedupe(arrays) {
@@ -45,7 +57,7 @@ function mergeAndDedupe(arrays) {
   });
 }
 
-export default function useFoodSearch(query) {
+export default function useFoodSearch(query, { debug = false } = {}) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -68,18 +80,22 @@ export default function useFoodSearch(query) {
         const qWithAccents = addAccents(qNoAccents);
         const cacheKey = q.toLowerCase();
 
-        // 1. Έλεγχος cache — αν υπάρχει επιστρέφει instant
-        const cached = await getCached(cacheKey);
-        if (cached && !cancelled) {
-          setResults(cached);
-          setLoading(false);
-          return;
+        // 1. Έλεγχος cache — αν υπάρχει επιστρέφει instant.
+        //    Σε debug mode παραλείπουμε το cache ώστε ο admin να βλέπει
+        //    πάντα τα φρέσκα per-source stats αντί για stale cached hits.
+        if (!debug) {
+          const cached = await getCached(cacheKey);
+          if (cached && !cancelled) {
+            setResults(cached);
+            setLoading(false);
+            return;
+          }
         }
 
         // 2. Cache miss → API calls
         const queries = [...new Set([q, qNoAccents, qWithAccents])];
         const allResults = await Promise.all(
-          queries.map((searchQ) => fetchFromAPI(searchQ).catch(() => []))
+          queries.map((searchQ) => fetchFromAPI(searchQ, debug).catch(() => []))
         );
 
         if (cancelled) return;
@@ -87,7 +103,7 @@ export default function useFoodSearch(query) {
         const merged = mergeAndDedupe(allResults);
 
         // 3. Αποθήκευση στο cache για επόμενη φορά
-        if (merged.length > 0) {
+        if (merged.length > 0 && !debug) {
           setCache(cacheKey, merged);
         }
 
@@ -103,7 +119,7 @@ export default function useFoodSearch(query) {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query, debug]);
 
   return { results, loading };
 }
