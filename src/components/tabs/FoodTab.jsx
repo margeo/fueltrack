@@ -1,9 +1,10 @@
 // src/components/tabs/FoodTab.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MEALS, MEAL_KEYS } from "../../data/constants";
 import { createFoodEntry, formatNumber, normalizeFood, stripDiacritics } from "../../utils/helpers";
 import { apiUrl } from "../../utils/apiBase";
+import { authedFetch } from "../../utils/authFetch";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
 import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
@@ -167,6 +168,20 @@ export default function FoodTab({
   const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // The source badge (USDA / OpenFood / FatSecret) on search results is a
+  // debug signal for Marios, not a user-facing feature. End users don't
+  // care which upstream API returned the hit — they just want the food.
+  useEffect(() => {
+    if (!session?.access_token) return;
+    let cancelled = false;
+    authedFetch("/.netlify/functions/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }).then(res => res.json()).then(data => { if (!cancelled) setIsAdmin(data?.isAdmin === true); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [session]);
 
   const [addFoodOpen, _setAddFoodOpen] = useState(() => sessionStorage.getItem('ft_food_add') === 'true');
   const [favoritesOpen, _setFavoritesOpen] = useState(() => sessionStorage.getItem('ft_food_fav') === 'true');
@@ -407,7 +422,7 @@ export default function FoodTab({
                     <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>
                       {food.name}{food.brand ? ` · ${food.brand}` : ""}
                     </span>
-                    {getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
+                    {isAdmin && getSourceBadge(food) && <span className="tag" style={{ marginLeft: 6, fontSize: 11 }}>{getSourceBadge(food)}</span>}
                     {food.portions?.length > 0 && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--color-green)", fontWeight: 700 }}>🥣</span>}
                   </div>
                   <span className="muted" style={{ fontSize: 12 }}>
