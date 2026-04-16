@@ -107,6 +107,17 @@ select {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+  /* Sticky so the logo + language/theme/info controls stay anchored
+     to the top while the content below scrolls — mirrors the fixed
+     bottom nav so the chrome always frames the scrollable middle. */
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-body);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  /* Soft fade so content doesn't look cut off abruptly under the header. */
+  box-shadow: 0 6px 12px -10px rgba(0, 0, 0, 0.3);
 }
 
 .app-header h1 {
