@@ -105,23 +105,41 @@ select {
 }
 
 .app-header {
-  margin-bottom: 14px;
+  /* Truly pinned to the viewport (not to the scroll container) so the
+     header is completely immune to iOS rubber-band residue that could
+     still drag a sticky element a pixel or two. Mirrors the behaviour
+     of the bottom-nav, which is also position: fixed. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--bg-body);
+  padding: 10px 12px;
+  box-shadow: 0 6px 12px -10px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  /* Sticky so the logo + language/theme/info controls stay anchored
-     to the top while the content below scrolls — mirrors the fixed
-     bottom nav so the chrome always frames the scrollable middle. */
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--bg-body);
-  padding-top: 8px;
-  padding-bottom: 8px;
-  /* Soft fade so content doesn't look cut off abruptly under the header. */
-  box-shadow: 0 6px 12px -10px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+/* Since .app-header lives inside .app-container (max-width 760) we
+   let its flex items span full width visually, but keep the inner
+   content constrained to the same 760px centred column. */
+.app-header > * {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Push the scrollable body down by the fixed header's height so the
+   first card isn't hidden underneath it. 74px = 10 + 10 padding + h1
+   row (~34) + gap/buttons. */
+.app-container {
+  padding-top: 72px;
 }
 
 .app-header h1 {
