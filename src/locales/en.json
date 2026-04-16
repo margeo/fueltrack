@@ -71,97 +71,81 @@
     "howTo": "Features",
     "profile": {
       "howTo": [
-        "Unit toggle (top right): switch between metric (kg/cm) and imperial (lb/ft)",
-        "Basic Info: enter your weight, height, age, gender, goal, activity level and diet mode",
-        "Goal details: if you chose lose or gain, set target weight change and timeline in weeks",
-        "Analysis section: see your maintenance TDEE, daily target calories, protein target and macro split",
-        "Food Preferences: pick preferred food categories (proteins, veggies, grains, dairy, etc.)",
-        "Cooking skill & time: tell the app how much time and skill you have for cooking",
-        "Meals per day & snacks: set how many meals and snacks you eat daily (used in meal plans)",
-        "Allergies: mark foods you're allergic to — the app will never suggest them",
-        "Simple grocery mode: toggle for shorter grocery lists with repeated meals",
-        "Exercise Profile: set your level, location (home/gym/outdoor), equipment and limitations",
-        "Workout schedule: set frequency (days/week) and session duration",
-        "Fitness goals & exercise categories: tell the app what you want to focus on",
-        "Language selector: switch between Greek and English",
-        "Sign in / Sign out button at the bottom of the tab"
+        "Basic info: weight, height, age, gender, goal (lose/maintain/gain), activity level, diet mode — used in every calculation.",
+        "Your Target: kg you want to lose/gain + timeframe (weeks). Sets your daily deficit/surplus.",
+        "Analysis: TDEE (maintenance), daily target kcal, deficit/surplus, protein target (g), macro split (%). The numbers that drive the whole app.",
+        "Food Profile — categories & cooking style: food picks (proteins, carbs, dairy etc.) + cooking method (grilled, oven etc.). Shape meal plans & suggestions.",
+        "Food Profile — cooking skill & time: control how complex meals get.",
+        "Food Profile — meals per day: structures the meal plan (e.g. 3 meals + snacks).",
+        "Food Profile — allergies/intolerances: excluded from suggestions (critical).",
+        "Food Profile — simple groceries: reuse meals for a shorter shopping list.",
+        "Exercise Profile — setup: fitness level, location (home/gym/outdoor), equipment. Filters exercises.",
+        "Exercise Profile — schedule: workout frequency & duration. Shapes the training plan.",
+        "Exercise Profile — goals & limitations: fitness goals (strength, weight loss, etc.) + limitations/injuries. Unsuitable exercises are avoided.",
+        "Account: language (EN/GR), subscription/plan, sign out."
       ],
       "tips": [
-        "The more complete your profile, the better the Coach advice will be",
-        "Update your weight regularly in the Summary tab for accurate calorie calculations",
-        "Allergies are critical — always double-check this section",
-        "Setting realistic weekly rate (e.g. 0.5 kg/week loss) gives healthier results",
-        "Diet mode (keto, Mediterranean, etc.) affects macro split and Coach suggestions"
+        "Analysis is the core — if it's wrong, everything else is off.",
+        "Realistic loss rate: ~0.5-1 kg/week.",
+        "Activity level impacts TDEE a lot — set it correctly.",
+        "Allergies = must, they block wrong suggestions.",
+        "The more complete your profile, the more accurate the Coach."
       ]
     },
     "summary": {
       "howTo": [
-        "Hero card: greeting, today's date and a Today button if viewing a past day",
-        "Calendar icon (📅): log a past day by picking from the custom date picker (future dates are disabled)",
-        "Remaining calories: large number showing Target − Food + Exercise",
-        "Progress bar: your daily percentage toward the calorie goal",
-        "Macro bars: protein, carbs and fat with current values vs targets",
-        "Goal & diet mode badge at the bottom of the hero card",
-        "Coach: quick questions (meal plan, training plan, weekly review) or your own custom question",
-        "Meal Plan: view, expand/collapse, export as PDF or delete your saved plan",
-        "Grocery List: generated from your meal plan, export as PDF or delete",
-        "Training Plan: view, expand/collapse, export as PDF or delete",
-        "Weight tracking: enter today's weight with a date, see last weight and 30-day change",
-        "Weight history: view past entries (up to 10) with option to delete",
-        "Weight chart: visual trend over time",
-        "Streak badge: shows your current logging streak with an emoji",
-        "Last 7 Days: expandable rows with remaining, food, exercise, protein, carbs and fat per day"
+        "Remaining calories: the big number = Target − Food + Exercise. Shows how much you can still eat today; turns red when you go over.",
+        "Calorie donut: visual progress — fills as you eat, color shifts as you approach the target.",
+        "Macro pie: protein (blue), carbs (orange), fat (red) split. Inner = target, outer ring = what you've actually eaten.",
+        "👉 Tips: computed automatically from today's data (macros, time, streak). Update as you log.",
+        "Streak 🔥: consecutive days logged. Miss one and it resets to zero.",
+        "Coach: Meal Plan, Training Plan, Weekly Review or your own question — generated plans are saved here.",
+        "Weight tracking: log today's weight — the app adjusts targets and shows a 30-day trend.",
+        "📅 top right: log a past day (future days are locked).",
+        "7-day history: at the bottom — tap a day to expand its macros."
       ],
       "tips": [
-        "Tap the 📅 icon to log a past day — future dates are disabled",
-        "The Coach's Weekly Review scores your week from 1 to 10",
-        "The streak rewards you for daily logging — keep it going!",
-        "Update your weight regularly for more accurate calorie targets",
-        "Tap a day in the 7-day history to see all its macros expanded"
+        "Update your weight weekly — the fresher it is, the more accurate your calorie target.",
+        "The Coach's Weekly Review scores your week 1-10 — useful Sunday check-in.",
+        "Meal/training plans export to PDF for printing or sharing."
       ]
     },
     "food": {
       "howTo": [
-        "Food of the Day: total calories at top, grouped by meal (Breakfast, Lunch, Dinner, Snacks)",
-        "Edit or delete any entry directly from the list",
-        "Photo analyzer (📸): take a photo and it recognizes the food and estimates calories",
-        "Barcode scanner (🔲): scan a product's barcode to add it instantly",
-        "Filter buttons: All, High Protein, Low Carb, Low Cal, Keto",
-        "Search box: type to find foods in the database (Greek and English)",
-        "Search results show name, brand, source badge and a star for favoriting",
-        "Add Food modal: choose portion or grams, quantity, meal category — see macros preview",
-        "Favorites card: one-tap add from your starred foods",
-        "Recent foods card: quick re-add from your last additions",
-        "Custom food form: create your own food with calories, protein, carbs, fat per 100g",
-        "Saved custom foods appear in their own list for reuse"
+        "Food of the Day: everything you've eaten today, grouped by meal (Breakfast / Lunch / Dinner / Snacks) with a calorie total at the top.",
+        "Entries list: each food shows kcal + macros. ✏️ edit changes quantity/meal, ❌ delete removes it.",
+        "Search: GR + EN food database. Filters: High Protein, Low Carb, Low Cal, Keto.",
+        "📸 Photo: AI food recognition — estimates kcal/macros (approximate, not always exact).",
+        "🔲 Barcode: scan a packaged product for instant add (real device only).",
+        "Before Add: set grams/portion, pick meal, see macros preview.",
+        "Favorites ⭐: one-tap add for foods you eat often.",
+        "Recent: quick re-add from your latest entries.",
+        "Custom food: your own entry (per 100g: kcal/protein/carbs/fat). Useful for home recipes and repeated meals."
       ],
       "tips": [
-        "Favorites appear at the top for fastest adding",
-        "Recent foods are saved automatically — no need to search again",
-        "Photo analyzer uses smart vision — works best with clear photos",
-        "Adjust grams or portion before adding to get accurate calories",
-        "Custom foods are handy for homemade recipes you log often"
+        "Always check grams before adding — it's the #1 accuracy issue.",
+        "Use Favorites for speed.",
+        "Photo → cleaner image, one plate at a time works best.",
+        "Custom → set it up once, then it's 1-click forever."
       ]
     },
     "exercise": {
       "howTo": [
-        "Exercise of the Day: total calories burned and a list of all exercises logged today",
-        "Delete any exercise directly from the list",
-        "Apple Health / Google Fit buttons: connect to auto-import workouts (when available)",
-        "Search box: type to find exercises from the library",
-        "Category filters: All, Cardio 🏃, Gym 🏋️, Training 🔥, Sports ⚽",
-        "Exercise dropdown: shows calories per minute next to each exercise",
-        "Star button: mark an exercise as favorite for quick access later",
-        "Exercise selection card: set minutes with +/− buttons, see calorie preview",
-        "Favorites card: one-tap add with a default of 30 minutes",
-        "Recent exercises card: re-add your latest workouts",
-        "Custom exercise form: create your own with a name, minutes and calories per minute"
+        "Exercise today: total calories burned + the day's exercise list.",
+        "Entries list: each exercise shows duration (minutes) and kcal burned. ❌ delete removes it.",
+        "Search: find an exercise from the library. Categories: Cardio 🏃, Gym 🏋️, Training 🔥, Sports ⚽.",
+        "Exercise dropdown: shows kcal/min for each exercise — the basis for the calorie calculation.",
+        "Before Add: set minutes, see kcal preview.",
+        "Health / Google Fit: auto-imports workouts when connected.",
+        "Favorites ⭐: one-tap add (default duration ~30min).",
+        "Recent: quick re-add from your latest workouts.",
+        "Custom exercise: your own activity (name + minutes + kcal/min). Useful for activities outside the library."
       ],
       "tips": [
-        "Exercise calories add back to your remaining calories for the day",
-        "Favorites load instantly with 30 minutes set as default",
-        "Custom exercises are useful for niche activities not in the library",
-        "Recent exercises save you from searching for the same workout twice"
+        "Longer duration = more kcal (linear with kcal/min).",
+        "Exercise calories add back to your daily allowance.",
+        "Favorites = fastest logging for repeated workouts.",
+        "Custom → set a realistic kcal/min for accurate results."
       ]
     },
     "tips": "Tips"
