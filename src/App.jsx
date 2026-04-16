@@ -705,7 +705,7 @@ export default function App() {
     goalType, mode, isToday,
     allergies, simpleMode, cookingLevel, cookingTime, mealsPerDay,
     todayMealsLogged: entries.length,
-    surface: "FOOD_EMPTY",
+    surface: "FOOD",
     max: 1,
     excludeTexts: dashboardTips,
   }), [t, remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
