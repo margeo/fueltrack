@@ -27,6 +27,8 @@ export const EXERCISE_LIBRARY = [
   { name: "Κολύμπι", category: "Cardio", caloriesPerMinute: 9, icon: "🏊" },
   { name: "Σχοινάκι", category: "Cardio", caloriesPerMinute: 12, icon: "⚡" },
   { name: "HIIT", category: "Cardio", caloriesPerMinute: 12, icon: "🔥" },
+  { name: "Ελλειπτικό", category: "Cardio", caloriesPerMinute: 8, icon: "🏃" },
+  { name: "Κωπηλατική", category: "Cardio", caloriesPerMinute: 7, icon: "🚣" },
   // Gym
   { name: "Gym session", category: "Gym", caloriesPerMinute: 6, icon: "🏋️" },
   { name: "Upper Body", category: "Gym", caloriesPerMinute: 5, icon: "💪" },
@@ -40,10 +42,15 @@ export const EXERCISE_LIBRARY = [
   { name: "CrossFit", category: "Training", caloriesPerMinute: 12, icon: "🔥" },
   { name: "Aerobics", category: "Training", caloriesPerMinute: 7, icon: "💃" },
   { name: "Aqua Aerobics", category: "Training", caloriesPerMinute: 6, icon: "🏊" },
+  { name: "Yoga", category: "Training", caloriesPerMinute: 4, icon: "🧘" },
+  { name: "Pilates", category: "Training", caloriesPerMinute: 4, icon: "🧘" },
+  { name: "Stretching", category: "Training", caloriesPerMinute: 3, icon: "🤸" },
+  { name: "Zumba", category: "Training", caloriesPerMinute: 8, icon: "💃" },
   // Sports
   { name: "Ποδόσφαιρο", category: "Sports", caloriesPerMinute: 10, icon: "⚽" },
   { name: "Μπάσκετ", category: "Sports", caloriesPerMinute: 8, icon: "🏀" },
   { name: "Βόλεϊ", category: "Sports", caloriesPerMinute: 6, icon: "🏐" },
+  { name: "Beach volley", category: "Sports", caloriesPerMinute: 8, icon: "🏐" },
   { name: "Τένις", category: "Sports", caloriesPerMinute: 7, icon: "🎾" },
   { name: "Padel", category: "Sports", caloriesPerMinute: 6, icon: "🎾" },
   { name: "Πινγκ-πονγκ", category: "Sports", caloriesPerMinute: 4, icon: "🏓" },
@@ -56,4 +63,6 @@ export const EXERCISE_LIBRARY = [
   { name: "Ski", category: "Sports", caloriesPerMinute: 8, icon: "⛷️" },
   { name: "Surf", category: "Sports", caloriesPerMinute: 7, icon: "🏄" },
   { name: "Roller / Πατίνια", category: "Sports", caloriesPerMinute: 7, icon: "⛸️" },
+  { name: "Ιππασία", category: "Sports", caloriesPerMinute: 5, icon: "🐎" },
+  { name: "Σκέιτμπορντ", category: "Sports", caloriesPerMinute: 6, icon: "🛹" },
 ];
