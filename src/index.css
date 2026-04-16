@@ -70,6 +70,10 @@
 html, body {
   margin: 0;
   overflow-x: hidden;
+  /* Kill the iOS rubber-band bounce so the sticky header stays
+     rock-solid. Without this, pulling down on the top bounces the
+     whole page (header included) a few pixels and then snaps back. */
+  overscroll-behavior-y: none;
 }
 
 body {
