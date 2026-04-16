@@ -93,11 +93,11 @@ export default function ExerciseTab({
           <h2>🏋️ {t("exercise.dayTitle")}</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
         </div>
-        {/* Rule-based tip — quiet row to match the Dashboard hero-card tips. */}
+        {/* Rule-based tip — quiet row to match the Dashboard hero-card tips. Right-aligned so the column hugs the +kcal pill above it. */}
         {Array.isArray(tips) && tips.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14, alignItems: "flex-end" }}>
             {tips.map((tipText, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "rgba(255,255,255,0.9)" }}>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-end", gap: 6, fontSize: 12, lineHeight: 1.35, color: "rgba(255,255,255,0.9)", textAlign: "right" }}>
                 <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                 <span>{tipText}</span>
               </div>

@@ -297,9 +297,6 @@ export function buildLiveTips({
   const userDairy = foodCats.filter((c) => DAIRY_ITEMS.includes(c));
   const userCooking = foodCats.filter((c) => COOKING_METHODS.includes(c));
 
-  if (simpleMode) {
-    candidates.push(emit(t("tips.suggestSimpleBatch"), TIP_TAGS.SUGGESTION_FOOD));
-  }
   if (userProteins.length > 0) {
     candidates.push(emit(t("tips.suggestUserProteins", { items: formatPicks(userProteins) }), TIP_TAGS.SUGGESTION_FOOD));
   }

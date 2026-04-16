@@ -44,7 +44,6 @@
     "beginnerFitness": "Start with a 20-minute session — consistency beats intensity",
     "workoutsLeft": "{{done}}/{{target}} workouts done this week — one more session counts",
     "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum",
-    "suggestSimpleBatch": "Batch-cook day — reuse a meal you've prepped",
     "suggestBeginnerQuick": "Keep it simple — a quick no-cook option",
     "suggestBeginner": "Easy pick today — no-cook or minimal prep",
     "suggestQuick": "Pick a quick-prep meal today",
