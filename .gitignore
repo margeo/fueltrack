@@ -3,3 +3,7 @@ dist/
 coverage/
 **/.env
 .env
+
+# GreenGeeks FatSecret proxy — keep credentials out of git.
+# The .sample.php template is safe to commit; the real _config.php isn't.
+greengeeks-proxy/_config.php
