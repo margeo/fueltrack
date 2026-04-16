@@ -300,10 +300,10 @@ export default function FoodTab({
         </div>
         {/* Rule-based tip — rendered quietly (no bg/border) to match the Dashboard hero-card tip rows. */}
         {Array.isArray(tips) && tips.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
             {tips.map((tipText, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1.2, color: "var(--text-muted)" }}>
-                <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>👉</span>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                 <span>{tipText}</span>
               </div>
             ))}
@@ -352,10 +352,10 @@ export default function FoodTab({
         </div>
         {addFoodOpen && (<>
           {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
               {addTips.map((tipText, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1.2, color: "var(--text-muted)" }}>
-                  <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>👉</span>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                   <span>{tipText}</span>
                 </div>
               ))}
