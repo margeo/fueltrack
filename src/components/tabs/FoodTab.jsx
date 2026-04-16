@@ -300,7 +300,7 @@ export default function FoodTab({
         </div>
         {/* Rule-based tip — rendered quietly (no bg/border) to match the Dashboard hero-card tip rows. */}
         {Array.isArray(tips) && tips.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
             {tips.map((tipText, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
                 <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
@@ -352,7 +352,7 @@ export default function FoodTab({
         </div>
         {addFoodOpen && (<>
           {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
               {addTips.map((tipText, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
                   <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
