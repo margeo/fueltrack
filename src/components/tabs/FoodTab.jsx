@@ -156,6 +156,7 @@ export default function FoodTab({
   recentFoods, favoriteFoods, isFavorite, toggleFavorite,
   saveRecentFood, updateCurrentDay, quickAddRecent, quickAddFavorite,
   entries, groupedEntries, deleteEntry, openEditEntry,
+  tips,
   session, onShowAuth, onShowRegister
 }) {
   const { t } = useTranslation();
@@ -289,6 +290,18 @@ export default function FoodTab({
       )}
       {selectedFood && (
         <FoodAddModal food={selectedFood} onAdd={handleAdd} onClose={() => setSelectedFood(null)} />
+      )}
+
+      {/* Rule-based tip — above the day-card so it reads before the user starts logging. */}
+      {Array.isArray(tips) && tips.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 14px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", borderRadius: 12, marginBottom: 12 }}>
+          {tips.map((tipText, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 13, lineHeight: 1.4, color: "var(--text-primary)" }}>
+              <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+              <span>{tipText}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* ΦΑΓΗΤΟ ΗΜΕΡΑΣ */}

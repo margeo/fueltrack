@@ -9,6 +9,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import HelpModal from "./components/HelpModal";
 import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import PlanChooser from "./components/PlanChooser";
+import { buildLiveTips } from "./utils/liveTips";
+import { formatNumber } from "./utils/helpers";
 import VerifyEmailScreen from "./components/VerifyEmailScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
@@ -671,6 +673,36 @@ export default function App() {
 
   const isToday = selectedDate === getTodayKey();
 
+  // Per-surface rule-based tips. Same helper the Dashboard calls;
+  // surfaces filter the rule set down to what fits their context
+  // (see TIP_SURFACES in src/utils/liveTips.js).
+  const foodTips = useMemo(() => buildLiveTips({
+    t, formatNumber,
+    remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
+    exerciseValue, targetCalories, proteinTarget,
+    carbsTarget: macroTargets?.carbsGrams, fatTarget: macroTargets?.fatGrams,
+    goalType, mode, isToday,
+    allergies, simpleMode, cookingLevel, cookingTime, mealsPerDay,
+    todayMealsLogged: entries.length,
+    surface: "FOOD_EMPTY",
+    max: 1,
+  }), [t, remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
+       exerciseValue, targetCalories, proteinTarget, macroTargets, goalType, mode,
+       isToday, allergies, simpleMode, cookingLevel, cookingTime, mealsPerDay, entries.length]);
+
+  const exerciseTips = useMemo(() => {
+    const todayExerciseMinutes = exercises.reduce((sum, e) => sum + Number(e.minutes || 0), 0);
+    return buildLiveTips({
+      t, formatNumber,
+      exerciseValue, isToday, last7Days,
+      fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration,
+      todayExerciseMinutes,
+      surface: "EXERCISE",
+      max: 1,
+    });
+  }, [t, exerciseValue, isToday, last7Days, fitnessLevel, workoutLocation, equipment,
+      limitations, workoutFrequency, sessionDuration, exercises]);
+
   const favoriteFoods = useMemo(() => {
     const pool = [...foods, ...customFoods];
     const seen = new Set();
@@ -741,6 +773,7 @@ export default function App() {
     saveRecentFood, updateCurrentDay,
     quickAddRecent, quickAddFavorite,
     entries, groupedEntries, deleteEntry, openEditEntry,
+    tips: foodTips,
     session,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
@@ -758,7 +791,8 @@ export default function App() {
     toggleFavoriteExercise,
     isFavoriteExercise,
     recentExercises,
-    quickAddRecentExercise
+    quickAddRecentExercise,
+    tips: exerciseTips,
   };
 
   const profileProps = {

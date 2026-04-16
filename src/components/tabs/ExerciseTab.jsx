@@ -21,7 +21,8 @@ export default function ExerciseTab({
   addExerciseByMinutes, addCustomExercise, deleteExercise,
   selectedDate, updateCurrentDay,
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise,
-  recentExercises, quickAddRecentExercise
+  recentExercises, quickAddRecentExercise,
+  tips,
 }) {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("all");
@@ -86,6 +87,18 @@ export default function ExerciseTab({
 
   return (
     <>
+      {/* Rule-based tip — above the day-card so it reads before the user picks an exercise. */}
+      {Array.isArray(tips) && tips.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 14px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", borderRadius: 12, marginBottom: 12 }}>
+          {tips.map((tipText, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 13, lineHeight: 1.4, color: "var(--text-primary)" }}>
+              <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+              <span>{tipText}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ΑΣΚΗΣΗ ΗΜΕΡΑΣ */}
       <div className="day-card">
         <div className="day-card-total">
