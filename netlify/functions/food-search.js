@@ -1,4 +1,3 @@
-import { getFatSecretToken } from "./fatsecret-token.js";
 import { removeAccents, parseUSDA, parseOFF, parseFatSecret, deduplicateFoods } from "./food-parsers.js";
 import { withCors } from "./_cors.js";
 
@@ -38,7 +37,6 @@ export const handler = withCors(async function handler(event) {
     let offGrError = null;
     let offWorldError = null;
     let fatSecretError = null;
-    let fatSecretTokenError = null;
 
     // USDA
     const usdaPromise = fetch(
@@ -77,25 +75,35 @@ export const handler = withCors(async function handler(event) {
       })
       .catch((e) => { offWorldError = String(e.message || e).slice(0, 200); return null; });
 
-    // FatSecret (token + search)
+    // FatSecret — goes through the GreenGeeks static-IP proxy at
+    // https://api.fueltrack.me/fatsecret-proxy.php. That proxy holds the
+    // OAuth credentials in its own _config.php and talks to FatSecret
+    // from the single whitelisted IP 107.6.176.102, bypassing Netlify's
+    // dynamic AWS Lambda pool which FatSecret refuses to authorize.
     const fatSecretPromise = (async () => {
-      let token;
-      try {
-        token = await getFatSecretToken();
-        if (!token) { fatSecretTokenError = "Token was empty"; return null; }
-      } catch (e) {
-        fatSecretTokenError = String(e.message || e).slice(0, 300);
+      const proxyUrl = process.env.FATSECRET_PROXY_URL;
+      const proxySecret = process.env.FATSECRET_PROXY_SECRET;
+      if (!proxyUrl || !proxySecret) {
+        fatSecretError = "Proxy URL/secret not configured in Netlify env";
         return null;
       }
       try {
         const res = await fetch(
-          `https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json&max_results=10`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${proxyUrl}?q=${encodeURIComponent(query)}`,
+          { headers: { "X-Proxy-Secret": proxySecret } }
         );
-        if (!res.ok) { fatSecretError = `HTTP ${res.status}`; return null; }
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          fatSecretError = `HTTP ${res.status}${body ? ` — ${body.slice(0, 200)}` : ""}`;
+          return null;
+        }
         const data = await res.json();
-        if (data?.error) {
+        if (data?.error && typeof data.error === "object") {
           fatSecretError = `${data.error.code ?? ""}: ${data.error.message ?? JSON.stringify(data.error)}`.slice(0, 300);
+          return null;
+        }
+        if (typeof data?.error === "string") {
+          fatSecretError = data.error.slice(0, 300);
           return null;
         }
         return data;
@@ -155,11 +163,9 @@ export const handler = withCors(async function handler(event) {
 
     debug.sources.fatsecret = fatSecretTimedOut
       ? { ok: false, count: 0, error: "Timeout after 3s" }
-      : fatSecretTokenError
-        ? { ok: false, count: 0, error: `Token: ${fatSecretTokenError}` }
-        : fatSecretError
-          ? { ok: false, count: 0, error: fatSecretError }
-          : { ok: true, count: fatSecretFoods.length };
+      : fatSecretError
+        ? { ok: false, count: 0, error: fatSecretError }
+        : { ok: true, count: fatSecretFoods.length };
 
     const allFoods = deduplicateFoods(fatSecretFoods, offFoods, usdaFoods);
     debug.totalAfterDedupe = allFoods.length;
