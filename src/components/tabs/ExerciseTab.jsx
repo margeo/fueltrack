@@ -22,7 +22,7 @@ export default function ExerciseTab({
   selectedDate, updateCurrentDay,
   favoriteExerciseKeys, toggleFavoriteExercise, isFavoriteExercise,
   recentExercises, quickAddRecentExercise,
-  tips,
+  tips, addTips,
 }) {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("all");
@@ -93,12 +93,12 @@ export default function ExerciseTab({
           <h2>🏋️ {t("exercise.dayTitle")}</h2>
           <span style={{ fontWeight: 800, fontSize: 18, color: "#86efac" }}>+{formatNumber(exerciseValue)} kcal</span>
         </div>
-        {/* Rule-based tip — shown inside the day-card, just under the header. */}
+        {/* Rule-based tip — quiet row to match the Dashboard hero-card tips. */}
         {Array.isArray(tips) && tips.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "8px 12px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", borderRadius: 10, marginBottom: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 6 }}>
             {tips.map((tipText, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 13, lineHeight: 1.4, color: "var(--text-primary)" }}>
-                <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1.2, color: "var(--text-muted)" }}>
+                <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>👉</span>
                 <span>{tipText}</span>
               </div>
             ))}
@@ -133,6 +133,16 @@ export default function ExerciseTab({
           </button>
         </div>
         {addExOpen && (<>
+          {Array.isArray(addTips) && addTips.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 6 }}>
+              {addTips.map((tipText, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1.2, color: "var(--text-muted)" }}>
+                  <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>👉</span>
+                  <span>{tipText}</span>
+                </div>
+              ))}
+            </div>
+          )}
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
             <button className="btn btn-dark" type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center", opacity: 0.5 }}

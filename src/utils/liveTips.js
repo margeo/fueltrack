@@ -26,6 +26,8 @@ export const TIP_TAGS = {
   NEUTRAL: "neutral",           // informational fallback
   FOOD_PROFILE: "foodProfile",  // driven by food-profile choices (allergies, cooking level, meals/day, simpleMode)
   EXERCISE_PROFILE: "exerciseProfile", // driven by exercise-profile choices (level, location, equipment, limitations, frequency)
+  SUGGESTION_FOOD: "suggestionFood",   // concrete meal ideas tailored to the food profile
+  SUGGESTION_EXERCISE: "suggestionExercise", // concrete workout ideas tailored to the exercise profile
 };
 
 // Keyed taxonomy so surfaces can request "only these tags" without
@@ -43,6 +45,8 @@ export const TIP_SURFACES = {
   PAYWALL: [TIP_TAGS.POSITIVE, TIP_TAGS.STREAK],
   FOOD_EMPTY: [TIP_TAGS.TIMING, TIP_TAGS.HYDRATION, TIP_TAGS.CALORIE, TIP_TAGS.POSITIVE, TIP_TAGS.FOOD_PROFILE],
   EXERCISE: [TIP_TAGS.EXERCISE, TIP_TAGS.POSITIVE, TIP_TAGS.EXERCISE_PROFILE],
+  FOOD_ADD: [TIP_TAGS.SUGGESTION_FOOD],
+  EXERCISE_ADD: [TIP_TAGS.SUGGESTION_EXERCISE],
 };
 
 export function buildLiveTips({
@@ -265,6 +269,56 @@ export function buildLiveTips({
   if (sessionDuration && Number(sessionDuration) > 0 && todayExerciseMinutes === 0 && isToday) {
     candidates.push(emit(t("tips.sessionDurationHint", { mins: sessionDuration }), TIP_TAGS.EXERCISE_PROFILE));
   }
+
+  // 12. FOOD SUGGESTIONS (for the FOOD_ADD surface — concrete meal ideas)
+  const foodCats = Array.isArray(foodCategories) ? foodCategories : [];
+  const hasVeggies = foodCats.some((c) => /veggies|salads|cooked_veggies|soups/i.test(String(c)));
+  const hasProteins = foodCats.some((c) => /proteins|chicken|beef|fish|eggs|legumes|tofu/i.test(String(c)));
+  const hasDairy = foodCats.some((c) => /dairy|yogurt|cheese|milk/i.test(String(c)));
+  if (simpleMode) {
+    candidates.push(emit(t("tips.suggestSimpleBatch"), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (cookingLevel === "beginner" && cookingTime === "quick") {
+    candidates.push(emit(t("tips.suggestBeginnerQuick"), TIP_TAGS.SUGGESTION_FOOD));
+  } else if (cookingLevel === "beginner") {
+    candidates.push(emit(t("tips.suggestBeginner"), TIP_TAGS.SUGGESTION_FOOD));
+  } else if (cookingTime === "quick") {
+    candidates.push(emit(t("tips.suggestQuick"), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (hasVeggies) {
+    candidates.push(emit(t("tips.suggestVeggies"), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (hasProteins && cookingLevel !== "beginner") {
+    candidates.push(emit(t("tips.suggestProtein"), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  if (hasDairy) {
+    candidates.push(emit(t("tips.suggestDairy"), TIP_TAGS.SUGGESTION_FOOD));
+  }
+  // Fallback suggestion when no profile signals
+  candidates.push(emit(t("tips.suggestBalanced"), TIP_TAGS.SUGGESTION_FOOD));
+
+  // 13. EXERCISE SUGGESTIONS (for the EXERCISE_ADD surface — concrete workout ideas)
+  const hasLimitations = limitations && String(limitations).trim().length > 0;
+  const eqList = Array.isArray(equipment) ? equipment : [];
+  const noEquip = eqList.length === 0 || (eqList.length === 1 && eqList.includes("none"));
+  if (hasLimitations) {
+    candidates.push(emit(t("tips.suggestSafeMove"), TIP_TAGS.SUGGESTION_EXERCISE));
+  }
+  if (workoutLocation === "home" && fitnessLevel === "beginner" && noEquip) {
+    candidates.push(emit(t("tips.suggestHomeBeginner"), TIP_TAGS.SUGGESTION_EXERCISE));
+  } else if (workoutLocation === "home" && noEquip) {
+    candidates.push(emit(t("tips.suggestHomeNoKit"), TIP_TAGS.SUGGESTION_EXERCISE));
+  } else if (workoutLocation === "home" && eqList.includes("dumbbells")) {
+    candidates.push(emit(t("tips.suggestDumbbells"), TIP_TAGS.SUGGESTION_EXERCISE));
+  }
+  if (workoutLocation === "gym") {
+    candidates.push(emit(t("tips.suggestGym"), TIP_TAGS.SUGGESTION_EXERCISE));
+  }
+  if (workoutLocation === "outdoor") {
+    candidates.push(emit(t("tips.suggestOutdoor"), TIP_TAGS.SUGGESTION_EXERCISE));
+  }
+  // Fallback suggestion
+  candidates.push(emit(t("tips.suggestAnyMove"), TIP_TAGS.SUGGESTION_EXERCISE));
 
   // FALLBACK
   if (candidates.length === 0) {

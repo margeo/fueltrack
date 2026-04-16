@@ -43,7 +43,22 @@
     "homeNoEquipment": "No equipment at home? Try push-ups, squats, planks, lunges",
     "beginnerFitness": "Start with a 20-minute session — consistency beats intensity",
     "workoutsLeft": "{{done}}/{{target}} workouts done this week — one more session counts",
-    "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum"
+    "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum",
+    "suggestSimpleBatch": "Batch idea: brown rice + grilled chicken + roasted veggies — covers 3 days",
+    "suggestBeginnerQuick": "2-min idea: Greek yogurt + honey + nuts — zero cooking",
+    "suggestBeginner": "Beginner-friendly: χωριάτικη + tuna from the can",
+    "suggestQuick": "Quick pick: oats + banana + peanut butter — 3 min prep",
+    "suggestVeggies": "Veggie boost: steamed broccoli + olive oil + lemon",
+    "suggestProtein": "Protein idea: grilled chicken breast + quinoa + salad",
+    "suggestDairy": "Dairy snack: cottage cheese or Greek yogurt with berries",
+    "suggestBalanced": "Balanced plate idea: protein + veggies + complex carbs",
+    "suggestSafeMove": "Safe session: 20-min brisk walk + 5-min gentle stretching",
+    "suggestHomeBeginner": "Home starter: 3 rounds of 10 squats + 10 push-ups (knee) + 30-sec plank",
+    "suggestHomeNoKit": "Home circuit (no kit): squats, push-ups, lunges, planks — 3 rounds",
+    "suggestDumbbells": "Dumbbell session: goblet squats, rows, shoulder press — 3×10",
+    "suggestGym": "Gym pick: 30-min cardio + full-body strength circuit",
+    "suggestOutdoor": "Outdoor session: 30-min jog or brisk walk + stretching",
+    "suggestAnyMove": "Any movement counts — 20 min is a solid start"
   },
   "help": {
     "title": "Quick Guide",

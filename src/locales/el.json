@@ -43,7 +43,22 @@
     "homeNoEquipment": "Χωρίς εξοπλισμό στο σπίτι; push-ups, squats, planks, lunges",
     "beginnerFitness": "Ξεκίνα με 20-λεπτη σύνοδο — η συνέπεια νικάει την ένταση",
     "workoutsLeft": "{{done}}/{{target}} προπονήσεις αυτή την εβδομάδα — μία ακόμα μετράει",
-    "sessionDurationHint": "Έχεις βάλει {{mins}}' σύνοδο — ακόμα μία σήμερα κρατάει momentum"
+    "sessionDurationHint": "Έχεις βάλει {{mins}}' σύνοδο — ακόμα μία σήμερα κρατάει momentum",
+    "suggestSimpleBatch": "Batch idea: καστανό ρύζι + ψητό κοτόπουλο + ψητά λαχανικά — 3 μέρες",
+    "suggestBeginnerQuick": "2-min ιδέα: γιαούρτι + μέλι + ξηροί καρποί — χωρίς μαγείρεμα",
+    "suggestBeginner": "Εύκολο: χωριάτικη + τόνος κονσέρβας",
+    "suggestQuick": "Γρήγορο: βρώμη + μπανάνα + φυστικοβούτυρο — 3'",
+    "suggestVeggies": "Veggie boost: ατμού μπρόκολο + ελαιόλαδο + λεμόνι",
+    "suggestProtein": "Ιδέα πρωτεΐνης: ψητό στήθος κοτόπουλο + κινόα + σαλάτα",
+    "suggestDairy": "Γαλακτοκομικό snack: cottage ή γιαούρτι με φρούτα",
+    "suggestBalanced": "Ισορροπημένο πιάτο: πρωτεΐνη + λαχανικά + σύνθετοι υδατάνθρακες",
+    "suggestSafeMove": "Ασφαλής σύνοδος: 20' γρήγορο περπάτημα + 5' ήπιες διατάσεις",
+    "suggestHomeBeginner": "Home starter: 3 γύροι × 10 squats + 10 push-ups (γόνατα) + 30\" plank",
+    "suggestHomeNoKit": "Home κύκλωμα (χωρίς εξοπλισμό): squats, push-ups, lunges, planks — 3 γύροι",
+    "suggestDumbbells": "Με αλτήρες: goblet squats, rows, shoulder press — 3×10",
+    "suggestGym": "Στο gym: 30' cardio + full-body strength circuit",
+    "suggestOutdoor": "Εξωτερικά: 30' τρέξιμο ή γρήγορο περπάτημα + διατάσεις",
+    "suggestAnyMove": "Κάθε κίνηση μετράει — 20' είναι καλή αρχή"
   },
   "help": {
     "title": "Γρήγορος Οδηγός",

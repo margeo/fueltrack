@@ -703,6 +703,23 @@ export default function App() {
   }, [t, exerciseValue, isToday, last7Days, fitnessLevel, workoutLocation, equipment,
       limitations, workoutFrequency, sessionDuration, exercises]);
 
+  // "Add" card suggestions — concrete meal / workout ideas tailored
+  // to the user's Profile tab preferences. Different surface so they
+  // never overlap with the day-level tips above the entries list.
+  const foodAddTips = useMemo(() => buildLiveTips({
+    t, formatNumber,
+    foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
+    surface: "FOOD_ADD",
+    max: 1,
+  }), [t, foodCategories, allergies, cookingLevel, cookingTime, simpleMode]);
+
+  const exerciseAddTips = useMemo(() => buildLiveTips({
+    t, formatNumber,
+    fitnessLevel, workoutLocation, equipment, limitations,
+    surface: "EXERCISE_ADD",
+    max: 1,
+  }), [t, fitnessLevel, workoutLocation, equipment, limitations]);
+
   const favoriteFoods = useMemo(() => {
     const pool = [...foods, ...customFoods];
     const seen = new Set();
@@ -774,6 +791,7 @@ export default function App() {
     quickAddRecent, quickAddFavorite,
     entries, groupedEntries, deleteEntry, openEditEntry,
     tips: foodTips,
+    addTips: foodAddTips,
     session,
     onShowAuth: () => { setAuthInitialMode("login"); setShowAuthModal(true); },
     onShowRegister: () => { setAuthInitialMode("register"); setShowAuthModal(true); }
@@ -793,6 +811,7 @@ export default function App() {
     recentExercises,
     quickAddRecentExercise,
     tips: exerciseTips,
+    addTips: exerciseAddTips,
   };
 
   const profileProps = {
