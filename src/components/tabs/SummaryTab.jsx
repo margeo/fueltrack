@@ -565,12 +565,12 @@ RULES:
               { emoji: "🥑", label: "Fat",     cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
             ];
 
-            const sideColStyle = { display: "flex", flexDirection: "column", gap: 8, flex: "1 1 140px", minWidth: 140, maxWidth: 210 };
+            const sideColStyle = { display: "flex", flexDirection: "column", gap: 8, flex: "1 1 180px", minWidth: 160, maxWidth: 280 };
 
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0 10px" }}>
                 {/* Row 1 — calorie donut + tips */}
-                <div style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
                   <svg width={CHART_SIZE} height={CHART_SIZE} role="img" aria-label="remaining calories">
                     <circle cx={cx} cy={cx} r={calRadius}
                       stroke="rgba(255,255,255,0.15)" strokeWidth={calStroke} fill="none" />
@@ -606,7 +606,7 @@ RULES:
                 </div>
 
                 {/* Row 2 — macro pie + per-macro bars list */}
-                <div style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
                   {macroPie}
                   <div style={sideColStyle}>
                     {macroList.map((m) => (
