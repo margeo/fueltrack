@@ -352,9 +352,9 @@ export default function FoodTab({
         </div>
         {addFoodOpen && (<>
           {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8, alignItems: "flex-end" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8, alignItems: "center" }}>
               {addTips.map((tipText, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-end", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)", textAlign: "right" }}>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)", textAlign: "center" }}>
                   <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                   <span>{tipText}</span>
                 </div>
