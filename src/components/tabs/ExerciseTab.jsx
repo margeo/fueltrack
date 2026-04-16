@@ -125,7 +125,7 @@ export default function ExerciseTab({
 
       {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addExOpen ? 12 : 0, gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addExOpen ? 6 : 0, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>🏃 {t("exercise.addTitle")}</h2>
           <button type="button" onClick={() => setAddExOpen(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
@@ -134,9 +134,9 @@ export default function ExerciseTab({
         </div>
         {addExOpen && (<>
           {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8, alignItems: "flex-end" }}>
               {addTips.map((tipText, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-end", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)", textAlign: "right" }}>
                   <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
                   <span>{tipText}</span>
                 </div>
