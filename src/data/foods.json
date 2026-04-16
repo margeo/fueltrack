@@ -12271,5 +12271,318 @@
         "grams": 30
       }
     ]
+  },
+  {
+    "id": "local-ion-galaktos",
+    "source": "local",
+    "name": "Σοκολάτα γάλακτος",
+    "brand": "ΙΟΝ",
+    "aliases": [
+      "ιον γαλακτος",
+      "ion milk chocolate"
+    ],
+    "caloriesPer100g": 545,
+    "proteinPer100g": 6.5,
+    "carbsPer100g": 58,
+    "fatPer100g": 32,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 15
+      },
+      {
+        "label": "1/2 πλάκα",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-ion-amygdalou",
+    "source": "local",
+    "name": "Σοκολάτα αμυγδάλου",
+    "brand": "ΙΟΝ",
+    "aliases": [
+      "ιον αμυγδαλου",
+      "ion almond"
+    ],
+    "caloriesPer100g": 560,
+    "proteinPer100g": 8,
+    "carbsPer100g": 50,
+    "fatPer100g": 36,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 15
+      },
+      {
+        "label": "1/2 πλάκα",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-ion-derby",
+    "source": "local",
+    "name": "Derby",
+    "brand": "ΙΟΝ",
+    "aliases": [
+      "ιον derby",
+      "derby"
+    ],
+    "caloriesPer100g": 515,
+    "proteinPer100g": 7,
+    "carbsPer100g": 60,
+    "fatPer100g": 27,
+    "portions": [
+      {
+        "label": "1 μπάρα",
+        "grams": 40
+      }
+    ]
+  },
+  {
+    "id": "local-ion-bueno",
+    "source": "local",
+    "name": "Bueno σοκολάτα",
+    "brand": "Kinder",
+    "aliases": [
+      "kinder bueno",
+      "κιντερ"
+    ],
+    "caloriesPer100g": 570,
+    "proteinPer100g": 8,
+    "carbsPer100g": 49,
+    "fatPer100g": 37,
+    "portions": [
+      {
+        "label": "1 μπάρα",
+        "grams": 22
+      }
+    ]
+  },
+  {
+    "id": "local-lacta-sokolata",
+    "source": "local",
+    "name": "Σοκολάτα γάλακτος",
+    "brand": "Lacta",
+    "aliases": [
+      "lacta",
+      "λακτα"
+    ],
+    "caloriesPer100g": 540,
+    "proteinPer100g": 7,
+    "carbsPer100g": 58,
+    "fatPer100g": 31,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 10
+      },
+      {
+        "label": "1/2 πλάκα",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-lacta-caramel",
+    "source": "local",
+    "name": "Caramel σοκολάτα",
+    "brand": "Lacta",
+    "aliases": [
+      "lacta caramel",
+      "λακτα καραμελα"
+    ],
+    "caloriesPer100g": 520,
+    "proteinPer100g": 6,
+    "carbsPer100g": 62,
+    "fatPer100g": 27,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 10
+      }
+    ]
+  },
+  {
+    "id": "local-pavlidis-ygeias",
+    "source": "local",
+    "name": "Σοκολάτα Υγείας",
+    "brand": "Παυλίδης",
+    "aliases": [
+      "παυλιδης υγειας",
+      "pavlidis dark"
+    ],
+    "caloriesPer100g": 530,
+    "proteinPer100g": 5,
+    "carbsPer100g": 58,
+    "fatPer100g": 30,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-lakonia-tahini",
+    "source": "local",
+    "name": "Ταχίνι ολικής",
+    "brand": "ΛΑΚΩΝΙΑ",
+    "aliases": [
+      "λακωνια ταχινι",
+      "lakonia tahini"
+    ],
+    "caloriesPer100g": 620,
+    "proteinPer100g": 24,
+    "carbsPer100g": 12,
+    "fatPer100g": 54,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-lakonia-halvas",
+    "source": "local",
+    "name": "Χαλβάς βανίλια",
+    "brand": "ΛΑΚΩΝΙΑ",
+    "aliases": [
+      "λακωνια χαλβας"
+    ],
+    "caloriesPer100g": 530,
+    "proteinPer100g": 11,
+    "carbsPer100g": 45,
+    "fatPer100g": 34,
+    "portions": [
+      {
+        "label": "1 φέτα",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-tsakiris-alati",
+    "source": "local",
+    "name": "Πατατάκια με αλάτι",
+    "brand": "Τσακίρης",
+    "aliases": [
+      "τσακιρης",
+      "tsakiris chips"
+    ],
+    "caloriesPer100g": 540,
+    "proteinPer100g": 6,
+    "carbsPer100g": 53,
+    "fatPer100g": 33,
+    "portions": [
+      {
+        "label": "1 μικρό σακ.",
+        "grams": 30
+      },
+      {
+        "label": "1 κανονικό σακ.",
+        "grams": 90
+      }
+    ]
+  },
+  {
+    "id": "local-lays-classic",
+    "source": "local",
+    "name": "Classic",
+    "brand": "Lays",
+    "aliases": [
+      "lays",
+      "λειζ"
+    ],
+    "caloriesPer100g": 540,
+    "proteinPer100g": 6,
+    "carbsPer100g": 53,
+    "fatPer100g": 33,
+    "portions": [
+      {
+        "label": "1 μικρό σακ.",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-lays-bbq",
+    "source": "local",
+    "name": "BBQ",
+    "brand": "Lays",
+    "aliases": [
+      "lays bbq"
+    ],
+    "caloriesPer100g": 525,
+    "proteinPer100g": 6,
+    "carbsPer100g": 55,
+    "fatPer100g": 31,
+    "portions": [
+      {
+        "label": "1 μικρό σακ.",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-ruffles-original",
+    "source": "local",
+    "name": "Ruffles Original",
+    "brand": "Lays",
+    "aliases": [
+      "ruffles",
+      "ραφλες"
+    ],
+    "caloriesPer100g": 540,
+    "proteinPer100g": 6,
+    "carbsPer100g": 52,
+    "fatPer100g": 34,
+    "portions": [
+      {
+        "label": "1 μικρό σακ.",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-nounou-gala",
+    "source": "local",
+    "name": "Γάλα εβαπορέ",
+    "brand": "Nounou",
+    "aliases": [
+      "nounou",
+      "νουνου"
+    ],
+    "caloriesPer100g": 135,
+    "proteinPer100g": 7,
+    "carbsPer100g": 10,
+    "fatPer100g": 7.5,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-nounou-gala-pliri",
+    "source": "local",
+    "name": "Γάλα πλήρες μακράς",
+    "brand": "Nounou",
+    "aliases": [
+      "nounou πληρες"
+    ],
+    "caloriesPer100g": 63,
+    "proteinPer100g": 3.3,
+    "carbsPer100g": 4.7,
+    "fatPer100g": 3.5,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
   }
 ]
