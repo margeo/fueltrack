@@ -9509,5 +9509,1088 @@
         "grams": 150
       }
     ]
+  },
+  {
+    "id": "local-penes",
+    "source": "local",
+    "name": "Πένες",
+    "brand": "",
+    "aliases": [
+      "πενες",
+      "penne"
+    ],
+    "caloriesPer100g": 355,
+    "proteinPer100g": 12,
+    "carbsPer100g": 72,
+    "fatPer100g": 1.5,
+    "portions": [
+      {
+        "label": "1 μερίδα (άψητα)",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-taliatelles",
+    "source": "local",
+    "name": "Ταλιατέλες",
+    "brand": "",
+    "aliases": [
+      "ταλιατελες",
+      "tagliatelle"
+    ],
+    "caloriesPer100g": 360,
+    "proteinPer100g": 13,
+    "carbsPer100g": 72,
+    "fatPer100g": 2,
+    "portions": [
+      {
+        "label": "1 μερίδα (άψητες)",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-fide",
+    "source": "local",
+    "name": "Φιδές",
+    "brand": "",
+    "aliases": [
+      "φιδες",
+      "angel hair",
+      "fideo"
+    ],
+    "caloriesPer100g": 355,
+    "proteinPer100g": 12,
+    "carbsPer100g": 73,
+    "fatPer100g": 1.5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-lazania",
+    "source": "local",
+    "name": "Λαζάνια",
+    "brand": "",
+    "aliases": [
+      "λαζανια",
+      "lasagna"
+    ],
+    "caloriesPer100g": 132,
+    "proteinPer100g": 8,
+    "carbsPer100g": 14,
+    "fatPer100g": 5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 300
+      }
+    ]
+  },
+  {
+    "id": "local-ravioli",
+    "source": "local",
+    "name": "Ραβιόλι",
+    "brand": "",
+    "aliases": [
+      "ραβιολι",
+      "ravioli"
+    ],
+    "caloriesPer100g": 245,
+    "proteinPer100g": 11,
+    "carbsPer100g": 35,
+    "fatPer100g": 7,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-kuskous",
+    "source": "local",
+    "name": "Κους κους",
+    "brand": "",
+    "aliases": [
+      "κους κους",
+      "couscous"
+    ],
+    "caloriesPer100g": 112,
+    "proteinPer100g": 3.8,
+    "carbsPer100g": 23,
+    "fatPer100g": 0.2,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-traxanas-glykos",
+    "source": "local",
+    "name": "Τραχανάς γλυκός",
+    "brand": "",
+    "aliases": [
+      "τραχανας γλυκος",
+      "sweet trahanas"
+    ],
+    "caloriesPer100g": 370,
+    "proteinPer100g": 12,
+    "carbsPer100g": 70,
+    "fatPer100g": 4,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 60
+      }
+    ]
+  },
+  {
+    "id": "local-traxanas-xynos",
+    "source": "local",
+    "name": "Τραχανάς ξινός",
+    "brand": "",
+    "aliases": [
+      "τραχανας ξινος",
+      "sour trahanas"
+    ],
+    "caloriesPer100g": 365,
+    "proteinPer100g": 12,
+    "carbsPer100g": 69,
+    "fatPer100g": 4,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 60
+      }
+    ]
+  },
+  {
+    "id": "local-xilopites",
+    "source": "local",
+    "name": "Χυλοπίτες",
+    "brand": "",
+    "aliases": [
+      "χυλοπιτες",
+      "hilopites"
+    ],
+    "caloriesPer100g": 370,
+    "proteinPer100g": 13,
+    "carbsPer100g": 73,
+    "fatPer100g": 3,
+    "portions": [
+      {
+        "label": "1 μερίδα (άψητες)",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-orzo",
+    "source": "local",
+    "name": "Orzo",
+    "brand": "",
+    "aliases": [
+      "orzo",
+      "orzo pasta"
+    ],
+    "caloriesPer100g": 360,
+    "proteinPer100g": 12,
+    "carbsPer100g": 74,
+    "fatPer100g": 1.5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-ryzi-basmati",
+    "source": "local",
+    "name": "Ρύζι μπασμάτι",
+    "brand": "",
+    "aliases": [
+      "ρυζι μπασματι",
+      "basmati rice"
+    ],
+    "caloriesPer100g": 121,
+    "proteinPer100g": 3,
+    "carbsPer100g": 25,
+    "fatPer100g": 0.4,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 180
+      }
+    ]
+  },
+  {
+    "id": "local-ryzi-kastano",
+    "source": "local",
+    "name": "Ρύζι καστανό",
+    "brand": "",
+    "aliases": [
+      "ρυζι καστανο",
+      "brown rice"
+    ],
+    "caloriesPer100g": 111,
+    "proteinPer100g": 2.6,
+    "carbsPer100g": 23,
+    "fatPer100g": 0.9,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 180
+      }
+    ]
+  },
+  {
+    "id": "local-mpoulgoyri",
+    "source": "local",
+    "name": "Μπουλγούρι",
+    "brand": "",
+    "aliases": [
+      "μπουλγουρι",
+      "bulgur"
+    ],
+    "caloriesPer100g": 83,
+    "proteinPer100g": 3,
+    "carbsPer100g": 18.5,
+    "fatPer100g": 0.2,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 180
+      }
+    ]
+  },
+  {
+    "id": "local-favorites-mavromatika",
+    "source": "local",
+    "name": "Φασόλια μαυρομάτικα",
+    "brand": "",
+    "aliases": [
+      "μαυροματικα",
+      "black eyed peas"
+    ],
+    "caloriesPer100g": 116,
+    "proteinPer100g": 8,
+    "carbsPer100g": 21,
+    "fatPer100g": 0.5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-fasolia-kokkina",
+    "source": "local",
+    "name": "Φασόλια κόκκινα",
+    "brand": "",
+    "aliases": [
+      "κοκκινα φασολια",
+      "red kidney beans"
+    ],
+    "caloriesPer100g": 127,
+    "proteinPer100g": 8.7,
+    "carbsPer100g": 23,
+    "fatPer100g": 0.5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-fasolia-mavra",
+    "source": "local",
+    "name": "Φασόλια μαύρα",
+    "brand": "",
+    "aliases": [
+      "μαυρα φασολια",
+      "black beans"
+    ],
+    "caloriesPer100g": 132,
+    "proteinPer100g": 8.9,
+    "carbsPer100g": 24,
+    "fatPer100g": 0.5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-fava",
+    "source": "local",
+    "name": "Φάβα",
+    "brand": "",
+    "aliases": [
+      "φαβα",
+      "fava",
+      "yellow split peas"
+    ],
+    "caloriesPer100g": 118,
+    "proteinPer100g": 8,
+    "carbsPer100g": 21,
+    "fatPer100g": 0.4,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-revithada",
+    "source": "local",
+    "name": "Ρεβιθάδα",
+    "brand": "",
+    "aliases": [
+      "ρεβιθαδα",
+      "revithada",
+      "chickpea soup"
+    ],
+    "caloriesPer100g": 135,
+    "proteinPer100g": 7,
+    "carbsPer100g": 20,
+    "fatPer100g": 4,
+    "portions": [
+      {
+        "label": "1 μπολ",
+        "grams": 400
+      }
+    ]
+  },
+  {
+    "id": "local-giouvarlakia",
+    "source": "local",
+    "name": "Γιουβαρλάκια",
+    "brand": "",
+    "aliases": [
+      "γιουβαρλακια",
+      "giouvarlakia"
+    ],
+    "caloriesPer100g": 130,
+    "proteinPer100g": 9,
+    "carbsPer100g": 11,
+    "fatPer100g": 6,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 350
+      }
+    ]
+  },
+  {
+    "id": "local-mageiritsa",
+    "source": "local",
+    "name": "Μαγειρίτσα",
+    "brand": "",
+    "aliases": [
+      "μαγειριτσα",
+      "mageiritsa"
+    ],
+    "caloriesPer100g": 95,
+    "proteinPer100g": 7,
+    "carbsPer100g": 6,
+    "fatPer100g": 5,
+    "portions": [
+      {
+        "label": "1 μπολ",
+        "grams": 400
+      }
+    ]
+  },
+  {
+    "id": "local-soupa-laxanikon",
+    "source": "local",
+    "name": "Σούπα λαχανικών",
+    "brand": "",
+    "aliases": [
+      "σουπα λαχανικων",
+      "vegetable soup"
+    ],
+    "caloriesPer100g": 40,
+    "proteinPer100g": 2,
+    "carbsPer100g": 7,
+    "fatPer100g": 0.8,
+    "portions": [
+      {
+        "label": "1 μπολ",
+        "grams": 400
+      }
+    ]
+  },
+  {
+    "id": "local-minestrone",
+    "source": "local",
+    "name": "Μινεστρόνε",
+    "brand": "",
+    "aliases": [
+      "μινεστρονε",
+      "minestrone"
+    ],
+    "caloriesPer100g": 48,
+    "proteinPer100g": 2.5,
+    "carbsPer100g": 8,
+    "fatPer100g": 1,
+    "portions": [
+      {
+        "label": "1 μπολ",
+        "grams": 400
+      }
+    ]
+  },
+  {
+    "id": "local-krema-manitarion",
+    "source": "local",
+    "name": "Κρέμα μανιταριών",
+    "brand": "",
+    "aliases": [
+      "κρεμα μανιταριων",
+      "mushroom cream soup"
+    ],
+    "caloriesPer100g": 75,
+    "proteinPer100g": 2,
+    "carbsPer100g": 6,
+    "fatPer100g": 4.5,
+    "portions": [
+      {
+        "label": "1 μπολ",
+        "grams": 300
+      }
+    ]
+  },
+  {
+    "id": "local-dolmadakia-gialantzi",
+    "source": "local",
+    "name": "Ντολμαδάκια γιαλαντζί",
+    "brand": "",
+    "aliases": [
+      "ντολμαδακια γιαλαντζι",
+      "dolmades gialantzi"
+    ],
+    "caloriesPer100g": 180,
+    "proteinPer100g": 3,
+    "carbsPer100g": 22,
+    "fatPer100g": 9,
+    "portions": [
+      {
+        "label": "5 ντολμαδάκια",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-piperies-gemistes",
+    "source": "local",
+    "name": "Πιπεριές γεμιστές",
+    "brand": "",
+    "aliases": [
+      "πιπεριες γεμιστες",
+      "stuffed peppers"
+    ],
+    "caloriesPer100g": 120,
+    "proteinPer100g": 3,
+    "carbsPer100g": 19,
+    "fatPer100g": 4,
+    "portions": [
+      {
+        "label": "1 πιπεριά",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-melitzanes-gemistes",
+    "source": "local",
+    "name": "Μελιτζάνες γεμιστές",
+    "brand": "",
+    "aliases": [
+      "μελιτζανες γεμιστες",
+      "stuffed eggplants"
+    ],
+    "caloriesPer100g": 140,
+    "proteinPer100g": 4,
+    "carbsPer100g": 16,
+    "fatPer100g": 7,
+    "portions": [
+      {
+        "label": "1 μελιτζάνα",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-anthoi-kolokithou",
+    "source": "local",
+    "name": "Ανθοί κολοκυθιού",
+    "brand": "",
+    "aliases": [
+      "ανθοι κολοκυθιου",
+      "zucchini blossoms"
+    ],
+    "caloriesPer100g": 170,
+    "proteinPer100g": 4,
+    "carbsPer100g": 22,
+    "fatPer100g": 7,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-xtypiti",
+    "source": "local",
+    "name": "Χτυπητή (τυρί)",
+    "brand": "",
+    "aliases": [
+      "χτυπητη",
+      "htipiti"
+    ],
+    "caloriesPer100g": 230,
+    "proteinPer100g": 10,
+    "carbsPer100g": 4,
+    "fatPer100g": 19,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-sriracha",
+    "source": "local",
+    "name": "Sriracha",
+    "brand": "",
+    "aliases": [
+      "sriracha",
+      "σριρατσα"
+    ],
+    "caloriesPer100g": 93,
+    "proteinPer100g": 1.9,
+    "carbsPer100g": 19,
+    "fatPer100g": 0.9,
+    "portions": [
+      {
+        "label": "1 κ.γ.",
+        "grams": 5
+      }
+    ]
+  },
+  {
+    "id": "local-balsamic-glaze",
+    "source": "local",
+    "name": "Κρέμα βαλσάμικο",
+    "brand": "",
+    "aliases": [
+      "κρεμα βαλσαμικο",
+      "balsamic glaze"
+    ],
+    "caloriesPer100g": 210,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 52,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-salsa-pesto",
+    "source": "local",
+    "name": "Σάλτσα πέστο",
+    "brand": "",
+    "aliases": [
+      "πεστο σαλτσα",
+      "pesto sauce"
+    ],
+    "caloriesPer100g": 420,
+    "proteinPer100g": 6,
+    "carbsPer100g": 6,
+    "fatPer100g": 42,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 20
+      }
+    ]
+  },
+  {
+    "id": "local-salsa-karbonara",
+    "source": "local",
+    "name": "Σάλτσα καρμπονάρα",
+    "brand": "",
+    "aliases": [
+      "καρμπονάρα",
+      "carbonara"
+    ],
+    "caloriesPer100g": 220,
+    "proteinPer100g": 8,
+    "carbsPer100g": 5,
+    "fatPer100g": 19,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-xymos-lemoni",
+    "source": "local",
+    "name": "Χυμός λεμονιού",
+    "brand": "",
+    "aliases": [
+      "χυμος λεμονιου",
+      "lemon juice"
+    ],
+    "caloriesPer100g": 22,
+    "proteinPer100g": 0.4,
+    "carbsPer100g": 7,
+    "fatPer100g": 0.2,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-kafes-filtrou",
+    "source": "local",
+    "name": "Καφές φίλτρου",
+    "brand": "",
+    "aliases": [
+      "καφες φιλτρου",
+      "filter coffee"
+    ],
+    "caloriesPer100g": 2,
+    "proteinPer100g": 0.1,
+    "carbsPer100g": 0.3,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 240
+      }
+    ]
+  },
+  {
+    "id": "local-espresso",
+    "source": "local",
+    "name": "Εσπρέσσο",
+    "brand": "",
+    "aliases": [
+      "εσπρεσσο",
+      "espresso"
+    ],
+    "caloriesPer100g": 3,
+    "proteinPer100g": 0.1,
+    "carbsPer100g": 0.2,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 φλιτζ.",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-kapoutsino",
+    "source": "local",
+    "name": "Καπουτσίνο",
+    "brand": "",
+    "aliases": [
+      "καπουτσινο",
+      "cappuccino"
+    ],
+    "caloriesPer100g": 37,
+    "proteinPer100g": 2,
+    "carbsPer100g": 3,
+    "fatPer100g": 1.8,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 180
+      }
+    ]
+  },
+  {
+    "id": "local-latte",
+    "source": "local",
+    "name": "Latte",
+    "brand": "",
+    "aliases": [
+      "λατε",
+      "latte"
+    ],
+    "caloriesPer100g": 55,
+    "proteinPer100g": 3,
+    "carbsPer100g": 4.5,
+    "fatPer100g": 3,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 240
+      }
+    ]
+  },
+  {
+    "id": "local-xymos-grapefruit",
+    "source": "local",
+    "name": "Χυμός γκρέιπφρουτ",
+    "brand": "",
+    "aliases": [
+      "χυμος γκρειπφρουτ",
+      "grapefruit juice"
+    ],
+    "caloriesPer100g": 39,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 9,
+    "fatPer100g": 0.1,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-milkshake",
+    "source": "local",
+    "name": "Milkshake",
+    "brand": "",
+    "aliases": [
+      "milkshake",
+      "μιλκσεικ"
+    ],
+    "caloriesPer100g": 110,
+    "proteinPer100g": 3,
+    "carbsPer100g": 18,
+    "fatPer100g": 3,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 300
+      }
+    ]
+  },
+  {
+    "id": "local-nero-anthrak",
+    "source": "local",
+    "name": "Νερό ανθρακούχο",
+    "brand": "",
+    "aliases": [
+      "νερο ανθρακουχο",
+      "sparkling water"
+    ],
+    "caloriesPer100g": 0,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-tsai-prasino",
+    "source": "local",
+    "name": "Πράσινο τσάι",
+    "brand": "",
+    "aliases": [
+      "πρασινο τσαι",
+      "green tea"
+    ],
+    "caloriesPer100g": 1,
+    "proteinPer100g": 0.2,
+    "carbsPer100g": 0,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-tsai-xamomili",
+    "source": "local",
+    "name": "Χαμομήλι",
+    "brand": "",
+    "aliases": [
+      "χαμομηλι",
+      "chamomile tea"
+    ],
+    "caloriesPer100g": 1,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0.2,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-tsai-menta",
+    "source": "local",
+    "name": "Τσάι μέντα",
+    "brand": "",
+    "aliases": [
+      "τσαι μεντα",
+      "mint tea"
+    ],
+    "caloriesPer100g": 1,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0.2,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-kakao",
+    "source": "local",
+    "name": "Κακάο",
+    "brand": "",
+    "aliases": [
+      "κακαο",
+      "cocoa drink"
+    ],
+    "caloriesPer100g": 80,
+    "proteinPer100g": 3,
+    "carbsPer100g": 13,
+    "fatPer100g": 2,
+    "portions": [
+      {
+        "label": "1 κούπα",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-krasi-roze",
+    "source": "local",
+    "name": "Κρασί ροζέ",
+    "brand": "",
+    "aliases": [
+      "ροζε",
+      "rose wine"
+    ],
+    "caloriesPer100g": 83,
+    "proteinPer100g": 0.1,
+    "carbsPer100g": 2.5,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-sampania",
+    "source": "local",
+    "name": "Σαμπάνια",
+    "brand": "",
+    "aliases": [
+      "σαμπανια",
+      "champagne"
+    ],
+    "caloriesPer100g": 84,
+    "proteinPer100g": 0.2,
+    "carbsPer100g": 2.5,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-ouzo",
+    "source": "local",
+    "name": "Ούζο",
+    "brand": "",
+    "aliases": [
+      "ουζο",
+      "ouzo"
+    ],
+    "caloriesPer100g": 290,
+    "proteinPer100g": 0,
+    "carbsPer100g": 10,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 σφηνάκι",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-tsipouro",
+    "source": "local",
+    "name": "Τσίπουρο",
+    "brand": "",
+    "aliases": [
+      "τσιπουρο",
+      "tsipouro"
+    ],
+    "caloriesPer100g": 225,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 σφηνάκι",
+        "grams": 50
+      }
+    ]
+  },
+  {
+    "id": "local-sokolata-lefki",
+    "source": "local",
+    "name": "Σοκολάτα λευκή",
+    "brand": "",
+    "aliases": [
+      "σοκολατα λευκη",
+      "white chocolate"
+    ],
+    "caloriesPer100g": 540,
+    "proteinPer100g": 6,
+    "carbsPer100g": 59,
+    "fatPer100g": 32,
+    "portions": [
+      {
+        "label": "3 τετραγωνάκια",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-sokolata-gemisth",
+    "source": "local",
+    "name": "Σοκολάτα με γέμιση",
+    "brand": "",
+    "aliases": [
+      "σοκολατα με γεμιση",
+      "filled chocolate"
+    ],
+    "caloriesPer100g": 500,
+    "proteinPer100g": 5,
+    "carbsPer100g": 58,
+    "fatPer100g": 28,
+    "portions": [
+      {
+        "label": "1 κομμάτι",
+        "grams": 35
+      }
+    ]
+  },
+  {
+    "id": "local-dipla",
+    "source": "local",
+    "name": "Δίπλες",
+    "brand": "",
+    "aliases": [
+      "διπλες",
+      "diples"
+    ],
+    "caloriesPer100g": 430,
+    "proteinPer100g": 5,
+    "carbsPer100g": 60,
+    "fatPer100g": 20,
+    "portions": [
+      {
+        "label": "1 δίπλα",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-eklair",
+    "source": "local",
+    "name": "Εκλαίρ",
+    "brand": "",
+    "aliases": [
+      "εκλαιρ",
+      "eclair"
+    ],
+    "caloriesPer100g": 360,
+    "proteinPer100g": 5,
+    "carbsPer100g": 32,
+    "fatPer100g": 24,
+    "portions": [
+      {
+        "label": "1 εκλαίρ",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-panna-cotta",
+    "source": "local",
+    "name": "Πάννα κόττα",
+    "brand": "",
+    "aliases": [
+      "παννα κοττα",
+      "panna cotta"
+    ],
+    "caloriesPer100g": 200,
+    "proteinPer100g": 3,
+    "carbsPer100g": 20,
+    "fatPer100g": 13,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      }
+    ]
+  },
+  {
+    "id": "local-mousse-sokolatas",
+    "source": "local",
+    "name": "Μους σοκολάτας",
+    "brand": "",
+    "aliases": [
+      "μους σοκολατας",
+      "chocolate mousse"
+    ],
+    "caloriesPer100g": 245,
+    "proteinPer100g": 4.5,
+    "carbsPer100g": 28,
+    "fatPer100g": 13,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 120
+      }
+    ]
   }
 ]
