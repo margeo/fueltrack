@@ -38,6 +38,23 @@
         "Diet mode (keto, Mediterranean, etc.) affects macro split and Coach suggestions"
       ]
     },
+    "tips": {
+      "eatMore": "You can eat ~{{kcal}} kcal more",
+      "almostThere": "Almost there — {{kcal}} kcal left",
+      "onTarget": "Right on target today",
+      "overBudget": "You're over by {{kcal}} kcal today",
+      "highCarbs": "High on carbs today — ease up on bread, rice, pasta",
+      "highFat": "High on fat today — go lighter on oils and cheese",
+      "lowProtein": "Low on protein — add chicken, fish or Greek yogurt",
+      "exerciseBonus": "Exercise earned you +{{kcal}} kcal today",
+      "onTrack": "You're on track — keep it up",
+      "streakProud": "{{days}} day streak — keep it rolling 🔥",
+      "streakWeek": "Full week logged ({{days}} days) — nice work ✨",
+      "skipBreakfast": "Don't skip breakfast — fuel up",
+      "eveningUnderfed": "Still short on food for the day — have a proper dinner",
+      "fastingEatNow": "Eating window is open — don't forget to fuel up",
+      "weekLowProtein": "Low on protein most of the week — prioritise chicken, fish, eggs"
+    },
     "summary": {
       "howTo": [
         "Hero card: greeting, today's date and a Today button if viewing a past day",
