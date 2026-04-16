@@ -11578,5 +11578,396 @@
         "grams": 100
       }
     ]
+  },
+  {
+    "id": "local-fage-total-0",
+    "source": "local",
+    "name": "Γιαούρτι Total 0%",
+    "brand": "ΦΑΓΕ",
+    "aliases": [
+      "φαγε total 0",
+      "fage total 0",
+      "total 0%"
+    ],
+    "caloriesPer100g": 57,
+    "proteinPer100g": 10.3,
+    "carbsPer100g": 3.8,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      },
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-fage-total-2",
+    "source": "local",
+    "name": "Γιαούρτι Total 2%",
+    "brand": "ΦΑΓΕ",
+    "aliases": [
+      "φαγε total 2",
+      "total 2%"
+    ],
+    "caloriesPer100g": 73,
+    "proteinPer100g": 9,
+    "carbsPer100g": 3.8,
+    "fatPer100g": 2,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      },
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-fage-total-5",
+    "source": "local",
+    "name": "Γιαούρτι Total 5%",
+    "brand": "ΦΑΓΕ",
+    "aliases": [
+      "φαγε total 5",
+      "total 5%"
+    ],
+    "caloriesPer100g": 96,
+    "proteinPer100g": 8.9,
+    "carbsPer100g": 3.8,
+    "fatPer100g": 5,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 150
+      },
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-fage-classic",
+    "source": "local",
+    "name": "Γιαούρτι Classic",
+    "brand": "ΦΑΓΕ",
+    "aliases": [
+      "φαγε classic",
+      "fage classic"
+    ],
+    "caloriesPer100g": 97,
+    "proteinPer100g": 3.5,
+    "carbsPer100g": 4,
+    "fatPer100g": 7.5,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-delta-gala-pliri",
+    "source": "local",
+    "name": "Γάλα φρέσκο πλήρες",
+    "brand": "ΔΕΛΤΑ",
+    "aliases": [
+      "δελτα γαλα πληρες"
+    ],
+    "caloriesPer100g": 63,
+    "proteinPer100g": 3.2,
+    "carbsPer100g": 4.8,
+    "fatPer100g": 3.5,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-delta-gala-elafry",
+    "source": "local",
+    "name": "Γάλα φρέσκο ελαφρύ",
+    "brand": "ΔΕΛΤΑ",
+    "aliases": [
+      "δελτα γαλα ελαφρυ",
+      "δελτα light"
+    ],
+    "caloriesPer100g": 46,
+    "proteinPer100g": 3.2,
+    "carbsPer100g": 4.8,
+    "fatPer100g": 1.5,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-delta-sokolatoyxo",
+    "source": "local",
+    "name": "Σοκολατούχο γάλα Milko",
+    "brand": "ΔΕΛΤΑ",
+    "aliases": [
+      "milko",
+      "δελτα milko",
+      "σοκολατουχο delta"
+    ],
+    "caloriesPer100g": 73,
+    "proteinPer100g": 3.1,
+    "carbsPer100g": 10,
+    "fatPer100g": 2.4,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-delta-vlaxas-pliri",
+    "source": "local",
+    "name": "Γιαούρτι Βλάχας πλήρες",
+    "brand": "ΔΕΛΤΑ",
+    "aliases": [
+      "βλαχας",
+      "vlaxas",
+      "δελτα γιαουρτι"
+    ],
+    "caloriesPer100g": 82,
+    "proteinPer100g": 3.5,
+    "carbsPer100g": 4.2,
+    "fatPer100g": 5.5,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-delta-advance",
+    "source": "local",
+    "name": "Γιαούρτι Advance",
+    "brand": "ΔΕΛΤΑ",
+    "aliases": [
+      "advance",
+      "δελτα advance"
+    ],
+    "caloriesPer100g": 60,
+    "proteinPer100g": 8,
+    "carbsPer100g": 5,
+    "fatPer100g": 1.5,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-mevgal-gala",
+    "source": "local",
+    "name": "Γάλα φρέσκο",
+    "brand": "ΜΕΒΓΑΛ",
+    "aliases": [
+      "μεβγαλ γαλα",
+      "mevgal"
+    ],
+    "caloriesPer100g": 62,
+    "proteinPer100g": 3.2,
+    "carbsPer100g": 4.8,
+    "fatPer100g": 3.5,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-mevgal-giaourti",
+    "source": "local",
+    "name": "Γιαούρτι παραδοσιακό",
+    "brand": "ΜΕΒΓΑΛ",
+    "aliases": [
+      "μεβγαλ γιαουρτι",
+      "mevgal yogurt"
+    ],
+    "caloriesPer100g": 95,
+    "proteinPer100g": 3.6,
+    "carbsPer100g": 4.4,
+    "fatPer100g": 7,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-mevgal-stragisto",
+    "source": "local",
+    "name": "Γιαούρτι στραγγιστό 2%",
+    "brand": "ΜΕΒΓΑΛ",
+    "aliases": [
+      "μεβγαλ στραγγιστο"
+    ],
+    "caloriesPer100g": 72,
+    "proteinPer100g": 9,
+    "carbsPer100g": 3.7,
+    "fatPer100g": 2,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-olympos-giaourti",
+    "source": "local",
+    "name": "Γιαούρτι παραδοσιακό",
+    "brand": "ΟΛΥΜΠΟΣ",
+    "aliases": [
+      "ολυμπος γιαουρτι",
+      "olympos"
+    ],
+    "caloriesPer100g": 92,
+    "proteinPer100g": 3.5,
+    "carbsPer100g": 4.5,
+    "fatPer100g": 6.5,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 200
+      }
+    ]
+  },
+  {
+    "id": "local-olympos-ryzogalo",
+    "source": "local",
+    "name": "Ρυζόγαλο",
+    "brand": "ΟΛΥΜΠΟΣ",
+    "aliases": [
+      "ολυμπος ρυζογαλο"
+    ],
+    "caloriesPer100g": 115,
+    "proteinPer100g": 3,
+    "carbsPer100g": 18,
+    "fatPer100g": 3,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 180
+      }
+    ]
+  },
+  {
+    "id": "local-krikri-giaourti",
+    "source": "local",
+    "name": "Γιαούρτι στραγγιστό",
+    "brand": "ΚΡΙ-ΚΡΙ",
+    "aliases": [
+      "κρικρι",
+      "kri kri"
+    ],
+    "caloriesPer100g": 86,
+    "proteinPer100g": 8,
+    "carbsPer100g": 4,
+    "fatPer100g": 4.5,
+    "portions": [
+      {
+        "label": "1 κεσεδάκι",
+        "grams": 170
+      }
+    ]
+  },
+  {
+    "id": "local-krikri-pagoto-vanilla",
+    "source": "local",
+    "name": "Παγωτό βανίλια",
+    "brand": "ΚΡΙ-ΚΡΙ",
+    "aliases": [
+      "κρικρι παγωτο",
+      "kri-kri ice cream"
+    ],
+    "caloriesPer100g": 205,
+    "proteinPer100g": 3.5,
+    "carbsPer100g": 24,
+    "fatPer100g": 11,
+    "portions": [
+      {
+        "label": "1 μερίδα",
+        "grams": 80
+      }
+    ]
+  },
+  {
+    "id": "local-ipirou-feta",
+    "source": "local",
+    "name": "Φέτα ΠΟΠ",
+    "brand": "ΗΠΕΙΡΟΥ",
+    "aliases": [
+      "ηπειρου φετα",
+      "ipirou feta"
+    ],
+    "caloriesPer100g": 264,
+    "proteinPer100g": 14,
+    "carbsPer100g": 0.5,
+    "fatPer100g": 22.5,
+    "portions": [
+      {
+        "label": "1 φέτα",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-dodoni-feta",
+    "source": "local",
+    "name": "Φέτα ΠΟΠ",
+    "brand": "Δωδώνη",
+    "aliases": [
+      "δωδωνη φετα",
+      "dodoni feta"
+    ],
+    "caloriesPer100g": 268,
+    "proteinPer100g": 15,
+    "carbsPer100g": 0.5,
+    "fatPer100g": 23,
+    "portions": [
+      {
+        "label": "1 φέτα",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-dodoni-graviera",
+    "source": "local",
+    "name": "Γραβιέρα",
+    "brand": "Δωδώνη",
+    "aliases": [
+      "δωδωνη γραβιερα"
+    ],
+    "caloriesPer100g": 405,
+    "proteinPer100g": 27,
+    "carbsPer100g": 1,
+    "fatPer100g": 33,
+    "portions": [
+      {
+        "label": "1 φέτα",
+        "grams": 30
+      }
+    ]
   }
 ]
