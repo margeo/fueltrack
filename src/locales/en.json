@@ -70,83 +70,16 @@
     "title": "Quick Guide",
     "howTo": "Features",
     "profile": {
-      "howTo": [
-        "Basic info: weight, height, age, gender, goal (lose/maintain/gain), activity level, diet mode — used in every calculation.",
-        "Your Target: kg you want to lose/gain + timeframe (weeks). Sets your daily deficit/surplus.",
-        "Analysis: TDEE (maintenance), daily target kcal, deficit/surplus, protein target (g), macro split (%). The numbers that drive the whole app.",
-        "Food Profile — categories & cooking style: food picks (proteins, carbs, dairy etc.) + cooking method (grilled, oven etc.). Shape meal plans & suggestions.",
-        "Food Profile — cooking skill & time: control how complex meals get.",
-        "Food Profile — meals per day: structures the meal plan (e.g. 3 meals + snacks).",
-        "Food Profile — allergies/intolerances: excluded from suggestions (critical).",
-        "Food Profile — simple groceries: reuse meals for a shorter shopping list.",
-        "Exercise Profile — setup: fitness level, location (home/gym/outdoor), equipment. Filters exercises.",
-        "Exercise Profile — schedule: workout frequency & duration. Shapes the training plan.",
-        "Exercise Profile — goals & limitations: fitness goals (strength, weight loss, etc.) + limitations/injuries. Unsuitable exercises are avoided.",
-        "Account: language (EN/GR), subscription/plan, sign out."
-      ],
-      "tips": [
-        "Analysis is the core — if it's wrong, everything else is off.",
-        "Realistic loss rate: ~0.5-1 kg/week.",
-        "Activity level impacts TDEE a lot — set it correctly.",
-        "Allergies = must, they block wrong suggestions.",
-        "The more complete your profile, the more accurate the Coach."
-      ]
+      "content": "What it shows\nBasic info\nweight / height / age / gender\ngoal (lose / maintain / gain)\nactivity level\ndiet mode\n→ used in every calculation\nYour Target\nkg you want to lose/gain\ntimeframe (weeks)\n→ sets your daily deficit / surplus\nAnalysis\nTDEE (maintenance)\nDaily target kcal\nDaily deficit / surplus\nProtein target (g)\nMacro split (%)\n→ these are the \"numbers\" that drive the whole app\n\nFood Profile\nFood picks (proteins, carbs, dairy etc.)\n→ shape meal plans & suggestions\nCooking style\n(grilled, oven, fried etc.)\nCooking skill & time\n→ controls how \"complex\" meals will be\nMeals per day\n→ structures the meal plan (e.g. 3 meals + snacks)\nAllergies / intolerances\n→ excluded from suggestions (critical)\nSimple groceries\n→ reuse meals → shorter shopping list\n\nExercise Profile\nFitness level\nWhere you work out\n(home / gym / outdoor)\nEquipment available\n→ filters exercises\nWorkout frequency & duration\n→ training plan structure\nFitness goals\n(strength, weight loss, etc.)\nLimitations / injuries\n→ unsuitable exercises avoided\n\nAccount\nLanguage (EN/GR)\nSubscription / plan\nSign out\n\nWhat you can do\nSet a goal (kg + time)\nSee exactly how many calories you need\nAdjust diet & macros\nDefine what you eat → better meal plans\nDefine your training setup → proper workouts\n\n💡 Tips\nAnalysis is the core — if it's wrong, everything else will be off\nRealistic rate: ~0.5–1 kg/week\nActivity level greatly impacts TDEE → set it correctly\nAllergies = must (blocks wrong suggestions)\nThe more complete the profile → the more accurate the Coach"
     },
     "summary": {
-      "howTo": [
-        "Remaining calories: the big number = Target − Food + Exercise. Shows how much you can still eat today; turns red when you go over.",
-        "Calorie donut: visual progress — fills as you eat, color shifts as you approach the target.",
-        "Macro pie: protein (blue), carbs (orange), fat (red) split. Inner = target, outer ring = what you've actually eaten.",
-        "👉 Tips: computed automatically from today's data (macros, time, streak). Update as you log.",
-        "Streak 🔥: consecutive days logged. Miss one and it resets to zero.",
-        "Coach: Meal Plan, Training Plan, Weekly Review or your own question — generated plans are saved here.",
-        "Weight tracking: log today's weight — the app adjusts targets and shows a 30-day trend.",
-        "📅 top right: log a past day (future days are locked).",
-        "7-day history: at the bottom — tap a day to expand its macros."
-      ],
-      "tips": [
-        "Update your weight weekly — the fresher it is, the more accurate your calorie target.",
-        "The Coach's Weekly Review scores your week 1-10 — useful Sunday check-in.",
-        "Meal/training plans export to PDF for printing or sharing."
-      ]
+      "content": "What it shows\nRemaining (calories) = Target − Food + Exercise\nShows how much you can still eat. Goes negative when you exceed the target.\nCalories donut (circle)\nVisual day progress. Fills as you eat. As you approach the target → intensity/color shifts.\nMacro distribution (pie)\nProtein / Carbs / Fat\n→ shows how your intake is split relative to the target.\nMacro bars\nExact amount (g) vs target for each macro.\nAuto tips (👉 Tips)\nGenerated live from:\nmacros imbalance\ncalories\ntime of day\nstreak\nUpdate as you log.\nStreak 🔥\nConsecutive days of logging.\nIf you miss a day → reset.\nCoach\nQuick actions: Meal Plan, Training Plan, Weekly Review\nCustom questions\nWhatever is generated is saved here\nSaved Plans (Meal / Grocery / Training)\nExpand / Collapse\nExport PDF\nDelete\nWeight tracking\nLog weight by date\n30-day trend\nAutomatically affects calorie targets\nHistory (past days)\nRemaining / Food / Exercise\nExpand for macros\n📅 Date picker\nLog a past day\nFuture disabled\n\nWhat you can do\nCheck at a glance whether you're within your calorie target\nSee if your macros are properly distributed\nGet live guidance from the tips\nCreate meal / training plans\nTrack weight progress & consistency\nLog or edit past days\n\n💡 Tips\nIf Remaining drops very low/negative → reduce intake or add exercise\nIf macros are off → fix the next meal, not the whole day\nStreak = consistency metric, not performance\nWeight: update 1–2 times/week for accurate targeting\nUse the Weekly Review for a quick weekly check"
     },
     "food": {
-      "howTo": [
-        "Food of the Day: everything you've eaten today, grouped by meal (Breakfast / Lunch / Dinner / Snacks) with a calorie total at the top.",
-        "Entries list: each food shows kcal + macros. ✏️ edit changes quantity/meal, ❌ delete removes it.",
-        "Search: GR + EN food database. Filters: High Protein, Low Carb, Low Cal, Keto.",
-        "📸 Photo: AI food recognition — estimates kcal/macros (approximate, not always exact).",
-        "🔲 Barcode: scan a packaged product for instant add (real device only).",
-        "Before Add: set grams/portion, pick meal, see macros preview.",
-        "Favorites ⭐: one-tap add for foods you eat often.",
-        "Recent: quick re-add from your latest entries.",
-        "Custom food: your own entry (per 100g: kcal/protein/carbs/fat). Useful for home recipes and repeated meals."
-      ],
-      "tips": [
-        "Always check grams before adding — it's the #1 accuracy issue.",
-        "Use Favorites for speed.",
-        "Photo → cleaner image, one plate at a time works best.",
-        "Custom → set it up once, then it's 1-click forever."
-      ]
+      "content": "What it shows\nFood of the Day\nEverything you've eaten today, grouped by meal (Breakfast / Lunch / Snack etc.) + total calories.\nEntries list\nEach food with kcal + macros.\n✏️ edit → change quantity/meal\n❌ delete → remove\n\nAdd food\nSearch\nFood database (GR + EN).\nFilters:\nHigh Protein\nLow Carb\nLow Cal\nKeto\n📸 Photo\nAI food recognition → estimates kcal/macros\n(approximate, not always exact)\n🔲 Barcode\nScan a packaged product → instant add\n(real device only)\nBefore Add\nset grams / portion\npick meal\npreview macros\n\nSpeed sections\nFavorites ⭐\nOne-tap add for foods you eat often\nRecent\nQuick re-add from recent\nCustom food\nCreate your own entry (per 100g):\nkcal / protein / carbs / fat\nUseful for:\nhome-cooked meals\nrepeated meals\n\nWhat you can do\nFast daily logging\nEdit quantities / meals\nReuse foods without search\nAdd via photo / barcode\nCreate custom entries\n\n💡 Tips\nAlways check grams before adding (accuracy issue #1)\nUse favorites for speed\nPhoto → cleaner image, one plate at a time works best\nCustom → set it up once, then it's 1-click"
     },
     "exercise": {
-      "howTo": [
-        "Exercise today: total calories burned + the day's exercise list.",
-        "Entries list: each exercise shows duration (minutes) and kcal burned. ❌ delete removes it.",
-        "Search: find an exercise from the library. Categories: Cardio 🏃, Gym 🏋️, Training 🔥, Sports ⚽.",
-        "Exercise dropdown: shows kcal/min for each exercise — the basis for the calorie calculation.",
-        "Before Add: set minutes, see kcal preview.",
-        "Health / Google Fit: auto-imports workouts when connected.",
-        "Favorites ⭐: one-tap add (default duration ~30min).",
-        "Recent: quick re-add from your latest workouts.",
-        "Custom exercise: your own activity (name + minutes + kcal/min). Useful for activities outside the library."
-      ],
-      "tips": [
-        "Longer duration = more kcal (linear with kcal/min).",
-        "Exercise calories add back to your daily allowance.",
-        "Favorites = fastest logging for repeated workouts.",
-        "Custom → set a realistic kcal/min for accurate results."
-      ]
+      "content": "What it shows\nExercise today (total kcal)\nTotal calories burned + the day's exercise list\nEntries list\nEach exercise with:\nduration (minutes)\nkcal burned\n❌ delete → remove entry\n\nAdd exercise\nSearch\nFind an exercise from the library\nCategories\nCardio\nGym\nTraining\nSports\nExercise dropdown\nShows kcal/min for each exercise\n→ basis for the calorie calculation\nBefore Add\nset minutes\npreview kcal\n\nIntegrations\nHealth / Google Fit\nAuto-import workouts (when connected)\n\nSpeed sections\nFavorites ⭐\nOne-tap add (default duration ~30min)\nRecent\nQuick re-add from recent workouts\nCustom exercise\nCreate your own exercise:\nname\nminutes\nkcal/min\nUseful for:\nactivities outside the library\n\nWhat you can do\nLog workouts and duration\nSee how many calories you're burning\nDirectly affect your remaining calories\nUse favorites/recent for speed\nAdd custom activities\n\n💡 Tips\nLonger duration = more kcal (linear with kcal/min)\nExercise kcal add back to your daily allowance\nFavorites = fastest logging for repeated workouts\nCustom → set a realistic kcal/min for accurate results"
     },
     "tips": "Tips"
   },

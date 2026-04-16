@@ -18,8 +18,7 @@ export default function HelpModal({ activeTab, onClose }) {
     return () => window.removeEventListener("keydown", onEsc);
   }, [onClose]);
 
-  const howToList = t(`help.${meta.key}.howTo`, { returnObjects: true });
-  const tipsList = t(`help.${meta.key}.tips`, { returnObjects: true });
+  const content = t(`help.${meta.key}.content`);
 
   return (
     <div
@@ -43,22 +42,8 @@ export default function HelpModal({ activeTab, onClose }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--text-primary)" }}>📖 {t("help.howTo")}</div>
-          <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-            {Array.isArray(howToList) && howToList.map((item, i) => (
-              <li key={i} style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-primary)" }}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-soft)", borderRadius: 12, padding: "12px 14px" }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>💡 {t("help.tips")}</div>
-          <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-            {Array.isArray(tipsList) && tipsList.map((item, i) => (
-              <li key={i} style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-primary)" }}>{item}</li>
-            ))}
-          </ul>
+        <div style={{ fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-line", color: "var(--text-primary)" }}>
+          {content}
         </div>
       </div>
     </div>

@@ -70,83 +70,16 @@
     "title": "Γρήγορος Οδηγός",
     "howTo": "Λειτουργίες",
     "profile": {
-      "howTo": [
-        "Βασικά στοιχεία: βάρος, ύψος, ηλικία, φύλο, goal (lose/maintain/gain), activity level, diet mode — χρησιμοποιούνται σε όλους τους υπολογισμούς.",
-        "Your Target: κιλά που θέλεις να χάσεις/πάρεις + χρονικό διάστημα (weeks). Καθορίζει το daily deficit/surplus.",
-        "Analysis: TDEE (maintenance), daily target kcal, deficit/surplus, protein target (g), macro split (%). Τα νούμερα που οδηγούν όλο το app.",
-        "Food Profile — κατηγορίες & cooking style: επιλογές τροφίμων (proteins, carbs, dairy κλπ) + τρόπος μαγειρέματος (grilled, oven κλπ). Επηρεάζουν meal plans & suggestions.",
-        "Food Profile — cooking skill & time: καθορίζουν πόσο complex θα είναι τα meals.",
-        "Food Profile — meals per day: structure του meal plan (π.χ. 3 meals + snacks).",
-        "Food Profile — allergies/intolerances: αποκλείονται από προτάσεις (critical).",
-        "Food Profile — simple groceries: reuse meals για μικρότερη λίστα αγορών.",
-        "Exercise Profile — setup: fitness level, location (home/gym/outdoor), equipment. Φιλτράρει ασκήσεις.",
-        "Exercise Profile — schedule: workout frequency & duration. Δομή του training plan.",
-        "Exercise Profile — goals & limitations: fitness goals (strength, weight loss, κλπ) + limitations/injuries. Αποφεύγονται ακατάλληλες ασκήσεις.",
-        "Account: γλώσσα (EN/GR), subscription/plan, sign out."
-      ],
-      "tips": [
-        "Το Analysis είναι το core — αν είναι λάθος, όλα τα άλλα θα είναι off.",
-        "Ρεαλιστικός ρυθμός απώλειας: ~0.5-1 kg/week.",
-        "Activity level επηρεάζει πολύ το TDEE — βάλε το σωστό.",
-        "Allergies = must, μπλοκάρουν λάθος suggestions.",
-        "Όσο πιο complete το profile, τόσο πιο accurate ο Coach."
-      ]
+      "content": "Τι δείχνει\nBasic info\nweight / height / age / gender\ngoal (lose / maintain / gain)\nactivity level\ndiet mode\n→ χρησιμοποιούνται για όλους τους υπολογισμούς\nYour Target\nκιλά που θέλεις να χάσεις/πάρεις\nχρονικό διάστημα (weeks)\n→ καθορίζει το daily deficit / surplus\nAnalysis\nTDEE (maintenance)\nDaily target kcal\nDaily deficit / surplus\nProtein target (g)\nMacro split (%)\n→ αυτά είναι τα \"νούμερα\" που οδηγούν όλο το app\n\nFood Profile\nΕπιλογές τροφίμων (proteins, carbs, dairy κλπ)\n→ επηρεάζουν meal plans & suggestions\nCooking style\n(grilled, oven, fried κλπ)\nCooking skill & time\n→ καθορίζει πόσο \"complex\" θα είναι τα meals\nMeals per day\n→ structure meal plan (π.χ. 3 meals + snacks)\nAllergies / intolerances\n→ αποκλείονται από προτάσεις (critical)\nSimple groceries\n→ reuse meals → μικρότερη λίστα αγορών\n\nExercise Profile\nFitness level\nWhere you work out\n(home / gym / outdoor)\nEquipment διαθέσιμο\n→ φιλτράρει ασκήσεις\nWorkout frequency & duration\n→ δομή training plan\nFitness goals\n(strength, weight loss, etc.)\nLimitations / injuries\n→ αποφεύγονται ακατάλληλες ασκήσεις\n\nAccount\nLanguage (EN/GR)\nSubscription / plan\nSign out\n\nΤι μπορείς να κάνεις\nΝα ορίσεις στόχο (kg + χρόνο)\nΝα δεις ακριβώς πόσες θερμίδες χρειάζεσαι\nΝα προσαρμόσεις diet & macros\nΝα καθορίσεις τι τρως → καλύτερα meal plans\nΝα καθορίσεις training setup → σωστά workouts\n\n💡 Tips\nΤο Analysis είναι το core — αν είναι λάθος, όλα τα άλλα θα είναι off\nΡεαλιστικός ρυθμός: ~0.5–1 kg/week\nActivity level επηρεάζει πολύ το TDEE → βάλε σωστό\nAllergies = must (μπλοκάρει λάθος suggestions)\nΌσο πιο complete profile → τόσο πιο accurate Coach"
     },
     "summary": {
-      "howTo": [
-        "Υπόλοιπες θερμίδες: ο μεγάλος αριθμός = Στόχος − Φαγητό + Άσκηση. Δείχνει πόσο μπορείς ακόμα να φας σήμερα· γίνεται κόκκινος όταν ξεπερνάς το όριο.",
-        "Donut θερμίδων: οπτική πρόοδος — γεμίζει όσο τρως και το χρώμα αλλάζει όσο πλησιάζεις τον στόχο.",
-        "Macro pie: κατανομή πρωτεΐνης (μπλε), υδατανθράκων (πορτοκαλί), λιπαρών (κόκκινο). Εσωτερικό = στόχος, εξωτερικό δαχτυλίδι = τι έχεις όντως φάει.",
-        "👉 Συμβουλές: υπολογίζονται αυτόματα από τα σημερινά στοιχεία (macros, ώρα, streak). Αλλάζουν καθώς καταγράφεις.",
-        "Streak 🔥: μέρες συνεχούς καταγραφής. Αν χάσεις μία, ξεκινάει από την αρχή.",
-        "Coach: Meal Plan, Training Plan, Weekly Review ή δική σου ερώτηση — τα πλάνα αποθηκεύονται εδώ.",
-        "Καταγραφή βάρους: γράψε σημερινό βάρος — το app προσαρμόζει στόχους και δείχνει 30-day trend.",
-        "📅 πάνω δεξιά: κατέγραψε παλιότερη μέρα (μελλοντικές κλειδωμένες).",
-        "Ιστορικό 7 ημερών: κάτω στη σελίδα — πάτα σε μια μέρα για αναλυτικά macros."
-      ],
-      "tips": [
-        "Ενημέρωνε το βάρος σου εβδομαδιαία — όσο πιο φρέσκο, τόσο πιο ακριβής ο θερμιδικός στόχος.",
-        "Το Weekly Review από τον Coach βαθμολογεί την εβδομάδα 1-10 — χρήσιμο check κάθε Κυριακή.",
-        "Meal/training plans εξάγονται σε PDF για εκτύπωση ή share."
-      ]
+      "content": "Τι δείχνει\nRemaining (Υπόλοιπες θερμίδες) = Target − Food + Exercise\nΔείχνει πόσο μπορείς να φας ακόμα. Γίνεται αρνητικό όταν ξεπερνάς τον στόχο.\nCalories donut (κύκλος)\nΟπτική πρόοδος ημέρας. Γεμίζει όσο τρως. Όσο πλησιάζεις στόχο → αλλάζει ένταση/χρώμα.\nMacro distribution (pie)\nΠρωτεΐνη / Υδατάνθρακες / Λιπαρά\n→ δείχνει πώς μοιράζεται η πρόσληψη σου σε σχέση με τον στόχο.\nMacro bars\nΑκριβής ποσότητα (g) vs στόχος για κάθε macro.\nAuto tips (👉 Συμβουλές)\nΠαράγονται live από:\nmacros imbalance\nθερμίδες\nώρα ημέρας\nstreak\nΑλλάζουν όσο κάνεις log.\nStreak 🔥\nΣυνεχόμενες μέρες logging.\nΑν χαθεί μέρα → reset.\nCoach\nQuick actions: Meal Plan, Training Plan, Weekly Review\nCustom ερωτήσεις\nΌ,τι δημιουργείται αποθηκεύεται εδώ\nSaved Plans (Meal / Grocery / Training)\nExpand / Collapse\nExport PDF\nDelete\nWeight tracking\nΚαταγραφή βάρους ανά ημερομηνία\n30-day trend\nΕπηρεάζει αυτόματα τα calorie targets\nHistory (τελευταίες μέρες)\nRemaining / Food / Exercise\nExpand για macros\n📅 Date picker\nLog παλιότερη μέρα\nFuture disabled\n\nΤι μπορείς να κάνεις\nΝα ελέγχεις άμεσα αν είσαι εντός στόχου θερμίδων\nΝα βλέπεις αν τα macros σου είναι σωστά κατανεμημένα\nΝα παίρνεις live guidance από τα tips\nΝα δημιουργείς meal / training plans\nΝα παρακολουθείς πρόοδο βάρους & consistency\nΝα κάνεις log ή edit παλιότερες μέρες\n\n💡 Tips\nΑν το Remaining πέσει πολύ χαμηλά/αρνητικό → μείωσε intake ή πρόσθεσε exercise\nΑν τα macros είναι off → διόρθωσε το επόμενο γεύμα, όχι όλη τη μέρα\nΤο streak = consistency metric, όχι performance\nΒάρος: update 1–2 φορές/εβδομάδα για σωστό targeting\nΧρησιμοποίησε το Weekly Review για γρήγορο check εβδομάδας"
     },
     "food": {
-      "howTo": [
-        "Food of the Day: ό,τι έχεις φάει σήμερα, ομαδοποιημένο σε meals (Πρωινό / Μεσημεριανό / Βραδινό / Σνακ) + σύνολο θερμίδων στην κορυφή.",
-        "Entries list: κάθε τρόφιμο δείχνει kcal + macros. ✏️ edit αλλάζεις ποσότητα/meal, ❌ delete αφαιρείς.",
-        "Αναζήτηση: βάση με τρόφιμα (GR + EN). Φίλτρα: High Protein, Low Carb, Low Cal, Keto.",
-        "📸 Photo: AI αναγνώριση φαγητού — εκτίμηση kcal/macros (approximate, όχι πάντα ακριβές).",
-        "🔲 Barcode: scan συσκευασμένου προϊόντος για άμεση προσθήκη (μόνο σε πραγματική συσκευή).",
-        "Πριν το Add: ρύθμισε grams/portion, διάλεξε meal, δες preview macros.",
-        "Favorites ⭐: one-tap add για συχνά τρόφιμα.",
-        "Recent: γρήγορο re-add από πρόσφατα.",
-        "Custom food: δικό σου entry (per 100g: kcal/protein/carbs/fat). Χρήσιμο για σπιτικά και επαναλαμβανόμενα meals."
-      ],
-      "tips": [
-        "Πάντα έλεγξε grams πριν add — είναι το #1 accuracy issue.",
-        "Χρησιμοποίησε Favorites για speed.",
-        "Photo → καλύτερα 1 πιάτο, καθαρή εικόνα.",
-        "Custom → κάν' το 1 φορά, μετά είναι 1-click."
-      ]
+      "content": "Τι δείχνει\nFood of the Day\nΌ,τι έχεις φάει σήμερα, ομαδοποιημένο σε meals (Breakfast / Lunch / Snack κλπ) + συνολικές θερμίδες.\nEntries list\nΚάθε τρόφιμο με kcal + macros.\n✏️ edit → αλλάζεις ποσότητα/meal\n❌ delete → αφαιρείς\n\nΠροσθήκη φαγητού\nSearch\nΒάση με τρόφιμα (GR + EN).\nFilters:\nHigh Protein\nLow Carb\nLow Cal\nKeto\n📸 Photo\nAI αναγνώριση φαγητού → εκτίμηση kcal/macros\n(approximate, όχι πάντα ακριβές)\n🔲 Barcode\nScan συσκευασμένου προϊόντος → άμεση προσθήκη\n(μόνο σε πραγματική συσκευή)\nBefore Add\nρύθμισε grams / portion\nδιάλεξε meal\nδες preview macros\n\nSpeed sections\nFavorites ⭐\nOne-tap add για συχνά τρόφιμα\nRecent\nΓρήγορο re-add από πρόσφατα\nCustom food\nΔημιουργείς δικό σου entry (per 100g):\nkcal / protein / carbs / fat\nΧρήσιμο για:\nσπιτικά φαγητά\nεπαναλαμβανόμενα meals\n\nΤι μπορείς να κάνεις\nΓρήγορο daily logging\nEdit ποσότητες / meals\nReuse foods χωρίς search\nAdd μέσω photo / barcode\nΔημιουργία custom entries\n\n💡 Tips\nΠάντα έλεγξε grams πριν add (accuracy issue #1)\nΧρησιμοποίησε favorites για speed\nPhoto → καλύτερα 1 πιάτο, καθαρή εικόνα\nCustom → κάν' το 1 φορά, μετά γίνεται 1-click"
     },
     "exercise": {
-      "howTo": [
-        "Exercise today: συνολικές θερμίδες που έκαψες + λίστα ασκήσεων της ημέρας.",
-        "Entries list: κάθε άσκηση με διάρκεια (minutes) και kcal burned. ❌ delete αφαιρείς.",
-        "Αναζήτηση: βρίσκεις άσκηση από library. Κατηγορίες: Cardio 🏃, Gym 🏋️, Training 🔥, Sports ⚽.",
-        "Exercise dropdown: δείχνει kcal/min για κάθε άσκηση — βάση υπολογισμού θερμίδων.",
-        "Πριν το Add: όρισε minutes, βλέπεις kcal preview.",
-        "Health / Google Fit: auto-import workouts όταν είναι συνδεδεμένα.",
-        "Favorites ⭐: one-tap add (default διάρκεια ~30min).",
-        "Recent: γρήγορο re-add από πρόσφατες ασκήσεις.",
-        "Custom exercise: δική σου άσκηση (name + minutes + kcal/min). Χρήσιμο για activities εκτός library."
-      ],
-      "tips": [
-        "Περισσότερη διάρκεια = περισσότερα kcal (linear με kcal/min).",
-        "Τα exercise kcal προστίθενται πίσω στο daily allowance.",
-        "Favorites = fastest logging για επαναλαμβανόμενα workouts.",
-        "Custom → βάλε σωστό kcal/min για ρεαλιστικά results."
-      ]
+      "content": "Τι δείχνει\nExercise today (σύνολο kcal)\nΣυνολικές θερμίδες που έκαψες + λίστα ασκήσεων ημέρας\nEntries list\nΚάθε άσκηση με:\nδιάρκεια (minutes)\nkcal burned\n❌ delete → αφαιρείς entry\n\nΠροσθήκη άσκησης\nSearch\nΒρίσκεις άσκηση από library\nCategories\nCardio\nGym\nTraining\nSports\nExercise dropdown\nΔείχνει kcal/min για κάθε άσκηση\n→ βάση υπολογισμού θερμίδων\nBefore Add\nορίζεις minutes\nβλέπεις kcal preview\n\nIntegrations\nHealth / Google Fit\nAuto-import workouts (όταν είναι συνδεδεμένα)\n\nSpeed sections\nFavorites ⭐\nOne-tap add (default διάρκεια ~30min)\nRecent\nΓρήγορο re-add από πρόσφατες ασκήσεις\nCustom exercise\nΔημιουργείς δική σου άσκηση:\nname\nminutes\nkcal/min\nΧρήσιμο για:\nactivities εκτός library\n\nΤι μπορείς να κάνεις\nΝα καταγράφεις workouts και διάρκεια\nΝα βλέπεις πόσες θερμίδες καίς\nΝα επηρεάζεις άμεσα το remaining calories\nΝα χρησιμοποιείς favorites/recent για speed\nΝα προσθέτεις custom δραστηριότητες\n\n💡 Tips\nΠερισσότερη διάρκεια = περισσότερα kcal (linear με kcal/min)\nΤα exercise kcal προστίθενται πίσω στο daily allowance\nFavorites = fastest logging για επαναλαμβανόμενα workouts\nCustom → βάλε σωστό kcal/min για ρεαλιστικά results"
     },
     "tips": "Συμβουλές"
   },
