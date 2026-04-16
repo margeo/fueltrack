@@ -12584,5 +12584,372 @@
         "grams": 250
       }
     ]
+  },
+  {
+    "id": "local-mythos-beer",
+    "source": "local",
+    "name": "Μύθος",
+    "brand": "Μύθος",
+    "aliases": [
+      "mythos",
+      "μυθος"
+    ],
+    "caloriesPer100g": 40,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 3.2,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 330
+      },
+      {
+        "label": "1 μπουκάλι",
+        "grams": 500
+      }
+    ]
+  },
+  {
+    "id": "local-fix-beer",
+    "source": "local",
+    "name": "Fix Hellas",
+    "brand": "Fix",
+    "aliases": [
+      "fix",
+      "φιξ"
+    ],
+    "caloriesPer100g": 42,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 3.3,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 330
+      },
+      {
+        "label": "1 μπουκάλι",
+        "grams": 500
+      }
+    ]
+  },
+  {
+    "id": "local-alfa-beer",
+    "source": "local",
+    "name": "Άλφα",
+    "brand": "Άλφα",
+    "aliases": [
+      "alfa",
+      "αλφα"
+    ],
+    "caloriesPer100g": 43,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 3.4,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-heineken",
+    "source": "local",
+    "name": "Heineken",
+    "brand": "Heineken",
+    "aliases": [
+      "heineken",
+      "χαινεκεν"
+    ],
+    "caloriesPer100g": 42,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 3.2,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-amita-portokali",
+    "source": "local",
+    "name": "100% Πορτοκάλι",
+    "brand": "ΑΜΙΤΑ",
+    "aliases": [
+      "αμιτα",
+      "amita πορτοκαλι",
+      "amita orange"
+    ],
+    "caloriesPer100g": 42,
+    "proteinPer100g": 0.7,
+    "carbsPer100g": 9.5,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-amita-mix",
+    "source": "local",
+    "name": "Motion ενέργειας",
+    "brand": "ΑΜΙΤΑ",
+    "aliases": [
+      "amita motion"
+    ],
+    "caloriesPer100g": 52,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 12,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-life-portokali",
+    "source": "local",
+    "name": "Πορτοκάλι 100%",
+    "brand": "Life",
+    "aliases": [
+      "life χυμος",
+      "life orange"
+    ],
+    "caloriesPer100g": 45,
+    "proteinPer100g": 0.8,
+    "carbsPer100g": 10,
+    "fatPer100g": 0.2,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-life-mixed",
+    "source": "local",
+    "name": "5 φρούτα",
+    "brand": "Life",
+    "aliases": [
+      "life 5 φρουτα"
+    ],
+    "caloriesPer100g": 55,
+    "proteinPer100g": 0.5,
+    "carbsPer100g": 13,
+    "fatPer100g": 0.1,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-frulite",
+    "source": "local",
+    "name": "Frulite πορτοκάλι",
+    "brand": "Frulite",
+    "aliases": [
+      "frulite",
+      "φρουλιτε"
+    ],
+    "caloriesPer100g": 48,
+    "proteinPer100g": 0.7,
+    "carbsPer100g": 11,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 ποτήρι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-loux-lemon",
+    "source": "local",
+    "name": "Λεμονάδα",
+    "brand": "Λουξ",
+    "aliases": [
+      "λουξ",
+      "loux lemon"
+    ],
+    "caloriesPer100g": 40,
+    "proteinPer100g": 0,
+    "carbsPer100g": 10,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 μπουκάλι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-loux-portokali",
+    "source": "local",
+    "name": "Πορτοκαλάδα",
+    "brand": "Λουξ",
+    "aliases": [
+      "λουξ πορτοκαλαδα"
+    ],
+    "caloriesPer100g": 42,
+    "proteinPer100g": 0,
+    "carbsPer100g": 10,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 μπουκάλι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-epsa-lemon",
+    "source": "local",
+    "name": "Λεμονάδα",
+    "brand": "ΕΨΑ",
+    "aliases": [
+      "εψα",
+      "epsa"
+    ],
+    "caloriesPer100g": 45,
+    "proteinPer100g": 0,
+    "carbsPer100g": 11,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 μπουκάλι",
+        "grams": 330
+      }
+    ]
+  },
+  {
+    "id": "local-redbull",
+    "source": "local",
+    "name": "Red Bull",
+    "brand": "Red Bull",
+    "aliases": [
+      "redbull",
+      "red bull",
+      "ρεντ μπουλ"
+    ],
+    "caloriesPer100g": 45,
+    "proteinPer100g": 0.3,
+    "carbsPer100g": 11,
+    "fatPer100g": 0,
+    "portions": [
+      {
+        "label": "1 κουτάκι",
+        "grams": 250
+      }
+    ]
+  },
+  {
+    "id": "local-minerva-olive",
+    "source": "local",
+    "name": "Ελαιόλαδο Εξαιρετικό Παρθένο",
+    "brand": "Μινέρβα",
+    "aliases": [
+      "μινερβα",
+      "minerva"
+    ],
+    "caloriesPer100g": 880,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0,
+    "fatPer100g": 100,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-altis-olive",
+    "source": "local",
+    "name": "Ελαιόλαδο Εξαιρετικό Παρθένο",
+    "brand": "Altis",
+    "aliases": [
+      "altis",
+      "αλτις"
+    ],
+    "caloriesPer100g": 880,
+    "proteinPer100g": 0,
+    "carbsPer100g": 0,
+    "fatPer100g": 100,
+    "portions": [
+      {
+        "label": "1 κ.σ.",
+        "grams": 15
+      }
+    ]
+  },
+  {
+    "id": "local-cretafarms-indiki",
+    "source": "local",
+    "name": "Γαλοπούλα χαμηλά λιπαρά",
+    "brand": "Creta Farms",
+    "aliases": [
+      "creta farms γαλοπουλα",
+      "κρητα φαρμς"
+    ],
+    "caloriesPer100g": 105,
+    "proteinPer100g": 19,
+    "carbsPer100g": 1,
+    "fatPer100g": 2.5,
+    "portions": [
+      {
+        "label": "3 φέτες",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-nikas-zampon",
+    "source": "local",
+    "name": "Ζαμπόν βραστό",
+    "brand": "Νίκας",
+    "aliases": [
+      "νικας",
+      "nikas"
+    ],
+    "caloriesPer100g": 120,
+    "proteinPer100g": 18,
+    "carbsPer100g": 1,
+    "fatPer100g": 5,
+    "portions": [
+      {
+        "label": "3 φέτες",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-ifantis-salami",
+    "source": "local",
+    "name": "Σαλάμι αέρος",
+    "brand": "Υφαντής",
+    "aliases": [
+      "υφαντης",
+      "ifantis"
+    ],
+    "caloriesPer100g": 390,
+    "proteinPer100g": 22,
+    "carbsPer100g": 1,
+    "fatPer100g": 33,
+    "portions": [
+      {
+        "label": "3 φέτες",
+        "grams": 30
+      }
+    ]
   }
 ]
