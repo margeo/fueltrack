@@ -11969,5 +11969,307 @@
         "grams": 30
       }
     ]
+  },
+  {
+    "id": "local-papadopoulou-miranda",
+    "source": "local",
+    "name": "Μιράντα",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "miranda",
+      "μιραντα"
+    ],
+    "caloriesPer100g": 490,
+    "proteinPer100g": 6,
+    "carbsPer100g": 68,
+    "fatPer100g": 21,
+    "portions": [
+      {
+        "label": "2 μπισκότα",
+        "grams": 25
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-mir",
+    "source": "local",
+    "name": "Μιρ",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "μιρ",
+      "mir"
+    ],
+    "caloriesPer100g": 470,
+    "proteinPer100g": 8,
+    "carbsPer100g": 65,
+    "fatPer100g": 19,
+    "portions": [
+      {
+        "label": "2 μπισκότα",
+        "grams": 20
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-digestive",
+    "source": "local",
+    "name": "Digestive",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "digestive",
+      "παπαδοπουλου digestive"
+    ],
+    "caloriesPer100g": 460,
+    "proteinPer100g": 7,
+    "carbsPer100g": 65,
+    "fatPer100g": 19,
+    "portions": [
+      {
+        "label": "2 μπισκότα",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-digestive-oats",
+    "source": "local",
+    "name": "Digestive Ολικής",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "digestive ολικης",
+      "digestive whole grain"
+    ],
+    "caloriesPer100g": 445,
+    "proteinPer100g": 8,
+    "carbsPer100g": 60,
+    "fatPer100g": 19,
+    "portions": [
+      {
+        "label": "2 μπισκότα",
+        "grams": 30
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-cream-crackers",
+    "source": "local",
+    "name": "Cream Crackers",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "cream crackers",
+      "κρακερς"
+    ],
+    "caloriesPer100g": 445,
+    "proteinPer100g": 10,
+    "carbsPer100g": 65,
+    "fatPer100g": 16,
+    "portions": [
+      {
+        "label": "3 κρακερς",
+        "grams": 25
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-cream-crackers-holisia",
+    "source": "local",
+    "name": "Cream Crackers Ολικής",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "cream crackers ολικης"
+    ],
+    "caloriesPer100g": 435,
+    "proteinPer100g": 11,
+    "carbsPer100g": 60,
+    "fatPer100g": 16,
+    "portions": [
+      {
+        "label": "3 κρακερς",
+        "grams": 25
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-petit-beurre",
+    "source": "local",
+    "name": "Πτι Μπερ",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "πτι μπερ",
+      "petit beurre"
+    ],
+    "caloriesPer100g": 435,
+    "proteinPer100g": 7,
+    "carbsPer100g": 75,
+    "fatPer100g": 11,
+    "portions": [
+      {
+        "label": "3 μπισκότα",
+        "grams": 25
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-gemista-vanilla",
+    "source": "local",
+    "name": "Γεμιστά βανίλιας",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "παπαδοπουλου γεμιστα",
+      "sandwich biscuit"
+    ],
+    "caloriesPer100g": 490,
+    "proteinPer100g": 6,
+    "carbsPer100g": 68,
+    "fatPer100g": 21,
+    "portions": [
+      {
+        "label": "2 μπισκότα",
+        "grams": 25
+      }
+    ]
+  },
+  {
+    "id": "local-papadopoulou-paximadia",
+    "source": "local",
+    "name": "Παξιμάδια Επτάζυμα",
+    "brand": "Παπαδοπούλου",
+    "aliases": [
+      "παξιμαδια επταζυμα"
+    ],
+    "caloriesPer100g": 395,
+    "proteinPer100g": 10,
+    "carbsPer100g": 67,
+    "fatPer100g": 9,
+    "portions": [
+      {
+        "label": "2 παξιμάδια",
+        "grams": 20
+      }
+    ]
+  },
+  {
+    "id": "local-karamolegos-frygania",
+    "source": "local",
+    "name": "Φρυγανιές σταρένιες",
+    "brand": "Καραμολέγκος",
+    "aliases": [
+      "καραμολεγκος φρυγανιες",
+      "karamolegkos"
+    ],
+    "caloriesPer100g": 375,
+    "proteinPer100g": 12,
+    "carbsPer100g": 70,
+    "fatPer100g": 4,
+    "portions": [
+      {
+        "label": "2 φρυγανιές",
+        "grams": 20
+      }
+    ]
+  },
+  {
+    "id": "local-karamolegos-psomi-tost",
+    "source": "local",
+    "name": "Ψωμί τοστ σίτου",
+    "brand": "Καραμολέγκος",
+    "aliases": [
+      "καραμολεγκος ψωμι τοστ"
+    ],
+    "caloriesPer100g": 265,
+    "proteinPer100g": 9,
+    "carbsPer100g": 49,
+    "fatPer100g": 3.5,
+    "portions": [
+      {
+        "label": "1 φέτα",
+        "grams": 30
+      },
+      {
+        "label": "2 φέτες",
+        "grams": 60
+      }
+    ]
+  },
+  {
+    "id": "local-7days-croissant-vanilla",
+    "source": "local",
+    "name": "Croissant βανίλια",
+    "brand": "7Days",
+    "aliases": [
+      "7days",
+      "σεβεν ντειζ",
+      "7 days"
+    ],
+    "caloriesPer100g": 440,
+    "proteinPer100g": 6,
+    "carbsPer100g": 53,
+    "fatPer100g": 22,
+    "portions": [
+      {
+        "label": "1 κρουασάν",
+        "grams": 70
+      }
+    ]
+  },
+  {
+    "id": "local-7days-croissant-sokolata",
+    "source": "local",
+    "name": "Croissant σοκολάτα",
+    "brand": "7Days",
+    "aliases": [
+      "7days σοκολατα",
+      "7 days chocolate"
+    ],
+    "caloriesPer100g": 445,
+    "proteinPer100g": 6,
+    "carbsPer100g": 54,
+    "fatPer100g": 22,
+    "portions": [
+      {
+        "label": "1 κρουασάν",
+        "grams": 70
+      }
+    ]
+  },
+  {
+    "id": "local-chipita-bake-rolls",
+    "source": "local",
+    "name": "Bake Rolls",
+    "brand": "Chipita",
+    "aliases": [
+      "bake rolls",
+      "μπεικ ρολς"
+    ],
+    "caloriesPer100g": 470,
+    "proteinPer100g": 10,
+    "carbsPer100g": 63,
+    "fatPer100g": 20,
+    "portions": [
+      {
+        "label": "1 σακουλάκι",
+        "grams": 40
+      }
+    ]
+  },
+  {
+    "id": "local-ion-pitsakia",
+    "source": "local",
+    "name": "Πιτσάκια",
+    "brand": "Ίων",
+    "aliases": [
+      "ιων πιτσακια",
+      "ion"
+    ],
+    "caloriesPer100g": 490,
+    "proteinPer100g": 5,
+    "carbsPer100g": 60,
+    "fatPer100g": 25,
+    "portions": [
+      {
+        "label": "1 πιτσάκι",
+        "grams": 30
+      }
+    ]
   }
 ]
