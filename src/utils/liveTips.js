@@ -91,6 +91,11 @@ export function buildLiveTips({
   // presentation
   surface = "DASHBOARD",
   max = 3,
+  // Texts shown on other surfaces on the same screen. Tips whose text
+  // matches any entry here are skipped, so the user never sees the
+  // same nudge twice when they scroll the page (e.g. 'You can eat
+  // ~2.687 kcal more' on the Dashboard and again on the Food tab).
+  excludeTexts = [],
 } = {}) {
   if (typeof t !== "function") return [];
 
@@ -325,11 +330,12 @@ export function buildLiveTips({
     candidates.push(emit(t("tips.onTrack"), [TIP_TAGS.NEUTRAL, TIP_TAGS.POSITIVE]));
   }
 
-  // Filter by allowed tags, dedupe, cap.
+  // Filter by allowed tags, exclude already-shown texts, dedupe, cap.
+  const blocked = new Set(Array.isArray(excludeTexts) ? excludeTexts : []);
   const seen = new Set();
   const out = [];
   for (const c of candidates) {
-    if (!c || !c.text || seen.has(c.text)) continue;
+    if (!c || !c.text || seen.has(c.text) || blocked.has(c.text)) continue;
     if (!c.tags.some((tag) => allowedTags.has(tag))) continue;
     seen.add(c.text);
     out.push(c.text);

@@ -11,6 +11,7 @@ import NativeStaleBuildBanner from "./components/NativeStaleBuildBanner";
 import PlanChooser from "./components/PlanChooser";
 import { buildLiveTips } from "./utils/liveTips";
 import { formatNumber } from "./utils/helpers";
+import { calculateStreak } from "./utils/streak";
 import VerifyEmailScreen from "./components/VerifyEmailScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import SummaryTab from "./components/tabs/SummaryTab";
@@ -673,9 +674,29 @@ export default function App() {
 
   const isToday = selectedDate === getTodayKey();
 
-  // Per-surface rule-based tips. Same helper the Dashboard calls;
-  // surfaces filter the rule set down to what fits their context
-  // (see TIP_SURFACES in src/utils/liveTips.js).
+  // Per-surface rule-based tips, computed centrally here so the
+  // Dashboard, Food and Exercise tabs never show the same line twice
+  // when the user scrolls between tabs. Dashboard runs first; its
+  // texts are then passed as excludeTexts to the Food and Exercise
+  // surfaces so any overlap gets filtered out.
+  const streakForTips = useMemo(
+    () => calculateStreak(dailyLogs, targetCalories),
+    [dailyLogs, targetCalories]
+  );
+
+  const dashboardTips = useMemo(() => buildLiveTips({
+    t, formatNumber,
+    remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
+    exerciseValue, targetCalories, proteinTarget,
+    carbsTarget: macroTargets?.carbsGrams, fatTarget: macroTargets?.fatGrams,
+    goalType, mode, isToday, last7Days,
+    streak: streakForTips, weightLog,
+    surface: "DASHBOARD",
+    max: 3,
+  }), [t, remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
+       exerciseValue, targetCalories, proteinTarget, macroTargets, goalType, mode,
+       isToday, last7Days, streakForTips, weightLog]);
+
   const foodTips = useMemo(() => buildLiveTips({
     t, formatNumber,
     remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
@@ -686,9 +707,11 @@ export default function App() {
     todayMealsLogged: entries.length,
     surface: "FOOD_EMPTY",
     max: 1,
+    excludeTexts: dashboardTips,
   }), [t, remainingCalories, totalCalories, totalProtein, totalCarbs, totalFat,
        exerciseValue, targetCalories, proteinTarget, macroTargets, goalType, mode,
-       isToday, allergies, simpleMode, cookingLevel, cookingTime, mealsPerDay, entries.length]);
+       isToday, allergies, simpleMode, cookingLevel, cookingTime, mealsPerDay,
+       entries.length, dashboardTips]);
 
   const exerciseTips = useMemo(() => {
     const todayExerciseMinutes = exercises.reduce((sum, e) => sum + Number(e.minutes || 0), 0);
@@ -699,9 +722,10 @@ export default function App() {
       todayExerciseMinutes,
       surface: "EXERCISE",
       max: 1,
+      excludeTexts: [...dashboardTips, ...foodTips],
     });
   }, [t, exerciseValue, isToday, last7Days, fitnessLevel, workoutLocation, equipment,
-      limitations, workoutFrequency, sessionDuration, exercises]);
+      limitations, workoutFrequency, sessionDuration, exercises, dashboardTips, foodTips]);
 
   // "Add" card suggestions — concrete meal / workout ideas tailored
   // to the user's Profile tab preferences. Different surface so they
@@ -753,6 +777,7 @@ export default function App() {
     proteinTarget, totalProtein, totalCarbs, totalFat,
     last7Days, mode, macroTargets, foods,
     dailyLogs, weightLog,
+    dashboardTips,
     onAddWeight: addWeight,
     onDeleteWeight: deleteWeight,
     favoriteFoods,

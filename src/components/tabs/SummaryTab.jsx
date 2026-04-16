@@ -112,7 +112,8 @@ export default function SummaryTab({
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
   mealsPerDay, snacksPerDay,
   fitnessLevel, workoutLocation, equipment, limitations,
-  workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
+  workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories,
+  dashboardTips,
 }) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "en" ? "en-US" : "el-GR";
@@ -532,11 +533,13 @@ RULES:
               );
             }
 
-            // Rule-based live-state tips — shared helper so the
-            // Dashboard, Coach hero, AiLimitLock, Food/Exercise empty
-            // states all read from the same set of rules. See
-            // src/utils/liveTips.js for the rule list + tag taxonomy.
-            const displayTips = buildLiveTips({
+            // Rule-based live-state tips. App.jsx computes the
+            // Dashboard/Food/Exercise tip sets centrally so the user
+            // never sees the same line twice when scrolling between
+            // tabs — we just consume what it passes in. Fall back to
+            // computing locally if the prop isn't wired yet (keeps
+            // the component usable in isolation / tests).
+            const displayTips = Array.isArray(dashboardTips) ? dashboardTips : buildLiveTips({
               t,
               formatNumber,
               remainingCalories,
