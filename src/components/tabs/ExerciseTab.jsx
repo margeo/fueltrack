@@ -133,16 +133,6 @@ export default function ExerciseTab({
           </button>
         </div>
         {addExOpen && (<>
-          {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8, alignItems: "center" }}>
-              {addTips.map((tipText, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)", textAlign: "center" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
-                  <span>{tipText}</span>
-                </div>
-              ))}
-            </div>
-          )}
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
             <button className="btn btn-dark" type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center", opacity: 0.5 }}
@@ -196,6 +186,18 @@ export default function ExerciseTab({
             </button>
           )}
         </div>
+
+        {/* Rule-based tip — below the 'Επίλεξε άσκηση' dropdown, left-aligned. */}
+        {Array.isArray(addTips) && addTips.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: -4, marginBottom: 8 }}>
+            {addTips.map((tipText, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+                <span>{tipText}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Λεπτά + Preview + Add */}
         {selectedExercise && (

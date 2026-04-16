@@ -351,16 +351,6 @@ export default function FoodTab({
           </button>
         </div>
         {addFoodOpen && (<>
-          {Array.isArray(addTips) && addTips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8, alignItems: "center" }}>
-              {addTips.map((tipText, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)", textAlign: "center" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
-                  <span>{tipText}</span>
-                </div>
-              ))}
-            </div>
-          )}
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {/* Photo και Barcode ίσο μέγεθος */}
           <div style={{ display: "flex", gap: 6 }}>
@@ -388,6 +378,18 @@ export default function FoodTab({
         {barcodeError && <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>}
 
         <input className="input" placeholder={t("food.searchPlaceholder")} value={query} onChange={(e) => setQuery(e.target.value)} />
+
+        {/* Rule-based tip — below the search input, left-aligned as a subtle hint for the user. */}
+        {Array.isArray(addTips) && addTips.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6, marginBottom: 4 }}>
+            {addTips.map((tipText, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.35, color: "var(--text-primary)" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.2 }}>👉</span>
+                <span>{tipText}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {showAutocomplete && (
           <div style={{ marginTop: 6, background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: 6, display: "flex", flexDirection: "column", gap: 4 }}>
