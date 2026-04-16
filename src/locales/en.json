@@ -9,10 +9,45 @@
     "exercise": "Exercise",
     "profile": "Profile"
   },
+  "tips": {
+    "eatMore": "You can eat ~{{kcal}} kcal more",
+    "almostThere": "Almost there — {{kcal}} kcal left",
+    "onTarget": "Right on target today",
+    "overBudget": "You're over by {{kcal}} kcal today",
+    "highCarbs": "High on carbs today — ease up on bread, rice, pasta",
+    "highFat": "High on fat today — go lighter on oils and cheese",
+    "lowProtein": "Low on protein — add chicken, fish or Greek yogurt",
+    "allMacrosBalanced": "Well-balanced macros today ✨",
+    "highProteinDay": "Great protein day 💪",
+    "exerciseBonus": "Exercise earned you +{{kcal}} kcal today",
+    "noExerciseWeek": "No movement this week — even a 20 min walk counts",
+    "exerciseConsistent": "{{days}} active days this week 🔥",
+    "onTrack": "You're on track — keep it up",
+    "streakProud": "{{days}} day streak — keep it rolling 🔥",
+    "streakWeek": "Full week logged ({{days}} days) — nice work ✨",
+    "skipBreakfast": "Don't skip breakfast — fuel up",
+    "eveningUnderfed": "Still short on food for the day — have a proper dinner",
+    "fastingEatNow": "Eating window is open — don't forget to fuel up",
+    "hydration": "Stay hydrated — aim for 2 L of water today 💧",
+    "weekLowProtein": "Low on protein most of the week — prioritise chicken, fish, eggs",
+    "weekendOvershoot": "Weekends are running hot — keep Sat/Sun closer to your target",
+    "loseOverTarget": "Over target — a tighter dinner keeps weight loss on track",
+    "gainUnderTarget": "Gaining means eating — add a snack or boost dinner portions",
+    "weighIn": "No weight logged in {{days}} days — update to keep targets accurate",
+    "allergyReminder": "Heads up — check labels for your marked allergens",
+    "simpleModeHint": "Simple mode is on — batch-cook 2-3 meals for the week",
+    "beginnerCook": "Cooking beginner? Try no-cook meals: yogurt, salads, sandwiches",
+    "quickCookingHint": "Short on time — stock pre-cooked proteins for quick assembly",
+    "mealsLeft": "{{count}} more meal(s) to hit your daily target",
+    "limitationAware": "Mind your noted limitation — pick low-impact options today",
+    "homeNoEquipment": "No equipment at home? Try push-ups, squats, planks, lunges",
+    "beginnerFitness": "Start with a 20-minute session — consistency beats intensity",
+    "workoutsLeft": "{{done}}/{{target}} workouts done this week — one more session counts",
+    "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum"
+  },
   "help": {
     "title": "Quick Guide",
     "howTo": "Features",
-    "tips": "Tips",
     "profile": {
       "howTo": [
         "Unit toggle (top right): switch between metric (kg/cm) and imperial (lb/ft)",
@@ -37,42 +72,6 @@
         "Setting realistic weekly rate (e.g. 0.5 kg/week loss) gives healthier results",
         "Diet mode (keto, Mediterranean, etc.) affects macro split and Coach suggestions"
       ]
-    },
-    "tips": {
-      "eatMore": "You can eat ~{{kcal}} kcal more",
-      "almostThere": "Almost there — {{kcal}} kcal left",
-      "onTarget": "Right on target today",
-      "overBudget": "You're over by {{kcal}} kcal today",
-      "highCarbs": "High on carbs today — ease up on bread, rice, pasta",
-      "highFat": "High on fat today — go lighter on oils and cheese",
-      "lowProtein": "Low on protein — add chicken, fish or Greek yogurt",
-      "allMacrosBalanced": "Well-balanced macros today ✨",
-      "highProteinDay": "Great protein day 💪",
-      "exerciseBonus": "Exercise earned you +{{kcal}} kcal today",
-      "noExerciseWeek": "No movement this week — even a 20 min walk counts",
-      "exerciseConsistent": "{{days}} active days this week 🔥",
-      "onTrack": "You're on track — keep it up",
-      "streakProud": "{{days}} day streak — keep it rolling 🔥",
-      "streakWeek": "Full week logged ({{days}} days) — nice work ✨",
-      "skipBreakfast": "Don't skip breakfast — fuel up",
-      "eveningUnderfed": "Still short on food for the day — have a proper dinner",
-      "fastingEatNow": "Eating window is open — don't forget to fuel up",
-      "hydration": "Stay hydrated — aim for 2 L of water today 💧",
-      "weekLowProtein": "Low on protein most of the week — prioritise chicken, fish, eggs",
-      "weekendOvershoot": "Weekends are running hot — keep Sat/Sun closer to your target",
-      "loseOverTarget": "Over target — a tighter dinner keeps weight loss on track",
-      "gainUnderTarget": "Gaining means eating — add a snack or boost dinner portions",
-      "weighIn": "No weight logged in {{days}} days — update to keep targets accurate",
-      "allergyReminder": "Heads up — check labels for your marked allergens",
-      "simpleModeHint": "Simple mode is on — batch-cook 2-3 meals for the week",
-      "beginnerCook": "Cooking beginner? Try no-cook meals: yogurt, salads, sandwiches",
-      "quickCookingHint": "Short on time — stock pre-cooked proteins for quick assembly",
-      "mealsLeft": "{{count}} more meal(s) to hit your daily target",
-      "limitationAware": "Mind your noted limitation — pick low-impact options today",
-      "homeNoEquipment": "No equipment at home? Try push-ups, squats, planks, lunges",
-      "beginnerFitness": "Start with a 20-minute session — consistency beats intensity",
-      "workoutsLeft": "{{done}}/{{target}} workouts done this week — one more session counts",
-      "sessionDurationHint": "You planned {{mins}} min sessions — even one today keeps momentum"
     },
     "summary": {
       "howTo": [
@@ -143,7 +142,8 @@
         "Custom exercises are useful for niche activities not in the library",
         "Recent exercises save you from searching for the same workout twice"
       ]
-    }
+    },
+    "tips": "Tips"
   },
   "common": {
     "kcal": "kcal",
