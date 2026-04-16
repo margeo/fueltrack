@@ -19,6 +19,16 @@ export const handler = withCors(async function handler(event) {
       return respond([], debug, debugMode);
     }
 
+    // Debug: capture the Lambda's current outbound IP so Marios can see
+    // exactly which AWS pool address FatSecret would reject this time.
+    // Kicked off in parallel with the other upstreams so it adds no latency.
+    const outboundIpPromise = debugMode
+      ? fetch("https://api.ipify.org?format=json")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => d?.ip || null)
+          .catch(() => null)
+      : Promise.resolve(null);
+
     const API_KEY = process.env.USDA_API_KEY;
     const queryNoAccents = removeAccents(query);
 
@@ -153,6 +163,7 @@ export const handler = withCors(async function handler(event) {
 
     const allFoods = deduplicateFoods(fatSecretFoods, offFoods, usdaFoods);
     debug.totalAfterDedupe = allFoods.length;
+    debug.netlifyOutboundIp = await outboundIpPromise;
 
     return respond(allFoods, debug, debugMode);
   } catch (error) {
