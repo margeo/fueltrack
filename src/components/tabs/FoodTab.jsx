@@ -198,11 +198,7 @@ export default function FoodTab({
   const [newFat, setNewFat] = useState("");
   const [newFavorite, setNewFavorite] = useState(false);
 
-  // Admins see per-source debug stats in the DevTools console via
-  // `[food-search debug]` entries — useful for diagnosing why FatSecret
-  // (or any upstream) returns 0 hits. Non-admins get the plain flat-
-  // array response with no extra payload and the normal IndexedDB cache.
-  const { results: databaseResults, loading: databaseLoading } = useFoodSearch(query, { debug: isAdmin });
+  const { results: databaseResults, loading: databaseLoading } = useFoodSearch(query);
 
   const filteredFoods = useMemo(() => {
     if (!query.trim()) return foods;
