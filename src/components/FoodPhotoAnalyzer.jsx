@@ -43,7 +43,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [limitDismissed, setLimitDismissed] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [videoDevices, setVideoDevices] = useState([]);
-  const [currentDeviceIdx, setCurrentDeviceIdx] = useState(0);
+  // Track the intended facing mode, NOT the deviceId. On iOS Safari
+  // getSettings().deviceId is often empty or unstable across getUserMedia
+  // calls, which made deviceId-based cycling get stuck on the same camera
+  // for 1-2 taps before finally flipping. facingMode is the stable primitive.
+  const [currentFacing, setCurrentFacing] = useState("environment");
   const fileRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -101,13 +105,11 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
     }
   }
 
-  async function openStreamForDevice(deviceId) {
+  async function openStreamForFacing(facing) {
     // Stop any existing stream first
     stopStream();
     const constraints = {
-      video: deviceId
-        ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
-        : { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -127,21 +129,17 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
       return;
     }
     try {
-      // First call without a specific device to trigger the permission
+      // Open back camera first; this also triggers the permission
       // prompt (enumerateDevices returns labels only after permission).
-      await openStreamForDevice(null);
+      await openStreamForFacing("environment");
+      setCurrentFacing("environment");
 
-      // Now enumerate and remember the list of video inputs so we can
-      // cycle through them with the switch button.
+      // Enumerate just so we can decide whether to show the switch
+      // button — if the device only has one camera we hide it.
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const cams = devices.filter(d => d.kind === "videoinput");
         setVideoDevices(cams);
-        // Find which device our current stream is using and sync the index
-        const currentTrack = streamRef.current?.getVideoTracks?.()[0];
-        const currentId = currentTrack?.getSettings?.().deviceId;
-        const idx = cams.findIndex(c => c.deviceId === currentId);
-        setCurrentDeviceIdx(idx >= 0 ? idx : 0);
       } catch { /* ignore enumeration failures */ }
 
       setCameraOn(true);
@@ -152,10 +150,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
 
   async function switchCamera() {
     if (videoDevices.length < 2) return;
-    const nextIdx = (currentDeviceIdx + 1) % videoDevices.length;
+    const next = currentFacing === "environment" ? "user" : "environment";
     try {
-      await openStreamForDevice(videoDevices[nextIdx].deviceId);
-      setCurrentDeviceIdx(nextIdx);
+      await openStreamForFacing(next);
+      setCurrentFacing(next);
     } catch {
       setCameraError(t("photo.cameraError"));
     }
@@ -588,9 +586,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             </button>
           )}
           <button
-            className="btn btn-light"
+            className="btn btn-dark"
             onClick={onClose}
             type="button"
+            style={{ flex: 1 }}
           >
             {t("common.cancel")}
           </button>
