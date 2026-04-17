@@ -563,9 +563,9 @@ RULES:
             });
 
             const macroList = [
-              { emoji: "🥩", label: "Protein", cur: totalProtein, tgt: pTarget, pct: proteinPercent, cls: "macro-bar-protein" },
-              { emoji: "🍞", label: "Carbs",   cur: totalCarbs,   tgt: cTarget, pct: carbsPercent,   cls: "macro-bar-carbs" },
-              { emoji: "🥑", label: "Fat",     cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
+              { emoji: "🥩", label: "Protein", color: "#3b82f6", cur: totalProtein, tgt: pTarget, pct: proteinPercent, cls: "macro-bar-protein" },
+              { emoji: "🍞", label: "Carbs",   color: "#f59e0b", cur: totalCarbs,   tgt: cTarget, pct: carbsPercent,   cls: "macro-bar-carbs" },
+              { emoji: "🥑", label: "Fat",     color: "#ef4444", cur: totalFat,     tgt: fTarget, pct: fatPercent,     cls: "macro-bar-fat" },
             ];
 
             const sideColStyle = { display: "flex", flexDirection: "column", gap: 8, flex: "1 1 180px", minWidth: 160, maxWidth: 280 };
@@ -615,8 +615,19 @@ RULES:
                     {macroList.map((m) => (
                       <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12 }}>
-                          <span style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700 }}>
-                            {m.emoji} {m.label}
+                          <span style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: 2,
+                                background: m.color,
+                                display: "inline-block",
+                                flexShrink: 0,
+                              }}
+                            />
+                            {m.label} {m.emoji}
                           </span>
                           <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>
                             {formatNumber(m.cur)}g
