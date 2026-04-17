@@ -434,18 +434,34 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
                 {t("photo.orCamera")}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (HAS_NATIVE_CAMERA) pickPhotoNative(CameraSource.Camera);
-                else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
-                else startCamera();
-              }}
-              className="btn btn-dark"
-              style={{ width: "100%", marginBottom: 12, fontSize: 13, padding: "8px 12px" }}
-            >
-              📹 {t("photo.openCamera")}
-            </button>
+            {/* Open Camera mirrors the footer's [Select Photo | Cancel] row
+                with flex:1 + an invisible Cancel twin so both CTA buttons
+                ("Open Camera" here and "Select Photo" in the footer) render
+                at the exact same width. The twin is taken out of the tab
+                order and hidden from assistive tech. */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (HAS_NATIVE_CAMERA) pickPhotoNative(CameraSource.Camera);
+                  else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
+                  else startCamera();
+                }}
+                className="btn btn-dark"
+                style={{ flex: 1, fontSize: 13, padding: "8px 12px" }}
+              >
+                📹 {t("photo.openCamera")}
+              </button>
+              <button
+                type="button"
+                aria-hidden="true"
+                tabIndex={-1}
+                className="btn btn-light"
+                style={{ visibility: "hidden", pointerEvents: "none" }}
+              >
+                {t("common.cancel")}
+              </button>
+            </div>
             {cameraError && (
               <div style={{ color: "#b91c1c", fontSize: 12, marginBottom: 8, textAlign: "center" }}>
                 {cameraError}
