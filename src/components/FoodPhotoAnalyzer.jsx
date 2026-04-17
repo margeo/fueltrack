@@ -441,7 +441,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
                 else if (IS_NATIVE_SHELL) setCameraError(t("photo.updateRequired"));
                 else startCamera();
               }}
-              className="btn btn-light"
+              className="btn btn-dark"
               style={{ width: "100%", marginBottom: 12, fontSize: 13 }}
             >
               📹 {t("photo.openCamera")}
@@ -586,10 +586,9 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
             </button>
           )}
           <button
-            className="btn btn-dark"
+            className="btn btn-light"
             onClick={onClose}
             type="button"
-            style={{ flex: 1 }}
           >
             {t("common.cancel")}
           </button>
