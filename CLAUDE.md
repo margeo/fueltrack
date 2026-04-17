@@ -155,16 +155,18 @@ cd android && ./gradlew bundleRelease
 3. **ML Kit barcode on emulator** — Google Barcode Scanner Module can't download on emulator. Works on real devices. The code calls `installGoogleBarcodeScannerModule()` automatically on first use.
 4. **Calorie accuracy** — Flash Lite sometimes puts target calories instead of actual food calories (item #9, needs prompt fix).
 
-## Pending Tasks (updated April 15, 2026)
+## Pending Tasks (updated April 17, 2026)
 
-### Εκκρεμούν — χρειάζονται τον Marios
-- [ ] **iOS Apple review resubmit (URGENT)** — Version 1.0 build 3 rejected 14/4/2026 για 2 issues: (a) 5.1.1 Account Deletion — **FIXED in code** (`src/components/DeleteAccountModal.jsx` + `netlify/functions/delete-account.js`, Delete my account link δίπλα στο Privacy Policy στο Profile tab), (b) 2.1 App Completeness (Upgrade to Pro button not working on iOS native) — **FIXED in code** μέσω Apple IAP (StoreKit 2) — βλ. iOS IAP section πιο κάτω.
-  - **Το resubmit απαιτεί νέο iOS build (4)** που περιέχει τον νέο κώδικα, και σύνδεση με το subscription product στο App Store Connect.
-  - Στο App Store Connect (iOS Submission page) υπάρχει "Respond to Apple" message thread — εκεί γράφουμε τι φτιάξαμε και submit build 4.
-- [ ] **Paid Apps Agreement** — Requested 15/4/2026, status **Processing**. Απαιτείται **Active** πριν το sandbox IAP testing δουλέψει. Παίρνει ~24h. Check: App Store Connect → Business → Agreements.
+### 🚨 URGENT — iOS resubmit blocked on plugin fix
+- [ ] **iOS IAP: install custom NativePurchasesPlugin** — Build 4 was uploaded to App Store Connect on 17/4/2026 but **DO NOT SUBMIT IT** — it has the same broken IAP as build 3 (plugin dead-stripped by Swift linker, Apple will reject for the identical 2.1 reason). The @capgo/native-purchases@8.3.3 node_module has ~27 Swift compile errors against capacitor-swift-pm 8.3.1 (`Missing argument for parameter #2` on one-arg `call.getString`/`call.getBool`, `no member 'reject'` on `call.reject`). We verified by force-importing the module in `CapApp-SPM.swift` — that's how we discovered the dead-strip (build 3 "worked" only because the plugin was never linked). Downgrade to 8.3.0 gave identical errors.
+  - **Fix ready**: `docs/ios-native-purchases-replacement/NativePurchasesPlugin.swift` is a custom ~180-line StoreKit 2 Capacitor plugin that implements the 4 methods `src/utils/iosIAP.js` uses (`getProducts`, `purchaseProduct`, `restorePurchases`, `manageSubscriptions`) under jsName `"NativePurchases"` so no JS changes are needed.
+  - **Install runbook**: `docs/ios-native-purchases-replacement/README.md` — 11 numbered steps covering Xcode drop-in, `npm uninstall @capgo/native-purchases`, rebuild, archive, upload, TestFlight smoke-test, screen recording for Apple reviewer, and resubmit-with-reply text. Estimated time in MacinCloud: 15-30 min.
+  - After it ships: iPhone welcome screen should show NO yellow "native-purchases missing" banner and the Upgrade-to-Pro button should trigger the native StoreKit sheet with the €2.99/mo subscription.
+- [ ] **Paid Apps Agreement** — ✅ Active as of 17/4/2026. Leaving this line as a reference. Sandbox IAP now works.
 - [ ] **Small Business Program** — Applied 15/4/2026, waiting approval email. 15% commission αντί 30% για όλα τα iOS IAP sales. Must-have πριν το πρώτο sale.
 - [ ] **Sandbox Tester → στο iPhone** — Created 15/4/2026 με email `mariosgeorgiadis.sandbox@gmail.com` + password που όρισε ο Marios (NOT stored — αν ξεχαστεί, delete + recreate). Για testing: iPhone Settings → App Store → Sandbox Account → Sign In με αυτά.
-- [ ] **MacinCloud iOS build 4** — Όταν Paid Apps = Active: `git pull origin main && npm install && npx cap sync ios && npx cap open ios`. Στο Xcode: bump build 3→4, Archive, Upload to TestFlight.
+- [x] **MacinCloud iOS build 4 uploaded** — Done 17/4/2026. Build 4 is in App Store Connect TestFlight ("1.0 (4)", Complete). **DO NOT submit to review** — see URGENT task at top of this list.
+- [ ] **Xcode 26 upgrade (by 28/4/2026)** — After 28/4 Apple requires Xcode 26 + iOS 26 SDK for new App Store uploads. MacinCloud currently has Xcode 16.2. Plan to upgrade MacinCloud plan to a macOS Sequoia image before the deadline. Not urgent while working on the current build 5; becomes blocking only if we need another upload after 28/4.
 - [ ] **Barcode test σε πραγματικό κινητό** — Ο emulator δεν μπορεί να κατεβάσει το Google ML Kit barcode module. Σε πραγματικό Android κινητό θα κατέβει αυτόματα. Χρειάζεται USB debugging ή build APK και εγκατάσταση.
 - [ ] **Test plan chooser** — Φτιάξε νέο account (με νέο email) και δοκίμασε αν εμφανίζεται το "Welcome to FuelTrack! Choose your plan" modal μετά το πρώτο login.
 - [ ] **Google Play verification** — Υποβλήθηκε 12/4/2026, αναμονή 1-2 μέρες. Χρειάζεται ταυτοποίηση + Android device verification μέσω Play Console app.
@@ -175,16 +177,20 @@ cd android && ./gradlew bundleRelease
 - [x] **Supabase SMTP setup** — Custom SMTP ενεργοποιήθηκε: smtp.resend.com:465, sender: noreply@fueltrack.me
 - [ ] **Apple & Google Privacy Policy update** — Ενημέρωση privacy policy URL (`https://fueltrack.me/privacy.html`) στο App Store Connect (App Privacy) και Google Play Console (App content → Privacy policy + Data safety section).
 
-### iOS IAP (Apple StoreKit 2) — ✅ Infrastructure ready, απαιτεί build 4 για να ενεργοποιηθεί
+### iOS IAP (Apple StoreKit 2) — ⚠️ Infrastructure ready, plugin BROKEN, custom replacement drafted
 
 **Γιατί χρειάστηκε**: Apple 2.1 rejection — απαγορεύει external Stripe checkout σε iOS native app. Raised rejection 14/4/2026. Επιλέξαμε **Option B (full Apple IAP)** με **€2.99 pricing parity** και Small Business Program (15%).
 
-**Package**: `@capgo/native-purchases@8.3.3` (MIT, free, Capacitor 8 compatible, native StoreKit 2 με JWS). Εγκαταστάθηκε 15/4/2026. Κρατήσαμε Stripe για web/Android. **ΜΗΝ** downgrade Capacitor ή αντικαταστήσεις το plugin — τα άλλα options (squareetlabs, capgo-purchases) δεν υποστηρίζουν v8.
+**⚠️ Current status (17/4/2026)**: The original plan to use `@capgo/native-purchases@8.3.3` did not work. The plugin has Swift compile errors against capacitor-swift-pm 8.3.1. In build 3 it compiled only because Swift's linker dead-stripped it (no explicit import from our app), which is why Apple rejected for "Upgrade to Pro not proceeding" — the plugin never actually loaded. Force-importing the module in `ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift` revealed ~27 errors on `call.getString("X")` (1-arg) and `call.reject("msg")` (no member). Downgrade to 8.3.0 gave identical errors. The API expectations inside the plugin source don't match what our installed capacitor-swift-pm exposes.
+
+**Resolution plan**: Custom ~180-line Swift plugin at `docs/ios-native-purchases-replacement/NativePurchasesPlugin.swift` that implements the 4 methods `iosIAP.js` calls (getProducts, purchaseProduct, restorePurchases, manageSubscriptions) under jsName `"NativePurchases"` — zero JS changes needed. Uses `call.options["key"] as? Type` raw dictionary access to sidestep whatever API surface the capgo plugin couldn't find. Install runbook in `docs/ios-native-purchases-replacement/README.md`.
+
+**Package**: `@capgo/native-purchases@8.3.3` — currently in `package.json` but must be removed before build 5. Earlier plan to keep it is obsolete.
 
 **Backend validation**: `@apple/app-store-server-library@3.0.0` (Apple's official, MIT). Verify-άρει JWS signatures αυτόματα με Apple root CA chain. Δεν χρειάζεται manual crypto — δεν το ξαναγράφεις εσύ.
 
 **Κρίσιμα αρχεία:**
-- `src/utils/iosIAP.js` — wrapper γύρω από @capgo/native-purchases. Product ID `me.fueltrack.app.pro_monthly` (hardcoded, πρέπει να match App Store Connect ακριβώς). `isIosIapAvailable()` gate — μηδέν risk για web/Android.
+- `src/utils/iosIAP.js` — wrapper που περίμενε `@capgo/native-purchases` export. After build 5 fix, `import("@capgo/native-purchases")` is replaced by direct Capacitor.NativePurchases plugin reference. See the replacement README for details — the wrapper code itself doesn't need to change, only the import target. Product ID `me.fueltrack.app.pro_monthly` (hardcoded, πρέπει να match App Store Connect ακριβώς). `isIosIapAvailable()` gate — μηδέν risk για web/Android.
 - `src/utils/subscription.js` — platform dispatcher. `startProMonthlyPurchase()` → iOS: StoreKit + POST JWS στο backend validator. web/Android: `openCheckout()` (Stripe). `openManageSubscription(source)` → iOS: `NativePurchases.manageSubscriptions()`. Άλλο: Stripe portal. **ΟΛΕΣ οι subscription actions** στο UI πρέπει να πάνε από εδώ — όχι direct Stripe call.
 - `netlify/functions/ios-validate-receipt.js` — client-authenticated POST. Τρέχει verification PRODUCTION πρώτα, SANDBOX fallback (match Apple's pattern). Enforce: bundleId, productId, appAccountToken (= Supabase user id), expiresDate. Γράφει στο `profiles.is_paid`, `subscription_source='ios'`, `ios_original_transaction_id`.
 - `netlify/functions/ios-store-notification.js` — App Store Server Notifications v2 webhook. Lookup user via `ios_original_transaction_id`. `PAID_EFFECT` map: SUBSCRIBED/DID_RENEW → true, EXPIRED/REVOKE/REFUND → false. **Πάντα** επιστρέφει 200 (Apple retries σε άλλο status).
@@ -237,6 +243,28 @@ cd android && ./gradlew bundleRelease
 - [ ] **Analytics / Επισκεψιμότητα** — Setup analytics (Google Analytics ή Plausible/PostHog) για tracking επισκέψεων, ενεργών χρηστών, conversions (free→pro), retention.
 - [ ] **ASO (App Store Optimization)** — Βελτιστοποίηση keywords, screenshots, description στο App Store & Google Play.
 - [ ] **Marketing & Promotion** — Στρατηγική προώθησης: paid ads, social media, reviews/ratings campaigns.
+
+### Completed session April 17, 2026 (iOS build 4 upload + IAP plugin diagnosis)
+- [x] **Build 4 uploaded to App Store Connect** (TestFlight "1.0 (4)", Complete, Apr 17 1:22 PM). Paid Apps Agreement went Active earlier same day.
+- [x] **Apple Developer device registered** — iPhone UDID added via get.udid.io → developer.apple.com/account/resources/devices. Needed because Xcode automatic signing refuses to archive without at least one device on the team even when destination is "Any iOS Device".
+- [x] **Build number bumping workflow discovered** — Xcode General tab's Build field does NOT reliably sync to `ios/App/App/Info.plist` (Xcode kept writing the archive with the old number even after we typed 4 in the UI). Direct `PlistBuddy` edit works every time: `/usr/libexec/PlistBuddy -c "Set :CFBundleVersion N" ios/App/App/Info.plist` then Clean Build Folder + Archive. Added this as a permanent workflow note below.
+- [x] **TestFlight Internal Testing group** "Internal Testers" created with `newland@otenet.gr` as tester, automatic distribution enabled so future builds land on the iPhone within ~5 min of upload.
+- [x] **Export Compliance for build 4** answered "None of the algorithms mentioned above" — correct for Capacitor apps that only use HTTPS via WKWebView (Apple's own encryption stack).
+- [x] **Capacitor packages upgraded and aligned** to 8.3.1 — `@capacitor/core`, `@capacitor/ios`, `@capacitor/android`, `@capacitor/cli` all bumped from 8.3.0 to 8.3.1; `@capacitor/camera` from 8.0.2 to 8.1.0; `@capacitor-mlkit/barcode-scanning` stays 8.0.1 (no newer 8.x). Committed with iOS IAP replacement changes.
+- [x] **iOS IAP plugin blocker diagnosed** — forced `import NativePurchasesPlugin` in `ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift` to defeat Swift linker dead-stripping → surfaced ~27 compile errors in `node_modules/@capgo/native-purchases/ios/Sources/NativePurchasesPlugin/NativePurchasesPlugin.swift`. Errors: `Missing argument for parameter #2 in call` on every 1-arg `call.getString("X")` and `call.getBool("X")`, and `Value of type 'CAPPluginCall' has no member 'reject'` on every `call.reject("X")`. Downgrading the plugin to 8.3.0 produced identical errors. Relaxing `capacitor-swift-pm` version pin from `exact: "8.3.1"` to `from: "8.0.0"` — same errors. Root cause is plugin-internal API assumptions that don't match the installed Capacitor. Blocked there.
+- [x] **Custom replacement plugin written offline** — `docs/ios-native-purchases-replacement/NativePurchasesPlugin.swift` (~180 lines, StoreKit 2, uses `call.options["key"] as? Type` raw dictionary access so it doesn't depend on the API surface that broke capgo). Install runbook in the same directory's `README.md`. Exposes jsName "NativePurchases" so the frontend keeps using the same names.
+- [x] **`src/utils/iosIAP.js` rewritten** to use `registerPlugin("NativePurchases")` from `@capacitor/core` instead of `import("@capgo/native-purchases")`. This decouples the wrapper from the npm package so `npm uninstall @capgo/native-purchases` won't break the Vite build.
+- [ ] **Pending for next session** — install the custom plugin, `npm uninstall @capgo/native-purchases`, rebuild, archive as build 5, upload, smoke-test on iPhone, record the account-deletion video, resubmit to Apple with reply message. Full runbook: `docs/ios-native-purchases-replacement/README.md`.
+
+### Workflow notes (learned 17/4/2026)
+- **iOS build number** lives in `ios/App/App/Info.plist` (`CFBundleVersion`). Xcode's General → Identity → Build field sometimes fails to write it; use PlistBuddy directly:
+  ```
+  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion N" ios/App/App/Info.plist
+  /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" ios/App/App/Info.plist
+  ```
+- **MacinCloud cost discipline** — every minute in MacinCloud is billed. Keep trial-and-error debugging offline on the Linux side; go into MacinCloud only when we have a ready-to-run runbook (see `docs/ios-native-purchases-replacement/README.md` for the pattern). The 17/4 session lost ~4 hours debugging the IAP plugin inside MacinCloud that we could have diagnosed from the `node_modules/@capgo/native-purchases` source without paying.
+- **SPM dead-stripping on iOS** — plugins declared in `ios/App/CapApp-SPM/Package.swift` are NOT automatically linked into the final binary if nothing in user code references them. `CapApp-SPM.swift` ships as a one-line stub (`public let isCapacitorApp = true`) — add explicit `import <PluginModuleName>` lines there when adding a third-party plugin that isn't auto-registered via Obj-C `+load`. This file is not regenerated by `cap sync ios`, so edits persist.
+- **Archive signing** — "Automatic signing" needs at least one iOS device registered to the team before it will generate provisioning profiles, even when archiving for distribution. Register via developer.apple.com/account/resources/devices.
 
 ### Completed session April 16, 2026 (live tips system)
 - [x] **`src/utils/liveTips.js`** — new pure function `buildLiveTips()` that emits up to `max` localized tip strings from the current day state + profile choices. 14 tagged categories (IMBALANCE, TIMING, HYDRATION, CALORIE, STREAK, EXERCISE, WEEKLY, GOAL, WEIGHT, POSITIVE, NEUTRAL, FOOD_PROFILE, EXERCISE_PROFILE, SUGGESTION_FOOD, SUGGESTION_EXERCISE) and 7 surfaces (DASHBOARD, COACH, PAYWALL, FOOD_EMPTY, EXERCISE, FOOD_ADD, EXERCISE_ADD). Each surface filters by the tag subset that fits its context (e.g. PAYWALL only accepts POSITIVE/STREAK — no 'over budget by 400 kcal' right on top of a subscribe button).
