@@ -358,9 +358,12 @@ export default function FoodTab({
 
       {/* ΠΡΟΣΘΗΚΗ ΦΑΓΗΤΟΥ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addFoodOpen ? 6 : 0, gap: 8, flexWrap: "wrap" }}>
+        <div
+          onClick={() => setAddFoodOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addFoodOpen ? 6 : 0, gap: 8, flexWrap: "wrap", cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>🍽️ {t("food.addTitle")}</h2>
-          <button type="button" onClick={() => setAddFoodOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setAddFoodOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {addFoodOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -446,9 +449,12 @@ export default function FoodTab({
 
       {/* ΑΓΑΠΗΜΕΝΑ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favoritesOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setFavoritesOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favoritesOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>⭐ {t("food.favoritesTitle")}</h2>
-          <button type="button" onClick={() => setFavoritesOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setFavoritesOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {favoritesOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -488,9 +494,12 @@ export default function FoodTab({
       {/* ΠΡΟΣΦΑΤΑ */}
       {recentFoods.length > 0 && (
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentOpen ? 10 : 0 }}>
+          <div
+            onClick={() => setRecentOpen(prev => !prev)}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentOpen ? 10 : 0, cursor: "pointer" }}
+          >
             <h2 style={{ margin: 0 }}>🕐 {t("common.recent")}</h2>
-            <button type="button" onClick={() => setRecentOpen(prev => !prev)}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setRecentOpen(prev => !prev); }}
               style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
               {recentOpen ? "▲ Collapse" : "▼ Expand"}
             </button>
@@ -525,9 +534,12 @@ export default function FoodTab({
 
       {/* CUSTOM ΦΑΓΗΤΟ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setCustomOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>✏️ {t("food.customFood")}</h2>
-          <button type="button" onClick={() => setCustomOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setCustomOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {customOpen ? "▲ Collapse" : "▼ Expand"}
           </button>

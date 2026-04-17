@@ -125,9 +125,12 @@ export default function ExerciseTab({
 
       {/* ΠΡΟΣΘΗΚΗ ΑΣΚΗΣΗΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addExOpen ? 6 : 0, gap: 8, flexWrap: "wrap" }}>
+        <div
+          onClick={() => setAddExOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: addExOpen ? 6 : 0, gap: 8, flexWrap: "wrap", cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>🏃 {t("exercise.addTitle")}</h2>
-          <button type="button" onClick={() => setAddExOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setAddExOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {addExOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -235,9 +238,12 @@ export default function ExerciseTab({
 
       {/* ΑΓΑΠΗΜΕΝΕΣ ΑΣΚΗΣΕΙΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favExOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setFavExOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: favExOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>⭐ {t("exercise.favoritesTitle")}</h2>
-          <button type="button" onClick={() => setFavExOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setFavExOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {favExOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -276,9 +282,12 @@ export default function ExerciseTab({
       {/* ΠΡΟΣΦΑΤΑ */}
       {recentExercises && recentExercises.length > 0 && (
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentExOpen ? 10 : 0 }}>
+          <div
+            onClick={() => setRecentExOpen(prev => !prev)}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: recentExOpen ? 10 : 0, cursor: "pointer" }}
+          >
             <h2 style={{ margin: 0 }}>🕐 {t("common.recent")}</h2>
-            <button type="button" onClick={() => setRecentExOpen(prev => !prev)}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setRecentExOpen(prev => !prev); }}
               style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
               {recentExOpen ? "▲ Collapse" : "▼ Expand"}
             </button>
@@ -310,9 +319,12 @@ export default function ExerciseTab({
 
       {/* CUSTOM ΑΣΚΗΣΗ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customExOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setCustomExOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: customExOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>✏️ {t("exercise.customExercise")}</h2>
-          <button type="button" onClick={() => setCustomExOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setCustomExOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {customExOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
