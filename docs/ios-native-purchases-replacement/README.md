@@ -19,7 +19,24 @@ actually uses. It talks directly to StoreKit 2, no intermediate layer, and
 uses `call.options["key"] as? Type` instead of `call.getString(...)` so it
 doesn't depend on whatever API surface the capgo plugin couldn't find.
 
-## Install (MacinCloud, next session)
+## ⚠️ Prerequisite: Xcode 16.4 or later
+
+capacitor-swift-pm 8.3.1 gates `call.reject(...)`, `call.getString(key, default)`,
+and several other methods behind `#if compiler(>=5.3) && $NonescapableTypes`.
+`$NonescapableTypes` is a Swift 6.2+ feature flag; **Xcode 16.3 and earlier do
+not define it**, so those methods are invisible to user code at compile time.
+
+We proved this on 17/4/2026 in MacinCloud's default Xcode 16.2 image (Swift
+6.0.3): our custom plugin, the camera plugin, and capgo all hit the same
+"no member 'reject'" / "missing argument for parameter #2" errors. No downgrade
+path worked — 8.0.x / 8.1.x of camera have the same incompatibility in different
+directions, and downgrading Capacitor itself to 8.0.2 / 8.2.x did not make the
+compiled xcframework expose the old API.
+
+**On Xcode 16.4+ this entire runbook compiles clean with zero workarounds.**
+On older Xcode it does not and there's no clean patch — upgrade Xcode first.
+
+## Install (on a Mac with Xcode 16.4+, next session)
 
 **Do these in order. Total time: ~15-20 minutes.**
 
