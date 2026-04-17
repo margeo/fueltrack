@@ -442,7 +442,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
                 else startCamera();
               }}
               className="btn btn-dark"
-              style={{ width: "100%", marginBottom: 12, fontSize: 13 }}
+              style={{ width: "100%", marginBottom: 12, fontSize: 13, padding: "8px 12px" }}
             >
               📹 {t("photo.openCamera")}
             </button>
@@ -454,10 +454,16 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           </>
         )}
 
+        {/* Adding `multiple` suppresses the "Take Photo or Video" option
+            from iOS Safari's file-picker sheet, so this input opens directly
+            to Photo Library / Files (two choices). Taking a photo is still
+            accessible via the dedicated "📹 Open Camera" button above. We
+            still only ever read the first selected file in handleFileChange. */}
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handleFileChange}
           style={{ display: "none" }}
         />
@@ -580,7 +586,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
                 else fileRef.current?.click();
               }}
               type="button"
-              style={{ flex: 1 }}
+              style={{ flex: 1, fontSize: 13, padding: "8px 12px" }}
             >
               📷 {t("photo.selectPhotoBtn")}
             </button>
