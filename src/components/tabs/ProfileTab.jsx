@@ -366,9 +366,12 @@ export default function ProfileTab({
 
       {/* YOUR TARGET */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div
+          onClick={() => setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section }))}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>🎯 {t("profile.yourTarget")}</h2>
-          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section }))}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section })); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {expandedPrefs.target_section ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -463,9 +466,12 @@ export default function ProfileTab({
 
       {/* ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div
+          onClick={() => setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section }))}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>🥗 {t("foodPrefs.title")}</h2>
-          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section }))}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section })); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {expandedPrefs.food_section ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -653,9 +659,12 @@ export default function ProfileTab({
 
       {/* ΠΡΟΦΙΛ ΓΥΜΝΑΣΤΙΚΗΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div
+          onClick={() => setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section }))}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>💪 {t("exercisePrefs.title")}</h2>
-          <button type="button" onClick={() => setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section }))}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section })); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {expandedPrefs.fitness_section ? "▲ Collapse" : "▼ Expand"}
           </button>

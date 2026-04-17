@@ -695,9 +695,12 @@ RULES:
 
       {/* 5. ΠΡΟΟΔΟΣ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: progressOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setProgressOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: progressOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>📈 {t("summary.progress")}</h2>
-          <button type="button" onClick={() => setProgressOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setProgressOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {progressOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
@@ -806,9 +809,12 @@ RULES:
 
       {/* 6. ΙΣΤΟΡΙΚΟ */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: historyOpen ? 10 : 0 }}>
+        <div
+          onClick={() => setHistoryOpen(prev => !prev)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: historyOpen ? 10 : 0, cursor: "pointer" }}
+        >
           <h2 style={{ margin: 0 }}>📅 {t("summary.last7")}</h2>
-          <button type="button" onClick={() => setHistoryOpen(prev => !prev)}
+          <button type="button" onClick={(e) => { e.stopPropagation(); setHistoryOpen(prev => !prev); }}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
             {historyOpen ? "▲ Collapse" : "▼ Expand"}
           </button>
