@@ -1259,14 +1259,26 @@ ${askChange}`;
     if (limitReached) return;
     setLoading(true);
     setChatExpanded(true);
-    // Pre-response page scroll — bring the Coach section just below the
-    // fixed .app-header. The ref div has scroll-margin-top: 84 so a plain
-    // scrollIntoView({block:"start"}) naturally lands it with the right
-    // offset; using the browser's native scroll-into-view plumbing is
-    // more reliable on iOS Safari than chaining scrollTo() with a
-    // computed target right after a setState call (the latter sometimes
-    // no-ops mid-animation on iOS).
-    coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Pre-response page scroll (Scroll 1) — bring the Coach section
+    // to just below the fixed .app-header. We use document.scrolling
+    // Element.scrollTo() with an offset measured live from the header
+    // element because plain scrollIntoView silently no-ops on iOS
+    // Safari + Android WebView on the first call after a state change
+    // (same pattern the Grocery List generator uses in SummaryTab).
+    // This runs for EVERY user action (the glowing Analyze button,
+    // the four Quick action cards, the two Suggestion chips, and a
+    // plain typed question) so the UX matches the Weekly meal plan.
+    {
+      const coachEl = coachTopRef.current;
+      if (coachEl) {
+        const scroller = document.scrollingElement || document.documentElement;
+        const coachRect = coachEl.getBoundingClientRect();
+        const headerEl = document.querySelector(".app-header");
+        const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
+        const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
+        scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    }
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = options.forceInitial || (!text && !hasLoaded);
     const isMealPlan = text === t("aiCoach.q1");
