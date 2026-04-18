@@ -1664,10 +1664,13 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
   return (
     <div ref={coachTopRef} style={{
       scrollMarginTop: 84,
-      // The outer SummaryTab card now supplies the dark gradient; the
-      // Coach just needs its own padding/bleed so content lines up
-      // with the plan rows rendered by SummaryTab below.
-      margin: "-16px -16px 0 -16px",
+      // Negative margins on all four sides cancel out the SummaryTab
+      // padding:16 wrapper so the Coach's own 20px horizontal padding
+      // and 18px top / 0 bottom padding drive the real spacing. Without
+      // the -16px bottom margin there was a full 16px gap between the
+      // "Recent plans" label and the divider border below it because
+      // the outer wrapper's bottom padding was still in effect.
+      margin: "-16px -16px -16px -16px",
       padding: "18px 20px 0",
       color: "white",
     }}>
