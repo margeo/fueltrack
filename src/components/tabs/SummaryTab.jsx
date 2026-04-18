@@ -704,24 +704,29 @@ RULES:
         </div>
 
         {/* PLANS — connected under AI Coach on the same dark surface.
-            "Recent plans" label sits directly above the first plan
-            row so the header-to-content gap matches the other Coach
-            sections (Quick actions / Ask Coach anything...). Dividers
-            use a translucent white border so they read on the
-            gradient. */}
-        <div id="ft-plans-anchor" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px 10px", scrollMarginTop: 80 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3, marginBottom: 8 }}>
-            {t("aiCoach.recentPlans")}
+            All three rows share an identical padding block and row
+            min-height so they line up evenly regardless of whether a
+            plan is saved (meal/training rows show "✓ date") or not
+            (grocery row stays on a single line). The "Recent plans"
+            label that precedes these rows lives inside AiCoach, sat
+            just above the first border-top so the label-to-content
+            gap matches the Quick actions / Ask Coach sections. */}
+        <div id="ft-plans-anchor" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "14px 16px", minHeight: 64, display: "flex", alignItems: "center", scrollMarginTop: 80 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
           </div>
-          <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 
-        <div ref={groceryRef} style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px", scrollMarginTop: 12 }}>
-          <GrocerySection />
+        <div ref={groceryRef} style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "14px 16px", minHeight: 64, display: "flex", alignItems: "center", scrollMarginTop: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <GrocerySection />
+          </div>
         </div>
 
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px" }}>
-          <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "14px 16px", minHeight: 64, display: "flex", alignItems: "center" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
+          </div>
         </div>
       </div>
 

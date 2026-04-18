@@ -1668,7 +1668,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       // Coach just needs its own padding/bleed so content lines up
       // with the plan rows rendered by SummaryTab below.
       margin: "-16px -16px 0 -16px",
-      padding: "18px 20px 14px",
+      padding: "18px 20px 0",
       color: "white",
     }}>
       {/* HERO — the original dark hero container now wraps the WHOLE
@@ -2192,10 +2192,17 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {/* Step Η: The "Recent plans" label is rendered by SummaryTab
-          right above the first plan row so the gap between the label
-          and its content matches the other sections (Quick actions /
-          Ask Coach anything...). */}
+      {/* Step Η: "Recent plans" label sits inside the Coach, right
+          above the divider border that separates the Coach content
+          from the plan rows rendered by SummaryTab below. Same 8px
+          label-to-border gap as Quick actions / Ask Coach use, so all
+          three section titles share a consistent relationship to
+          their underlying content. */}
+      <div style={{ marginTop: 14, marginBottom: 8 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
+          {t("aiCoach.recentPlans")}
+        </div>
+      </div>
     </div>
   );
 }
