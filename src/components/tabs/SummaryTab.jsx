@@ -1,7 +1,7 @@
 // src/components/tabs/SummaryTab.jsx
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatDisplayDate, formatNumber, getTodayKey } from "../../utils/helpers";
+import { formatDisplayDate, formatNumber, formatPlanDate, getTodayKey } from "../../utils/helpers";
 import { calculateStreak, getStreakEmoji } from "../../utils/streak";
 import { authedFetch } from "../../utils/authFetch";
 import { buildLiveTips } from "../../utils/liveTips";
@@ -289,7 +289,7 @@ RULES:
             <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{emoji} {title}</span>
             {plan && !isExpanded && (
               <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {plan.date}
+                <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {formatPlanDate(plan.date)}
               </span>
             )}
           </div>

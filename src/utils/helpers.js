@@ -24,6 +24,26 @@ export function formatDisplayDate(dateStr, locale = "el-GR") {
   });
 }
 
+// Formats a saved-plan date as D/M/YYYY regardless of the locale the
+// plan was generated in. New plans store their date as ISO YYYY-MM-DD
+// (see AiCoach save-path), so this parses those cleanly. For legacy
+// plans saved before the ISO switch we still accept a locale-formatted
+// string (e.g. "4/15/2026" from en-US or "15/4/2026" from el-GR) — we
+// try to parse via Date, and if that fails return the input unchanged
+// so older cards still read as something.
+export function formatPlanDate(input) {
+  if (!input) return "";
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(input));
+  if (iso) {
+    return `${parseInt(iso[3], 10)}/${parseInt(iso[2], 10)}/${iso[1]}`;
+  }
+  const d = new Date(input);
+  if (!isNaN(d.getTime())) {
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  }
+  return String(input);
+}
+
 export function formatNumber(value) {
   return Number(value || 0).toLocaleString("el-GR");
 }

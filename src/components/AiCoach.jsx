@@ -519,7 +519,10 @@ export default function AiCoach({
       text.includes("σετ ×") || text.includes("sets ×") || text.includes("sets x") ||
       (text.includes("💪") && (text.includes("λεπτά") || text.includes("min") || text.includes("😴")))
     );
-    const dateStr = new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "el-GR");
+    // Store as ISO (YYYY-MM-DD) so formatPlanDate() can render it
+    // unambiguously as D/M/YYYY regardless of the user's language or
+    // the language they happen to view the saved plan in later.
+    const dateStr = new Date().toISOString().slice(0, 10);
     if (hasMealPlan) onSavePlan?.({ type: "meal", content: text, date: dateStr });
     else if (hasTrainingPlan) onSavePlan?.({ type: "training", content: text, date: dateStr });
   }, [messages]);
@@ -1136,7 +1139,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         if (hasContent) {
           const parsed = { weekly_plan: merged };
-          const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
+          const dateStr = new Date().toISOString().slice(0, 10);
           const textVersion = renderMealPlanText(parsed, i18n.language);
           onSavePlan?.({ type: "meal", content: textVersion, date: dateStr });
           const totalIn = (mealsData.usage?.inputTokens || 0) + (snacksData?.usage?.inputTokens || 0);
@@ -1179,7 +1182,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
         if (trainingPlan?.monday) {
           const parsed = { weekly_plan: trainingPlan };
-          const dateStr = new Date().toLocaleDateString(isEn ? "en-US" : "el-GR");
+          const dateStr = new Date().toISOString().slice(0, 10);
           const textVersion = renderTrainingPlanText(parsed, i18n.language);
           onSavePlan?.({ type: "training", content: textVersion, date: dateStr });
           setMessages(prev => [...prev, { role: "assistant", trainingPlanData: parsed, text: textVersion, msgType: "training_plan_json", elapsed, usage: tpData.usage }]);
