@@ -1328,34 +1328,89 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
     } finally { setLoading(false); }
   }
 
+  // Time-aware greeting. Greek uses καλησπέρα for both afternoon and
+  // evening so we only need a morning/afternoon split; English could
+  // split further but "Good afternoon" reads fine through the evening
+  // in a coach context too.
+  const greetingWord = (() => {
+    const h = new Date().getHours();
+    return h < 14 ? t("aiCoach.greetMorning") : t("aiCoach.greetAfternoon");
+  })();
+
   return (
     <div ref={coachTopRef} style={{ scrollMarginTop: 84 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <h2 style={{ margin: 0 }}>🤖 {userName ? t("summary.titleName", { name: userName }) : t("aiCoach.title")}</h2>
-            <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
+      {/* HERO (dark gradient panel) — Step A of the Coach redesign.
+          Bleeds out to the parent card's edges via negative margins so
+          the gradient goes wall-to-wall; radius only on the top so it
+          flows into the remaining (still light) content below.
+          Subsequent steps replace the content beneath with new dark
+          sections until the whole card is unified. */}
+      <div style={{
+        margin: "-16px -16px 16px -16px",
+        padding: "18px 20px 16px",
+        background: "linear-gradient(160deg, #0e2e2b 0%, #0a1f1d 100%)",
+        borderRadius: "20px 20px 0 0",
+        color: "white",
+      }}>
+        {/* Row 1: Avatar · Brand · Pro/Free badge · (⋯ admin) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: "radial-gradient(circle at 30% 30%, #1f7a73 0%, #0a3532 70%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 30, flexShrink: 0,
+            boxShadow: "0 0 20px rgba(34, 197, 94, 0.25), inset 0 0 0 1px rgba(255,255,255,0.08)",
+          }} aria-hidden="true">🤖</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.2 }}>{t("aiCoach.heroBrand")}</span>
+              <span style={{
+                padding: "2px 9px", borderRadius: 10,
+                background: isPaid ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(255,255,255,0.12)",
+                color: isPaid ? "white" : "rgba(255,255,255,0.85)",
+                fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
+                display: "inline-flex", alignItems: "center", gap: 3,
+                border: isPaid ? "none" : "1px solid rgba(255,255,255,0.18)",
+              }}>{isPaid ? "✨ Pro" : "Free"}</span>
+              {!isPaid && (
+                <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>
+              {t("aiCoach.heroSubtitle")}
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-            <span className="muted" style={{ fontSize: 12 }}>{t("aiCoach.subtitle")}</span>
-            {isAdmin && (
-              <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
-                style={{ fontSize: 10, padding: "2px 4px", borderRadius: 6, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-muted)", cursor: "pointer" }}>
-                <option value="">Gemini 2.5 Flash Lite (default) — $0.10/$0.40</option>
-                <option value="gemini-3.1">Gemini 3.1 Flash Lite (preview) — $0.10/$1.50</option>
-                <option value="gemini-flash">Gemini 2.5 Flash — $0.30/$2.50</option>
-                <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
-                <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
-                <option value="gpt4o-mini">GPT-4o Mini — $0.15/$0.60</option>
-              </select>
-            )}
-          </div>
-          {isAdmin && (
-            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "monospace" }}>
+        </div>
+
+        {/* Row 2: Greeting */}
+        <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, marginBottom: 4 }}>
+          {greetingWord}{userName ? ` ${userName}` : ""}! <span aria-hidden="true">👋</span>
+        </div>
+
+        {/* Row 3: Motivation line (static for now — subsequent steps may
+            wire this to day-state via liveTips). */}
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.4 }}>
+          {t("aiCoach.heroMotivation")}
+        </div>
+
+        {/* Admin-only controls — tucked below the motivation so they
+            stay reachable without dominating the hero. */}
+        {isAdmin && (
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
+            <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem("ft_ai_model", e.target.value); }}
+              style={{ fontSize: 10, padding: "3px 6px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.75)", cursor: "pointer", alignSelf: "flex-start" }}>
+              <option value="">Gemini 2.5 Flash Lite (default) — $0.10/$0.40</option>
+              <option value="gemini-3.1">Gemini 3.1 Flash Lite (preview) — $0.10/$1.50</option>
+              <option value="gemini-flash">Gemini 2.5 Flash — $0.30/$2.50</option>
+              <option value="haiku">Claude Haiku 4.5 (Direct) — $1/$5</option>
+              <option value="haiku-openrouter">Claude Haiku 4.5 (OpenRouter) — $1/$5</option>
+              <option value="gpt4o-mini">GPT-4o Mini — $0.15/$0.60</option>
+            </select>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", fontFamily: "monospace" }}>
               📊 {dailyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.DAILY_FREE} daily · {monthlyCount}/{isPaid ? AI_LIMITS.MONTHLY_PAID : AI_LIMITS.MONTHLY_FREE} month · {lifetimeCount} lifetime · ∞ admin{isDemo ? " · demo" : ""}{isPaid ? " · paid" : ""}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       {hasLoaded && messages.length > 0 && !loading && !limitReached && (
         <div style={{ textAlign: "right", marginBottom: 6 }}>

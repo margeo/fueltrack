@@ -922,6 +922,11 @@
   "aiCoach": {
     "title": "Coach",
     "subtitle": "Nutritionist & Personal Trainer",
+    "heroBrand": "Coach AI",
+    "heroSubtitle": "Nutritionist • Trainer • Motivator",
+    "greetMorning": "Good morning",
+    "greetAfternoon": "Good afternoon",
+    "heroMotivation": "You're on a good track today.",
     "proTitle": "Pro Feature",
     "proDesc": "The Coach is available with a Pro account. Upgrade to get personalized nutrition and training advice.",
     "proFeature1": "Personalized meal plans",

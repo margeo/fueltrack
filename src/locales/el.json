@@ -922,6 +922,11 @@
   "aiCoach": {
     "title": "Coach",
     "subtitle": "Διατροφολόγος & Personal Trainer",
+    "heroBrand": "Coach AI",
+    "heroSubtitle": "Διατροφολόγος • Προπονητής • Motivator",
+    "greetMorning": "Καλημέρα",
+    "greetAfternoon": "Καλησπέρα",
+    "heroMotivation": "Είσαι σε καλό δρόμο σήμερα.",
     "proTitle": "Pro λειτουργία",
     "proDesc": "Ο Coach είναι διαθέσιμος με λογαριασμό Pro. Αναβάθμισε για εξατομικευμένες συμβουλές διατροφής και γυμναστικής.",
     "proFeature1": "Εξατομικευμένα πλάνα γευμάτων",
