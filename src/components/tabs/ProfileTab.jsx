@@ -156,6 +156,18 @@ export default function ProfileTab({
   const [subscriptionSource, setSubscriptionSource] = useState(null);
   const [isDemo, setIsDemo] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  // Subscription block inside the Account card is collapsible — tap the
+  // user-info row or its chevron to fold only the middle section
+  // (plan details / upgrade CTA); the identity row and the
+  // language/actions row stay visible. Session-scoped so a refresh
+  // opens it again rather than hiding important account affordances
+  // permanently.
+  const [accountSubOpen, setAccountSubOpen] = useState(() => {
+    try { return sessionStorage.getItem("ft_accountSubOpen") !== "false"; } catch { return true; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem("ft_accountSubOpen", accountSubOpen ? "true" : "false"); } catch { /* ignore */ }
+  }, [accountSubOpen]);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
   const [expandedPrefs, _setExpandedPrefs] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('ft_profile_prefs') || '{}'); } catch { return {}; }
@@ -927,8 +939,13 @@ export default function ProfileTab({
       {/* ACCOUNT */}
       {userEmail ? (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          {/* Section 1: User info */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px" }}>
+          {/* Section 1: User info — clicking anywhere on this row toggles
+              the subscription block below. Chevron on the right is a
+              secondary hint. */}
+          <div
+            onClick={() => setAccountSubOpen(v => !v)}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", cursor: "pointer" }}
+          >
             <span style={{ fontSize: 24 }}>👤</span>
             <div style={{ flex: 1 }}>
               {userName && <div style={{ fontWeight: 700, fontSize: 14 }}>{userName}</div>}
@@ -942,9 +959,18 @@ export default function ProfileTab({
             }}>
               {isPaid ? "⭐ PRO" : "FREE"}
             </span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setAccountSubOpen(v => !v); }}
+              aria-label={accountSubOpen ? "Collapse" : "Expand"}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "var(--text-muted)", padding: "4px 2px", lineHeight: 1 }}
+            >
+              {accountSubOpen ? "▲" : "▼"}
+            </button>
           </div>
-          <div style={{ borderTop: "1px solid var(--border-soft)" }} />
-          {/* Section 2: Subscription */}
+          {accountSubOpen && <div style={{ borderTop: "1px solid var(--border-soft)" }} />}
+          {/* Section 2: Subscription — hidden when accountSubOpen is false */}
+          {accountSubOpen && (
           <div style={{ padding: "12px 16px" }}>
             {!isPaid ? (<>
               <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
@@ -976,6 +1002,7 @@ export default function ProfileTab({
               </div>
             )}
           </div>
+          )}
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
           {/* Section 3: Language + Actions */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
