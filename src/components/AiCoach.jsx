@@ -877,6 +877,37 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     // TODAY'S INTAKE: general
     const todayIntake = `\n${isEn ? "Today" : "Σήμερα"}: ${totalCalories||0}/${targetCalories}kcal | P:${Math.round(totalProtein||0)}/${proteinTarget}g | ${isEn ? "Exercise" : "Άσκηση"}:${exerciseValue||0}kcal | ${isEn ? "Remaining" : "Υπόλοιπο"}:${remainingCalories||targetCalories}kcal`;
 
+    // TODAY'S MEALS + EXERCISES (detailed) — only used for the initial
+    // "analyze my day" prompt so the coach has the actual food and
+    // movement the user logged, not just macro totals.
+    const todayKey = getTodayKey();
+    const todayLog = normalizeDayLog(dailyLogs?.[todayKey]);
+    const todayMealsBlock = todayLog.entries.length > 0
+      ? `\n${isEn ? "Meals today" : "Γεύματα σήμερα"}:\n` + todayLog.entries.map(e => {
+          const mt = e.mealType || (isEn ? "Meal" : "Γεύμα");
+          return `  ${mt}: ${e.name||"—"} (${e.grams||0}g) — ${Math.round(e.calories||0)}kcal, P:${Math.round(e.protein||0)}g`;
+        }).join("\n")
+      : `\n${isEn ? "Meals today" : "Γεύματα σήμερα"}: ${isEn ? "none logged" : "καμία καταγραφή"}`;
+    const todayExercisesBlock = todayLog.exercises.length > 0
+      ? `\n${isEn ? "Exercises today" : "Ασκήσεις σήμερα"}:\n` + todayLog.exercises.map(ex => {
+          const dur = ex.duration ? `${ex.duration}min` : "—";
+          return `  ${ex.name||"—"} (${dur}) — ${Math.round(ex.calories||0)}kcal`;
+        }).join("\n")
+      : `\n${isEn ? "Exercises today" : "Ασκήσεις σήμερα"}: ${isEn ? "none" : "καμία"}`;
+
+    // CURRENT TIME + TIME-OF-DAY LABEL (so the coach can say "for
+    // dinner tonight..." vs "for lunch..."). Used in the initial
+    // prompt only.
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString(isEn ? "en-US" : "el-GR", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const hh = now.getHours();
+    const todLabel = hh < 5 ? (isEn ? "late night" : "αργά τη νύχτα")
+      : hh < 12 ? (isEn ? "morning" : "πρωί")
+      : hh < 17 ? (isEn ? "afternoon" : "απόγευμα")
+      : hh < 21 ? (isEn ? "evening" : "βράδυ")
+      : (isEn ? "night" : "νύχτα");
+    const timeBlock = `\n${isEn ? "Current time" : "Ώρα"}: ${timeStr} (${todLabel})`;
+
     // WEEK SUMMARY: general μόνο
     const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
 
@@ -950,7 +981,7 @@ ${askChange}`;
     // training_plan: fitness prefs, NO food/targets/week/mode
     if (taskType === "training_plan") return core + fitnessContext + trainingPlanFormat;
     // initial auto-load: everything (weekly analysis)
-    if (taskType === "initial") return core + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
+    if (taskType === "initial") return core + timeBlock + `\n--- ${isEn ? "NUTRITION" : "ΔΙΑΤΡΟΦΗ"} ---` + nutritionTargets + modeBlock + todayIntake + todayMealsBlock + foodContext + `\n--- ${isEn ? "EXERCISE" : "ΑΣΚΗΣΗ"} ---` + todayExercisesBlock + fitnessContext + `\n--- ${isEn ? "HISTORY" : "ΙΣΤΟΡΙΚΟ"} ---` + weekBlock + generalRules;
     // general chat: light context only — food/fitness profiles go to dedicated plan builders
     return core + nutritionTargets + modeBlock + todayIntake + generalRules;
   }
@@ -963,9 +994,13 @@ ${askChange}`;
     return history;
   }
 
-  async function sendMessage(messageText) {
+  async function sendMessage(messageText, options = {}) {
     const text = (messageText || input).trim();
-    if (!text && hasLoaded) return;
+    // Allow re-triggering the "Analyze Today" initial prompt via the
+    // glowing hero CTA even after the first auto-load. Without the
+    // forceInitial override the empty-text + hasLoaded path no-ops
+    // and the button appears broken after the first tap.
+    if (!text && hasLoaded && !options.forceInitial) return;
     if (loading) return;
     if (limitReached) return;
     setLoading(true);
@@ -979,7 +1014,7 @@ ${askChange}`;
     // no-ops mid-animation on iOS).
     coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     const currentMode = MODES[mode] || MODES.balanced;
-    const isInitial = !text && !hasLoaded;
+    const isInitial = options.forceInitial || (!text && !hasLoaded);
     const isMealPlan = text === t("aiCoach.q1");
     const isTrainingPlan = text === t("aiCoach.q2");
     const isWeeklyReview = text === t("aiCoach.q3");
@@ -993,8 +1028,32 @@ ${askChange}`;
     let effectiveMessage;
     if (isInitial) {
       effectiveMessage = isEn
-        ? `Look at my data:\n1. What to eat for the rest of the day (${currentMode.label} diet, ${targetCalories}kcal)\n2. Flag any empty days\n3. Should I exercise today\n4. One thing I'm doing wrong\n5. Ask me something`
-        : `Κοίτα τα δεδομένα μου:\n1. Τι να φάω για την υπόλοιπη μέρα (διατροφή ${currentMode.label}, ${targetCalories}kcal)\n2. Αν υπάρχουν άδειες μέρες επισήμανέ το\n3. Αν πρέπει να γυμναστώ σήμερα\n4. Ένα πράγμα που κάνω λάθος\n5. Ρώτα με κάτι`;
+        ? `Analyze today's user data and act as an elite nutritionist + fitness coach.
+Review: calories consumed vs target, protein consumed vs target, meals logged today, exercise completed, steps / activity level, remaining calories, current time of day, weekly progress trend.
+Give a short, motivating, highly actionable response.
+Include:
+1. Today's score out of 10
+2. What went well
+3. What needs improvement
+4. Best next action today
+5. If evening: what to eat tonight
+6. If inactive: suggest movement
+7. Encourage consistency
+
+Tone: premium coach, motivating, concise, smart.`
+        : `Ανέλυσε τα σημερινά δεδομένα του χρήστη και δράσε σαν elite διατροφολόγος + personal trainer.
+Εξέτασε: θερμίδες vs στόχος, πρωτεΐνη vs στόχος, γεύματα που καταγράφηκαν σήμερα, ασκήσεις που έγιναν, επίπεδο δραστηριότητας, υπόλοιπες θερμίδες, ώρα της ημέρας, εβδομαδιαία τάση προόδου.
+Δώσε σύντομη, ενθαρρυντική και άκρως πρακτική απάντηση.
+Συμπερίλαβε:
+1. Βαθμολογία ημέρας /10
+2. Τι πήγε καλά
+3. Τι χρειάζεται βελτίωση
+4. Η καλύτερη επόμενη κίνηση για σήμερα
+5. Αν είναι βράδυ: τι να φας απόψε
+6. Αν είναι αδρανής: πρότεινε κίνηση
+7. Ενθάρρυνε τη συνέπεια
+
+Τόνος: premium coach, κινητοποιητικός, περιεκτικός, έξυπνος.`;
     } else if (isMealPlan) {
       effectiveMessage = isEn
         ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. Include ALL meals${Number(snacksPerDay) > 0 ? " AND snacks" : ""} as specified in the format.`
@@ -1501,7 +1560,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             loading and when the daily limit is reached. */}
         <button
           type="button"
-          onClick={() => sendMessage(null)}
+          onClick={() => sendMessage(null, { forceInitial: true })}
           disabled={loading || limitReached}
           style={{
             width: "100%",
