@@ -1016,7 +1016,7 @@ export default function ProfileTab({
               ) : (
                 <svg width="20" height="14" viewBox="0 0 60 30"><clipPath id="gbp"><rect width="60" height="30"/></clipPath><g clipPath="url(#gbp)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
               )}</span>
-              <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 10px", boxSizing: "border-box", fontWeight: 700 }}>
+              <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", fontWeight: 700, lineHeight: 1 }}>
                 <option value="el">{t("profile.greek")}</option>
                 <option value="en">English</option>
               </select>
@@ -1030,23 +1030,23 @@ export default function ProfileTab({
                     catch {}
                     finally { setCheckoutLoading(false); }
                   }}
-                  style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box", border: "1px solid transparent" }}>
+                  style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", border: "1px solid transparent", lineHeight: 1 }}>
                   {checkoutLoading ? t("common.loading") : "⭐ " + t("subscription.upgrade")}
                 </button>
               ) : (
                 <button className="btn btn-light" type="button"
                   onClick={async () => { try { await openManageSubscription(subscriptionSource); } catch {} }}
-                  style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box" }}>
+                  style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", lineHeight: 1 }}>
                   {t("subscription.manage")}
                 </button>
               )}
               <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
-                style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box" }}>
+                style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", lineHeight: 1 }}>
                 {t("auth.logout")}
               </button>
               {isAdmin && (
                 <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
-                  style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box", border: "1px solid transparent" }}>
+                  style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", border: "1px solid transparent", lineHeight: 1 }}>
                   🛡️ Admin
                 </button>
               )}
@@ -1067,18 +1067,18 @@ export default function ProfileTab({
               ) : (
                 <svg width="20" height="14" viewBox="0 0 60 30"><clipPath id="gbp"><rect width="60" height="30"/></clipPath><g clipPath="url(#gbp)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6"/></g></svg>
               )}</span>
-              <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "6px 10px", boxSizing: "border-box", fontWeight: 700 }}>
+              <select className="input" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)} style={{ width: "auto", fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", fontWeight: 700, lineHeight: 1 }}>
                 <option value="el">{t("profile.greek")}</option>
                 <option value="en">English</option>
               </select>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               <button className="btn btn-dark" onClick={onShowAuth} type="button"
-                style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box", border: "1px solid transparent", minWidth: 100 }}>
+                style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", border: "1px solid transparent", lineHeight: 1, minWidth: 100 }}>
                 {t("auth.loginBtn")}
               </button>
               <button className="btn btn-light" onClick={onShowRegister} type="button"
-                style={{ fontSize: 12, padding: "6px 10px", boxSizing: "border-box", minWidth: 100 }}>
+                style={{ fontSize: 12, padding: "0 10px", height: 32, boxSizing: "border-box", lineHeight: 1, minWidth: 100 }}>
                 {t("auth.registerBtn")}
               </button>
             </div>
