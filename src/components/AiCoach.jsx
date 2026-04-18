@@ -938,22 +938,14 @@ ${askChange}`;
     if (limitReached) return;
     setLoading(true);
     setChatExpanded(true);
-    // Pre-response page scroll — bring the Coach section just below
-    // the fixed .app-header. scrollIntoView({block:"start"}) would land
-    // behind the header because it doesn't know about it; we compute
-    // the target manually from the live header height so this works
-    // across iPhone (notch/status bar), Android, and web.
-    {
-      const coachEl = coachTopRef.current;
-      if (coachEl) {
-        const coachRect = coachEl.getBoundingClientRect();
-        const scroller = document.scrollingElement || document.documentElement;
-        const headerEl = document.querySelector(".app-header");
-        const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
-        const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
-        scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-      }
-    }
+    // Pre-response page scroll — bring the Coach section just below the
+    // fixed .app-header. The ref div has scroll-margin-top: 84 so a plain
+    // scrollIntoView({block:"start"}) naturally lands it with the right
+    // offset; using the browser's native scroll-into-view plumbing is
+    // more reliable on iOS Safari than chaining scrollTo() with a
+    // computed target right after a setState call (the latter sometimes
+    // no-ops mid-animation on iOS).
+    coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const isMealPlan = text === t("aiCoach.q1");
