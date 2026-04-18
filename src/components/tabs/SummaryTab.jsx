@@ -704,10 +704,15 @@ RULES:
         </div>
 
         {/* PLANS — connected under AI Coach on the same dark surface.
-            Dividers use a translucent white border so they read on the
-            gradient. Anchor id is the scroll target for the "Recent
-            plans" label above (Step Η). */}
-        <div id="ft-plans-anchor" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px", scrollMarginTop: 80 }}>
+            "Recent plans" label sits directly above the first plan
+            row so the header-to-content gap matches the other Coach
+            sections (Quick actions / Ask Coach anything...). Dividers
+            use a translucent white border so they read on the
+            gradient. */}
+        <div id="ft-plans-anchor" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px 10px", scrollMarginTop: 80 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3, marginBottom: 8 }}>
+            {t("aiCoach.recentPlans")}
+          </div>
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 

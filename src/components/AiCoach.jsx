@@ -1668,7 +1668,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       // Coach just needs its own padding/bleed so content lines up
       // with the plan rows rendered by SummaryTab below.
       margin: "-16px -16px 0 -16px",
-      padding: "18px 20px 10px",
+      padding: "18px 20px 14px",
       color: "white",
     }}>
       {/* HERO — the original dark hero container now wraps the WHOLE
@@ -1891,8 +1891,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           question (q1-q4) via sendMessage. Replaces the old inline
           chip strip that used to live in the pre-message state. */}
       {!limitReached && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 10, letterSpacing: 0.3 }}>
+        <div style={{ marginTop: 18, marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 8, letterSpacing: 0.3 }}>
             {t("aiCoach.quickActions")}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -2192,16 +2192,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {/* Step Η: "Recent plans" label only — acts as a header for the
-          full plan rows that SummaryTab renders directly below (meal
-          plan / grocery list / training plan). Sits flush against
-          those rows so the divider border reads as belonging to this
-          label rather than floating above an empty gap. */}
-      <div style={{ marginTop: 14, marginBottom: 2 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
-          {t("aiCoach.recentPlans")}
-        </div>
-      </div>
+      {/* Step Η: The "Recent plans" label is rendered by SummaryTab
+          right above the first plan row so the gap between the label
+          and its content matches the other sections (Quick actions /
+          Ask Coach anything...). */}
     </div>
   );
 }
