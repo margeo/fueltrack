@@ -30,10 +30,21 @@ export function calculateDailyDeficit({ kilos, weeks }) {
   return Math.round(total / days);
 }
 
-export function calculateAppliedDailyDeficit(rawDeficit) {
+export function calculateAppliedDailyDeficit(rawDeficit, tdee) {
   const deficit = Number(rawDeficit || 0);
   if (!deficit) return 0;
-  return Math.min(Math.max(deficit, 150), 1000);
+  // Dynamic cap based on TDEE: min(1500, TDEE * 0.40). A user with a
+  // higher maintenance can sustainably run a larger absolute deficit
+  // than a small user on the same flat 1000-cap, but we still cap at
+  // 1500 kcal/day to avoid wildly aggressive targets even for large
+  // TDEEs. Falls back to a flat 1000-cap when TDEE isn't known yet
+  // (e.g., profile still loading) so we never return an unbounded
+  // number.
+  const tdeeNum = Number(tdee || 0);
+  const maxDeficit = tdeeNum > 0
+    ? Math.min(1500, tdeeNum * 0.40)
+    : 1000;
+  return Math.min(Math.max(deficit, 150), maxDeficit);
 }
 
 export function calculateTargetCalories({
@@ -56,7 +67,7 @@ export function calculateTargetCalories({
       weeks
     });
 
-    const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
+    const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit, base);
 
     return Math.max(Math.round(base - appliedDeficit), 1200);
   }

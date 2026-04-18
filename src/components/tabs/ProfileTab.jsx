@@ -52,20 +52,35 @@ const MODE_GROUP_KEYS = {
   "🌱 Φυτικές": "modeGroups.plant"
 };
 
-function GoalWarning({ goalType, kilosPerWeek, rawDeficit }) {
+function GoalWarning({ goalType, weight, kilosPerWeek, rawDeficit }) {
   const { t } = useTranslation();
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
   const suggestedExercise = calculateSuggestedExercise(rawDeficit);
   const showExerciseTip = suggestedExercise > 0 && suggestedExercise <= 500;
-  let color = "#166534", bg = "#dcfce7", border = "#86efac", icon = "✅", message = "";
-  if (kilosPerWeek > 1.5) {
-    color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "⚠️";
-    message = t("profile.unrealisticGoal");
-  } else if (kilosPerWeek > 1) {
-    color = "#92400e"; bg = "#fffbeb"; border = "#fde68a"; icon = "⚡";
-    message = t("profile.aggressiveGoal", { rate: formatNumber(Math.round(kilosPerWeek * 10) / 10) });
+  // % of bodyweight per week is a more personalised gauge of how hard
+  // the target is than absolute kg/week — 1kg/week is trivial for a
+  // 150kg user but brutal for a 55kg user. When we don't yet have a
+  // current weight (new profile), fall back to absolute kg thresholds
+  // by treating the value as % directly.
+  const w = Number(weight || 0);
+  const pctPerWeek = w > 0 ? (kilosPerWeek / w) * 100 : kilosPerWeek;
+  const pctLabel = formatNumber(Math.round(pctPerWeek * 100) / 100);
+  let color, bg, border, icon, message;
+  if (pctPerWeek >= 2.0) {
+    color = "#1f2937"; bg = "#f3f4f6"; border = "#6b7280"; icon = "⚫";
+    message = t("profile.extremeGoal", { pct: pctLabel });
+  } else if (pctPerWeek >= 1.4) {
+    color = "#b91c1c"; bg = "#fef2f2"; border = "#fecaca"; icon = "🔴";
+    message = t("profile.veryAggressiveGoal", { pct: pctLabel });
+  } else if (pctPerWeek >= 1.0) {
+    color = "#c2410c"; bg = "#fff7ed"; border = "#fed7aa"; icon = "🟠";
+    message = t("profile.aggressiveGoal", { pct: pctLabel });
+  } else if (pctPerWeek >= 0.6) {
+    color = "#1d4ed8"; bg = "#eff6ff"; border = "#93c5fd"; icon = "🔵";
+    message = t("profile.fastProgressGoal", { pct: pctLabel });
   } else {
-    message = t("profile.realisticGoal");
+    color = "#166534"; bg = "#dcfce7"; border = "#86efac"; icon = "🟢";
+    message = t("profile.sustainableGoal", { pct: pctLabel });
   }
 
   // Dynamic exercise example based on calories
@@ -240,7 +255,7 @@ export default function ProfileTab({
   }
 
   const rawDeficit = Number(dailyDeficit || 0);
-  const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit);
+  const appliedDeficit = calculateAppliedDailyDeficit(rawDeficit, tdee);
   const kilosNum = Number(targetWeightLoss || 0);
   const weeksNum = Number(weeks || 0);
   const kilosPerWeek = goalType === "lose" && kilosNum > 0 && weeksNum > 0 ? kilosNum / weeksNum : 0;
@@ -410,7 +425,7 @@ export default function ProfileTab({
                       </div>
                     </label>
                   </div>
-                  <GoalWarning goalType={goalType} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
+                  <GoalWarning goalType={goalType} weight={weight} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
                 </div>
               )}
             </div>

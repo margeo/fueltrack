@@ -83,24 +83,40 @@ describe("calculateDailyDeficit", () => {
 
 describe("calculateAppliedDailyDeficit", () => {
   it("clamps deficit to minimum 150", () => {
-    expect(calculateAppliedDailyDeficit(50)).toBe(150);
+    expect(calculateAppliedDailyDeficit(50, 2500)).toBe(150);
   });
 
-  it("clamps deficit to maximum 1000", () => {
+  it("clamps deficit to TDEE*0.40 for mid-range TDEE", () => {
+    // 2500 * 0.40 = 1000; min(1500, 1000) = 1000
+    expect(calculateAppliedDailyDeficit(2000, 2500)).toBe(1000);
+  });
+
+  it("clamps deficit to the 1500 ceiling for very high TDEE", () => {
+    // 4500 * 0.40 = 1800; min(1500, 1800) = 1500
+    expect(calculateAppliedDailyDeficit(3000, 4500)).toBe(1500);
+  });
+
+  it("caps small users at TDEE*0.40 below the 1500 ceiling", () => {
+    // 1800 * 0.40 = 720; min(1500, 720) = 720
+    expect(calculateAppliedDailyDeficit(1500, 1800)).toBe(720);
+  });
+
+  it("falls back to a 1000 flat cap when TDEE is unknown", () => {
     expect(calculateAppliedDailyDeficit(2000)).toBe(1000);
+    expect(calculateAppliedDailyDeficit(2000, 0)).toBe(1000);
   });
 
   it("passes through value in valid range", () => {
-    expect(calculateAppliedDailyDeficit(500)).toBe(500);
+    expect(calculateAppliedDailyDeficit(500, 2500)).toBe(500);
   });
 
   it("returns 0 for zero input", () => {
-    expect(calculateAppliedDailyDeficit(0)).toBe(0);
+    expect(calculateAppliedDailyDeficit(0, 2500)).toBe(0);
   });
 
   it("returns 0 for null/undefined", () => {
-    expect(calculateAppliedDailyDeficit(null)).toBe(0);
-    expect(calculateAppliedDailyDeficit(undefined)).toBe(0);
+    expect(calculateAppliedDailyDeficit(null, 2500)).toBe(0);
+    expect(calculateAppliedDailyDeficit(undefined, 2500)).toBe(0);
   });
 });
 
@@ -118,7 +134,8 @@ describe("calculateTargetCalories", () => {
   });
 
   it("applies clamped deficit for lose goal", () => {
-    // 5kg in 10 weeks = 550 deficit, within 150-1000 range
+    // 5kg in 10 weeks = 550 deficit; cap = min(1500, 2200*0.40) = 880;
+    // 550 < 880 so no clamping, passes through.
     const result = calculateTargetCalories({
       goalType: "lose",
       tdee: 2200,
@@ -135,7 +152,8 @@ describe("calculateTargetCalories", () => {
       targetWeightChange: 10,
       weeks: 4,
     });
-    // deficit would be 2750, clamped to 1000 → 1400-1000=400, floored to 1200
+    // deficit would be 2750, clamped to TDEE*0.40 = 560 → 1400-560 = 840,
+    // floored to 1200.
     expect(result).toBe(1200);
   });
 

@@ -125,22 +125,28 @@ describe("ProfileTab", () => {
     expect(props.setGoalType).toHaveBeenCalledWith("maintain");
   });
 
-  it("shows realistic goal warning for safe rate", () => {
-    // 5kg in 10 weeks = 0.5 kg/week → realistic
-    renderProfile({ goalType: "lose", targetWeightLoss: "5", weeks: "10" });
-    expect(screen.getByText(/Ρεαλιστικός στόχος/)).toBeTruthy();
+  it("shows sustainable goal warning for a slow rate", () => {
+    // 80kg user, 4kg in 12 weeks = 0.333 kg/week = 0.42% bw/wk → sustainable
+    renderProfile({ goalType: "lose", weight: "80", targetWeightLoss: "4", weeks: "12" });
+    expect(screen.getByText(/Βιώσιμος ρυθμός/)).toBeTruthy();
   });
 
-  it("shows aggressive goal warning for fast rate", () => {
-    // 10kg in 8 weeks = 1.25 kg/week → aggressive
-    renderProfile({ goalType: "lose", targetWeightLoss: "10", weeks: "8" });
-    expect(screen.getByText(/Επιθετικός αλλά εφικτός/)).toBeTruthy();
+  it("shows fast-progress warning for a moderate rate", () => {
+    // 80kg user, 5kg in 10 weeks = 0.5 kg/wk = 0.625% bw/wk → fast progress
+    renderProfile({ goalType: "lose", weight: "80", targetWeightLoss: "5", weeks: "10" });
+    expect(screen.getByText(/Γρήγορη πρόοδος/)).toBeTruthy();
   });
 
-  it("shows unrealistic goal warning for extreme rate", () => {
-    // 10kg in 4 weeks = 2.5 kg/week → unrealistic
-    renderProfile({ goalType: "lose", targetWeightLoss: "10", weeks: "4" });
-    expect(screen.getByText(/Μη ρεαλιστικός στόχος/)).toBeTruthy();
+  it("shows very-aggressive warning for a fast rate", () => {
+    // 80kg user, 10kg in 8 weeks = 1.25 kg/wk = 1.5625% bw/wk → very aggressive
+    renderProfile({ goalType: "lose", weight: "80", targetWeightLoss: "10", weeks: "8" });
+    expect(screen.getByText(/Πολύ επιθετικός/)).toBeTruthy();
+  });
+
+  it("shows extreme warning for a dangerous rate", () => {
+    // 80kg user, 10kg in 4 weeks = 2.5 kg/wk = 3.125% bw/wk → extreme
+    renderProfile({ goalType: "lose", weight: "80", targetWeightLoss: "10", weeks: "4" });
+    expect(screen.getByText(/Ακραίος/)).toBeTruthy();
   });
 
   it("shows gender, activity, and diet mode in main card", () => {
