@@ -487,25 +487,13 @@ export default function AiCoach({
         const containerRect = container.getBoundingClientRect();
         const delta = msgRect.top - containerRect.top;
         container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
-        // Page-level scroll: bring the AI Coach section to the top of
-        // the viewport. scrollIntoView({behavior:"smooth"}) is flaky
-        // inside Capacitor's Android WebView — it silently no-ops on
-        // the first call after a new message — so we compute the
-        // target position manually and drive the document's scrolling
-        // element, which works reliably on both web and native.
-        // The offset is measured from the live .app-header element so
-        // we don't hard-code a value that would drift across iPhone
-        // (notch/status bar), Android, and web where the header can
-        // render at slightly different heights.
-        const coachEl = coachTopRef.current;
-        if (coachEl) {
-          const coachRect = coachEl.getBoundingClientRect();
-          const scroller = document.scrollingElement || document.documentElement;
-          const headerEl = document.querySelector(".app-header");
-          const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
-          const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
-          scroller.scrollTo({ top: targetTop, behavior: "smooth" });
-        }
+        // NOTE: page-level scroll is intentionally NOT repeated here.
+        // It already ran in ask() before the network round-trip and
+        // pinned the Coach section just below the fixed header. If we
+        // re-ran it now it could fight with the user — they may have
+        // scrolled to read the response while it streamed in, and a
+        // delayed jump would yank them back. Container-internal scroll
+        // (above) is the only thing this effect should touch.
       };
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
