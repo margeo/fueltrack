@@ -978,15 +978,21 @@ export default function ProfileTab({
           </div>
           {accountSubOpen && <div style={{ borderTop: "1px solid var(--border-soft)" }} />}
           {/* Section 2: Subscription info — hidden when accountSubOpen is false.
-              The CTA button (Upgrade / Manage) lives in Section 3 below so
-              it stays visible even when this section is collapsed. */}
+              For free users we surface both plans on separate lines so the
+              contrast (what you have vs what Pro adds) is readable at a
+              glance; paid users just see their own plan line. */}
           {accountSubOpen && (
           <div style={{ padding: "12px 16px" }}>
             {!isPaid ? (
-              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
-                {" · "}
-                {t("aiCoach.subscribePrice")}
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, display: "flex", flexDirection: "column", gap: 4 }}>
+                <div>
+                  {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
+                </div>
+                <div>
+                  {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
+                  {" · "}
+                  {t("aiCoach.subscribePrice")}
+                </div>
               </div>
             ) : (
               <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -1064,13 +1070,13 @@ export default function ProfileTab({
                 <option value="en">English</option>
               </select>
             </div>
-            <div style={{ display: "flex", gap: 8, flex: "1 1 auto", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 6 }}>
               <button className="btn btn-dark" onClick={onShowAuth} type="button"
-                style={{ fontSize: 12, padding: "6px 12px", flex: "1 1 0", maxWidth: 140 }}>
+                style={{ fontSize: 11, padding: "5px 10px", minWidth: 100 }}>
                 {t("auth.loginBtn")}
               </button>
               <button className="btn btn-light" onClick={onShowRegister} type="button"
-                style={{ fontSize: 12, padding: "6px 12px", flex: "1 1 0", maxWidth: 140 }}>
+                style={{ fontSize: 11, padding: "5px 10px", minWidth: 100 }}>
                 {t("auth.registerBtn")}
               </button>
             </div>
