@@ -6,7 +6,7 @@ import { mergeHealthFoodRules, mergeHealthExerciseRules } from "../data/healthFa
 import { calculateStreak } from "../utils/streak";
 import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
-import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
+import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState, computeRemainingRequests } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
 import { openCheckout } from "../utils/stripe";
 import AiUsageBadge from "./AiUsageBadge";
@@ -1328,15 +1328,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
     } finally { setLoading(false); }
   }
 
-  // Time-aware greeting. Greek uses καλησπέρα for both afternoon and
-  // evening so we only need a morning/afternoon split; English could
-  // split further but "Good afternoon" reads fine through the evening
-  // in a coach context too.
-  const greetingWord = (() => {
-    const h = new Date().getHours();
-    return h < 14 ? t("aiCoach.greetMorning") : t("aiCoach.greetAfternoon");
-  })();
-
   return (
     <div ref={coachTopRef} style={{ scrollMarginTop: 84 }}>
       {/* HERO (dark gradient panel) — Step A of the Coach redesign.
@@ -1372,9 +1363,24 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 display: "inline-flex", alignItems: "center", gap: 3,
                 border: isPaid ? "none" : "1px solid rgba(255,255,255,0.18)",
               }}>{isPaid ? "⭐ Pro" : "Free"}</span>
-              {!isPaid && (
-                <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
-              )}
+              {!isPaid && session && (() => {
+                // Compact "X left" pill styled to match the Free badge
+                // sitting next to it. Falls back to null when unlimited
+                // (admin / demo) so the row doesn't show a stray pill.
+                const info = computeRemainingRequests({ usage, isPaid, isDemo, isAdmin });
+                if (info.remaining === Infinity) return null;
+                const exhausted = info.remaining <= 0;
+                return (
+                  <span style={{
+                    padding: "2px 9px", borderRadius: 10,
+                    background: exhausted ? "rgba(239,68,68,0.25)" : info.warn ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
+                    display: "inline-flex", alignItems: "center", gap: 3,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                  }}>{exhausted ? `⛔ ${t("usage.noRemaining")}` : `⚡ ${info.remaining} ${t("usage.remaining")}`}</span>
+                );
+              })()}
             </div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>
               {t("aiCoach.heroSubtitle")}
@@ -1382,9 +1388,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           </div>
         </div>
 
-        {/* Row 2: Greeting */}
+        {/* Row 2: Greeting — simple "Hey {name}!" via the existing
+            summary.titleName locale key so we don't fork copy. */}
         <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, marginBottom: 4 }}>
-          {greetingWord}{userName ? ` ${userName}` : ""}! <span aria-hidden="true">👋</span>
+          {userName ? t("summary.titleName", { name: userName }) : t("summary.title")} <span aria-hidden="true">👋</span>
         </div>
 
         {/* Row 3: Motivation line (static for now — subsequent steps may
