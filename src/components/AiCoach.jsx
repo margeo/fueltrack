@@ -1866,6 +1866,47 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           </div>
         )}
       </div>
+
+      {/* Step Δ: Quick actions 2×2 grid — permanent section right
+          below the dark hero. Each card triggers the matching preset
+          question (q1-q4) via sendMessage. Replaces the old inline
+          chip strip that used to live in the pre-message state. */}
+      {!limitReached && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10, letterSpacing: 0.3 }}>
+            {t("aiCoach.quickActions")}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[
+              { emoji: "🥗", title: t("aiCoach.qaMealPlan"), sub: t("aiCoach.qaMealPlanSub"), query: t("aiCoach.q1") },
+              { emoji: "💪", title: t("aiCoach.qaWorkoutPlan"), sub: t("aiCoach.qaWorkoutPlanSub"), query: t("aiCoach.q2") },
+              { emoji: "📈", title: t("aiCoach.qaProgressReview"), sub: t("aiCoach.qaProgressReviewSub"), query: t("aiCoach.q3") },
+              { emoji: "⚡", title: t("aiCoach.qaFatLossTips"), sub: t("aiCoach.qaFatLossTipsSub"), query: t("aiCoach.q4") },
+            ].map((card) => (
+              <button key={card.title} type="button" onClick={() => sendMessage(card.query)} disabled={loading}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 12px",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-soft)",
+                  borderRadius: 12,
+                  cursor: loading ? "default" : "pointer",
+                  textAlign: "left",
+                  transition: "transform 0.1s ease, box-shadow 0.2s ease",
+                  minWidth: 0,
+                }}>
+                <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{card.emoji}</span>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.title}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.sub}</span>
+                </span>
+                <span aria-hidden="true" style={{ color: "var(--text-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasLoaded && messages.length > 0 && !loading && !limitReached && (
         <div style={{ textAlign: "right", marginBottom: 6 }}>
           <button type="button" onClick={() => setChatExpanded(prev => !prev)}
@@ -1938,25 +1979,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {!limitReached && !hasLoaded && !loading && messages.length === 0 && (
-        <div>
-          {(!foodCategories?.length || !fitnessLevel) && (
-            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-line" }}>
-              💡 <strong>{t("aiCoach.prefsHintTitle")}</strong>{"\n"}{t("aiCoach.prefsHintDesc")}
-            </div>
-          )}
-          <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>{t("aiCoach.askAnything")}</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {quickQuestions.map((q) => (
-              <button key={q} onClick={() => sendMessage(q)} type="button"
-                style={{ padding: "7px 12px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                {q}
-              </button>
-            ))}
-          </div>
-          {/* The "Analyze my day" CTA that used to live here moved into
-              the hero as the primary glowing Analyze Today button in
-              Step Γ of the Coach redesign — don't render it twice. */}
+      {!limitReached && !hasLoaded && !loading && messages.length === 0 && (!foodCategories?.length || !fitnessLevel) && (
+        <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-line" }}>
+          💡 <strong>{t("aiCoach.prefsHintTitle")}</strong>{"\n"}{t("aiCoach.prefsHintDesc")}
         </div>
       )}
 
