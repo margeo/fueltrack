@@ -8,6 +8,7 @@ import { authedFetch } from "../../utils/authFetch";
 import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
 import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
+import AiFeatureGate from "../AiFeatureGate";
 
 function getFoodSearchScore(food, query) {
   const q = stripDiacritics(String(query || "")).toLowerCase().trim();
@@ -395,6 +396,10 @@ export default function FoodTab({
         {barcodeLoading && <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>🔍 {t("food.barcodeSearching")}</div>}
         {barcodeError && <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>{barcodeError}</div>}
 
+        {/* Food search — gated to signed-in users only. Backend hits
+            USDA / Open Food Facts / FatSecret (no AI cost) so any
+            signed-in account unlocks it, regardless of paid status. */}
+        <AiFeatureGate mode="auth" session={session} onShowAuth={onShowAuth} onShowRegister={onShowRegister}>
         <input className="input" placeholder={t("food.searchPlaceholder")} value={query} onChange={(e) => setQuery(e.target.value)} />
 
         {/* Rule-based tip — below the search input, left-aligned as a subtle hint for the user. */}
@@ -444,6 +449,7 @@ export default function FoodTab({
             ))}
           </div>
         )}
+        </AiFeatureGate>
         </>)}
       </div>
 

@@ -15,11 +15,24 @@ import AiLimitLock from "./AiLimitLock";
 //                          AiLimitLock via startProMonthlyPurchase)
 //   3. signed in + paid  → feature unlocked, children render as-is
 //
-// Usage-based gating (daily/monthly/lifetime limits) is the default
-// when `mode = "usage"`. Features that don't cost an AI round-trip
-// but are still positioned as premium (Barcode Scanner) can pass
-// `mode = "pro"` — in that case the gate only unlocks for paid/
-// demo/admin accounts regardless of the usage counters.
+// Three gating modes:
+// - mode="usage" (default)  Standard AI features: daily/monthly/
+//                            lifetime/paid limit enforcement via
+//                            computeLimitState. Used by Coach and
+//                            the Food Photo Analyzer.
+// - mode="pro"               Premium-only feature (no AI round-trip,
+//                            positioned as paid-only). Unlocks for
+//                            paid / demo / admin accounts only —
+//                            signed-out AND free accounts see the
+//                            lock. Used by the Barcode Scanner.
+// - mode="auth"              Signed-in-only feature. Unlocks for any
+//                            signed-in account regardless of paid
+//                            status. Only signed-out users see the
+//                            lock. Used by the food search input in
+//                            FoodTab since the USDA / Open Food
+//                            Facts / FatSecret backends are free
+//                            and every signed-in user should have
+//                            access without an upgrade step.
 export default function AiFeatureGate({
   session,
   onShowAuth,
@@ -77,12 +90,13 @@ export default function AiFeatureGate({
   const usageState = computeLimitState({ usage, isPaid, isDemo, isAdmin, needsAccount });
   const unlimited = usageState.unlimited;
 
-  // For "pro" mode the feature is locked whenever the user isn't
-  // paid / demo / admin (no per-request counting involved). For
-  // "usage" mode we defer to the normal usage-limit computation.
-  const locked = mode === "pro"
-    ? (needsAccount || !(unlimited || isPaid))
-    : usageState.limitReached;
+  // Compute the locked state per mode. "auth" is the loosest gate
+  // (signed-in is enough), "pro" is the strictest (paid-only), and
+  // "usage" defers to the daily/monthly/lifetime/paid limits.
+  const locked =
+    mode === "auth" ? needsAccount :
+    mode === "pro"  ? (needsAccount || !(unlimited || isPaid)) :
+                      usageState.limitReached;
 
   if (!locked) return children;
 
