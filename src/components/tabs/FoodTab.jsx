@@ -9,6 +9,8 @@ import useFoodSearch from "../../hooks/useFoodSearch";
 import BarcodeScanner from "../BarcodeScanner";
 import FoodPhotoAnalyzer from "../FoodPhotoAnalyzer";
 import AiFeatureGate from "../AiFeatureGate";
+import AiLimitLock from "../AiLimitLock";
+import { supabase as supabaseClient } from "../../supabaseClient";
 
 function getFoodSearchScore(food, query) {
   const q = stripDiacritics(String(query || "")).toLowerCase().trim();
@@ -170,19 +172,39 @@ export default function FoodTab({
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
+  const [barcodeLocked, setBarcodeLocked] = useState(false);
 
   // The source badge (USDA / OpenFood / FatSecret) on search results is a
   // debug signal for Marios, not a user-facing feature. End users don't
   // care which upstream API returned the hit — they just want the food.
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!session?.access_token) {
+      setIsPaid(false);
+      setIsDemo(false);
+      setIsAdmin(false);
+      return;
+    }
     let cancelled = false;
     authedFetch("/.netlify/functions/check-admin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     }).then(res => res.json()).then(data => { if (!cancelled) setIsAdmin(data?.isAdmin === true); }).catch(() => {});
+    supabaseClient
+      .from("profiles")
+      .select("is_paid, is_demo")
+      .eq("id", session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setIsPaid(data?.is_paid === true);
+        setIsDemo(data?.is_demo === true);
+      })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [session]);
+  const barcodeUnlocked = !!(isPaid || isDemo || isAdmin);
 
   const [addFoodOpen, _setAddFoodOpen] = useState(() => sessionStorage.getItem('ft_food_add') === 'true');
   const [favoritesOpen, _setFavoritesOpen] = useState(() => sessionStorage.getItem('ft_food_fav') === 'true');
@@ -295,6 +317,35 @@ export default function FoodTab({
   return (
     <>
       {showScanner && <BarcodeScanner onResult={handleBarcodeResult} onClose={() => setShowScanner(false)} />}
+      {barcodeLocked && (
+        <div onClick={() => setBarcodeLocked(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+            zIndex: 200, display: "flex", alignItems: "center",
+            justifyContent: "center", padding: 16,
+          }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--bg-card)", borderRadius: 20, padding: 20,
+              width: "100%", maxWidth: 400, boxShadow: "var(--shadow-modal)",
+            }}>
+            <AiLimitLock
+              needsAccount={!session}
+              paidLimitReached={false}
+              lifetimeLimitReached={false}
+              monthlyLimitReached={false}
+              isPaid={isPaid}
+              onShowAuth={onShowAuth}
+              onShowRegister={onShowRegister}
+            />
+            <div style={{ display: "flex", marginTop: 8 }}>
+              <button className="btn btn-light" onClick={() => setBarcodeLocked(false)} type="button" style={{ flex: 1 }}>
+                {t("common.cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showPhotoAnalyzer && (
         <FoodPhotoAnalyzer
           onFoodFound={(food) => { setSelectedFood(food); setShowPhotoAnalyzer(false); }}
@@ -377,7 +428,11 @@ export default function FoodTab({
               style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center" }}>
               📸 {t("food.photo")}
             </button>
-            <button className="btn btn-dark" onClick={() => { setShowScanner(true); setBarcodeError(""); }} type="button"
+            <button className="btn btn-dark" onClick={() => {
+              setBarcodeError("");
+              if (barcodeUnlocked) setShowScanner(true);
+              else setBarcodeLocked(true);
+            }} type="button"
               style={{ fontSize: 13, padding: "8px 0", width: 120, textAlign: "center" }}>
               🔲 {t("food.barcode")}
             </button>
