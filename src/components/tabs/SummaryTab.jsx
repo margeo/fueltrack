@@ -151,12 +151,16 @@ export default function SummaryTab({
     // Scroll 1 — bring AI Coach section to top of viewport.
     // Uses document.scrollingElement.scrollTo() (NOT scrollIntoView)
     // because scrollIntoView silently no-ops on iOS Safari and
-    // Android WebView on the first call.
+    // Android WebView on the first call. Offset is measured from the
+    // live .app-header element so the target lands just below the
+    // fixed header on any platform (iOS/Android/web).
     const coachEl = coachSectionRef.current;
     if (coachEl) {
       const scroller = document.scrollingElement || document.documentElement;
       const coachRect = coachEl.getBoundingClientRect();
-      const targetTop = scroller.scrollTop + coachRect.top - 12;
+      const headerEl = document.querySelector(".app-header");
+      const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
+      const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
       scroller.scrollTo({ top: targetTop, behavior: "smooth" });
     }
     try {
@@ -217,7 +221,9 @@ RULES:
             if (groceryEl) {
               const groceryRect = groceryEl.getBoundingClientRect();
               const scroller = document.scrollingElement || document.documentElement;
-              const targetTop = scroller.scrollTop + groceryRect.top - 12;
+              const headerEl = document.querySelector(".app-header");
+              const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
+              const targetTop = scroller.scrollTop + groceryRect.top - headerOffset;
               scroller.scrollTo({ top: targetTop, behavior: "smooth" });
             }
           }, 300);

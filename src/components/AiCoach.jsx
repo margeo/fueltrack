@@ -493,11 +493,17 @@ export default function AiCoach({
         // the first call after a new message — so we compute the
         // target position manually and drive the document's scrolling
         // element, which works reliably on both web and native.
+        // The offset is measured from the live .app-header element so
+        // we don't hard-code a value that would drift across iPhone
+        // (notch/status bar), Android, and web where the header can
+        // render at slightly different heights.
         const coachEl = coachTopRef.current;
         if (coachEl) {
           const coachRect = coachEl.getBoundingClientRect();
           const scroller = document.scrollingElement || document.documentElement;
-          const targetTop = scroller.scrollTop + coachRect.top - 12;
+          const headerEl = document.querySelector(".app-header");
+          const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
+          const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
           scroller.scrollTo({ top: targetTop, behavior: "smooth" });
         }
       };
