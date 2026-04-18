@@ -1348,7 +1348,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       <div style={{
         margin: "-16px -16px 16px -16px",
         padding: "18px 20px 16px",
-        background: "linear-gradient(160deg, #0e2e2b 0%, #0a1f1d 100%)",
+        background: "linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%)",
         borderRadius: "20px 20px 0 0",
         color: "white",
       }}>
@@ -1356,22 +1356,22 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <div style={{
             width: 56, height: 56, borderRadius: "50%",
-            background: "radial-gradient(circle at 30% 30%, #1f7a73 0%, #0a3532 70%)",
+            background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 70%)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 30, flexShrink: 0,
-            boxShadow: "0 0 20px rgba(34, 197, 94, 0.25), inset 0 0 0 1px rgba(255,255,255,0.08)",
+            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)",
           }} aria-hidden="true">🤖</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.2 }}>{t("aiCoach.heroBrand")}</span>
               <span style={{
                 padding: "2px 9px", borderRadius: 10,
-                background: isPaid ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(255,255,255,0.12)",
+                background: isPaid ? "linear-gradient(135deg, #f59e0b, #d97706)" : "rgba(255,255,255,0.12)",
                 color: isPaid ? "white" : "rgba(255,255,255,0.85)",
                 fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
                 display: "inline-flex", alignItems: "center", gap: 3,
                 border: isPaid ? "none" : "1px solid rgba(255,255,255,0.18)",
-              }}>{isPaid ? "✨ Pro" : "Free"}</span>
+              }}>{isPaid ? "⭐ Pro" : "Free"}</span>
               {!isPaid && (
                 <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
               )}
