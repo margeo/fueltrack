@@ -1662,20 +1662,20 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
   }
 
   return (
-    <div ref={coachTopRef} style={{ scrollMarginTop: 84 }}>
-      {/* HERO (dark gradient panel) — Step A of the Coach redesign.
-          Bleeds out to the parent card's edges via negative margins so
-          the gradient goes wall-to-wall; radius only on the top so it
-          flows into the remaining (still light) content below.
-          Subsequent steps replace the content beneath with new dark
-          sections until the whole card is unified. */}
-      <div style={{
-        margin: "-16px -16px 16px -16px",
-        padding: "18px 20px 16px",
-        background: "linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%)",
-        borderRadius: "20px 20px 0 0",
-        color: "white",
-      }}>
+    <div ref={coachTopRef} style={{
+      scrollMarginTop: 84,
+      margin: "-16px -16px 0 -16px",
+      padding: "18px 20px 18px",
+      background: "linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%)",
+      borderRadius: "20px 20px 0 0",
+      color: "white",
+    }}>
+      {/* HERO — the original dark hero container now wraps the WHOLE
+          coach card. Inner sections use translucent white surfaces so
+          they sit flush on top of the gradient and read correctly on
+          the dark background. Original bleed + top-only radius still
+          in effect so the gradient meets the plan rows below seamlessly. */}
+      <div>
         {/* Row 1: Avatar · Brand · Pro/Free badge · (⋯ admin) */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <div style={{
@@ -1891,7 +1891,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           chip strip that used to live in the pre-message state. */}
       {!limitReached && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10, letterSpacing: 0.3 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 10, letterSpacing: 0.3 }}>
             {t("aiCoach.quickActions")}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -1905,20 +1905,21 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "12px 12px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border-soft)",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 12,
                   cursor: loading ? "default" : "pointer",
                   textAlign: "left",
                   transition: "transform 0.1s ease, box-shadow 0.2s ease",
                   minWidth: 0,
+                  color: "white",
                 }}>
                 <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{card.emoji}</span>
                 <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.title}</span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.sub}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.title}</span>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.sub}</span>
                 </span>
-                <span aria-hidden="true" style={{ color: "var(--text-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, flexShrink: 0 }}>›</span>
               </button>
             ))}
           </div>
@@ -2105,7 +2106,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       {!limitReached && (
         <div style={{ marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
               {t("aiCoach.askCoach")}
             </div>
             <button type="button" onClick={() => setSuggestionKeys(pickSuggestions())}
@@ -2113,14 +2114,14 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "4px 8px", borderRadius: 14,
-                background: "transparent", border: "1px solid var(--border-soft)",
-                fontSize: 11, fontWeight: 700, color: "var(--text-muted)", cursor: "pointer",
+                background: "transparent", border: "1px solid rgba(255,255,255,0.18)",
+                fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", cursor: "pointer",
               }}>
               <span>{t("aiCoach.suggestions")}</span>
               <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1 }}>↻</span>
             </button>
           </div>
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -16, paddingRight: 16, scrollSnapType: "x mandatory" }}>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -20, paddingRight: 20, scrollSnapType: "x mandatory" }}>
             {suggestionKeys.map((key) => {
               const text = t(key);
               return (
@@ -2128,8 +2129,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                   style={{
                     flexShrink: 0, scrollSnapAlign: "start",
                     padding: "10px 14px", borderRadius: 14,
-                    background: "var(--bg-card)", border: "1px solid var(--border-soft)",
-                    color: "var(--text-primary)", fontSize: 12, fontWeight: 600,
+                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                    color: "white", fontSize: 12, fontWeight: 600,
                     cursor: loading ? "default" : "pointer",
                     maxWidth: 180, textAlign: "left", lineHeight: 1.35,
                     whiteSpace: "normal",
@@ -2149,8 +2150,8 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
           padding: "4px 4px 4px 14px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-soft)",
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.12)",
           borderRadius: 999,
           marginTop: 4,
         }}>
@@ -2161,7 +2162,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             style={{
               flex: 1, minWidth: 0,
               background: "transparent", border: "none", outline: "none",
-              fontSize: 14, color: "var(--text-primary)",
+              fontSize: 14, color: "white",
               padding: "8px 0",
             }} />
           <button type="button" onClick={() => inputRef.current?.focus()}
@@ -2169,7 +2170,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             style={{
               width: 36, height: 36, flexShrink: 0,
               borderRadius: "50%", border: "none",
-              background: "transparent", color: "var(--text-muted)",
+              background: "transparent", color: "rgba(255,255,255,0.65)",
               cursor: "pointer", fontSize: 16, lineHeight: 1,
               display: "inline-flex", alignItems: "center", justifyContent: "center",
             }}>🎤</button>
@@ -2210,33 +2211,33 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         return (
           <div style={{ marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 0.3 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
                 {t("aiCoach.recentPlans")}
               </div>
               <button type="button" onClick={scrollToPlans}
-                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#10b981" }}>
+                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#34d399" }}>
                 {t("aiCoach.viewAll")}
               </button>
             </div>
-            <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -16, paddingRight: 16, scrollSnapType: "x mandatory" }}>
+            <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -20, paddingRight: 20, scrollSnapType: "x mandatory" }}>
               {cards.map(card => (
                 <button key={card.key} type="button" onClick={scrollToPlans}
                   style={{
                     flexShrink: 0, scrollSnapAlign: "start",
                     display: "flex", flexDirection: "column", gap: 6,
                     padding: "12px 14px", minWidth: 150,
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-soft)",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.1)",
                     borderRadius: 12,
                     cursor: "pointer", textAlign: "left",
                   }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{card.emoji}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{card.title}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>{card.title}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{card.date ? formatPlanDate(card.date) : ""}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: 2 }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{card.date ? formatPlanDate(card.date) : ""}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", display: "inline-flex", alignItems: "center", gap: 2 }}>
                       📄 PDF
                     </span>
                   </div>
