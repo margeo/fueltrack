@@ -37,11 +37,12 @@ const SUGGESTION_KEYS = [
   "aiCoach.sugg9", "aiCoach.sugg10", "aiCoach.sugg11", "aiCoach.sugg12"
 ];
 
-// Pick 3 distinct random indices from the suggestion pool.
+// Pick 2 distinct random keys from the suggestion pool. Two is enough
+// to fit a static side-by-side layout without horizontal scroll.
 function pickSuggestions() {
   const pool = [...SUGGESTION_KEYS];
   const out = [];
-  while (out.length < 3 && pool.length) {
+  while (out.length < 2 && pool.length) {
     const idx = Math.floor(Math.random() * pool.length);
     out.push(pool.splice(idx, 1)[0]);
   }
@@ -2116,28 +2117,27 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             <button type="button" onClick={() => setSuggestionKeys(pickSuggestions())}
               aria-label={t("aiCoach.suggestions")}
               style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                padding: "4px 8px", borderRadius: 14,
+                display: "inline-flex", alignItems: "center", gap: 5,
+                padding: "4px 10px", borderRadius: 14,
                 background: "transparent", border: "1px solid rgba(255,255,255,0.18)",
                 fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", cursor: "pointer",
               }}>
               <span>{t("aiCoach.suggestions")}</span>
-              <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1 }}>↻</span>
+              <span aria-hidden="true" style={{ fontSize: 11, lineHeight: 1 }}>🔄</span>
             </button>
           </div>
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -20, paddingRight: 20, scrollSnapType: "x mandatory" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {suggestionKeys.map((key) => {
               const text = t(key);
               return (
                 <button key={key} type="button" onClick={() => sendMessage(text)} disabled={loading}
                   style={{
-                    flexShrink: 0, scrollSnapAlign: "start",
                     padding: "10px 14px", borderRadius: 14,
                     background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
                     color: "white", fontSize: 12, fontWeight: 600,
                     cursor: loading ? "default" : "pointer",
-                    maxWidth: 180, textAlign: "left", lineHeight: 1.35,
-                    whiteSpace: "normal",
+                    textAlign: "left", lineHeight: 1.35,
+                    whiteSpace: "normal", minHeight: 56,
                   }}>
                   {text}
                 </button>
