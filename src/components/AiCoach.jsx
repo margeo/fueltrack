@@ -10,6 +10,24 @@ import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitStat
 import { authedFetch } from "../utils/authFetch";
 import { openCheckout } from "../utils/stripe";
 import AiUsageBadge from "./AiUsageBadge";
+import { EXERCISE_LIBRARY } from "../data/constants";
+
+// Mirror of ProfileTab's FOOD_CATEGORIES grouping so buildAnalyzeDayJSON
+// can send the user's food picks already split into proteins / veggies
+// / carbs / dairy / snacks / cooking_style buckets — matches the JSON
+// shape the coach prompt expects.
+const FOOD_CATEGORY_GROUPS = {
+  proteins: ["chicken", "beef", "pork", "fish", "turkey", "eggs", "legumes", "tofu"],
+  veggies: ["salads", "cooked_veggies", "soups"],
+  carbs: ["rice", "pasta", "bread", "potatoes", "oats"],
+  dairy: ["yogurt", "cheese", "milk"],
+  snacks: ["fruits", "nuts_snack", "smoothies"],
+  cooking_style: ["grilled", "oven", "boiled", "fried", "raw"],
+};
+
+const ACTIVITY_LABELS = { "1.2": "sedentary", "1.4": "light", "1.6": "moderate", "1.8": "high" };
+
+const GOAL_LABELS = { lose: "lose_weight", gain: "gain_muscle", maintain: "maintain", fitness: "fitness" };
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
 
@@ -80,63 +98,71 @@ const ANALYZE_DAY_SCHEMA = {
       type: "object",
       properties: {
         greeting: { type: "string" },
-        score: { type: "integer" },
-        went_well: { type: "array", items: INSIGHT_ITEM_SCHEMA },
-        improvements: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        status: { type: "string" },
+        summary: { type: "string" },
+        what_is_good: { type: "array", items: { type: "string" } },
+        what_needs_attention: { type: "array", items: { type: "string" } },
         next_action: { type: "string" },
-        evening_tip: { type: "string" },
-        movement_tip: { type: "string" },
+        next_meal: { type: "string" },
+        movement_note: { type: "string" },
         consistency: { type: "string" }
       },
-      required: ["greeting", "score", "went_well", "improvements", "next_action", "evening_tip", "movement_tip", "consistency"],
+      required: ["greeting", "status", "summary", "what_is_good", "what_needs_attention", "next_action", "next_meal", "movement_note", "consistency"],
       additionalProperties: false
     }
   }
 };
 
+// Renderer for the Analyze Today response. Emojis and section chrome
+// are injected client-side here — the AI returns plain text only, same
+// pattern as the weekly meal plan renderer.
 function AnalyzeDayView({ data, lang }) {
   if (!data) return null;
   const isEn = lang === "en";
-  const score = typeof data.score === "number" ? data.score : null;
-  const scoreColor = score >= 7 ? "#16a34a" : score >= 4 ? "#d97706" : "#dc2626";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
       {data.greeting && (
-        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4 }}>{data.greeting}</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>👋 {data.greeting}</div>
       )}
-      {score !== null && (
-        <div style={{ textAlign: "center", marginBottom: 4 }}>
-          <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor }}>{score}/10</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 0.4 }}>
-            {isEn ? "TODAY'S SCORE" : "ΒΑΘΜΟΛΟΓΙΑ ΗΜΕΡΑΣ"}
-          </div>
+      {data.status && (
+        <div style={{ fontSize: 13, color: "var(--text-muted)", fontStyle: "italic" }}>{data.status}</div>
+      )}
+      {data.summary && (
+        <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-primary)" }}>{data.summary}</div>
+      )}
+      {data.what_is_good?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>✅ {isEn ? "What's going well" : "Τι πάει καλά"}</div>
+          {data.what_is_good.map((text, i) => (
+            <div key={i} style={{ fontSize: 13, lineHeight: 1.7, display: "flex", gap: 6, alignItems: "flex-start" }}>
+              <span style={{ flexShrink: 0 }}>•</span><span>{text}</span>
+            </div>
+          ))}
         </div>
       )}
-      {data.went_well?.length > 0 && (
+      {data.what_needs_attention?.length > 0 && (
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>✅ {isEn ? "What went well" : "Τι πήγε καλά"}</div>
-          {data.went_well.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
-        </div>
-      )}
-      {data.improvements?.length > 0 && (
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>🔧 {isEn ? "What to improve" : "Τι χρειάζεται βελτίωση"}</div>
-          {data.improvements.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>⚠️ {isEn ? "What needs attention" : "Τι χρειάζεται προσοχή"}</div>
+          {data.what_needs_attention.map((text, i) => (
+            <div key={i} style={{ fontSize: 13, lineHeight: 1.7, display: "flex", gap: 6, alignItems: "flex-start" }}>
+              <span style={{ flexShrink: 0 }}>•</span><span>{text}</span>
+            </div>
+          ))}
         </div>
       )}
       {data.next_action && (
         <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
-          🎯 <strong>{isEn ? "Best next action" : "Καλύτερη επόμενη κίνηση"}:</strong> {data.next_action}
+          🎯 <strong>{isEn ? "Next step" : "Επόμενο βήμα"}:</strong> {data.next_action}
         </div>
       )}
-      {data.evening_tip && (
+      {data.next_meal && (
         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
-          🌙 <strong>{isEn ? "For tonight" : "Για απόψε"}:</strong> {data.evening_tip}
+          🍽️ <strong>{isEn ? "Next meal" : "Επόμενο γεύμα"}:</strong> {data.next_meal}
         </div>
       )}
-      {data.movement_tip && (
+      {data.movement_note && (
         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
-          💪 <strong>{isEn ? "Movement" : "Κίνηση"}:</strong> {data.movement_tip}
+          💪 <strong>{isEn ? "Movement" : "Κίνηση"}:</strong> {data.movement_note}
         </div>
       )}
       {data.consistency && (
@@ -447,7 +473,7 @@ export default function AiCoach({
   last7Days, dailyLogs, targetCalories, proteinTarget,
   mode, goalType, weightLog, favoriteFoods,
   totalCalories, totalProtein, totalCarbs, totalFat, exerciseValue,
-  remainingCalories, macroTargets,
+  remainingCalories, macroTargets, activity,
   favoriteExercises, age, weight, height, gender,
   onSavePlan, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
@@ -764,39 +790,64 @@ RULES:
     const currentMode = MODES[mode] || MODES.balanced;
     const currentWeight = lastWeight || weight;
 
+    // Today's meals as human-readable strings grouped by meal slot:
+    //   "Breakfast: mortadella 25g, chicken breast 220g"
+    // so the AI sees food choices at a glance rather than shape-heavy
+    // nutrient objects.
     const todayKey = getTodayKey();
     const todayLog = normalizeDayLog(dailyLogs?.[todayKey]);
-    const meals = todayLog.entries.map(e => ({
-      meal: e.mealType || "",
-      name: e.name || "",
-      grams: Number(e.grams) || 0,
-      kcal: Math.round(Number(e.calories) || 0),
-      protein_g: Math.round(Number(e.protein) || 0),
-      carbs_g: Math.round(Number(e.carbs) || 0),
-      fat_g: Math.round(Number(e.fat) || 0)
-    }));
-    const exercises = todayLog.exercises.map(ex => ({
-      name: ex.name || "",
-      duration_min: Number(ex.duration) || 0,
-      kcal: Math.round(Number(ex.calories) || 0)
-    }));
+    const byMeal = new Map();
+    todayLog.entries.forEach(e => {
+      const slot = e.mealType || (isEn ? "Meal" : "Γεύμα");
+      const part = `${e.name || "—"}${e.grams ? ` ${Math.round(e.grams)}g` : ""}`;
+      if (!byMeal.has(slot)) byMeal.set(slot, []);
+      byMeal.get(slot).push(part);
+    });
+    const meals = Array.from(byMeal.entries()).map(([slot, items]) => `${slot}: ${items.join(", ")}`);
+
+    // Today's exercises as strings: "Walking 30 min".
+    const exercises = todayLog.exercises.map(ex => {
+      const dur = ex.duration ? `${Math.round(Number(ex.duration))} min` : "";
+      return `${ex.name || ""}${dur ? ` ${dur}` : ""}`.trim();
+    });
 
     const now = new Date();
     const hh = now.getHours();
     const timeOfDay = hh < 5 ? "late_night" : hh < 12 ? "morning" : hh < 17 ? "afternoon" : hh < 21 ? "evening" : "night";
     const currentTime = now.toLocaleTimeString(isEn ? "en-US" : "el-GR", { hour: "2-digit", minute: "2-digit", hour12: false });
 
-    const weekTrend = (last7Days || []).map(d => ({
-      date: d.date,
-      calories_eaten: d.eaten || 0,
-      empty: (d.eaten || 0) === 0
-    }));
-    const emptyDaysCount = weekTrend.filter(d => d.empty).length;
+    // Split the flat foodCategories picks into the grouped food_profile
+    // shape the prompt expects (proteins/veggies/carbs/dairy/snacks/
+    // cooking_style). Keys missing in the user's picks get omitted
+    // arrays ([]).
+    const picks = Array.isArray(foodCategories) ? foodCategories : [];
+    const foodProfile = Object.fromEntries(
+      Object.entries(FOOD_CATEGORY_GROUPS).map(([k, items]) => [k, items.filter(i => picks.includes(i))])
+    );
+    foodProfile.meals_per_day = Number(mealsPerDay) || null;
+    foodProfile.snacks_per_day = Number(snacksPerDay) || 0;
+    if (Array.isArray(allergies) && allergies.length) foodProfile.allergies = allergies;
+
+    // Split exerciseCategories picks into preferred_cardio vs
+    // preferred_training based on EXERCISE_LIBRARY's category field.
+    const exPicks = Array.isArray(exerciseCategories) ? exerciseCategories : [];
+    const preferredCardio = exPicks.filter(n => EXERCISE_LIBRARY.find(e => e.name === n)?.category === "Cardio");
+    const preferredTraining = exPicks.filter(n => {
+      const cat = EXERCISE_LIBRARY.find(e => e.name === n)?.category;
+      return cat === "Gym" || cat === "Training";
+    });
 
     const input = {
-      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
-      goal: goalType,
-      diet_mode: currentMode.label,
+      user: {
+        name: userName || "",
+        age: age || null,
+        gender,
+        weight_kg: currentWeight,
+        height_cm: height,
+        activity_level: ACTIVITY_LABELS[String(activity)] || null
+      },
+      goal: GOAL_LABELS[goalType] || goalType,
+      diet_mode: currentMode.key || currentMode.label,
       targets: {
         calories: targetCalories,
         protein_g: proteinTarget,
@@ -809,52 +860,59 @@ RULES:
         time_of_day: timeOfDay,
         calories_eaten: Math.round(totalCalories || 0),
         calories_remaining: Math.round(remainingCalories || 0),
-        protein_eaten_g: Math.round(totalProtein || 0),
-        carbs_eaten_g: Math.round(totalCarbs || 0),
-        fat_eaten_g: Math.round(totalFat || 0),
+        protein_eaten_g: Math.round((totalProtein || 0) * 10) / 10,
+        carbs_eaten_g: Math.round((totalCarbs || 0) * 10) / 10,
+        fat_eaten_g: Math.round((totalFat || 0) * 10) / 10,
         exercise_kcal: Math.round(exerciseValue || 0),
         meals,
         exercises
       },
-      progress: {
-        streak_days: streak,
-        weight_trend_kg: weightTrend || null,
-        week: weekTrend,
-        empty_days_this_week: emptyDaysCount
-      },
-      food_profile: {
-        allergies: Array.isArray(allergies) ? allergies : [],
-        categories: Array.isArray(foodCategories) ? foodCategories : []
-      },
+      progress: { streak_days: streak },
+      food_profile: foodProfile,
       fitness_profile: {
         level: fitnessLevel || null,
         location: workoutLocation || null,
+        frequency_per_week: Number(workoutFrequency) || null,
+        session_duration_min: Number(sessionDuration) || null,
+        goals: Array.isArray(fitnessGoals) ? fitnessGoals : [],
+        preferred_cardio: preferredCardio,
+        preferred_training: preferredTraining,
         limitations: Array.isArray(limitations) ? limitations : []
       },
+      health_profile: { conditions: Array.isArray(healthFactors) ? healthFactors.filter(f => f !== "none") : [] },
       language: isEn ? "English" : "Greek"
     };
 
-    const systemPrompt = `You are an elite nutritionist + personal fitness coach. Analyze today's user data and return a JSON object.
+    const systemPrompt = `You are an elite nutritionist and personal fitness coach.
 
-Review everything: calories vs target, protein vs target, meals logged today, exercises done, remaining calories, current time of day, weekly trend, streak.
+You will receive one JSON object with user profile, goals, preferences, health factors, and today's food/exercise data.
 
-Return JSON with EXACTLY these fields:
-- "greeting": 1 short motivating sentence addressing the user by name if provided
-- "score": integer 1-10 for today's overall performance (logging completeness + target adherence + activity + macro balance)
-- "went_well": array of 1-3 {emoji, text} items — concrete things the user did well today, reference actual numbers
-- "improvements": array of 1-3 {emoji, text} items — specific areas to improve today, reference actual numbers
-- "next_action": 1 sentence, the single best action the user should take RIGHT NOW based on current time and remaining targets
-- "evening_tip": if time_of_day is "evening" or "night", suggest a specific meal/snack for tonight that fits remaining calories AND macros AND diet_mode. Otherwise empty string "".
-- "movement_tip": if exercise_kcal is 0 or meals list suggests sedentary day, suggest a realistic movement for the remaining hours (respect fitness_profile.limitations). Otherwise empty string "".
-- "consistency": 1 short motivating line referencing the streak or weekly logging to encourage consistency.
+Your task is to analyze the user's day so far and explain:
+- how the day is going so far
+- what is going well
+- what needs attention
+- what the best next step is for the rest of today
 
-RULES:
-1. Reference ACTUAL numbers from the input — "you're at 1240/2000kcal" not "you ate some calories".
-2. Respect food_profile.allergies strictly and align suggestions with diet_mode.
-3. Respect fitness_profile.limitations — never suggest movements that could aggravate them.
-4. Keep each text short and punchy. Premium coach tone: motivating, smart, concise.
-5. ${isEn ? "All text in English." : "All text MUST be in Greek. Use Greek meal names."}
-6. Emojis must be single unicode emojis (e.g. 💪 🎯 🔥 ✅ ⚠️ 🥗 🍗).`;
+Rules:
+- Evaluate the day relative to the current time, not as if the day is finished
+- Use only the data provided
+- Do not invent missing information
+- Be concise, practical, supportive, and clear
+- Use the user's preferences to personalize suggestions
+- Respect health factors carefully without sounding medical
+- ${isEn ? "All text must be in English" : "All text must be in Greek"}
+- Return JSON only
+
+Return JSON with exactly these fields:
+greeting
+status
+summary
+what_is_good
+what_needs_attention
+next_action
+next_meal
+movement_note
+consistency`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }

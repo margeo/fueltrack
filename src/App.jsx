@@ -806,7 +806,7 @@ export default function App() {
     mealsPerDay, snacksPerDay,
     fitnessLevel, workoutLocation, equipment, limitations,
     workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories,
-    healthFactors
+    healthFactors, activity
   };
 
   const foodProps = {

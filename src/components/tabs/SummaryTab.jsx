@@ -113,6 +113,7 @@ export default function SummaryTab({
   mealsPerDay, snacksPerDay,
   fitnessLevel, workoutLocation, equipment, limitations,
   workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories,
+  healthFactors, activity,
   dashboardTips,
 }) {
   const { t, i18n } = useTranslation();
@@ -672,7 +673,7 @@ RULES:
             proteinTarget={proteinTarget} mode={mode} goalType={goalType} streak={streak}
             weightLog={weightLog} favoriteFoods={favoriteFoods} foods={foods}
             totalCalories={totalCalories} totalProtein={totalProtein} totalCarbs={totalCarbs} totalFat={totalFat} exerciseValue={exerciseValue}
-            macroTargets={macroTargets}
+            macroTargets={macroTargets} activity={activity}
             remainingCalories={remainingCalories}
             favoriteExercises={favoriteExercises}
             age={age} weight={weight} height={height} gender={gender}
@@ -682,6 +683,7 @@ RULES:
             mealsPerDay={mealsPerDay} snacksPerDay={snacksPerDay}
             fitnessLevel={fitnessLevel} workoutLocation={workoutLocation} equipment={equipment} limitations={limitations}
             workoutFrequency={workoutFrequency} sessionDuration={sessionDuration} fitnessGoals={fitnessGoals} exerciseCategories={exerciseCategories}
+            healthFactors={healthFactors}
           />
         </div>
 
