@@ -504,7 +504,7 @@ export default function ProfileTab({
         </div>
         {expandedPrefs.health_section && (<>
         <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("healthPrefs.subtitle")}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {HEALTH_FACTORS.map((f) => {
             const active = (healthFactors || []).includes(f.key);
             const toggle = () => {
@@ -524,9 +524,22 @@ export default function ProfileTab({
             };
             return (
               <button key={f.key} type="button" onClick={toggle}
-                style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
-                {f.icon} {t("healthPrefs.factor." + f.key)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  background: active ? "var(--color-accent)" : "var(--bg-soft)",
+                  color: active ? "var(--bg-card)" : "var(--text-primary)",
+                }}>
+                <span>{f.icon} {t("healthPrefs.factor." + f.key)}</span>
+                {active && <span style={{ fontSize: 14 }}>✓</span>}
               </button>
             );
           })}
