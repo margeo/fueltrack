@@ -1664,10 +1664,11 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
   return (
     <div ref={coachTopRef} style={{
       scrollMarginTop: 84,
+      // The outer SummaryTab card now supplies the dark gradient; the
+      // Coach just needs its own padding/bleed so content lines up
+      // with the plan rows rendered by SummaryTab below.
       margin: "-16px -16px 0 -16px",
-      padding: "18px 20px 18px",
-      background: "linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%)",
-      borderRadius: "20px 20px 0 0",
+      padding: "18px 20px 10px",
       color: "white",
     }}>
       {/* HERO — the original dark hero container now wraps the WHOLE
@@ -2193,10 +2194,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
       {/* Step Η: "Recent plans" label only — acts as a header for the
           full plan rows that SummaryTab renders directly below (meal
-          plan / grocery list / training plan). The compact card strip
-          that used to live here was redundant with those rows; the
-          label stays so the section has a visible title. */}
-      <div style={{ marginTop: 18 }}>
+          plan / grocery list / training plan). Sits flush against
+          those rows so the divider border reads as belonging to this
+          label rather than floating above an empty gap. */}
+      <div style={{ marginTop: 14, marginBottom: 2 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
           {t("aiCoach.recentPlans")}
         </div>

@@ -283,31 +283,33 @@ RULES:
 
   function PlanSection({ plan, type, emoji, title }) {
     const isExpanded = expandedPlan === type;
+    const lightPillStyle = { fontSize: 11, padding: "4px 8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
+    const darkPillStyle = { fontSize: 11, padding: "4px 8px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.12)", color: "white", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
     return (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan && !isExpanded ? 0 : 8, minHeight: 36 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-            <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{emoji} {title}</span>
+            <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0, color: "white" }}>{emoji} {title}</span>
             {plan && !isExpanded && (
-              <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {formatPlanDate(plan.date)}
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap" }}>
+                <span style={{ color: "#34d399", fontWeight: 700 }}>✓</span> {formatPlanDate(plan.date)}
               </span>
             )}
           </div>
           {plan && (
             <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-              <button className="btn btn-light" onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{isExpanded ? "▲" : "▼"}</button>
-              <button className="btn btn-dark" onClick={() => exportToPDF(plan)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>📄 PDF</button>
-              <button className="btn btn-light" onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+              <button onClick={() => setExpandedPlan(isExpanded ? null : type)} type="button" style={lightPillStyle}>{isExpanded ? "▲" : "▼"}</button>
+              <button onClick={() => exportToPDF(plan)} type="button" style={darkPillStyle}>📄 PDF</button>
+              <button onClick={() => { onDeletePlan(type); setExpandedPlan(null); }} type="button" style={lightPillStyle}>✕</button>
             </div>
           )}
         </div>
         {!plan ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "10px 14px", border: "1px dashed var(--border-color)" }}>
-            <div className="muted" style={{ fontSize: 12 }}>{type === "meal" ? t("summary.noMealPlan") : t("summary.noTrainingPlan")}</div>
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 14px", border: "1px dashed rgba(255,255,255,0.15)" }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{type === "meal" ? t("summary.noMealPlan") : t("summary.noTrainingPlan")}</div>
           </div>
         ) : isExpanded ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "12px 14px", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto", border: "1px solid rgba(255,255,255,0.1)", scrollbarWidth: "thin", color: "rgba(255,255,255,0.92)" }}>
             {plan.content}
           </div>
         ) : null}
@@ -316,37 +318,39 @@ RULES:
   }
 
   function GrocerySection() {
+    const lightPillStyle = { fontSize: 11, padding: "4px 8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
+    const darkPillStyle = { fontSize: 11, padding: "4px 8px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.12)", color: "white", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
     return (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (groceryExpanded || groceryLoading || (!groceryList && mealPlan)) ? 8 : 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-            <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0 }}>🛒 {t("summary.groceryList")}</span>
+            <span style={{ fontWeight: 700, fontSize: 15, flexShrink: 0, color: "white" }}>🛒 {t("summary.groceryList")}</span>
           </div>
           {groceryList ? (
             <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-              <button className="btn btn-light" onClick={() => setGroceryExpanded(e => !e)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>{groceryExpanded ? "▲" : "▼"}</button>
-              <button className="btn btn-dark" onClick={() => exportGroceryToPDF(groceryList)} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>📄 PDF</button>
-              <button className="btn btn-light" onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={{ fontSize: 11, padding: "4px 8px" }}>✕</button>
+              <button onClick={() => setGroceryExpanded(e => !e)} type="button" style={lightPillStyle}>{groceryExpanded ? "▲" : "▼"}</button>
+              <button onClick={() => exportGroceryToPDF(groceryList)} type="button" style={darkPillStyle}>📄 PDF</button>
+              <button onClick={() => { setGroceryList(null); setGroceryExpanded(false); onDeletePlan("grocery"); }} type="button" style={lightPillStyle}>✕</button>
             </div>
           ) : mealPlan && !groceryLoading ? (
-            <button className="btn btn-light" onClick={() => generateGroceryList(mealPlan)} type="button" style={{ fontSize: 11, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
+            <button onClick={() => generateGroceryList(mealPlan)} type="button" style={{ ...lightPillStyle, padding: "4px 10px" }}>🛒 {t("summary.groceryBtn")}</button>
           ) : null}
         </div>
         {groceryError && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", marginBottom: 8, fontSize: 12, color: "#b91c1c" }}>
+          <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 8, fontSize: 12, color: "#fca5a5" }}>
             {groceryError}
-            <button type="button" onClick={() => setGroceryError(null)} style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#b91c1c" }}>✕</button>
+            <button type="button" onClick={() => setGroceryError(null)} style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#fca5a5" }}>✕</button>
           </div>
         )}
         {groceryLoading ? (
-          <div className="muted" style={{ fontSize: 13 }}>{t("summary.groceryLoading")}</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{t("summary.groceryLoading")}</div>
         ) : groceryList && groceryExpanded ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 12, padding: "12px 14px", maxHeight: 420, overflowY: "auto", border: "1px solid var(--border-soft)", scrollbarWidth: "thin" }}>
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "12px 14px", maxHeight: 420, overflowY: "auto", border: "1px solid rgba(255,255,255,0.1)", scrollbarWidth: "thin", color: "rgba(255,255,255,0.92)" }}>
             <GroceryListView data={groceryList} />
           </div>
         ) : !groceryList && !groceryLoading ? (
-          <div style={{ background: "var(--bg-soft)", borderRadius: 10, padding: "12px 14px", border: "1px dashed var(--border-color)" }}>
-            <div className="muted" style={{ fontSize: 12 }}>{mealPlan ? t("summary.groceryReady") : t("summary.groceryNeedPlan")}</div>
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "12px 14px", border: "1px dashed rgba(255,255,255,0.15)" }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{mealPlan ? t("summary.groceryReady") : t("summary.groceryNeedPlan")}</div>
           </div>
         ) : null}
       </div>
@@ -665,8 +669,20 @@ RULES:
         </div>
       </div>
 
-      {/* 2. AI COACH + PLANS (connected) */}
-      <div ref={coachSectionRef} style={{ background: "var(--bg-card)", borderRadius: 20, border: "1px solid var(--border-soft)", boxShadow: "var(--shadow-card)", marginBottom: 16, scrollMarginTop: 12 }}>
+      {/* 2. AI COACH + PLANS (connected) — single dark gradient card
+          wrapping both the Coach (hero + quick actions + suggestions
+          + input) and the plan rows (meal / grocery / training) so
+          the gradient flows uninterrupted from top to bottom. */}
+      <div ref={coachSectionRef} style={{
+        background: "linear-gradient(135deg, var(--bg-hero-from) 0%, var(--bg-hero-to) 100%)",
+        borderRadius: 20,
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "var(--shadow-card)",
+        marginBottom: 16,
+        scrollMarginTop: 12,
+        color: "white",
+        overflow: "hidden",
+      }}>
         <div style={{ padding: 16 }}>
           <AiCoach
             last7Days={last7Days} dailyLogs={dailyLogs} targetCalories={targetCalories}
@@ -687,18 +703,19 @@ RULES:
           />
         </div>
 
-        {/* PLANS — connected under AI Coach. Anchor id is the scroll
-            target for the new "View all" link in the Coach's Recent
-            plans strip (Step Η). */}
-        <div id="ft-plans-anchor" style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px", scrollMarginTop: 80 }}>
+        {/* PLANS — connected under AI Coach on the same dark surface.
+            Dividers use a translucent white border so they read on the
+            gradient. Anchor id is the scroll target for the "Recent
+            plans" label above (Step Η). */}
+        <div id="ft-plans-anchor" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px", scrollMarginTop: 80 }}>
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 
-        <div ref={groceryRef} style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px", scrollMarginTop: 12 }}>
+        <div ref={groceryRef} style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px", scrollMarginTop: 12 }}>
           <GrocerySection />
         </div>
 
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "10px 16px" }}>
           <PlanSection plan={trainingPlan} type="training" emoji="💪" title={t("summary.trainingPlan")} />
         </div>
       </div>
