@@ -10,6 +10,7 @@ import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitStat
 import { authedFetch } from "../utils/authFetch";
 import { openCheckout } from "../utils/stripe";
 import AiUsageBadge from "./AiUsageBadge";
+import AiFeatureGate from "./AiFeatureGate";
 import { EXERCISE_LIBRARY } from "../data/constants";
 
 // Mirror of ProfileTab's FOOD_CATEGORIES grouping so buildAnalyzeDayJSON
@@ -506,7 +507,6 @@ export default function AiCoach({
   const [messages, setMessages] = useState([]);
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_ai_model") || "");
   const [isPaid, setIsPaid] = useState(false);
-  const [limitDismissed, setLimitDismissed] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
@@ -1689,11 +1689,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       color: "white",
     }}>
       {/* HERO — the original dark hero container now wraps the WHOLE
-          coach card. Inner sections use translucent white surfaces so
-          they sit flush on top of the gradient and read correctly on
-          the dark background. Original bleed + top-only radius still
-          in effect so the gradient meets the plan rows below seamlessly. */}
-      <div>
+          coach card via coachTopRef. The extra inner <div> that used
+          to wrap the hero content was redundant and caused a JSX
+          nesting conflict with the AiFeatureGate that starts after
+          the macro strip, so it was removed. */}
         {/* Row 1: Avatar · Brand · Pro/Free badge · (⋯ admin) */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <div style={{
@@ -1845,6 +1844,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           );
         })()}
 
+        {/* Everything below — Analyze today CTA, Quick actions, chat,
+            suggestions, input pill — is gated behind AiFeatureGate.
+            When the user is signed-out or has exhausted their AI quota,
+            this whole block is blurred + the AiLimitLock overlay sits
+            on top with a Subscribe-to-Pro button (Stripe on web/Android,
+            StoreKit IAP on iOS via startProMonthlyPurchase). The hero
+            above the gate stays interactive so the user always sees
+            their avatar, greeting, and macro stats. */}
+        <AiFeatureGate session={session} onShowAuth={onShowAuth} onShowRegister={onShowRegister}>
+
         {/* Row 5: Primary CTA — "Analyze Today" with a green glow.
             Moved here from its old spot below the prompt chips; it's
             now the first visible action after the user reads the
@@ -1901,50 +1910,47 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             </div>
           </div>
         )}
-      </div>
 
       {/* Step Δ: Quick actions 2×2 grid — permanent section right
           below the dark hero. Each card triggers the matching preset
           question (q1-q4) via sendMessage. Replaces the old inline
           chip strip that used to live in the pre-message state. */}
-      {!limitReached && (
-        <div style={{ marginTop: 18, marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 8, letterSpacing: 0.3 }}>
-            {t("aiCoach.quickActions")}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              { emoji: "🥗", title: t("aiCoach.qaMealPlan"), sub: t("aiCoach.qaMealPlanSub"), query: t("aiCoach.q1") },
-              { emoji: "💪", title: t("aiCoach.qaWorkoutPlan"), sub: t("aiCoach.qaWorkoutPlanSub"), query: t("aiCoach.q2") },
-              { emoji: "📈", title: t("aiCoach.qaProgressReview"), sub: t("aiCoach.qaProgressReviewSub"), query: t("aiCoach.q3") },
-              { emoji: "⚡", title: t("aiCoach.qaFatLossTips"), sub: t("aiCoach.qaFatLossTipsSub"), query: t("aiCoach.q4") },
-            ].map((card) => (
-              <button key={card.title} type="button" onClick={() => sendMessage(card.query)} disabled={loading}
-                style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  padding: "12px 12px",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  cursor: loading ? "default" : "pointer",
-                  textAlign: "left",
-                  transition: "transform 0.1s ease, box-shadow 0.2s ease",
-                  minWidth: 0,
-                  color: "white",
-                }}>
-                <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{card.emoji}</span>
-                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.title}</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.sub}</span>
-                </span>
-                <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, flexShrink: 0 }}>›</span>
-              </button>
-            ))}
-          </div>
+      <div style={{ marginTop: 18, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 8, letterSpacing: 0.3 }}>
+          {t("aiCoach.quickActions")}
         </div>
-      )}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {[
+            { emoji: "🥗", title: t("aiCoach.qaMealPlan"), sub: t("aiCoach.qaMealPlanSub"), query: t("aiCoach.q1") },
+            { emoji: "💪", title: t("aiCoach.qaWorkoutPlan"), sub: t("aiCoach.qaWorkoutPlanSub"), query: t("aiCoach.q2") },
+            { emoji: "📈", title: t("aiCoach.qaProgressReview"), sub: t("aiCoach.qaProgressReviewSub"), query: t("aiCoach.q3") },
+            { emoji: "⚡", title: t("aiCoach.qaFatLossTips"), sub: t("aiCoach.qaFatLossTipsSub"), query: t("aiCoach.q4") },
+          ].map((card) => (
+            <button key={card.title} type="button" onClick={() => sendMessage(card.query)} disabled={loading}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "12px 12px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 12,
+                cursor: loading ? "default" : "pointer",
+                textAlign: "left",
+                transition: "transform 0.1s ease, box-shadow 0.2s ease",
+                minWidth: 0,
+                color: "white",
+              }}>
+              <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{card.emoji}</span>
+              <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.title}</span>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{card.sub}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, flexShrink: 0 }}>›</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {hasLoaded && messages.length > 0 && !loading && !limitReached && (
+      {hasLoaded && messages.length > 0 && !loading && (
         <div style={{ textAlign: "right", marginBottom: 6 }}>
           <button type="button" onClick={() => setChatExpanded(prev => !prev)}
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>
@@ -1953,70 +1959,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {limitReached && !limitDismissed && (
-        <div style={{ textAlign: "center", padding: "20px 0", position: "relative" }}>
-          <button type="button" onClick={() => setLimitDismissed(true)}
-            style={{ position: "absolute", top: 4, right: 4, background: "transparent", border: "none", fontSize: 18, cursor: "pointer", color: "var(--text-muted)", padding: "4px 8px" }}>
-            ✕
-          </button>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>{needsAccount ? "🔒" : paidLimitReached ? "📊" : lifetimeLimitReached ? "🚀" : "⏳"}</div>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
-            {needsAccount ? t("aiCoach.needsAccountTitle")
-              : paidLimitReached ? t("aiCoach.paidLimitTitle")
-              : lifetimeLimitReached ? t("aiCoach.lifetimeLimitTitle")
-              : t("aiCoach.limitTitle")}
-          </div>
-          <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
-            {needsAccount
-              ? t("aiCoach.needsAccountDesc")
-              : paidLimitReached
-              ? t("aiCoach.paidLimitDesc", { limit: AI_LIMITS.MONTHLY_PAID })
-              : lifetimeLimitReached
-              ? t("aiCoach.lifetimeLimitDesc", { limit: AI_LIMITS.LIFETIME_FREE })
-              : monthlyLimitReached
-              ? t("aiCoach.monthlyLimitDesc", { limit: AI_LIMITS.MONTHLY_FREE })
-              : t("aiCoach.limitDesc", { limit: AI_LIMITS.DAILY_FREE })}
-          </div>
-          {!needsAccount && !isPaid && (
-            <div style={{ marginTop: 16 }}>
-              <button className="btn btn-dark" type="button"
-                onClick={async () => { try { await openCheckout(); } catch {} }}
-                style={{ padding: "10px 24px", fontSize: 14 }}>
-                {t("aiCoach.subscribePro")}
-              </button>
-              <div className="muted" style={{ fontSize: 11, marginTop: 6 }}>{t("aiCoach.subscribePrice")}</div>
-            </div>
-          )}
-          {paidLimitReached && (
-            <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", fontSize: 13, lineHeight: 1.6, margin: "16px 0" }}>
-              {t("aiCoach.paidLimitExtra")}
-            </div>
-          )}
-          {needsAccount && onShowAuth && (
-            <div>
-              <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 13, lineHeight: 1.8, margin: "16px 0" }}>
-                <div>✅ {t("aiCoach.proFeature1")}</div>
-                <div>✅ {t("aiCoach.proFeature2")}</div>
-                <div>✅ {t("aiCoach.proFeature3")}</div>
-                <div>✅ {t("aiCoach.proFeature4")}</div>
-              </div>
-              <div className="muted" style={{ fontSize: 11, marginBottom: 14 }}>{t("aiCoach.freeNote")}</div>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                <button className="btn btn-dark" onClick={onShowAuth} type="button"
-                  style={{ padding: "12px 24px", fontSize: 14 }}>
-                  {t("auth.loginBtn")}
-                </button>
-                <button className="btn btn-light" onClick={onShowRegister} type="button"
-                  style={{ padding: "12px 24px", fontSize: 14 }}>
-                  {t("auth.registerBtn")}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {!limitReached && !hasLoaded && !loading && messages.length === 0 && (!foodCategories?.length || !fitnessLevel) && (
+      {!hasLoaded && !loading && messages.length === 0 && (!foodCategories?.length || !fitnessLevel) && (
         <div style={{ background: "var(--bg-soft)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "12px 16px", marginBottom: 12, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-line" }}>
           💡 <strong>{t("aiCoach.prefsHintTitle")}</strong>{"\n"}{t("aiCoach.prefsHintDesc")}
         </div>
@@ -2121,92 +2064,90 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           chips from the suggestion pool with a refresh button that
           re-rolls the picks. Replaces the old follow-up chip strip
           that echoed the quick-action presets. */}
-      {!limitReached && (
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
-              {t("aiCoach.askCoach")}
-            </div>
-            <button type="button" onClick={() => setSuggestionKeys(pickSuggestions())}
-              aria-label={t("aiCoach.suggestions")}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "4px 10px", borderRadius: 14,
-                background: "transparent", border: "1px solid rgba(255,255,255,0.18)",
-                fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", cursor: "pointer",
-              }}>
-              <span>{t("aiCoach.suggestions")}</span>
-              <span aria-hidden="true" style={{ fontSize: 11, lineHeight: 1 }}>🔄</span>
-            </button>
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
+            {t("aiCoach.askCoach")}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {suggestionKeys.map((key) => {
-              const text = t(key);
-              return (
-                <button key={key} type="button" onClick={() => sendMessage(text)} disabled={loading}
-                  style={{
-                    padding: "10px 14px", borderRadius: 14,
-                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                    color: "white", fontSize: 12, fontWeight: 600,
-                    cursor: loading ? "default" : "pointer",
-                    textAlign: "left", lineHeight: 1.35,
-                    whiteSpace: "normal", minHeight: 56,
-                  }}>
-                  {text}
-                </button>
-              );
-            })}
-          </div>
+          <button type="button" onClick={() => setSuggestionKeys(pickSuggestions())}
+            aria-label={t("aiCoach.suggestions")}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "4px 10px", borderRadius: 14,
+              background: "transparent", border: "1px solid rgba(255,255,255,0.18)",
+              fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", cursor: "pointer",
+            }}>
+            <span>{t("aiCoach.suggestions")}</span>
+            <span aria-hidden="true" style={{ fontSize: 11, lineHeight: 1 }}>🔄</span>
+          </button>
         </div>
-      )}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {suggestionKeys.map((key) => {
+            const text = t(key);
+            return (
+              <button key={key} type="button" onClick={() => sendMessage(text)} disabled={loading}
+                style={{
+                  padding: "10px 14px", borderRadius: 14,
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                  color: "white", fontSize: 12, fontWeight: 600,
+                  cursor: loading ? "default" : "pointer",
+                  textAlign: "left", lineHeight: 1.35,
+                  whiteSpace: "normal", minHeight: 56,
+                }}>
+                {text}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Step Z: rounded pill input. The whole row is a single pill
           with the text field inline with a mic icon and a circular
           green send button. Active only when there's input text. */}
-      {!limitReached && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          padding: "4px 4px 4px 14px",
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.12)",
-          borderRadius: 999,
-          marginTop: 4,
-        }}>
-          <input ref={inputRef} placeholder={t("aiCoach.placeholderV2")} value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-            disabled={loading}
-            style={{
-              flex: 1, minWidth: 0,
-              background: "transparent", border: "none", outline: "none",
-              fontSize: 14, color: "white",
-              padding: "8px 0",
-            }} />
-          <button type="button" onClick={() => inputRef.current?.focus()}
-            aria-label="Voice"
-            style={{
-              width: 36, height: 36, flexShrink: 0,
-              borderRadius: "50%", border: "none",
-              background: "transparent", color: "rgba(255,255,255,0.65)",
-              cursor: "pointer", fontSize: 16, lineHeight: 1,
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-            }}>🎤</button>
-          <button type="button" onClick={() => sendMessage(null)}
-            disabled={loading || !input.trim()}
-            aria-label="Send"
-            style={{
-              width: 36, height: 36, flexShrink: 0,
-              borderRadius: "50%", border: "none",
-              background: loading || !input.trim()
-                ? "rgba(34,197,94,0.35)"
-                : "linear-gradient(135deg, #22c55e 0%, #10b981 100%)",
-              color: "white", cursor: loading || !input.trim() ? "default" : "pointer",
-              fontSize: 16, fontWeight: 800, lineHeight: 1,
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              boxShadow: loading || !input.trim() ? "none" : "0 2px 8px rgba(16,185,129,0.35)",
-            }}>↑</button>
-        </div>
-      )}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "4px 4px 4px 14px",
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        borderRadius: 999,
+        marginTop: 4,
+      }}>
+        <input ref={inputRef} placeholder={t("aiCoach.placeholderV2")} value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+          disabled={loading}
+          style={{
+            flex: 1, minWidth: 0,
+            background: "transparent", border: "none", outline: "none",
+            fontSize: 14, color: "white",
+            padding: "8px 0",
+          }} />
+        <button type="button" onClick={() => inputRef.current?.focus()}
+          aria-label="Voice"
+          style={{
+            width: 36, height: 36, flexShrink: 0,
+            borderRadius: "50%", border: "none",
+            background: "transparent", color: "rgba(255,255,255,0.65)",
+            cursor: "pointer", fontSize: 16, lineHeight: 1,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+          }}>🎤</button>
+        <button type="button" onClick={() => sendMessage(null)}
+          disabled={loading || !input.trim()}
+          aria-label="Send"
+          style={{
+            width: 36, height: 36, flexShrink: 0,
+            borderRadius: "50%", border: "none",
+            background: loading || !input.trim()
+              ? "rgba(34,197,94,0.35)"
+              : "linear-gradient(135deg, #22c55e 0%, #10b981 100%)",
+            color: "white", cursor: loading || !input.trim() ? "default" : "pointer",
+            fontSize: 16, fontWeight: 800, lineHeight: 1,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            boxShadow: loading || !input.trim() ? "none" : "0 2px 8px rgba(16,185,129,0.35)",
+          }}>↑</button>
+      </div>
+
+      </AiFeatureGate>
 
       {/* Step Η: "Recent plans" label sits inside the Coach, right
           above the divider border that separates the Coach content
