@@ -1664,7 +1664,10 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
 
   return (
     <div ref={coachTopRef} style={{
-      scrollMarginTop: 84,
+      // Lifted from 84 → 60 so the dark Coach card sits flush below
+      // the fixed .app-header after Scroll 1, instead of leaving the
+      // ~24px sliver of dark gradient that the old offset produced.
+      scrollMarginTop: 60,
       // Negative margins on all four sides cancel out the SummaryTab
       // padding:16 wrapper so the Coach's own 20px horizontal padding
       // and 18px top / 0 bottom padding drive the real spacing. Without
