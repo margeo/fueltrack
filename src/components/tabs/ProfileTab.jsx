@@ -411,7 +411,7 @@ export default function ProfileTab({
       <div className="card">
         <div
           onClick={() => setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section }))}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.target_section ? 10 : 0, cursor: "pointer" }}
         >
           <h2 style={{ margin: 0 }}>🎯 {t("profile.yourTarget")}</h2>
           <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, target_section: !prev.target_section })); }}
@@ -514,7 +514,7 @@ export default function ProfileTab({
       <div className="card">
         <div
           onClick={() => setExpandedPrefs(prev => ({ ...prev, health_section: !prev.health_section }))}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.health_section ? 10 : 0, cursor: "pointer" }}
         >
           <h2 style={{ margin: 0 }}>🏥 {t("healthPrefs.title")}</h2>
           <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, health_section: !prev.health_section })); }}
@@ -571,7 +571,7 @@ export default function ProfileTab({
       <div className="card">
         <div
           onClick={() => setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section }))}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.food_section ? 10 : 0, cursor: "pointer" }}
         >
           <h2 style={{ margin: 0 }}>🥗 {t("foodPrefs.title")}</h2>
           <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, food_section: !prev.food_section })); }}
@@ -764,7 +764,7 @@ export default function ProfileTab({
       <div className="card">
         <div
           onClick={() => setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section }))}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedPrefs.fitness_section ? 10 : 0, cursor: "pointer" }}
         >
           <h2 style={{ margin: 0 }}>💪 {t("exercisePrefs.title")}</h2>
           <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, fitness_section: !prev.fitness_section })); }}
