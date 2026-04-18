@@ -6,7 +6,7 @@ import { supabase } from "../supabaseClient";
 import { fetchUsage, getCachedUsage, setCachedUsage, computeLimitState } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
 import { hasNativePlugin } from "../utils/nativeCapabilities";
-import AiLimitLock from "./AiLimitLock";
+import AiFeatureGate from "./AiFeatureGate";
 import AiUsageBadge from "./AiUsageBadge";
 
 // When we run inside a Capacitor native shell we prefer the native
@@ -40,7 +40,6 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
   const [usage, setUsage] = useState(() => getCachedUsage(session?.user?.id));
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_photo_model") || "");
   const [cameraOn, setCameraOn] = useState(false);
-  const [limitDismissed, setLimitDismissed] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [videoDevices, setVideoDevices] = useState([]);
   // Track the intended facing mode, NOT the deviceId. On iOS Safari
@@ -371,21 +370,10 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
           )}
         </div>
 
-        {limitReached && !limitDismissed && (
-          <AiLimitLock
-            needsAccount={limitState.limitReached && !session}
-            paidLimitReached={limitState.paidLimitReached}
-            lifetimeLimitReached={limitState.lifetimeLimitReached}
-            monthlyLimitReached={limitState.monthlyLimitReached}
-            isPaid={isPaid}
-            onShowAuth={onShowAuth}
-            onShowRegister={onShowRegister}
-            onDismiss={() => setLimitDismissed(true)}
-          />
-        )}
+        <AiFeatureGate session={session} onShowAuth={onShowAuth} onShowRegister={onShowRegister}>
 
         {/* Camera live preview */}
-        {!limitReached && cameraOn && (
+        {cameraOn && (
           <div style={{ marginBottom: 12 }}>
             <video
               ref={attachVideo}
@@ -411,7 +399,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
         )}
 
         {/* Upload area */}
-        {!limitReached && !cameraOn && !preview && (
+        {!cameraOn && !preview && (
           <>
             <div
               onClick={() => {
@@ -593,7 +581,7 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
               {t("common.add")}
             </button>
           )}
-          {!limitReached && !preview && !loading && !cameraOn && (
+          {!preview && !loading && !cameraOn && (
             <button
               className="btn btn-dark"
               onClick={() => {
@@ -607,10 +595,18 @@ export default function FoodPhotoAnalyzer({ onFoodFound, onClose, session, onSho
               📷 {t("photo.selectPhotoBtn")}
             </button>
           )}
+        </div>
+
+        </AiFeatureGate>
+
+        {/* Cancel lives OUTSIDE the gate so the user can always dismiss
+            the modal even when the feature is locked. */}
+        <div style={{ display: "flex", marginTop: 8 }}>
           <button
             className="btn btn-light"
             onClick={onClose}
             type="button"
+            style={{ flex: 1 }}
           >
             {t("common.cancel")}
           </button>
