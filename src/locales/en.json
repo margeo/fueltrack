@@ -1017,7 +1017,8 @@
     "proDesc": "Pro plan: {{limit}} requests/month",
     "aiRequests": "Requests used:",
     "upgrade": "Upgrade to Pro",
-    "manage": "Manage subscription"
+    "manage": "Manage subscription",
+    "cancelAnytime": "cancel anytime"
   },
   "deleteAccount": {
     "link": "Delete my account",

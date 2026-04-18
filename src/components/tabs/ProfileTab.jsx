@@ -997,6 +997,8 @@ export default function ProfileTab({
             ) : (
               <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
                 {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
+                {" · "}
+                {t("subscription.cancelAnytime")}
               </div>
             )}
           </div>
