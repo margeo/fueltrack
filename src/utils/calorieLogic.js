@@ -75,10 +75,18 @@ export function calculateTargetCalories({
   return base;
 }
 
-export function calculateSuggestedExercise(rawDeficit) {
+export function calculateSuggestedExercise(rawDeficit, tdee) {
+  // How many kcal/day of exercise the user needs to add to make up the
+  // gap between (a) the deficit the formula would need to hit their
+  // kg/weeks target and (b) the applied-from-food cap we actually use.
+  // Whenever raw > applied the leftover has to come from training — we
+  // return that full gap, no upper bound, so an ambitious target still
+  // surfaces an honest "you'd need X kcal/day from exercise to hit
+  // this" number instead of silently hiding it.
   const deficit = Number(rawDeficit || 0);
-  if (deficit <= 1000) return 0;
-  return deficit - 1000;
+  if (!deficit) return 0;
+  const applied = calculateAppliedDailyDeficit(deficit, tdee);
+  return Math.max(0, deficit - applied);
 }
 
 export function calculateProteinTarget({ weight, goalType, modeKey }) {

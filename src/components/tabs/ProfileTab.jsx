@@ -52,11 +52,17 @@ const MODE_GROUP_KEYS = {
   "🌱 Φυτικές": "modeGroups.plant"
 };
 
-function GoalWarning({ goalType, weight, kilosPerWeek, rawDeficit }) {
+function GoalWarning({ goalType, weight, kilosPerWeek, rawDeficit, tdee }) {
   const { t } = useTranslation();
   if (goalType !== "lose" || kilosPerWeek <= 0) return null;
-  const suggestedExercise = calculateSuggestedExercise(rawDeficit);
-  const showExerciseTip = suggestedExercise > 0 && suggestedExercise <= 500;
+  // Exercise gap = whatever part of the requested deficit the
+  // food-only cap can't cover, i.e. rawDeficit - appliedCap. If the
+  // user's target needs 2000 kcal/day deficit and we apply at most
+  // 1500 from food, 500 kcal/day has to come from training. We show
+  // that exact gap — no upper bound — so an ambitious target is
+  // transparent rather than silently quietly unreachable.
+  const suggestedExercise = calculateSuggestedExercise(rawDeficit, tdee);
+  const showExerciseTip = suggestedExercise > 0;
   // % of bodyweight per week is a more personalised gauge of how hard
   // the target is than absolute kg/week — 1kg/week is trivial for a
   // 150kg user but brutal for a 55kg user. When we don't yet have a
@@ -83,7 +89,7 @@ function GoalWarning({ goalType, weight, kilosPerWeek, rawDeficit }) {
     message = t("profile.sustainableGoal", { pct: pctLabel });
   }
 
-  // Dynamic exercise example based on calories
+  // Dynamic exercise example based on magnitude
   const exerciseExample = suggestedExercise <= 150
     ? t("profile.exerciseExample.light")      // ~20-30 min walking
     : suggestedExercise <= 300
@@ -91,15 +97,15 @@ function GoalWarning({ goalType, weight, kilosPerWeek, rawDeficit }) {
     : t("profile.exerciseExample.intense");    // ~40-50 min running
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
-      <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
-        <span style={{ fontSize: 15 }}>{icon}</span>
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "8px 12px", marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+        <span style={{ fontSize: 15, lineHeight: 1.4 }}>{icon}</span>
         <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>{message}</div>
       </div>
       {showExerciseTip && (
-        <div style={{ background: "#eff6ff", border: "1px solid #93c5fd", borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 15 }}>🏃</span>
-          <div style={{ color: "#1e40af", fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", borderTop: `1px solid ${border}`, paddingTop: 6 }}>
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>🏃</span>
+          <div style={{ color, fontSize: 12, lineHeight: 1.4, fontWeight: 600 }}>
             {t("profile.exerciseSuggestion", { calories: formatNumber(suggestedExercise), example: exerciseExample })}
           </div>
         </div>
@@ -425,7 +431,7 @@ export default function ProfileTab({
                       </div>
                     </label>
                   </div>
-                  <GoalWarning goalType={goalType} weight={weight} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} isCapped={isCapped} />
+                  <GoalWarning goalType={goalType} weight={weight} kilosPerWeek={kilosPerWeek} rawDeficit={rawDeficit} tdee={tdee} isCapped={isCapped} />
                 </div>
               )}
             </div>
