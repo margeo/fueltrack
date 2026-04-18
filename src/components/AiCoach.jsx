@@ -71,6 +71,83 @@ const ISSUE_SCHEMA = {
   required: ["emoji", "title", "detail", "fix"],
   additionalProperties: false
 };
+const ANALYZE_DAY_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    name: "analyze_day",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        greeting: { type: "string" },
+        score: { type: "integer" },
+        went_well: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        improvements: { type: "array", items: INSIGHT_ITEM_SCHEMA },
+        next_action: { type: "string" },
+        evening_tip: { type: "string" },
+        movement_tip: { type: "string" },
+        consistency: { type: "string" }
+      },
+      required: ["greeting", "score", "went_well", "improvements", "next_action", "evening_tip", "movement_tip", "consistency"],
+      additionalProperties: false
+    }
+  }
+};
+
+function AnalyzeDayView({ data, lang }) {
+  if (!data) return null;
+  const isEn = lang === "en";
+  const score = typeof data.score === "number" ? data.score : null;
+  const scoreColor = score >= 7 ? "#16a34a" : score >= 4 ? "#d97706" : "#dc2626";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+      {data.greeting && (
+        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4 }}>{data.greeting}</div>
+      )}
+      {score !== null && (
+        <div style={{ textAlign: "center", marginBottom: 4 }}>
+          <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor }}>{score}/10</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 0.4 }}>
+            {isEn ? "TODAY'S SCORE" : "ΒΑΘΜΟΛΟΓΙΑ ΗΜΕΡΑΣ"}
+          </div>
+        </div>
+      )}
+      {data.went_well?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>✅ {isEn ? "What went well" : "Τι πήγε καλά"}</div>
+          {data.went_well.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+        </div>
+      )}
+      {data.improvements?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>🔧 {isEn ? "What to improve" : "Τι χρειάζεται βελτίωση"}</div>
+          {data.improvements.map((h, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.7 }}>{h.emoji} {h.text}</div>)}
+        </div>
+      )}
+      {data.next_action && (
+        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          🎯 <strong>{isEn ? "Best next action" : "Καλύτερη επόμενη κίνηση"}:</strong> {data.next_action}
+        </div>
+      )}
+      {data.evening_tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          🌙 <strong>{isEn ? "For tonight" : "Για απόψε"}:</strong> {data.evening_tip}
+        </div>
+      )}
+      {data.movement_tip && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          💪 <strong>{isEn ? "Movement" : "Κίνηση"}:</strong> {data.movement_tip}
+        </div>
+      )}
+      {data.consistency && (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "8px 12px", fontSize: 13 }}>
+          🔥 <strong>{isEn ? "Keep going" : "Συνέχισε έτσι"}:</strong> {data.consistency}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const WEEKLY_REVIEW_SCHEMA = {
   type: "json_schema",
   json_schema: {
@@ -682,6 +759,106 @@ RULES:
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
 
+  function buildAnalyzeDayJSON() {
+    const isEn = i18n.language === "en";
+    const currentMode = MODES[mode] || MODES.balanced;
+    const currentWeight = lastWeight || weight;
+
+    const todayKey = getTodayKey();
+    const todayLog = normalizeDayLog(dailyLogs?.[todayKey]);
+    const meals = todayLog.entries.map(e => ({
+      meal: e.mealType || "",
+      name: e.name || "",
+      grams: Number(e.grams) || 0,
+      kcal: Math.round(Number(e.calories) || 0),
+      protein_g: Math.round(Number(e.protein) || 0),
+      carbs_g: Math.round(Number(e.carbs) || 0),
+      fat_g: Math.round(Number(e.fat) || 0)
+    }));
+    const exercises = todayLog.exercises.map(ex => ({
+      name: ex.name || "",
+      duration_min: Number(ex.duration) || 0,
+      kcal: Math.round(Number(ex.calories) || 0)
+    }));
+
+    const now = new Date();
+    const hh = now.getHours();
+    const timeOfDay = hh < 5 ? "late_night" : hh < 12 ? "morning" : hh < 17 ? "afternoon" : hh < 21 ? "evening" : "night";
+    const currentTime = now.toLocaleTimeString(isEn ? "en-US" : "el-GR", { hour: "2-digit", minute: "2-digit", hour12: false });
+
+    const weekTrend = (last7Days || []).map(d => ({
+      date: d.date,
+      calories_eaten: d.eaten || 0,
+      empty: (d.eaten || 0) === 0
+    }));
+    const emptyDaysCount = weekTrend.filter(d => d.empty).length;
+
+    const input = {
+      user: { name: userName || "", age: age || null, gender, weight_kg: currentWeight, height_cm: height },
+      goal: goalType,
+      diet_mode: currentMode.label,
+      targets: {
+        calories: targetCalories,
+        protein_g: proteinTarget,
+        carbs_g: Math.round(macroTargets?.carbsGrams || 0),
+        fat_g: Math.round(macroTargets?.fatGrams || 0)
+      },
+      today: {
+        date: todayKey,
+        current_time: currentTime,
+        time_of_day: timeOfDay,
+        calories_eaten: Math.round(totalCalories || 0),
+        calories_remaining: Math.round(remainingCalories || 0),
+        protein_eaten_g: Math.round(totalProtein || 0),
+        carbs_eaten_g: Math.round(totalCarbs || 0),
+        fat_eaten_g: Math.round(totalFat || 0),
+        exercise_kcal: Math.round(exerciseValue || 0),
+        meals,
+        exercises
+      },
+      progress: {
+        streak_days: streak,
+        weight_trend_kg: weightTrend || null,
+        week: weekTrend,
+        empty_days_this_week: emptyDaysCount
+      },
+      food_profile: {
+        allergies: Array.isArray(allergies) ? allergies : [],
+        categories: Array.isArray(foodCategories) ? foodCategories : []
+      },
+      fitness_profile: {
+        level: fitnessLevel || null,
+        location: workoutLocation || null,
+        limitations: Array.isArray(limitations) ? limitations : []
+      },
+      language: isEn ? "English" : "Greek"
+    };
+
+    const systemPrompt = `You are an elite nutritionist + personal fitness coach. Analyze today's user data and return a JSON object.
+
+Review everything: calories vs target, protein vs target, meals logged today, exercises done, remaining calories, current time of day, weekly trend, streak.
+
+Return JSON with EXACTLY these fields:
+- "greeting": 1 short motivating sentence addressing the user by name if provided
+- "score": integer 1-10 for today's overall performance (logging completeness + target adherence + activity + macro balance)
+- "went_well": array of 1-3 {emoji, text} items — concrete things the user did well today, reference actual numbers
+- "improvements": array of 1-3 {emoji, text} items — specific areas to improve today, reference actual numbers
+- "next_action": 1 sentence, the single best action the user should take RIGHT NOW based on current time and remaining targets
+- "evening_tip": if time_of_day is "evening" or "night", suggest a specific meal/snack for tonight that fits remaining calories AND macros AND diet_mode. Otherwise empty string "".
+- "movement_tip": if exercise_kcal is 0 or meals list suggests sedentary day, suggest a realistic movement for the remaining hours (respect fitness_profile.limitations). Otherwise empty string "".
+- "consistency": 1 short motivating line referencing the streak or weekly logging to encourage consistency.
+
+RULES:
+1. Reference ACTUAL numbers from the input — "you're at 1240/2000kcal" not "you ate some calories".
+2. Respect food_profile.allergies strictly and align suggestions with diet_mode.
+3. Respect fitness_profile.limitations — never suggest movements that could aggravate them.
+4. Keep each text short and punchy. Premium coach tone: motivating, smart, concise.
+5. ${isEn ? "All text in English." : "All text MUST be in Greek. Use Greek meal names."}
+6. Emojis must be single unicode emojis (e.g. 💪 🎯 🔥 ✅ ⚠️ 🥗 🍗).`;
+
+    return { systemPrompt, userMessage: JSON.stringify(input) };
+  }
+
   function buildWeeklyReviewJSON() {
     const isEn = i18n.language === "en";
     const currentMode = MODES[mode] || MODES.balanced;
@@ -898,15 +1075,15 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     // CURRENT TIME + TIME-OF-DAY LABEL (so the coach can say "for
     // dinner tonight..." vs "for lunch..."). Used in the initial
     // prompt only.
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString(isEn ? "en-US" : "el-GR", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const hh = now.getHours();
+    const nowForBlock = new Date();
+    const clockStr = nowForBlock.toLocaleTimeString(isEn ? "en-US" : "el-GR", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const hh = nowForBlock.getHours();
     const todLabel = hh < 5 ? (isEn ? "late night" : "αργά τη νύχτα")
       : hh < 12 ? (isEn ? "morning" : "πρωί")
       : hh < 17 ? (isEn ? "afternoon" : "απόγευμα")
       : hh < 21 ? (isEn ? "evening" : "βράδυ")
       : (isEn ? "night" : "νύχτα");
-    const timeBlock = `\n${isEn ? "Current time" : "Ώρα"}: ${timeStr} (${todLabel})`;
+    const timeBlock = `\n${isEn ? "Current time" : "Ώρα"}: ${clockStr} (${todLabel})`;
 
     // WEEK SUMMARY: general μόνο
     const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
@@ -988,7 +1165,7 @@ ${askChange}`;
 
   function buildMessages(chatMessage) {
     // Keep custom chat (plain text), skip preset JSON responses (meal plan, training, etc.)
-    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "macro_analysis_json"];
+    const SKIP_TYPES = ["meal_plan_json", "training_plan_json", "weekly_review_json", "macro_analysis_json", "analyze_day_json"];
     const history = messages.filter(msg => msg.text && !msg.isAutoLoad && !msg.isPreset && !SKIP_TYPES.includes(msg.msgType)).map(msg => ({ role: msg.role, content: msg.text }));
     if (chatMessage) history.push({ role: "user", content: chatMessage });
     return history;
@@ -1025,36 +1202,12 @@ ${askChange}`;
     const taskType = isInitial ? "initial" : isMealPlan ? "meal_plan" : isTrainingPlan ? "training_plan" : isWeeklyReview ? "weekly_review" : isMacroAnalysis ? "macro_analysis" : "general";
 
     const isEn = i18n.language === "en";
+    // isInitial / isMealPlan / isTrainingPlan have dedicated JSON
+    // branches below (buildAnalyzeDayJSON / buildMealPlanJSON /
+    // buildTrainingPlanJSON). Only the plain "general" chat path needs
+    // the user's raw text passed through to the model.
     let effectiveMessage;
-    if (isInitial) {
-      effectiveMessage = isEn
-        ? `Analyze today's user data and act as an elite nutritionist + fitness coach.
-Review: calories consumed vs target, protein consumed vs target, meals logged today, exercise completed, steps / activity level, remaining calories, current time of day, weekly progress trend.
-Give a short, motivating, highly actionable response.
-Include:
-1. Today's score out of 10
-2. What went well
-3. What needs improvement
-4. Best next action today
-5. If evening: what to eat tonight
-6. If inactive: suggest movement
-7. Encourage consistency
-
-Tone: premium coach, motivating, concise, smart.`
-        : `Ανέλυσε τα σημερινά δεδομένα του χρήστη και δράσε σαν elite διατροφολόγος + personal trainer.
-Εξέτασε: θερμίδες vs στόχος, πρωτεΐνη vs στόχος, γεύματα που καταγράφηκαν σήμερα, ασκήσεις που έγιναν, επίπεδο δραστηριότητας, υπόλοιπες θερμίδες, ώρα της ημέρας, εβδομαδιαία τάση προόδου.
-Δώσε σύντομη, ενθαρρυντική και άκρως πρακτική απάντηση.
-Συμπερίλαβε:
-1. Βαθμολογία ημέρας /10
-2. Τι πήγε καλά
-3. Τι χρειάζεται βελτίωση
-4. Η καλύτερη επόμενη κίνηση για σήμερα
-5. Αν είναι βράδυ: τι να φας απόψε
-6. Αν είναι αδρανής: πρότεινε κίνηση
-7. Ενθάρρυνε τη συνέπεια
-
-Τόνος: premium coach, κινητοποιητικός, περιεκτικός, έξυπνος.`;
-    } else if (isMealPlan) {
+    if (isMealPlan) {
       effectiveMessage = isEn
         ? `Create a weekly meal plan for 7 days (Monday-Sunday). Start immediately with the plan, do NOT ask questions first. Include ALL meals${Number(snacksPerDay) > 0 ? " AND snacks" : ""} as specified in the format.`
         : `Δώσε εβδομαδιαίο πρόγραμμα διατροφής 7 ημερών (Δευτέρα-Κυριακή). Ξεκίνα ΑΜΕΣΑ με το πρόγραμμα, ΜΗΝ κάνεις ερωτήσεις πρώτα. Συμπερίλαβε ΟΛΑ τα γεύματα${Number(snacksPerDay) > 0 ? " ΚΑΙ τα σνακ" : ""} όπως ορίζονται στο format.`;
@@ -1251,6 +1404,53 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         }
         setHasLoaded(true);
         return;
+      } else if (isInitial) {
+        // Analyze Today — structured JSON with greeting, score, went_well,
+        // improvements, next action, evening/movement tips, consistency.
+        // Rendered by AnalyzeDayView with the same emoji/section styling
+        // as the weekly meal plan so the output matches the rest of the
+        // coach's presentation rather than dumping raw AI markdown.
+        const { systemPrompt: aPrompt, userMessage: aInput } = buildAnalyzeDayJSON();
+        const aReq = {
+          systemPrompt: aPrompt,
+          messages: [{ role: "user", content: aInput }],
+          ...(selectedModel && { model: selectedModel }),
+          jsonMode: true,
+          customSchema: ANALYZE_DAY_SCHEMA
+        };
+        const aResponse = await authedFetch("/.netlify/functions/ai-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(aReq) });
+        if (aResponse.status === 429) {
+          const limitData = await aResponse.json().catch(() => ({}));
+          if (limitData.usage) applyServerUsage(limitData.usage);
+          throw new Error("limit_reached");
+        }
+        if (!aResponse.ok) throw new Error(`Connection error (${aResponse.status})`);
+        const aData = await aResponse.json();
+        if (aData.error) throw new Error(aData.error);
+        if (aData.aiUsage) applyServerUsage(aData.aiUsage);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        let analyzeData = null;
+        try {
+          const raw = typeof aData.advice === "string" ? JSON.parse(aData.advice) : aData.advice;
+          if (raw && typeof raw === "object") {
+            const keys = Object.keys(raw);
+            if (keys.length === 1 && typeof raw[keys[0]] === "object" && !Array.isArray(raw[keys[0]])) {
+              analyzeData = raw[keys[0]];
+            } else {
+              analyzeData = raw;
+            }
+          }
+        } catch { /* parse failed */ }
+
+        if (analyzeData && typeof analyzeData === "object" && Object.keys(analyzeData).length > 0) {
+          setMessages(prev => [...prev, { role: "assistant", analyzeData, msgType: "analyze_day_json", isAutoLoad: true, elapsed, usage: aData.usage }]);
+        } else {
+          const isEn2 = i18n.language === "en";
+          setMessages(prev => [...prev, { role: "assistant", text: isEn2 ? "⚠️ Could not analyze today. Please try again." : "⚠️ Δεν ήταν δυνατή η ανάλυση. Δοκίμασε ξανά.", error: true, elapsed, usage: aData.usage }]);
+        }
+        setHasLoaded(true);
+        return;
       } else if (isWeeklyReview) {
         // Weekly review (includes mistakes analysis) — JSON mode
         const { systemPrompt: rPrompt, userMessage: rInput } = buildWeeklyReviewJSON();
@@ -1373,8 +1573,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         } else {
           setMessages(prev => [...prev, { role: "assistant", text: data.advice, elapsed, usage: data.usage }]);
         }
-      } else if (taskType === "initial") {
-        setMessages(prev => [...prev, { role: "assistant", text: data.advice, isAutoLoad: true, elapsed, usage: data.usage }]);
       }
       setHasLoaded(true);
     } catch (err) {
@@ -1728,6 +1926,15 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               ) : msg.msgType === "training_plan_json" && msg.trainingPlanData ? (
                 <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
                   <TrainingPlanView data={msg.trainingPlanData} lang={i18n.language} />
+                  {isAdmin && msg.elapsed && !msg.error && (
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
+                      ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
+                    </div>
+                  )}
+                </div>
+              ) : msg.msgType === "analyze_day_json" && msg.analyzeData ? (
+                <div style={{ maxWidth: "95%", padding: "10px 14px", borderRadius: "18px 18px 18px 4px", background: "var(--bg-soft)", border: "1px solid var(--border-soft)", fontSize: 13, lineHeight: 1.7, width: "100%" }}>
+                  <AnalyzeDayView data={msg.analyzeData} lang={i18n.language} />
                   {isAdmin && msg.elapsed && !msg.error && (
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>
                       ⏱ {msg.elapsed}s{msg.usage ? ` · in:${msg.usage.inputTokens} out:${msg.usage.outputTokens} · ${msg.usage.costUsd ? (msg.usage.costUsd * 100).toFixed(2) + "¢" : "—"}${msg.usage.model ? ` · ${msg.usage.model}` : ""}` : ""}
