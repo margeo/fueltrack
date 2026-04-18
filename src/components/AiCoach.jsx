@@ -950,7 +950,22 @@ ${askChange}`;
     if (limitReached) return;
     setLoading(true);
     setChatExpanded(true);
-    coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Pre-response page scroll — bring the Coach section just below
+    // the fixed .app-header. scrollIntoView({block:"start"}) would land
+    // behind the header because it doesn't know about it; we compute
+    // the target manually from the live header height so this works
+    // across iPhone (notch/status bar), Android, and web.
+    {
+      const coachEl = coachTopRef.current;
+      if (coachEl) {
+        const coachRect = coachEl.getBoundingClientRect();
+        const scroller = document.scrollingElement || document.documentElement;
+        const headerEl = document.querySelector(".app-header");
+        const headerOffset = headerEl ? headerEl.offsetHeight + 12 : 84;
+        const targetTop = scroller.scrollTop + coachRect.top - headerOffset;
+        scroller.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    }
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = !text && !hasLoaded;
     const isMealPlan = text === t("aiCoach.q1");
@@ -1302,7 +1317,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
   }
 
   return (
-    <div ref={coachTopRef} style={{ scrollMarginTop: 12 }}>
+    <div ref={coachTopRef} style={{ scrollMarginTop: 84 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
