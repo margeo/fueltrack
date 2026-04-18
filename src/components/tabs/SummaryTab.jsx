@@ -357,7 +357,7 @@ RULES:
       {/* 1. HERO */}
       <div className="hero-card">
         <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 10 }}>
-          {userName ? t("summary.titleName", { name: userName }) : t("summary.title")}
+          {t("summary.title")}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>

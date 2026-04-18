@@ -1333,7 +1333,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <h2 style={{ margin: 0 }}>🤖 {t("aiCoach.title")}</h2>
+            <h2 style={{ margin: 0 }}>🤖 {userName ? t("summary.titleName", { name: userName }) : t("aiCoach.title")}</h2>
             <AiUsageBadge session={session} isPaid={isPaid} isDemo={isDemo} isAdmin={isAdmin} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
