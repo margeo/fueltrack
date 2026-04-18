@@ -156,18 +156,26 @@ export default function ProfileTab({
   const [subscriptionSource, setSubscriptionSource] = useState(null);
   const [isDemo, setIsDemo] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  // Subscription block inside the Account card is collapsible — tap the
-  // user-info row or its chevron to fold only the middle section
-  // (plan details / upgrade CTA); the identity row and the
-  // language/actions row stay visible. Session-scoped so a refresh
-  // opens it again rather than hiding important account affordances
-  // permanently.
+  // Subscription block inside the Account card is collapsible. Default
+  // is closed (like all the other profile sections) — if the user
+  // opens it, the choice persists within the session but resets to
+  // closed on the next login/logout (we watch session.user.id and
+  // clear the flag whenever it changes).
   const [accountSubOpen, setAccountSubOpen] = useState(() => {
-    try { return sessionStorage.getItem("ft_accountSubOpen") !== "false"; } catch { return true; }
+    try { return sessionStorage.getItem("ft_accountSubOpen") === "true"; } catch { return false; }
   });
   useEffect(() => {
     try { sessionStorage.setItem("ft_accountSubOpen", accountSubOpen ? "true" : "false"); } catch { /* ignore */ }
   }, [accountSubOpen]);
+  // Reset to closed when the signed-in user changes (login, logout,
+  // account switch) so a returning user doesn't inherit the previous
+  // session's open-state.
+  const accountUid = session?.user?.id || "";
+  useEffect(() => {
+    setAccountSubOpen(false);
+    try { sessionStorage.setItem("ft_accountSubOpen", "false"); } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountUid]);
   const [units, setUnits] = useState(() => localStorage.getItem("ft_units") || "metric");
   const [expandedPrefs, _setExpandedPrefs] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('ft_profile_prefs') || '{}'); } catch { return {}; }
@@ -969,43 +977,31 @@ export default function ProfileTab({
             </button>
           </div>
           {accountSubOpen && <div style={{ borderTop: "1px solid var(--border-soft)" }} />}
-          {/* Section 2: Subscription — hidden when accountSubOpen is false */}
+          {/* Section 2: Subscription info — hidden when accountSubOpen is false.
+              The CTA button (Upgrade / Manage) lives in Section 3 below so
+              it stays visible even when this section is collapsed. */}
           {accountSubOpen && (
           <div style={{ padding: "12px 16px" }}>
-            {!isPaid ? (<>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+            {!isPaid ? (
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
                 {t("subscription.freeDesc", { daily: AI_LIMITS.DAILY_FREE, monthly: AI_LIMITS.MONTHLY_FREE })}
-              </div>
-              <button className="btn btn-dark" type="button" disabled={checkoutLoading}
-                onClick={async () => {
-                  setCheckoutLoading(true);
-                  try { await startProMonthlyPurchase(); }
-                  catch {}
-                  finally { setCheckoutLoading(false); }
-                }}
-                style={{ width: "100%", fontSize: 14, padding: "10px 0" }}>
-                {checkoutLoading ? t("common.loading") : t("subscription.upgrade")}
-              </button>
-              <div className="muted" style={{ fontSize: 11, textAlign: "center", marginTop: 4 }}>
+                {" · "}
                 {t("aiCoach.subscribePrice")}
               </div>
-            </>) : (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                  {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
-                </span>
-                <button className="btn btn-light" type="button"
-                  onClick={async () => { try { await openManageSubscription(subscriptionSource); } catch {} }}
-                  style={{ fontSize: 12, padding: "6px 8px", whiteSpace: "nowrap" }}>
-                  {t("subscription.manage")}
-                </button>
+            ) : (
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                {t("subscription.proDesc", { limit: AI_LIMITS.MONTHLY_PAID })}
               </div>
             )}
           </div>
           )}
           <div style={{ borderTop: "1px solid var(--border-soft)" }} />
-          {/* Section 3: Language + Actions */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
+          {/* Section 3: Language + Actions — always visible. The
+              Upgrade / Manage CTA lives here now (not in Section 2) so
+              it's reachable even when the subscription block is
+              collapsed. flex-wrap so the row folds onto two lines on
+              narrow viewports. */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", gap: 8, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-flex", alignItems: "center" }}>{i18n.language === "el" ? (
                 <svg width="20" height="14" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
@@ -1017,14 +1013,32 @@ export default function ProfileTab({
                 <option value="en">English</option>
               </select>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {!isPaid ? (
+                <button className="btn btn-dark" type="button" disabled={checkoutLoading}
+                  onClick={async () => {
+                    setCheckoutLoading(true);
+                    try { await startProMonthlyPurchase(); }
+                    catch {}
+                    finally { setCheckoutLoading(false); }
+                  }}
+                  style={{ fontSize: 12, padding: "6px 12px" }}>
+                  {checkoutLoading ? t("common.loading") : "⭐ " + t("subscription.upgrade")}
+                </button>
+              ) : (
+                <button className="btn btn-light" type="button"
+                  onClick={async () => { try { await openManageSubscription(subscriptionSource); } catch {} }}
+                  style={{ fontSize: 12, padding: "6px 12px" }}>
+                  {t("subscription.manage")}
+                </button>
+              )}
               <button className="btn btn-light" onClick={() => supabase.auth.signOut()} type="button"
-                style={{ fontSize: 12, padding: "6px 8px" }}>
+                style={{ fontSize: 12, padding: "6px 12px" }}>
                 {t("auth.logout")}
               </button>
               {isAdmin && (
                 <button className="btn btn-dark" onClick={() => setShowAdmin(true)} type="button"
-                  style={{ fontSize: 12, padding: "6px 14px" }}>
+                  style={{ fontSize: 12, padding: "6px 12px" }}>
                   🛡️ Admin
                 </button>
               )}
@@ -1050,13 +1064,13 @@ export default function ProfileTab({
                 <option value="en">English</option>
               </select>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flex: "1 1 auto", justifyContent: "flex-end" }}>
               <button className="btn btn-dark" onClick={onShowAuth} type="button"
-                style={{ fontSize: 12, padding: "6px 14px" }}>
+                style={{ fontSize: 12, padding: "6px 12px", flex: "1 1 0", maxWidth: 140 }}>
                 {t("auth.loginBtn")}
               </button>
               <button className="btn btn-light" onClick={onShowRegister} type="button"
-                style={{ fontSize: 12, padding: "6px 14px" }}>
+                style={{ fontSize: 12, padding: "6px 12px", flex: "1 1 0", maxWidth: 140 }}>
                 {t("auth.registerBtn")}
               </button>
             </div>
