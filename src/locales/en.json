@@ -927,6 +927,8 @@
     "greetMorning": "Good morning",
     "greetAfternoon": "Good afternoon",
     "heroMotivation": "You're on a good track today.",
+    "heroCaloriesLeft": "Calories left",
+    "heroProteinLeft": "Protein left",
     "proTitle": "Pro Feature",
     "proDesc": "The Coach is available with a Pro account. Upgrade to get personalized nutrition and training advice.",
     "proFeature1": "Personalized meal plans",

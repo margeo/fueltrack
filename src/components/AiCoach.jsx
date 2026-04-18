@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { mergeHealthFoodRules, mergeHealthExerciseRules } from "../data/healthFactors";
 import { calculateStreak } from "../utils/streak";
-import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
+import { getTodayKey, shiftDate, normalizeDayLog, formatNumber } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState, computeRemainingRequests } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
@@ -1399,6 +1399,64 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         <div style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.4 }}>
           {t("aiCoach.heroMotivation")}
         </div>
+
+        {/* Row 4: Stats cards — Calories left + Protein left with
+            progress bars. Values pull from the same props the Dashboard
+            already renders. Big number is "remaining"; small line below
+            shows "eaten / target". Bar width = eaten/target capped at
+            100 so an over-target day pins to full rather than
+            overflowing visually. Colours are the macro-bar palette
+            already in use on the Dashboard macro pie legend. */}
+        {(() => {
+          const kcalEaten = Number(totalCalories || 0);
+          const kcalTarget = Number(targetCalories || 0);
+          const kcalRemaining = Number(remainingCalories || 0);
+          const kcalLeftDisplay = Math.max(0, kcalRemaining);
+          const kcalPct = kcalTarget > 0 ? Math.min(100, (kcalEaten / kcalTarget) * 100) : 0;
+
+          const pEaten = Number(totalProtein || 0);
+          const pTarget = Number(proteinTarget || 0);
+          const pLeftDisplay = Math.max(0, pTarget - pEaten);
+          const pPct = pTarget > 0 ? Math.min(100, (pEaten / pTarget) * 100) : 0;
+
+          const cardBase = {
+            flex: 1, minWidth: 0,
+            padding: "10px 12px",
+            borderRadius: 14,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          };
+          const labelStyle = { fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 };
+          const barTrack = { height: 4, borderRadius: 4, background: "rgba(255,255,255,0.12)", overflow: "hidden", marginBottom: 4 };
+          const footerStyle = { fontSize: 10, color: "rgba(255,255,255,0.55)" };
+
+          return (
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <div style={cardBase}>
+                <div style={labelStyle}>{t("aiCoach.heroCaloriesLeft")}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: "#22c55e", lineHeight: 1 }}>{formatNumber(kcalLeftDisplay)}</span>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>kcal</span>
+                </div>
+                <div style={barTrack}>
+                  <div style={{ height: "100%", width: `${kcalPct}%`, background: "#22c55e", borderRadius: 4, transition: "width 0.3s ease" }} />
+                </div>
+                <div style={footerStyle}>{formatNumber(kcalEaten)} / {formatNumber(kcalTarget)} kcal</div>
+              </div>
+              <div style={cardBase}>
+                <div style={labelStyle}>{t("aiCoach.heroProteinLeft")}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: "#3b82f6", lineHeight: 1 }}>{formatNumber(pLeftDisplay)}</span>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>g</span>
+                </div>
+                <div style={barTrack}>
+                  <div style={{ height: "100%", width: `${pPct}%`, background: "#3b82f6", borderRadius: 4, transition: "width 0.3s ease" }} />
+                </div>
+                <div style={footerStyle}>{formatNumber(pEaten)} / {formatNumber(pTarget)} g</div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Admin-only controls — tucked below the motivation so they
             stay reachable without dominating the hero. */}
