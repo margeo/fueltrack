@@ -38,9 +38,7 @@ export default function WelcomeScreen({ onStart }) {
         </div>
 
         <div className="card" style={{ margin: 0, display: "flex", alignItems: "flex-start", gap: 14 }}>
-          <div style={{ fontSize: 28, flexShrink: 0, display: "flex", alignItems: "center" }}>
-            <svg width="32" height="22" viewBox="0 0 27 18"><rect width="27" height="18" fill="#0D5EAF"/><rect y="2" width="27" height="2" fill="#fff"/><rect y="6" width="27" height="2" fill="#fff"/><rect y="10" width="27" height="2" fill="#fff"/><rect y="14" width="27" height="2" fill="#fff"/><rect width="10" height="10" fill="#0D5EAF"/><path d="M5,0 V10 M0,5 H10" stroke="#fff" strokeWidth="2"/></svg>
-          </div>
+          <div style={{ fontSize: 28, flexShrink: 0 }}>🌍</div>
           <div>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("welcome.greekFoods")}</div>
             <div className="muted" style={{ lineHeight: 1.5 }}>
