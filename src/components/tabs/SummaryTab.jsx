@@ -687,8 +687,10 @@ RULES:
           />
         </div>
 
-        {/* PLANS — connected under AI Coach */}
-        <div style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px" }}>
+        {/* PLANS — connected under AI Coach. Anchor id is the scroll
+            target for the new "View all" link in the Coach's Recent
+            plans strip (Step Η). */}
+        <div id="ft-plans-anchor" style={{ borderTop: "1px solid var(--border-soft)", padding: "12px 16px", scrollMarginTop: 80 }}>
           <PlanSection plan={mealPlan} type="meal" emoji="🥗" title={t("summary.mealPlan")} />
         </div>
 

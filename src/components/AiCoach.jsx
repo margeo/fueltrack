@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
 import { mergeHealthFoodRules, mergeHealthExerciseRules } from "../data/healthFactors";
 import { calculateStreak } from "../utils/streak";
-import { getTodayKey, shiftDate, normalizeDayLog, formatNumber } from "../utils/helpers";
+import { getTodayKey, shiftDate, normalizeDayLog, formatNumber, formatPlanDate } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
 import { AI_LIMITS, fetchUsage, getCachedUsage, setCachedUsage, computeLimitState, computeRemainingRequests } from "../utils/aiUsage";
 import { authedFetch } from "../utils/authFetch";
@@ -30,6 +30,23 @@ const ACTIVITY_LABELS = { "1.2": "sedentary", "1.4": "light", "1.6": "moderate",
 const GOAL_LABELS = { lose: "lose_weight", gain: "gain_muscle", maintain: "maintain", fitness: "fitness" };
 
 const QUICK_QUESTION_KEYS = ["aiCoach.q1", "aiCoach.q2", "aiCoach.q3", "aiCoach.q4"];
+
+const SUGGESTION_KEYS = [
+  "aiCoach.sugg1", "aiCoach.sugg2", "aiCoach.sugg3", "aiCoach.sugg4",
+  "aiCoach.sugg5", "aiCoach.sugg6", "aiCoach.sugg7", "aiCoach.sugg8",
+  "aiCoach.sugg9", "aiCoach.sugg10", "aiCoach.sugg11", "aiCoach.sugg12"
+];
+
+// Pick 3 distinct random indices from the suggestion pool.
+function pickSuggestions() {
+  const pool = [...SUGGESTION_KEYS];
+  const out = [];
+  while (out.length < 3 && pool.length) {
+    const idx = Math.floor(Math.random() * pool.length);
+    out.push(pool.splice(idx, 1)[0]);
+  }
+  return out;
+}
 
 function formatAiText(text) {
   if (!text) return text;
@@ -475,7 +492,7 @@ export default function AiCoach({
   totalCalories, totalProtein, totalCarbs, totalFat, exerciseValue,
   remainingCalories, macroTargets, activity,
   favoriteExercises, age, weight, height, gender,
-  onSavePlan, session, userName, onShowAuth, onShowRegister,
+  onSavePlan, savedPlans, session, userName, onShowAuth, onShowRegister,
   foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
   mealsPerDay, snacksPerDay,
   fitnessLevel, workoutLocation, equipment, limitations,
@@ -484,6 +501,7 @@ export default function AiCoach({
 }) {
   const { t, i18n } = useTranslation();
   const quickQuestions = QUICK_QUESTION_KEYS.map(key => t(key));
+  const [suggestionKeys, setSuggestionKeys] = useState(() => pickSuggestions());
   const [messages, setMessages] = useState([]);
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem("ft_ai_model") || "");
   const [isPaid, setIsPaid] = useState(false);
@@ -2080,30 +2098,154 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {hasLoaded && !loading && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-          {quickQuestions.map((q) => (
-            <button key={q} onClick={() => sendMessage(q)} type="button"
-              style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-              {q}
+      {/* Step Ε: Ask Coach anything — suggestions row. Three random
+          chips from the suggestion pool with a refresh button that
+          re-rolls the picks. Replaces the old follow-up chip strip
+          that echoed the quick-action presets. */}
+      {!limitReached && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)" }}>
+              {t("aiCoach.askCoach")}
+            </div>
+            <button type="button" onClick={() => setSuggestionKeys(pickSuggestions())}
+              aria-label={t("aiCoach.suggestions")}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                padding: "4px 8px", borderRadius: 14,
+                background: "transparent", border: "1px solid var(--border-soft)",
+                fontSize: 11, fontWeight: 700, color: "var(--text-muted)", cursor: "pointer",
+              }}>
+              <span>{t("aiCoach.suggestions")}</span>
+              <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1 }}>↻</span>
             </button>
-          ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -16, paddingRight: 16, scrollSnapType: "x mandatory" }}>
+            {suggestionKeys.map((key) => {
+              const text = t(key);
+              return (
+                <button key={key} type="button" onClick={() => sendMessage(text)} disabled={loading}
+                  style={{
+                    flexShrink: 0, scrollSnapAlign: "start",
+                    padding: "10px 14px", borderRadius: 14,
+                    background: "var(--bg-card)", border: "1px solid var(--border-soft)",
+                    color: "var(--text-primary)", fontSize: 12, fontWeight: 600,
+                    cursor: loading ? "default" : "pointer",
+                    maxWidth: 180, textAlign: "left", lineHeight: 1.35,
+                    whiteSpace: "normal",
+                  }}>
+                  {text}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
+      {/* Step Z: rounded pill input. The whole row is a single pill
+          with the text field inline with a mic icon and a circular
+          green send button. Active only when there's input text. */}
       {!limitReached && (
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
-            <input ref={inputRef} className="input" placeholder={t("aiCoach.placeholder")} value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
-              style={{ flex: 1 }} disabled={loading} />
-            <button onClick={() => inputRef.current?.focus()} type="button"
-              style={{ padding: "12px 14px", flexShrink: 0, borderRadius: 12, border: "1px solid var(--border-color)", background: "var(--bg-soft)", color: "var(--text-primary)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>🎤</button>
-            <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button"
-              disabled={loading || !input.trim()}
-              style={{ padding: "12px 16px", flexShrink: 0, opacity: loading || !input.trim() ? 0.4 : 1 }}>↑</button>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          padding: "4px 4px 4px 14px",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-soft)",
+          borderRadius: 999,
+          marginTop: 4,
+        }}>
+          <input ref={inputRef} placeholder={t("aiCoach.placeholderV2")} value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !loading && input.trim()) sendMessage(null); }}
+            disabled={loading}
+            style={{
+              flex: 1, minWidth: 0,
+              background: "transparent", border: "none", outline: "none",
+              fontSize: 14, color: "var(--text-primary)",
+              padding: "8px 0",
+            }} />
+          <button type="button" onClick={() => inputRef.current?.focus()}
+            aria-label="Voice"
+            style={{
+              width: 36, height: 36, flexShrink: 0,
+              borderRadius: "50%", border: "none",
+              background: "transparent", color: "var(--text-muted)",
+              cursor: "pointer", fontSize: 16, lineHeight: 1,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+            }}>🎤</button>
+          <button type="button" onClick={() => sendMessage(null)}
+            disabled={loading || !input.trim()}
+            aria-label="Send"
+            style={{
+              width: 36, height: 36, flexShrink: 0,
+              borderRadius: "50%", border: "none",
+              background: loading || !input.trim()
+                ? "rgba(34,197,94,0.35)"
+                : "linear-gradient(135deg, #22c55e 0%, #10b981 100%)",
+              color: "white", cursor: loading || !input.trim() ? "default" : "pointer",
+              fontSize: 16, fontWeight: 800, lineHeight: 1,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              boxShadow: loading || !input.trim() ? "none" : "0 2px 8px rgba(16,185,129,0.35)",
+            }}>↑</button>
         </div>
       )}
+
+      {/* Step Η: Recent plans — compact horizontal row of the latest
+          saved meal plan / training plan (plus a grocery list entry
+          wired to the existing groceryRef scroll target). View all
+          scrolls the user to the full-detail plan sections below.
+          The full sections remain rendered by SummaryTab for now;
+          a future pass can consolidate them into this card. */}
+      {(() => {
+        const meal = savedPlans?.find(p => p.type === "meal");
+        const training = savedPlans?.find(p => p.type === "training");
+        const cards = [];
+        if (meal) cards.push({ key: "meal", emoji: "🥗", title: t("aiCoach.recentMeal"), date: meal.date });
+        if (training) cards.push({ key: "training", emoji: "💪", title: t("aiCoach.recentWorkout"), date: training.date });
+        if (cards.length === 0) return null;
+        const scrollToPlans = () => {
+          const el = document.getElementById("ft-plans-anchor");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        };
+        return (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 0.3 }}>
+                {t("aiCoach.recentPlans")}
+              </div>
+              <button type="button" onClick={scrollToPlans}
+                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#10b981" }}>
+                {t("aiCoach.viewAll")}
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -16, paddingRight: 16, scrollSnapType: "x mandatory" }}>
+              {cards.map(card => (
+                <button key={card.key} type="button" onClick={scrollToPlans}
+                  style={{
+                    flexShrink: 0, scrollSnapAlign: "start",
+                    display: "flex", flexDirection: "column", gap: 6,
+                    padding: "12px 14px", minWidth: 150,
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-soft)",
+                    borderRadius: 12,
+                    cursor: "pointer", textAlign: "left",
+                  }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{card.emoji}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{card.title}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{card.date ? formatPlanDate(card.date) : ""}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: 2 }}>
+                      📄 PDF
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
