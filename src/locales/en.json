@@ -1076,6 +1076,19 @@
     "notYetError": "Your email is not verified yet. Click the link we sent you first.",
     "logout": "Use a different account"
   },
+  "healthPrefs": {
+    "title": "Health Profile",
+    "subtitle": "Select any health factors you want the Coach to take into account when suggesting food & exercise.",
+    "factor": {
+      "none": "None",
+      "blood_sugar": "Blood Sugar",
+      "heart": "Heart Health",
+      "joints": "Joints & Mobility",
+      "digestion": "Digestion",
+      "hormonal": "Hormonal / Energy",
+      "recovery": "Recovery / Injury"
+    }
+  },
   "foodPrefs": {
     "title": "Food Profile",
     "subtitle": "Tap what you like — helps the Coach give you better suggestions",

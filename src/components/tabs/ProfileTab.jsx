@@ -6,6 +6,7 @@ import { formatNumber } from "../../utils/helpers";
 import { apiUrl } from "../../utils/apiBase";
 import { authedFetch } from "../../utils/authFetch";
 import { EXERCISE_LIBRARY } from "../../data/constants";
+import { HEALTH_FACTORS } from "../../data/healthFactors";
 import { startProMonthlyPurchase, openManageSubscription } from "../../utils/subscription";
 import { AI_LIMITS, getCachedUsage, computeRemainingRequests } from "../../utils/aiUsage";
 
@@ -144,7 +145,8 @@ export default function ProfileTab({
   fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
   equipment, setEquipment, limitations, setLimitations,
   workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
-  fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories
+  fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories,
+  healthFactors, setHealthFactors
 }) {
   const { t, i18n } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
@@ -481,6 +483,53 @@ export default function ProfileTab({
               )}
             </div>
           ); })()}
+        </div>
+        </>)}
+      </div>
+
+      {/* ΠΡΟΦΙΛ ΥΓΕΙΑΣ — health factors that bias meal-plan + training-plan
+          recommendations in AiCoach. Mirrors the Food / Exercise Profile
+          pattern: collapsible card, chips for multi-select, state lives
+          in App.jsx and persists via localStorage + user_state.health_prefs. */}
+      <div className="card">
+        <div
+          onClick={() => setExpandedPrefs(prev => ({ ...prev, health_section: !prev.health_section }))}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: "pointer" }}
+        >
+          <h2 style={{ margin: 0 }}>🏥 {t("healthPrefs.title")}</h2>
+          <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedPrefs(prev => ({ ...prev, health_section: !prev.health_section })); }}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--border-color)", background: "var(--bg-soft)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+            {expandedPrefs.health_section ? "▲ Collapse" : "▼ Expand"}
+          </button>
+        </div>
+        {expandedPrefs.health_section && (<>
+        <div className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>{t("healthPrefs.subtitle")}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {HEALTH_FACTORS.map((f) => {
+            const active = (healthFactors || []).includes(f.key);
+            const toggle = () => {
+              setHealthFactors(prev => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (f.key === "none") {
+                  // "None" is exclusive — selecting it clears the others,
+                  // unselecting it clears everything.
+                  return active ? [] : ["none"];
+                }
+                // Selecting a real factor implicitly removes "none".
+                const withoutNone = list.filter(x => x !== "none");
+                return active
+                  ? withoutNone.filter(x => x !== f.key)
+                  : [...withoutNone, f.key];
+              });
+            };
+            return (
+              <button key={f.key} type="button" onClick={toggle}
+                style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border-color)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  background: active ? "var(--color-accent)" : "var(--bg-soft)", color: active ? "var(--bg-card)" : "var(--text-primary)" }}>
+                {f.icon} {t("healthPrefs.factor." + f.key)}
+              </button>
+            );
+          })}
         </div>
         </>)}
       </div>

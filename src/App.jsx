@@ -211,6 +211,7 @@ export default function App() {
   const [sessionDuration, setSessionDuration] = useState(() => loadValue("ft_sessionDuration", ""));
   const [fitnessGoals, setFitnessGoals] = useState(() => loadJSON("ft_fitnessGoals", []));
   const [exerciseCategories, setExerciseCategories] = useState(() => loadJSON("ft_exerciseCategories", []));
+  const [healthFactors, setHealthFactors] = useState(() => loadJSON("ft_healthFactors", []));
 
   const [foods] = useState(() => {
     const saved = loadJSON("ft_foods", []);
@@ -319,6 +320,7 @@ export default function App() {
   useEffect(() => saveValue("ft_sessionDuration", sessionDuration), [sessionDuration]);
   useEffect(() => saveJSON("ft_fitnessGoals", fitnessGoals), [fitnessGoals]);
   useEffect(() => saveJSON("ft_exerciseCategories", exerciseCategories), [exerciseCategories]);
+  useEffect(() => saveJSON("ft_healthFactors", healthFactors), [healthFactors]);
 
   // =========================================================================
   // CLOUD SYNC — Phase A2
@@ -374,6 +376,10 @@ export default function App() {
           if (Array.isArray(x.fitnessGoals)) setFitnessGoals(x.fitnessGoals);
           if (Array.isArray(x.exerciseCategories)) setExerciseCategories(x.exerciseCategories);
         }
+        if (cloud.health_prefs && typeof cloud.health_prefs === "object") {
+          const h = cloud.health_prefs;
+          if (Array.isArray(h.healthFactors)) setHealthFactors(h.healthFactors);
+        }
         if (Array.isArray(cloud.custom_foods)) setCustomFoods(cloud.custom_foods);
         if (Array.isArray(cloud.favorite_food_keys)) setFavoriteFoodKeys(cloud.favorite_food_keys);
         if (Array.isArray(cloud.recent_foods)) setRecentFoods(cloud.recent_foods);
@@ -388,6 +394,7 @@ export default function App() {
           profile: { age, gender, height, weight, activity, goalType, mode, targetWeightLoss, weeks },
           food_prefs: { foodCategories, allergies, cookingLevel, cookingTime, simpleMode, mealsPerDay, snacksPerDay },
           fitness_prefs: { fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories },
+          health_prefs: { healthFactors },
           custom_foods: customFoods,
           favorite_food_keys: favoriteFoodKeys,
           recent_foods: recentFoods,
@@ -422,6 +429,11 @@ export default function App() {
     if (!cloudHydrated || !uid) return;
     saveCloudColumn(uid, "fitness_prefs", { fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories });
   }, [uid, cloudHydrated, fitnessLevel, workoutLocation, equipment, limitations, workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories]);
+
+  useEffect(() => {
+    if (!cloudHydrated || !uid) return;
+    saveCloudColumn(uid, "health_prefs", { healthFactors });
+  }, [uid, cloudHydrated, healthFactors]);
 
   useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "custom_foods", customFoods); }, [uid, cloudHydrated, customFoods]);
   useEffect(() => { if (cloudHydrated && uid) saveCloudColumn(uid, "favorite_food_keys", favoriteFoodKeys); }, [uid, cloudHydrated, favoriteFoodKeys]);
@@ -793,7 +805,8 @@ export default function App() {
     foodCategories, allergies, cookingLevel, cookingTime, simpleMode,
     mealsPerDay, snacksPerDay,
     fitnessLevel, workoutLocation, equipment, limitations,
-    workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories
+    workoutFrequency, sessionDuration, fitnessGoals, exerciseCategories,
+    healthFactors
   };
 
   const foodProps = {
@@ -858,7 +871,8 @@ export default function App() {
     fitnessLevel, setFitnessLevel, workoutLocation, setWorkoutLocation,
     equipment, setEquipment, limitations, setLimitations,
     workoutFrequency, setWorkoutFrequency, sessionDuration, setSessionDuration,
-    fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories
+    fitnessGoals, setFitnessGoals, exerciseCategories, setExerciseCategories,
+    healthFactors, setHealthFactors
   };
 
   const showWelcome = !hasSeenWelcome;
