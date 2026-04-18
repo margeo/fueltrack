@@ -714,7 +714,7 @@ RULES:
         {progressOpen && (<>
         {/* Εισαγωγή βάρους — collapsible */}
         <button className="btn btn-light" onClick={() => setShowWeightInput(!showWeightInput)} type="button"
-          style={{ width: "100%", marginBottom: showWeightInput ? 10 : 12, fontSize: 12 }}>
+          style={{ width: "100%", marginBottom: showWeightInput ? 10 : 12, fontSize: 12, textAlign: "left" }}>
           {showWeightInput ? `⚖️ ${t("summary.weightEntry")} ▲` : `⚖️ ${t("summary.weightEntry")} ▼`}
         </button>
         {showWeightInput && (
@@ -752,7 +752,7 @@ RULES:
         {sortedWeightLog.length > 0 && (
           <>
             <button className="btn btn-light" onClick={() => setShowWeightHistory(!showWeightHistory)} type="button"
-              style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12 }}>
+              style={{ width: "100%", marginBottom: showWeightHistory ? 8 : 0, fontSize: 12, textAlign: "left" }}>
               {showWeightHistory ? t("summary.hideHistory") : t("summary.showHistory", { count: sortedWeightLog.length })}
             </button>
             {showWeightHistory && (
@@ -774,7 +774,7 @@ RULES:
         {/* Γράφημα — μετά το ιστορικό */}
         {chartData.length >= 2 && (
           <button className="btn btn-light" onClick={() => setShowWeightChart(!showWeightChart)} type="button"
-            style={{ width: "100%", marginTop: 10, marginBottom: showWeightChart ? 8 : 0, fontSize: 12 }}>
+            style={{ width: "100%", marginTop: 10, marginBottom: showWeightChart ? 8 : 0, fontSize: 12, textAlign: "left" }}>
             {showWeightChart ? t("summary.hideChart") : t("summary.showChart")}
           </button>
         )}
