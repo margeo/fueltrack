@@ -2191,62 +2191,16 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
         </div>
       )}
 
-      {/* Step Η: Recent plans — compact horizontal row of the latest
-          saved meal plan / training plan (plus a grocery list entry
-          wired to the existing groceryRef scroll target). View all
-          scrolls the user to the full-detail plan sections below.
-          The full sections remain rendered by SummaryTab for now;
-          a future pass can consolidate them into this card. */}
-      {(() => {
-        const meal = savedPlans?.find(p => p.type === "meal");
-        const training = savedPlans?.find(p => p.type === "training");
-        const cards = [];
-        if (meal) cards.push({ key: "meal", emoji: "🥗", title: t("aiCoach.recentMeal"), date: meal.date });
-        if (training) cards.push({ key: "training", emoji: "💪", title: t("aiCoach.recentWorkout"), date: training.date });
-        if (cards.length === 0) return null;
-        const scrollToPlans = () => {
-          const el = document.getElementById("ft-plans-anchor");
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        };
-        return (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
-                {t("aiCoach.recentPlans")}
-              </div>
-              <button type="button" onClick={scrollToPlans}
-                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#34d399" }}>
-                {t("aiCoach.viewAll")}
-              </button>
-            </div>
-            <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", marginRight: -20, paddingRight: 20, scrollSnapType: "x mandatory" }}>
-              {cards.map(card => (
-                <button key={card.key} type="button" onClick={scrollToPlans}
-                  style={{
-                    flexShrink: 0, scrollSnapAlign: "start",
-                    display: "flex", flexDirection: "column", gap: 6,
-                    padding: "12px 14px", minWidth: 150,
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 12,
-                    cursor: "pointer", textAlign: "left",
-                  }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{card.emoji}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>{card.title}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{card.date ? formatPlanDate(card.date) : ""}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", display: "inline-flex", alignItems: "center", gap: 2 }}>
-                      📄 PDF
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Step Η: "Recent plans" label only — acts as a header for the
+          full plan rows that SummaryTab renders directly below (meal
+          plan / grocery list / training plan). The compact card strip
+          that used to live here was redundant with those rows; the
+          label stays so the section has a visible title. */}
+      <div style={{ marginTop: 18 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 0.3 }}>
+          {t("aiCoach.recentPlans")}
+        </div>
+      </div>
     </div>
   );
 }
