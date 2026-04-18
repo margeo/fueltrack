@@ -1459,11 +1459,12 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               // Hide scrollbar track but keep scrolling functional.
               scrollbarWidth: "none",
               msOverflowStyle: "none",
-              // Negative margin so the scroll area reaches the hero's
-              // inner edges, counter-padded on children via paddingLeft
-              // on the first card and trailing padding on the container.
-              margin: "12px -20px 0",
-              padding: "0 20px",
+              // Only bleed to the right so hidden cards tease in from
+              // the edge; left stays aligned with the rest of the hero
+              // content so the first card sits under the greeting text
+              // column, not outside it.
+              marginRight: -20,
+              paddingRight: 20,
             }}>
               {items.map((it) => {
                 const pct = it.target > 0 ? Math.min(100, (it.eaten / it.target) * 100) : 0;
@@ -1492,6 +1493,44 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
             </div>
           );
         })()}
+
+        {/* Row 5: Primary CTA — "Analyze Today" with a green glow.
+            Moved here from its old spot below the prompt chips; it's
+            now the first visible action after the user reads the
+            greeting and their remaining macros. Disabled during
+            loading and when the daily limit is reached. */}
+        <button
+          type="button"
+          onClick={() => sendMessage(null)}
+          disabled={loading || limitReached}
+          style={{
+            width: "100%",
+            marginTop: 14,
+            padding: "14px 18px",
+            borderRadius: 14,
+            border: "none",
+            cursor: loading || limitReached ? "default" : "pointer",
+            background: loading || limitReached
+              ? "rgba(34,197,94,0.35)"
+              : "linear-gradient(135deg, #22c55e 0%, #10b981 100%)",
+            color: "white",
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: 0.2,
+            boxShadow: loading || limitReached
+              ? "none"
+              : "0 0 24px rgba(34,197,94,0.45), 0 6px 16px rgba(16,185,129,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            transition: "box-shadow 0.2s ease, transform 0.1s ease",
+          }}
+        >
+          <span aria-hidden="true">✨</span>
+          <span>{t("aiCoach.analyzeDay")}</span>
+          <span aria-hidden="true">→</span>
+        </button>
 
         {/* Admin-only controls — tucked below the motivation so they
             stay reachable without dominating the hero. */}
@@ -1600,9 +1639,9 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
               </button>
             ))}
           </div>
-          <button className="btn btn-dark" onClick={() => sendMessage(null)} type="button" style={{ width: "100%" }}>
-            📊 {t("aiCoach.analyzeDay")}
-          </button>
+          {/* The "Analyze my day" CTA that used to live here moved into
+              the hero as the primary glowing Analyze Today button in
+              Step Γ of the Coach redesign — don't render it twice. */}
         </div>
       )}
 
