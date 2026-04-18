@@ -1261,12 +1261,22 @@ ${askChange}`;
     setChatExpanded(true);
     // Pre-response page scroll (Scroll 1) — bring the Coach section
     // just below the fixed .app-header. The ref div has scroll-margin
-    // -top: 84 so a plain scrollIntoView({block:"start"}) naturally
-    // lands it with the right offset; using the browser's native
-    // scroll-into-view plumbing is more reliable on iOS Safari than
-    // chaining scrollTo() with a computed target right after a set
-    // State call (the latter sometimes no-ops mid-animation on iOS).
-    coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // -top: 60 so a plain scrollIntoView({block:"start"}) naturally
+    // lands it with the right offset.
+    //
+    // Defer with a double requestAnimationFrame so it runs AFTER
+    // React commits the setLoading / setChatExpanded state above.
+    // Without this, iOS Safari silently no-ops the smooth scroll when
+    // it's issued in the same tick as a pending setState — which is
+    // why the Meal Plan button "worked" (it has a JSON build step
+    // between the setState and the real request) but the Suggestions
+    // chips and typed questions did not. Double rAF is the same
+    // settle pattern we already use for Scroll 2.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        coachTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
     const currentMode = MODES[mode] || MODES.balanced;
     const isInitial = options.forceInitial || (!text && !hasLoaded);
     const isMealPlan = text === t("aiCoach.q1");
