@@ -5,15 +5,21 @@
 // Shape mirrors the food/fitness profile pattern: a list of keys +
 // per-key rule bundles. The UI in ProfileTab renders the keys as
 // chips, persists the selection in localStorage under
-// ft_healthFactors, syncs to profiles.health_prefs on the server, and
-// threads it through App.jsx → AiCoach as `healthFactors: string[]`.
-// AiCoach turns the selection into explicit
-// prioritize/avoid sentences that get appended to the meal-plan and
-// training-plan system prompts.
+// ft_healthFactors, syncs to user_state.health_prefs on the server,
+// and threads it through App.jsx → AiCoach as `healthFactors: string[]`.
+//
+// Rules are split into a `food` and an `exercise` bucket per factor
+// so the AI Coach can inject the right bucket into the right prompt:
+// meal-plan prompts only see food rules (prioritize + avoid), and
+// training-plan prompts only see exercise rules — avoids the "don't
+// jump" advice leaking into a meal plan just because the user has
+// joint issues, and likewise avoids "eat less salt" noise in a
+// training plan. Generic-chat uses both so the coach has the full
+// picture when the user asks open-ended questions.
 //
 // "none" is exclusive — selecting it clears the others and vice
-// versa. When the array is empty or contains only "none", no
-// biasing is applied (same as having no profile data at all).
+// versa. When the selection is empty or only "none", no biasing is
+// applied (same as having no profile data at all).
 
 export const HEALTH_FACTORS = [
   { key: "none",         icon: "🟢" },
@@ -25,70 +31,110 @@ export const HEALTH_FACTORS = [
   { key: "recovery",     icon: "🤕" },
 ];
 
-// Per-factor rule bundles. English strings so they go straight into
-// the AI prompt; the UI surfaces them through i18n keys (see locales
-// under healthRules.*) when/if we decide to show them to the user.
+// Per-factor rule bundles, split into food vs exercise domains.
+// English strings because they go straight into the AI system prompt.
 export const HEALTH_RULES = {
   blood_sugar: {
-    foodPrioritize:     ["protein each meal", "fiber carbs", "vegetables", "balanced meals"],
-    exercisePrioritize: ["walking after meals", "resistance training", "regular movement"],
-    avoid:              ["sugary snacks", "carb-only meals", "binge eating"],
+    food: {
+      prioritize: ["protein each meal", "fiber carbs", "vegetables", "balanced meals"],
+      avoid:      ["sugary snacks", "carb-only meals", "binge eating"],
+    },
+    exercise: {
+      prioritize: ["walking after meals", "resistance training", "regular movement"],
+      avoid:      [],
+    },
   },
   heart: {
-    foodPrioritize:     ["olive oil", "fish", "vegetables", "oats / fiber", "lower sodium"],
-    exercisePrioritize: ["walking", "cycling", "cardio base", "moderate weights"],
-    avoid:              ["ultra-processed foods", "excess salt", "sedentary routine"],
+    food: {
+      prioritize: ["olive oil", "fish", "vegetables", "oats / fiber", "lower sodium"],
+      avoid:      ["ultra-processed foods", "excess salt"],
+    },
+    exercise: {
+      prioritize: ["walking", "cycling", "cardio base", "moderate weights"],
+      avoid:      ["sedentary routine"],
+    },
   },
   joints: {
-    foodPrioritize:     ["calorie control", "protein", "anti-inflammatory foods"],
-    exercisePrioritize: ["swimming", "cycling", "walking", "machines", "mobility"],
-    avoid:              ["jumping", "excessive running", "hard HIIT"],
+    food: {
+      // Indirect but real: weight control reduces joint load, protein
+      // supports cartilage/ligaments, anti-inflammatory foods help.
+      prioritize: ["calorie control", "protein", "anti-inflammatory foods"],
+      avoid:      [],
+    },
+    exercise: {
+      prioritize: ["swimming", "cycling", "walking", "machines", "mobility"],
+      avoid:      ["jumping", "excessive running", "hard HIIT"],
+    },
   },
   digestion: {
-    foodPrioritize:     ["simpler meals", "cooked foods", "hydration", "meal timing consistency"],
-    exercisePrioritize: ["walking", "light to moderate training"],
-    avoid:              ["huge meals", "greasy foods pre-workout", "overeating late night"],
+    food: {
+      prioritize: ["simpler meals", "cooked foods", "hydration", "meal timing consistency"],
+      avoid:      ["huge meals", "greasy foods pre-workout", "overeating late night"],
+    },
+    exercise: {
+      prioritize: ["walking", "light to moderate training"],
+      avoid:      [],
+    },
   },
   hormonal: {
-    foodPrioritize:     ["enough calories", "protein", "regular meals", "micronutrients"],
-    exercisePrioritize: ["strength training", "steps", "recovery balance"],
-    avoid:              ["crash diets", "overtraining", "poor sleep habits"],
+    food: {
+      prioritize: ["enough calories", "protein", "regular meals", "micronutrients"],
+      avoid:      ["crash diets"],
+    },
+    exercise: {
+      prioritize: ["strength training", "steps", "recovery balance"],
+      avoid:      ["overtraining", "poor sleep habits"],
+    },
   },
   recovery: {
-    foodPrioritize:     ["high protein", "hydration", "nutrient-dense foods"],
-    exercisePrioritize: ["rehab-friendly movement", "low-impact cardio", "progressive return"],
-    avoid:              ["pain-pushing", "max intensity too soon"],
+    food: {
+      prioritize: ["high protein", "hydration", "nutrient-dense foods"],
+      avoid:      [],
+    },
+    exercise: {
+      prioritize: ["rehab-friendly movement", "low-impact cardio", "progressive return"],
+      avoid:      ["pain-pushing", "max intensity too soon"],
+    },
   },
 };
 
 // Returns only the factors that actually carry rules (i.e. excludes
-// "none" and anything unknown). Used both by the AI prompt builder
-// and by any UI surface that wants to show "Active rules".
+// "none" and anything unknown).
 export function getActiveHealthFactors(selected) {
   if (!Array.isArray(selected)) return [];
   return selected.filter((k) => k && k !== "none" && HEALTH_RULES[k]);
 }
 
-// Merges all prioritize/avoid arrays across the active factors into a
-// single deduplicated bundle. Used to print a compact "do this / avoid
-// this" block in the AI system prompt without repeating the same
-// item twice (e.g. walking appears under multiple factors).
-export function mergeHealthRules(selected) {
-  const active = getActiveHealthFactors(selected);
-  if (active.length === 0) return null;
-  const food = new Set();
-  const exercise = new Set();
-  const avoid = new Set();
-  for (const key of active) {
-    const r = HEALTH_RULES[key];
-    r.foodPrioritize.forEach((x) => food.add(x));
-    r.exercisePrioritize.forEach((x) => exercise.add(x));
-    r.avoid.forEach((x) => avoid.add(x));
-  }
-  return {
-    factors: active,
-    foodPrioritize: Array.from(food),
-    exercisePrioritize: Array.from(exercise),
-    avoid: Array.from(avoid),
+// Builds a domain-specific merger. Returns null when there are no
+// active factors (or when all active factors have empty buckets for
+// the requested domain) so callers can skip the whole injection.
+function buildDomainMerger(domain) {
+  return function merger(selected) {
+    const active = getActiveHealthFactors(selected);
+    if (active.length === 0) return null;
+    const prioritize = new Set();
+    const avoid = new Set();
+    for (const key of active) {
+      const bucket = HEALTH_RULES[key]?.[domain];
+      if (!bucket) continue;
+      bucket.prioritize.forEach((x) => prioritize.add(x));
+      bucket.avoid.forEach((x) => avoid.add(x));
+    }
+    if (prioritize.size === 0 && avoid.size === 0) return null;
+    return {
+      factors: active,
+      prioritize: Array.from(prioritize),
+      avoid: Array.from(avoid),
+    };
   };
 }
+
+// Only food.prioritize + food.avoid across the active factors.
+// Used by the meal-plan system prompt and the food section of the
+// generic-chat context.
+export const mergeHealthFoodRules = buildDomainMerger("food");
+
+// Only exercise.prioritize + exercise.avoid across the active
+// factors. Used by the training-plan system prompt and the exercise
+// section of the generic-chat context.
+export const mergeHealthExerciseRules = buildDomainMerger("exercise");

@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MODES } from "../data/modes";
-import { mergeHealthRules } from "../data/healthFactors";
+import { mergeHealthFoodRules, mergeHealthExerciseRules } from "../data/healthFactors";
 import { calculateStreak } from "../utils/streak";
 import { getTodayKey, shiftDate, normalizeDayLog } from "../utils/helpers";
 import { supabase } from "../supabaseClient";
@@ -583,7 +583,11 @@ export default function AiCoach({
         cooking_time: cookingTime || "",
         simple_groceries: simpleMode
       },
-      health_profile: mergeHealthRules(healthFactors) || { factors: [], foodPrioritize: [], exercisePrioritize: [], avoid: [] },
+      // Meal-plan context only cares about food-side health rules —
+      // joint or recovery "exercise avoid" items would just be noise
+      // here. Empty object (not null) when nothing applies so the AI
+      // doesn't have to null-check.
+      health_profile: mergeHealthFoodRules(healthFactors) || { factors: [], prioritize: [], avoid: [] },
       language: isEn ? "English" : "Greek"
     };
 
@@ -607,7 +611,7 @@ ${snackConstraints ? snackConstraints + "\n" : ""}${ruleNum++}. CALORIE ACCURACY
 ${ruleNum++}. All ${mealSlots.length} slots MANDATORY for each day. Never omit any slot.
 ${ruleNum++}. ${langNote}
 ${ruleNum++}. Each slot: "desc" (brief, max 5 words, with grams), "kcal" (integer = real calories of that food).
-${ruleNum++}. Health profile: if input.health_profile.factors is non-empty, prioritize foods that align with health_profile.foodPrioritize and strictly avoid items matching health_profile.avoid. Take this as harder than the user's preferred_foods list when they conflict.
+${ruleNum++}. Health profile: if input.health_profile.factors is non-empty, prioritize foods that align with health_profile.prioritize and strictly avoid items matching health_profile.avoid. Treat avoids as harder than the user's preferred_foods list when they conflict.
 ${ruleNum++}. No leftovers. Unique meals each day. Respect input data.
 
 CALORIE TARGETS (aim for these, but kcal must be real food values):
@@ -645,7 +649,10 @@ EXAMPLE (monday):
         limitations: limitations || [],
         favorite_exercises: (favoriteExercises || []).slice(0, 6).map(e => typeof e === "string" ? e : e.name || e)
       },
-      health_profile: mergeHealthRules(healthFactors) || { factors: [], foodPrioritize: [], exercisePrioritize: [], avoid: [] },
+      // Training-plan context only cares about exercise-side health
+      // rules — e.g. "eat less salt" from a heart-health profile has
+      // no place in an exercise prompt.
+      health_profile: mergeHealthExerciseRules(healthFactors) || { factors: [], prioritize: [], avoid: [] },
       language: isEn ? "English" : "Greek"
     };
 
@@ -667,7 +674,7 @@ RULES:
 7. Vary workout types across the week.
 8. ${isEn ? "All text in English." : "All text MUST be in Greek."}
 9. Never suggest exercises that could worsen user's limitations.
-10. Health profile: if input.health_profile.factors is non-empty, prioritize movement patterns in health_profile.exercisePrioritize and strictly avoid anything matching health_profile.avoid. This is harder than the user's own preferred categories when they conflict.`;
+10. Health profile: if input.health_profile.factors is non-empty, prioritize movement patterns in health_profile.prioritize and strictly avoid anything matching health_profile.avoid. Treat avoids as harder than the user's own preferred categories when they conflict.`;
 
     return { systemPrompt, userMessage: JSON.stringify(input) };
   }
@@ -836,9 +843,17 @@ ${isEn ? "All text in English." : "All text MUST be in Greek."}`;
       ? `\n${isEn ? "FOOD PROFILE" : "ΔΙΑΤΡΟΦΙΚΟ ΠΡΟΦΙΛ"}:${foodCatStr ? `\n${isEn?"Prefers":"Προτιμάει"}: ${foodCatStr}` : ""}${favFoodsList ? `\n${isEn?"Favorites":"Αγαπημένα"}: ${favFoodsList}` : ""}${mealStr ? `\n${isEn?"Meals per day":"Γεύματα/μέρα"}: ${mealStr}` : ""}${cookStr ? `\n${isEn?"Cooking skill":"Μαγειρική ικανότητα"}: ${cookStr}` : ""}${timeStr ? `\n${isEn?"Cooking time":"Χρόνος μαγειρέματος"}: ${timeStr}` : ""}${allergyStr ? `\n${isEn?"⚠️ ALLERGIES — NEVER use":"⚠️ ΑΛΛΕΡΓΙΕΣ — ΠΟΤΕ μη χρησιμοποιήσεις"}: ${allergyStr}` : ""}${(foodCatStr || favFoodsList) ? `\n${isEn?"The plan should have variety, not be monotonous, based on the user's preferences and favorites but not limited to them — similar meals can also be included.":"Το πρόγραμμα πρέπει να έχει σχετική ποικιλία, να μην είναι μονότονο, να βασίζεται στις προτιμήσεις και τα αγαπημένα του χρήστη αλλά να μην περιορίζεται σε αυτά, μπορούν να επιλεχθούν και παρόμοια γεύματα."}` : ""}`
       : "";
 
-    const healthRules = mergeHealthRules(healthFactors);
-    const healthPrefsLine = healthRules
-      ? `\n${isEn ? "HEALTH PROFILE" : "ΠΡΟΦΙΛ ΥΓΕΙΑΣ"}: ${healthRules.factors.join(", ")}${healthRules.foodPrioritize.length ? `\n${isEn?"Food prioritize":"Φαγητό prioritize"}: ${healthRules.foodPrioritize.join(", ")}` : ""}${healthRules.exercisePrioritize.length ? `\n${isEn?"Exercise prioritize":"Άσκηση prioritize"}: ${healthRules.exercisePrioritize.join(", ")}` : ""}${healthRules.avoid.length ? `\n${isEn?"⚠️ AVOID":"⚠️ ΑΠΟΦΥΓΕ"}: ${healthRules.avoid.join(", ")}${isEn?" — treat these as hard constraints that override preferences.":" — αυτοί είναι hard constraints και υπερισχύουν των προτιμήσεων."}` : ""}`
+    // Generic chat gets domain-split health lines: one attached to the
+    // food context, one to the fitness context. Empty strings when no
+    // factors are active or the domain bucket is empty — keeps the
+    // prompt tight when the user hasn't opted in.
+    const healthFoodRules = mergeHealthFoodRules(healthFactors);
+    const healthFoodLine = healthFoodRules
+      ? `\n${isEn ? "HEALTH PROFILE (food)" : "ΠΡΟΦΙΛ ΥΓΕΙΑΣ (φαγητό)"}: ${healthFoodRules.factors.join(", ")}${healthFoodRules.prioritize.length ? `\n${isEn?"Prioritize":"Προτίμησε"}: ${healthFoodRules.prioritize.join(", ")}` : ""}${healthFoodRules.avoid.length ? `\n${isEn?"⚠️ AVOID":"⚠️ ΑΠΟΦΥΓΕ"}: ${healthFoodRules.avoid.join(", ")}${isEn?" — hard constraints, override preferences.":" — hard constraints, υπερισχύουν των προτιμήσεων."}` : ""}`
+      : "";
+    const healthExerciseRules = mergeHealthExerciseRules(healthFactors);
+    const healthExerciseLine = healthExerciseRules
+      ? `\n${isEn ? "HEALTH PROFILE (exercise)" : "ΠΡΟΦΙΛ ΥΓΕΙΑΣ (άσκηση)"}: ${healthExerciseRules.factors.join(", ")}${healthExerciseRules.prioritize.length ? `\n${isEn?"Prioritize":"Προτίμησε"}: ${healthExerciseRules.prioritize.join(", ")}` : ""}${healthExerciseRules.avoid.length ? `\n${isEn?"⚠️ AVOID":"⚠️ ΑΠΟΦΥΓΕ"}: ${healthExerciseRules.avoid.join(", ")}${isEn?" — hard constraints, override preferences.":" — hard constraints, υπερισχύουν των προτιμήσεων."}` : ""}`
       : "";
 
     const exercisePrefsLine = (fitStr || locStr || equipStr || limStr || freqStr || durStr || fitGoalStr || exCatStr)
@@ -862,13 +877,14 @@ ${isEn ? "Goal" : "Στόχος"}:${goalLabel}`;
     // WEEK SUMMARY: general μόνο
     const weekBlock = `\n${isEn ? "Week" : "Εβδομάδα"}:\n${weekSummary||"—"}${emptyDays.length>0?`\n⚠️ ${emptyDays.length} ${isEn ? "days without logging" : "μέρες χωρίς καταγραφή"}`:""}`;
 
-    // FOOD CONTEXT: meal_plan, general (NOT training_plan) — health
-    // profile goes with both food and fitness contexts since a lot of
-    // the rules (walking, rest days, low-impact cardio) cross-cut.
-    const foodContext = `${foodPrefsLine}${healthPrefsLine}`;
+    // FOOD CONTEXT: meal_plan, general (NOT training_plan). Only the
+    // food-domain health rules attach here — exercise rules go with
+    // the fitness context below.
+    const foodContext = `${foodPrefsLine}${healthFoodLine}`;
 
-    // FITNESS CONTEXT: training_plan, general (NOT meal_plan)
-    const fitnessContext = `${exercisePrefsLine}${healthPrefsLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
+    // FITNESS CONTEXT: training_plan, general (NOT meal_plan). Only
+    // the exercise-domain health rules attach here.
+    const fitnessContext = `${exercisePrefsLine}${healthExerciseLine}${favExList ? `\n${isEn ? "Favorite exercises" : "Αγαπημένες ασκήσεις"}:${favExList}` : ""}`;
 
     // MODE RULES: πάντα
     const modeBlock = `\n${currentMode.aiRule}`;
