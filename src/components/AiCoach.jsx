@@ -1500,10 +1500,6 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                 </div>
               </div>
             )}
-            {/* Bottom spacer guarantees the latest assistant message can
-                always be scrolled to the top of the chat container, even
-                when the total content is shorter than the visible area. */}
-            <div style={{ flexShrink: 0, height: chatExpanded ? 460 : 120 }} aria-hidden="true" />
           </div>
         </div>
       )}
