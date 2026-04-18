@@ -1354,12 +1354,12 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           }} aria-hidden="true">🤖</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.2 }}>{t("aiCoach.heroBrand")}</span>
+              <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: 0.2 }}>{t("aiCoach.heroBrand")}</span>
               <span style={{
                 padding: "2px 9px", borderRadius: 10,
                 background: isPaid ? "linear-gradient(135deg, #f59e0b, #d97706)" : "rgba(255,255,255,0.12)",
                 color: isPaid ? "white" : "rgba(255,255,255,0.85)",
-                fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
+                fontSize: 10, fontWeight: 800, letterSpacing: 0.3, lineHeight: 1.4,
                 display: "inline-flex", alignItems: "center", gap: 3,
                 border: isPaid ? "none" : "1px solid rgba(255,255,255,0.18)",
               }}>{isPaid ? "⭐ Pro" : "Free"}</span>
@@ -1375,7 +1375,7 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
                     padding: "2px 9px", borderRadius: 10,
                     background: exhausted ? "rgba(239,68,68,0.25)" : info.warn ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.12)",
                     color: "rgba(255,255,255,0.9)",
-                    fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
+                    fontSize: 10, fontWeight: 800, letterSpacing: 0.3, lineHeight: 1.4,
                     display: "inline-flex", alignItems: "center", gap: 3,
                     border: "1px solid rgba(255,255,255,0.18)",
                   }}>{exhausted ? `⛔ ${t("usage.noRemaining")}` : `⚡ ${info.remaining} ${t("usage.remaining")}`}</span>
@@ -1400,60 +1400,95 @@ ${isEn ? "Food names in English." : "All desc fields MUST be in Greek."}`;
           {t("aiCoach.heroMotivation")}
         </div>
 
-        {/* Row 4: Stats cards — Calories left + Protein left with
-            progress bars. Values pull from the same props the Dashboard
-            already renders. Big number is "remaining"; small line below
-            shows "eaten / target". Bar width = eaten/target capped at
-            100 so an over-target day pins to full rather than
-            overflowing visually. Colours are the macro-bar palette
-            already in use on the Dashboard macro pie legend. */}
+        {/* Row 4: Stats strip — horizontally scrollable banner with
+            Calories, Protein, Carbs, Fat. First two fit on a typical
+            phone width; user scrolls to reveal Carbs and Fat. Each
+            card follows the same layout: label · big remaining value
+            with unit · thin progress bar (eaten/target, capped 100) ·
+            "eaten / target" footer. Colours are the macro-bar palette
+            already in use on the Dashboard macro pie (green/blue/
+            amber/red for kcal/protein/carbs/fat). */}
         {(() => {
-          const kcalEaten = Number(totalCalories || 0);
-          const kcalTarget = Number(targetCalories || 0);
-          const kcalRemaining = Number(remainingCalories || 0);
-          const kcalLeftDisplay = Math.max(0, kcalRemaining);
-          const kcalPct = kcalTarget > 0 ? Math.min(100, (kcalEaten / kcalTarget) * 100) : 0;
-
-          const pEaten = Number(totalProtein || 0);
-          const pTarget = Number(proteinTarget || 0);
-          const pLeftDisplay = Math.max(0, pTarget - pEaten);
-          const pPct = pTarget > 0 ? Math.min(100, (pEaten / pTarget) * 100) : 0;
-
-          const cardBase = {
-            flex: 1, minWidth: 0,
-            padding: "10px 12px",
-            borderRadius: 14,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-          };
+          const mt = macroTargets || {};
+          const items = [
+            {
+              labelKey: "aiCoach.heroCaloriesLeft",
+              eaten: Number(totalCalories || 0),
+              target: Number(targetCalories || 0),
+              remaining: Math.max(0, Number(remainingCalories || 0)),
+              unit: "kcal",
+              color: "#22c55e",
+            },
+            {
+              labelKey: "aiCoach.heroProteinLeft",
+              eaten: Number(totalProtein || 0),
+              target: Number(proteinTarget || 0),
+              remaining: Math.max(0, Number(proteinTarget || 0) - Number(totalProtein || 0)),
+              unit: "g",
+              color: "#3b82f6",
+            },
+            {
+              labelKey: "aiCoach.heroCarbsLeft",
+              eaten: Number(totalCarbs || 0),
+              target: Number(mt.carbsGrams || 0),
+              remaining: Math.max(0, Number(mt.carbsGrams || 0) - Number(totalCarbs || 0)),
+              unit: "g",
+              color: "#f59e0b",
+            },
+            {
+              labelKey: "aiCoach.heroFatLeft",
+              eaten: Number(totalFat || 0),
+              target: Number(mt.fatGrams || 0),
+              remaining: Math.max(0, Number(mt.fatGrams || 0) - Number(totalFat || 0)),
+              unit: "g",
+              color: "#ef4444",
+            },
+          ];
           const labelStyle = { fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 };
           const barTrack = { height: 4, borderRadius: 4, background: "rgba(255,255,255,0.12)", overflow: "hidden", marginBottom: 4 };
           const footerStyle = { fontSize: 10, color: "rgba(255,255,255,0.55)" };
-
           return (
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <div style={cardBase}>
-                <div style={labelStyle}>{t("aiCoach.heroCaloriesLeft")}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
-                  <span style={{ fontSize: 24, fontWeight: 800, color: "#22c55e", lineHeight: 1 }}>{formatNumber(kcalLeftDisplay)}</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>kcal</span>
-                </div>
-                <div style={barTrack}>
-                  <div style={{ height: "100%", width: `${kcalPct}%`, background: "#22c55e", borderRadius: 4, transition: "width 0.3s ease" }} />
-                </div>
-                <div style={footerStyle}>{formatNumber(kcalEaten)} / {formatNumber(kcalTarget)} kcal</div>
-              </div>
-              <div style={cardBase}>
-                <div style={labelStyle}>{t("aiCoach.heroProteinLeft")}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
-                  <span style={{ fontSize: 24, fontWeight: 800, color: "#3b82f6", lineHeight: 1 }}>{formatNumber(pLeftDisplay)}</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>g</span>
-                </div>
-                <div style={barTrack}>
-                  <div style={{ height: "100%", width: `${pPct}%`, background: "#3b82f6", borderRadius: 4, transition: "width 0.3s ease" }} />
-                </div>
-                <div style={footerStyle}>{formatNumber(pEaten)} / {formatNumber(pTarget)} g</div>
-              </div>
+            <div style={{
+              display: "flex",
+              gap: 8,
+              marginTop: 12,
+              overflowX: "auto",
+              overflowY: "hidden",
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+              // Hide scrollbar track but keep scrolling functional.
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              // Negative margin so the scroll area reaches the hero's
+              // inner edges, counter-padded on children via paddingLeft
+              // on the first card and trailing padding on the container.
+              margin: "12px -20px 0",
+              padding: "0 20px",
+            }}>
+              {items.map((it) => {
+                const pct = it.target > 0 ? Math.min(100, (it.eaten / it.target) * 100) : 0;
+                return (
+                  <div key={it.labelKey} style={{
+                    flex: "0 0 46%",
+                    minWidth: 140,
+                    padding: "10px 12px",
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    scrollSnapAlign: "start",
+                  }}>
+                    <div style={labelStyle}>{t(it.labelKey)}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, color: it.color, lineHeight: 1 }}>{formatNumber(it.remaining)}</span>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{it.unit}</span>
+                    </div>
+                    <div style={barTrack}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: it.color, borderRadius: 4, transition: "width 0.3s ease" }} />
+                    </div>
+                    <div style={footerStyle}>{formatNumber(it.eaten)} / {formatNumber(it.target)} {it.unit}</div>
+                  </div>
+                );
+              })}
             </div>
           );
         })()}
